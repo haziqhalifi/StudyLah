@@ -486,6 +486,10 @@ h3 {
   }
 
   /* ── Bottom nav ── */
+  body.quiz-open .bottom-nav {
+    display: none;
+  }
+
   .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -1344,6 +1348,27 @@ h3 {
   color: var(--muted);
   text-align: center;
   margin: 0;
+}
+
+.review-overdue-note {
+  font-size: 0.75rem;
+  color: var(--color-warn, #d97706);
+  margin-bottom: 0.5rem;
+}
+
+.review-error-sub {
+  margin-bottom: 1.5rem;
+}
+
+.review-done-empty-retry {
+  max-width: 240px;
+  margin: 0 auto;
+}
+
+.review-sr-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 /* ── Learn page extras ────────────────────────────────────────── */
@@ -2945,6 +2970,22 @@ button.map-node:hover {
   background: var(--brand-light);
   color: var(--ink);
   border-bottom-left-radius: 4px;
+}
+.sb-bubble-coach {
+  align-self: flex-start;
+  background: #f0fdf4;
+  color: var(--ink);
+  border: 1px solid #bbf7d0;
+  border-bottom-left-radius: 4px;
+}
+.sb-coach-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #16a34a;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
 }
 .sb-bubble-user {
   align-self: flex-end;

@@ -8,6 +8,7 @@ import {
   generateExplanation,
   ReviewItem,
   ReviewSubmitResponse,
+  ReviewStatus,
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
@@ -17,20 +18,33 @@ import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
 
 // ── Buddy message copy ────────────────────────────────────────────
-// Adjust these strings to tune the "buddy" tone
 const REASON_BUDDY: Record<string, string> = {
   low_accuracy:
     "Heads up — accuracy was low on this one last time. Let's nail it together! 💪",
   not_seen_recently:
     "You haven't seen this in a while. A quick refresh keeps it locked in! 🔄",
-  weak_topic:
-    "This topic needs a bit of love. We've got this! 🌱",
+  weak_topic: "This topic needs a bit of love. We've got this! 🌱",
+  new: "Fresh question — let's see how you go! 🆕",
+  overdue: "This one's been waiting — great that you're reviewing it now! ⏰",
+  due_for_review: "Right on schedule! Let's keep that memory sharp. 🎯",
+  learning: "Let's work on this together and nail it! 📖",
 };
 
 const REASON_LABEL: Record<string, string> = {
   low_accuracy: "Low accuracy",
   not_seen_recently: "Not seen recently",
   weak_topic: "Weak topic",
+  new: "New question",
+  overdue: "Overdue",
+  due_for_review: "Scheduled review",
+  learning: "Still learning",
+};
+
+// ── Spaced-rep status badges ──────────────────────────────────────
+const STATUS_BADGE: Record<ReviewStatus, { label: string; cls: string }> = {
+  learning:  { label: "Learning",  cls: "chip chip-warn"    },
+  reviewing: { label: "Reviewing", cls: "chip chip-brand"   },
+  mastered:  { label: "Mastered",  cls: "chip chip-correct" },
 };
 
 // Tags that get a coloured chip under the question header
@@ -41,15 +55,10 @@ const TAG_CHIP: Record<string, { label: string; cls: string }> = {
   review:   { label: "↺ Review", cls: "chip chip-brand"   },
 };
 
-function formatTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
+function formatIntervalDays(days: number): string {
+  if (days < 1) return "later today";
+  if (Math.round(days) === 1) return "tomorrow";
+  return `${Math.round(days)} days`;
 }
 
 // ── Page ─────────────────────────────────────────────────────────
@@ -57,9 +66,9 @@ function formatTime(iso: string): string {
 export default function ReviewPage() {
   const router = useRouter();
 
-  // TODO: replace hard-coded fallback with real auth/context
   const [userId, setUserId] = useState<string | null>(null);
   const [items, setItems] = useState<ReviewItem[]>([]);
+  const [caughtUp, setCaughtUp] = useState(false);
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<ReviewSubmitResponse | null>(null);
@@ -73,7 +82,10 @@ export default function ReviewPage() {
     setLoading(true);
     setError(false);
     getReview(uid)
-      .then((res) => setItems(res.review_questions))
+      .then((res) => {
+        setItems(res.review_items);
+        setCaughtUp(res.caught_up);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }
@@ -89,8 +101,8 @@ export default function ReviewPage() {
   }, [router]);
 
   const item = items[idx];
-  const done = !loading && !error && idx >= items.length;
-  const empty = !loading && !error && items.length === 0;
+  const done = !loading && !error && idx >= items.length && items.length > 0;
+  const empty = !loading && !error && (items.length === 0 || caughtUp);
 
   async function handleSubmit() {
     if (selected === null || !item || !userId) return;
@@ -128,7 +140,7 @@ export default function ReviewPage() {
       );
       setResult({ ...result, explanation });
     } catch {
-      // silent — ExplanationBlock will keep showing the generate button
+      // silent — ExplanationBlock keeps showing the generate button
     } finally {
       setGeneratingExplanation(false);
     }
@@ -156,16 +168,18 @@ export default function ReviewPage() {
       </div>
     );
 
-  // ── Empty ─────────────────────────────────────────────────────
+  // ── All caught up (spaced-rep: no items due yet) ──────────────
   if (empty)
     return (
       <div className="review-done page-enter">
-        <div className="review-done-emoji">📚</div>
+        <div className="review-done-emoji">✅</div>
         <h2 className="font-display review-done-title">
-          Nothing to review yet!
+          {caughtUp ? "You're all caught up!" : "Nothing to review yet!"}
         </h2>
         <p className="review-done-sub">
-          Keep practising and I&apos;ll surface your weak spots here.
+          {caughtUp
+            ? "You've completed today's scheduled revision. I'll bring things back at the perfect moment to keep your memory fresh — that's spaced repetition at work."
+            : "Keep practising and I'll surface your weak spots here once you've answered some questions."}
         </p>
         <div className="review-done-actions">
           <button
@@ -173,8 +187,17 @@ export default function ReviewPage() {
             className="btn-primary"
             onClick={() => router.push("/materials")}
           >
-            Go Learn →
+            {caughtUp ? "Keep Learning →" : "Go Learn →"}
           </button>
+          {caughtUp && (
+            <button
+              type="button"
+              className="btn-ghost diag-skip-btn"
+              onClick={() => router.push("/assessment")}
+            >
+              Progress ▤
+            </button>
+          )}
         </div>
       </div>
     );
@@ -185,10 +208,9 @@ export default function ReviewPage() {
       <div className="review-done page-enter">
         <div className="review-done-emoji">🎉</div>
         <h2 className="font-display review-done-title">Review complete!</h2>
-        {/* TODO: add a small confetti animation here */}
         <p className="review-done-sub">
-          Nice! You&apos;ve cleared today&apos;s review. I&apos;ll bring things
-          back later if we still need to work on them.
+          Nice! You&apos;ve cleared today&apos;s review. I&apos;ll schedule the
+          next session at the right moment to keep everything locked in.
         </p>
         <div className="review-done-actions">
           <button
@@ -214,6 +236,8 @@ export default function ReviewPage() {
     .filter((t) => TAG_CHIP[t.toLowerCase()])
     .map((t) => TAG_CHIP[t.toLowerCase()]);
 
+  const statusBadge = STATUS_BADGE[item.status];
+
   // ── Bottom action bar ─────────────────────────────────────────
   const bar = !result ? (
     <div className="review-bar-row">
@@ -225,7 +249,6 @@ export default function ReviewPage() {
       >
         {submitting ? "Checking…" : "Check answer"}
       </button>
-      {/* Skip keeps session moving without penalising the user */}
       <button
         type="button"
         className="btn-ghost diag-skip-btn"
@@ -240,11 +263,26 @@ export default function ReviewPage() {
       <button type="button" className="btn-primary" onClick={handleNext}>
         {idx + 1 < items.length ? "Next review question →" : "Finish Review →"}
       </button>
-      {/* Next-review time hint from spaced-repetition engine */}
-      {result.next_review_at && (
+
+      {/* Spaced-rep feedback after submit */}
+      {result.review_state && (
         <p className="review-next-hint">
-          I&apos;ll bring this back around{" "}
-          <strong>{formatTime(result.next_review_at)}</strong> if needed.
+          {result.review_state.status === "mastered" ? (
+            <>
+              Question <strong>mastered</strong> — I&apos;ll hold it back until
+              the perfect moment. 🏆
+            </>
+          ) : (
+            <>
+              Next review in{" "}
+              <strong>
+                {formatIntervalDays(result.review_state.interval_days)}
+              </strong>
+              {result.review_state.status === "learning"
+                ? " — keep practising, you'll get there!"
+                : " — great progress!"}
+            </>
+          )}
         </p>
       )}
     </div>
@@ -280,7 +318,6 @@ export default function ReviewPage() {
       </div>
 
       {/* ── Buddy bubble ── */}
-      {/* TODO: add a subtle slide-in animation when the message changes */}
       <div className="buddy-bubble page-enter">
         <span className="buddy-bubble-avatar">🤖</span>
         <p className="buddy-bubble-text">
@@ -289,18 +326,35 @@ export default function ReviewPage() {
         </p>
       </div>
 
-      {/* ── AI badge + topic tag chips ── */}
+      {/* ── AI badge + status chip + overdue flag + topic chips ── */}
       <div className="review-meta-row">
         <AiBadge
           variant="review"
           label={REASON_LABEL[item.reason] ?? item.reason}
         />
+        {/* SR status badge: Learning / Reviewing / Mastered */}
+        {statusBadge && (
+          <span className={statusBadge.cls}>{statusBadge.label}</span>
+        )}
+        {/* Overdue flag — shown when question missed its scheduled window */}
+        {item.is_overdue && (
+          <span className="chip chip-warn" title="This was overdue — good that you're reviewing it now!">
+            Overdue
+          </span>
+        )}
         {tagChips.map((chip, i) => (
           <span key={i} className={chip.cls}>
             {chip.label}
           </span>
         ))}
       </div>
+
+      {/* ── Overdue context note ── */}
+      {item.is_overdue && (
+        <p className="review-overdue-note">
+          This was overdue — great that you&apos;re reviewing it now!
+        </p>
+      )}
 
       {/* ── Question ── */}
       <div className="diag-questions review-questions-gap">

@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import MathText from "@/components/MathText";
 import QuickActionChips from "@/components/QuickActionChips";
-import { postStudyBuddyMessage, ChatMessage } from "@/lib/api";
+import QuizDrawer from "@/components/QuizDrawer";
+import { postStudyBuddyMessage, fetchCoachMessage, ChatMessage } from "@/lib/api";
 import { LearningContext, QuickAction } from "@/lib/types";
-import {
-  DEFAULT_QUICK_ACTIONS,
-  getContextualQuickActions,
-} from "@/lib/quickActions";
+import { getChipsForContext } from "@/lib/quickActions";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -21,6 +18,14 @@ interface StudyBuddyChatProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+// Extends ChatMessage with an optional flag for coach replies so we can style
+// them differently in the bubble list without touching the ChatMessage wire type.
+type DisplayMessage = ChatMessage & { isCoach?: boolean };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -56,27 +61,21 @@ export default function StudyBuddyChat({
   isOpen,
   onClose,
 }: StudyBuddyChatProps) {
-  const router = useRouter();
-
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+  const [messages, setMessages] = useState<DisplayMessage[]>(() => [
     { role: "assistant", content: buildWelcomeMessage(learningContext) },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   // "expanded" = chips visible above input; "collapsed" = chips hidden
   const [chipsVisible, setChipsVisible] = useState(true);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Decide which chip set to display
-  const hasContext = !!(learningContext?.currentQuestion);
-  const chips: QuickAction[] = hasContext
-    ? getContextualQuickActions(
-        learningContext!.topicId,
-        learningContext!.currentQuestion!.text,
-      )
-    : DEFAULT_QUICK_ACTIONS;
+  // Chip set adapts to: no context → defaults, question+no attempt → hints,
+  // wrong answer → explain-first, correct answer → momentum chips.
+  const chips: QuickAction[] = getChipsForContext(learningContext);
 
   // Lock body scroll while open
   useEffect(() => {
@@ -101,9 +100,7 @@ export default function StudyBuddyChat({
 
   // Re-generate welcome message if context changes (e.g. user moves to next Q)
   useEffect(() => {
-    setMessages([
-      { role: "assistant", content: buildWelcomeMessage(learningContext) },
-    ]);
+    setMessages([{ role: "assistant", content: buildWelcomeMessage(learningContext) }]);
     setChipsVisible(true);
   }, [learningContext?.currentQuestion?.id]);
 
@@ -116,48 +113,66 @@ export default function StudyBuddyChat({
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return;
 
-    const userMsg: ChatMessage = { role: "user", content: text };
-
-    // On the very first user message: if we have a plain questionContext
-    // (legacy path), prepend it. With the new LearningContext the backend
-    // handles personalisation, so we just send the raw message.
-    const historyToSend: ChatMessage[] = [...messages, userMsg];
+    const userMsg: DisplayMessage = { role: "user", content: text };
+    // Strip the isCoach flag before sending to the StudyBuddy endpoint.
+    const historyToSend: ChatMessage[] = [...messages, userMsg].map(
+      ({ role, content }) => ({ role, content }),
+    );
 
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     if (inputRef.current) inputRef.current.style.height = "auto";
     setLoading(true);
-    setChipsVisible(false); // hide chips while waiting for response
+    setChipsVisible(false);
 
     try {
-      const res = await postStudyBuddyMessage(
-        userId,
-        historyToSend,
-        learningContext,
-      );
+      const res = await postStudyBuddyMessage(userId, historyToSend, learningContext);
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: res.reply },
-      ]);
-
-      // Re-show chips after every response so user can keep using quick actions
+      setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
       setChipsVisible(true);
 
       if (res.action?.type === "create_quiz") {
-        const { quiz_id } = res.action;
-        setTimeout(() => {
-          onClose();
-          router.push(`/quiz/${quiz_id}`);
-        }, 1200);
+        setTimeout(
+          () => setActiveQuizId(res.action.type === "create_quiz" ? res.action.quiz_id : null),
+          800,
+        );
       }
     } catch {
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: "Sorry, I couldn't reach the server. Please try again.",
-        },
+        { role: "assistant", content: "Sorry, I couldn't reach the server. Please try again." },
+      ]);
+      setChipsVisible(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function sendCoachMessage(text: string) {
+    if (loading) return;
+
+    const userMsg: DisplayMessage = { role: "user", content: text };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
+    setChipsVisible(false);
+
+    try {
+      const res = await fetchCoachMessage(
+        userId,
+        text,
+        learningContext?.pageContext ?? "general",
+        learningContext?.topicId,
+      );
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: res.reply, isCoach: true },
+      ]);
+      setChipsVisible(true);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, I couldn't reach your coach. Please try again." },
       ]);
       setChipsVisible(true);
     } finally {
@@ -170,7 +185,11 @@ export default function StudyBuddyChat({
   }
 
   function handleChipSelect(action: QuickAction) {
-    sendMessage(action.message);
+    if (action.actionType === "ask_coach") {
+      sendCoachMessage(action.message);
+    } else {
+      sendMessage(action.message);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -191,6 +210,17 @@ export default function StudyBuddyChat({
   // ---------------------------------------------------------------------------
 
   const userHasSentMessage = messages.some((m) => m.role === "user");
+
+  // Quiz drawer rendered on top of the chat — closing it returns to the chat
+  if (activeQuizId) {
+    return (
+      <QuizDrawer
+        quizId={activeQuizId}
+        userId={userId}
+        onClose={() => setActiveQuizId(null)}
+      />
+    );
+  }
 
   return (
     <>
@@ -254,9 +284,16 @@ export default function StudyBuddyChat({
             <div
               key={i}
               className={`sb-bubble ${
-                msg.role === "user" ? "sb-bubble-user" : "sb-bubble-bot"
+                msg.role === "user"
+                  ? "sb-bubble-user"
+                  : msg.isCoach
+                  ? "sb-bubble-coach"
+                  : "sb-bubble-bot"
               }`}
             >
+              {msg.isCoach && (
+                <span className="sb-coach-label">🧑‍🏫 AI Coach</span>
+              )}
               {msg.role === "user" ? (
                 <span className="sb-bubble-text">{msg.content}</span>
               ) : (

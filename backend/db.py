@@ -220,6 +220,65 @@ def get_or_create_profile(user_id: str) -> SkillProfile:
     )
 
 
+# ---------------------------------------------------------------------------
+# Quizzes
+# ---------------------------------------------------------------------------
+
+def save_quiz(quiz_id: str, user_id: str, topic_id: str, title: str, question_ids: List[str]) -> None:
+    supabase.table("studylah_quizzes").upsert({
+        "id": quiz_id,
+        "user_id": user_id,
+        "topic_id": topic_id,
+        "title": title,
+        "question_ids": question_ids,
+    }, on_conflict="id").execute()
+
+
+def get_quiz_by_id(quiz_id: str) -> Optional[dict]:
+    response = (
+        supabase.table("studylah_quizzes")
+        .select("*")
+        .eq("id", quiz_id)
+        .maybe_single()
+        .execute()
+    )
+    return response.data if response else None
+
+
+def save_generated_question(question: "Question") -> None:
+    supabase.table("studylah_generated_questions").upsert({
+        "id": question.id,
+        "topic_id": question.topic_id,
+        "text": question.text,
+        "options": question.options,
+        "correct_option_index": question.correct_option_index,
+        "difficulty": question.difficulty,
+        "tags": question.tags,
+    }, on_conflict="id").execute()
+
+
+def get_generated_question_by_id(question_id: str) -> Optional["Question"]:
+    response = (
+        supabase.table("studylah_generated_questions")
+        .select("*")
+        .eq("id", question_id)
+        .maybe_single()
+        .execute()
+    )
+    if not response or not response.data:
+        return None
+    row = response.data
+    return Question(
+        id=row["id"],
+        topic_id=row["topic_id"],
+        text=row["text"],
+        options=row["options"],
+        correct_option_index=row["correct_option_index"],
+        difficulty=row["difficulty"],
+        tags=row.get("tags") or [],
+    )
+
+
 def save_profile(profile: SkillProfile) -> None:
     topics_json = {
         tid: stats.model_dump() for tid, stats in profile.topics.items()

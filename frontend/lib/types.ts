@@ -17,7 +17,8 @@ export type QuickActionType =
   | "hint"
   | "explain_question"
   | "similar_question"
-  | "teach_concept";
+  | "teach_concept"
+  | "ask_coach";
 
 export interface QuickAction {
   label: string;

@@ -13,9 +13,17 @@ export default function QuizSheet({ open, children, bar, onClose }: QuizSheetPro
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
+    if (open) {
+      document.body.style.overflow = "hidden";
+      document.body.classList.add("quiz-open");
+    } else {
+      document.body.style.overflow = "";
+      document.body.classList.remove("quiz-open");
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.classList.remove("quiz-open");
+    };
   }, [open]);
 
   if (!open) return null;

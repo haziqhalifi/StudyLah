@@ -12,11 +12,14 @@ GET  /api/session/review             – return spaced-repetition review questio
 
 from __future__ import annotations
 
+import logging
 import random
 from datetime import datetime
 from typing import Dict, List, Literal, Optional
 
 from fastapi import APIRouter, HTTPException
+
+logger = logging.getLogger(__name__)
 
 from backend import db
 from backend.schemas.question import Attempt, Question, QuestionPublic, SkillProfile, TopicStats
@@ -293,10 +296,19 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         is_correct=is_correct,
         timestamp=datetime.utcnow(),
     )
-    db.record_attempt(attempt)
+    try:
+        db.record_attempt(attempt)
+    except Exception as exc:
+        logger.error("Failed to record attempt for user %s: %s", req.user_id, exc)
+        raise HTTPException(status_code=500, detail="Failed to save attempt. Please try again.")
 
     all_attempts = get_user_attempts(req.user_id)
-    ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
+    all_questions = db.get_all_questions()
+
+    if not all_questions:
+        raise HTTPException(status_code=503, detail="Question bank unavailable. Please try again.")
+
+    ai_profile = ai_engine.analyze_diagnostic(all_questions, all_attempts)
 
     # Persist updated stats back into the db-layer profile
     db_profile = db.get_or_create_profile(req.user_id)
@@ -318,9 +330,8 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
     answer_count = review_scheduler.increment_answer_counter(req.user_id)
     is_review = False
     if answer_count % _REVIEW_INJECTION_INTERVAL == 0:
-        # Convert schemas.question types to ai_engine types for the scheduler.
         engine_questions = [
-            ai_engine.Question(**q.model_dump()) for q in db.get_all_questions()
+            ai_engine.Question(**q.model_dump()) for q in all_questions
         ]
         engine_attempts = [
             ai_engine.Attempt(**a.model_dump()) for a in all_attempts
@@ -460,10 +471,10 @@ def get_review(user_id: str) -> ReviewResponse:
     )
 
     # Map reviewer's ReviewItemOut → schemas ReviewItem
-    # reason is now a 3-value literal — pass through as-is
+    # Convert ReviewQuestionOut to QuestionPublic (same fields, different model)
     review_questions = [
         ReviewItem(
-            question=item.question,  # type: ignore[arg-type]
+            question=QuestionPublic(**item.question.model_dump()),
             reason=item.reason,
         )
         for item in due

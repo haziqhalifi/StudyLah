@@ -16,7 +16,16 @@ export type ExplanationStyle =
   | "formula_first"
   | "shortcut_tips";
 export type Level = "beginner" | "developing" | "proficient" | "advanced";
-export type ReviewReason = "low_accuracy" | "not_seen_recently" | "weak_topic";
+export type ReviewReason =
+  | "low_accuracy"
+  | "not_seen_recently"
+  | "weak_topic"
+  | "due_for_review"
+  | "overdue"
+  | "new"
+  | "learning";
+
+export type ReviewStatus = "learning" | "reviewing" | "mastered";
 
 export interface Question {
   id: string;
@@ -51,9 +60,18 @@ export interface DiagnosticAnswer {
   selected_option_index: number;
 }
 
+export interface ReviewState {
+  status: ReviewStatus;
+  next_review_at: string | null; // ISO datetime
+  interval_days: number;
+}
+
 export interface ReviewItem {
   question: Question;
   reason: ReviewReason;
+  status: ReviewStatus;
+  next_review_at: string | null; // ISO datetime
+  is_overdue: boolean;
 }
 
 export interface SuggestedTopic {
@@ -95,14 +113,28 @@ export interface AssessmentResponse {
 }
 
 export interface ReviewResponse {
-  review_questions: ReviewItem[];
+  review_items: ReviewItem[];
   suggested_topics: SuggestedTopic[];
+  caught_up: boolean;
 }
 
 export interface ReviewSubmitResponse {
   is_correct: boolean;
   explanation: Explanation;
-  next_review_at: string; // ISO datetime
+  next_review_at: string; // ISO datetime (backward compat)
+  review_state: ReviewState;
+}
+
+export interface SpacedRepTopicSummary {
+  topic_id: string;
+  status: "behind" | "on_track" | "ahead";
+  due_count: number;
+  overdue_count: number;
+  next_due_at: string | null; // ISO datetime
+}
+
+export interface SpacedRepSummaryResponse {
+  topics: SpacedRepTopicSummary[];
 }
 
 export interface Paper {
@@ -225,6 +257,12 @@ export async function submitReviewAnswer(
 
 export async function getPapers(): Promise<PapersResponse> {
   return get("/api/session/papers");
+}
+
+export async function getSpacedRepSummary(
+  userId: string,
+): Promise<SpacedRepSummaryResponse> {
+  return get("/api/spaced-rep/summary", { user_id: userId });
 }
 
 // ---------------------------------------------------------------------------
@@ -398,5 +436,115 @@ export async function submitQuiz(
     userId,
     user_id: userId,
     answers,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// AI Coach
+// ---------------------------------------------------------------------------
+
+export interface CoachTopicStats {
+  topic_id: string;
+  topic_name: string;
+  accuracy: number; // 0–1
+  attempts: number;
+  last_attempt_at: string | null; // ISO datetime
+}
+
+export interface LearningSnapshot {
+  user_id: string;
+  topics: CoachTopicStats[];
+  total_questions_answered: number;
+  questions_answered_this_week: number;
+  last_active_at: string | null; // ISO datetime
+  upcoming_exam_date: string | null; // ISO datetime
+}
+
+export type CoachSuggestionType =
+  | "do_quiz"
+  | "do_review"
+  | "focus_topic"
+  | "celebration"
+  | "consistency_nudge";
+
+export interface CoachSuggestion {
+  id: string;
+  type: CoachSuggestionType;
+  title: string;
+  message: string;
+  cta_label: string | null;
+  cta_action: Record<string, unknown> | null;
+  priority: "high" | "medium" | "low";
+  created_at: string; // ISO datetime
+}
+
+export interface CoachSummaryResponse {
+  snapshot: LearningSnapshot;
+  suggestions: CoachSuggestion[];
+}
+
+export interface CoachMessageResponse {
+  reply: string;
+  snapshot: LearningSnapshot;
+  suggestions: CoachSuggestion[];
+}
+
+/** Fetch dashboard-level coaching snapshot + suggestions. */
+export async function fetchCoachSummary(
+  userId: string,
+): Promise<CoachSummaryResponse> {
+  return get("/api/coach/summary", { userId });
+}
+
+// ---------------------------------------------------------------------------
+// Diagnostic Result
+// ---------------------------------------------------------------------------
+
+export type DiagnosticTopicId = "ubahan" | "matriks" | "insurans";
+
+export type TopicDiagnostic = {
+  topicId: DiagnosticTopicId;
+  topicName: string;
+  accuracy: number; // 0–1
+  attempts: number;
+  level: "weak" | "okay" | "strong";
+  lastAttemptAt?: string;
+};
+
+export type DiagnosticRecommendation = {
+  title: string;
+  message: string;
+  topicId: DiagnosticTopicId;
+  suggestedQuizLength: number;
+};
+
+export type DiagnosticResult = {
+  userId: string;
+  totalQuestions: number;
+  correctQuestions: number;
+  overallAccuracy: number;
+  topics: TopicDiagnostic[];
+  mainRecommendation: DiagnosticRecommendation;
+  secondaryRecommendation?: DiagnosticRecommendation;
+};
+
+export async function fetchDiagnosticResult(
+  userId: string,
+): Promise<DiagnosticResult> {
+  return get("/api/diagnostic/result", { userId });
+}
+
+/** Ask the coach a question and get a personalised reply + suggestions. */
+export async function fetchCoachMessage(
+  userId: string,
+  question: string,
+  pageContext = "general",
+  topicId?: string,
+): Promise<CoachMessageResponse> {
+  return post("/api/coach/message", {
+    userId,
+    question,
+    pageContext,
+    ...(topicId && { topicId }),
   });
 }
