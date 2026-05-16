@@ -33,7 +33,7 @@ from schemas.session import (
     SubmitDiagnosticRequest,
     SubmitDiagnosticResponse,
 )
-from services import ai_engine
+from services import ai_engine, review_scheduler
 from services.ai_engine import SkillStats
 
 router = APIRouter(prefix="/api/session", tags=["session"])
@@ -275,6 +275,7 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
             correct=stats.correct_count,
             level=TopicStats.compute_level(stats.accuracy),
         )
+    db.save_profile(db_profile)
 
     schema_profile = _to_schema_skill_profile(req.user_id, ai_profile)
 
@@ -340,20 +341,58 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
             correct=stats.correct_count,
             level=TopicStats.compute_level(stats.accuracy),
         )
+    db.save_profile(db_profile)
 
     # TODO: Call ai_engine.generate_explanation(...) here instead of rule-based text
     explanation = _generate_explanation(question, attempt, ai_profile)
 
-    # TODO: Call ai_engine.choose_next_question(...) here for more advanced logic
-    next_q = choose_next_question_for_user(req.user_id, ai_profile)
+    # Review injection: every 4th answer, check for overdue reviews and serve one
+    # instead of a fresh adaptive question.
+    # TODO: Make the review injection frequency dynamic (e.g., based on how many
+    #       reviews are overdue vs total questions remaining).
+    answer_count = review_scheduler.increment_answer_counter(req.user_id)
+    is_review = False
+    if answer_count % 4 == 0:
+        # Convert schemas.question types to ai_engine types for the scheduler.
+        engine_questions = [
+            ai_engine.Question(**q.model_dump()) for q in QUESTIONS_DB
+        ]
+        engine_attempts = [
+            ai_engine.Attempt(**a.model_dump()) for a in all_attempts
+        ]
+        due = review_scheduler.get_due_reviews(
+            user_id=req.user_id,
+            all_questions=engine_questions,
+            attempts=engine_attempts,
+            skill_profile=ai_profile,
+            now=attempt.timestamp,
+            limit=1,
+        )
+        if due:
+            review_item = due[0]
+            next_q_public = QuestionPublic(
+                id=review_item.question.id,
+                topic_id=review_item.question.topic_id,
+                text=review_item.question.text,
+                options=review_item.question.options,
+                difficulty=review_item.question.difficulty,
+                tags=review_item.question.tags,
+            )
+            is_review = True
+        else:
+            next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
+    else:
+        # TODO: Call ai_engine.choose_next_question(...) here for more advanced logic
+        next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
 
     topic_summary: Optional[TopicStats] = db_profile.topics.get(question.topic_id)
 
     return SubmitAnswerResponse(
         is_correct=is_correct,
         explanation=explanation,
-        next_question=next_q.to_public(),
+        next_question=next_q_public,
         skill_summary=topic_summary,
+        is_review=is_review,
     )
 
 
@@ -385,6 +424,7 @@ def get_assessment(user_id: str) -> AssessmentResponse:
                 correct=stats.correct_count,
                 level=TopicStats.compute_level(stats.accuracy),
             )
+        db.save_profile(db_profile)
     else:
         db_profile = db.get_or_create_profile(user_id)
 
