@@ -223,8 +223,23 @@ export async function submitReviewAnswer(
   });
 }
 
+const SUPABASE_URL = "https://pxzyfiysxzwihjplrfvo.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4enlmaXlzeHp3aWhqcGxyZnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTU2OTQsImV4cCI6MjA4OTA5MTY5NH0.NjUwwYGELfBI7MzaAmV_L26n45MVWrrpa2okuxA8VJM";
+
 export async function getPapers(): Promise<PapersResponse> {
-  return get("/api/session/papers");
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/papers?select=id,subject,state,year,paper_type,paper_name&order=subject`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    },
+  );
+  if (!res.ok) throw new Error(`Failed to fetch papers (${res.status})`);
+  const papers: Paper[] = await res.json();
+  return { papers };
 }
 
 // ---------------------------------------------------------------------------

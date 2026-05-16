@@ -27,27 +27,70 @@ export default function MaterialsHubPage() {
   const router = useRouter();
 
   return (
-    <div className="material-page page-enter">
-      <div className="material-header material-header-highlight">
-        <p className="material-eyebrow">Matematik Tingkatan 5</p>
-        <h1 className="material-title">Pilih Bab</h1>
-      </div>
+    <section className="home-dashboard-shell page-enter" aria-label="Materials hub">
+      <header className="student-header">
+        <div className="student-header-copy">
+          <p className="student-time">Materials</p>
+          <h1>Pilih Bab</h1>
+          <div className="student-meta-row">
+            <span>Matematik Tingkatan 5</span>
+            <span aria-hidden="true">•</span>
+            <span>{BAB_CARDS.length} chapters</span>
+            <span aria-hidden="true">•</span>
+            <span>Lesson map</span>
+          </div>
+        </div>
 
-      <div className="material-stack">
-        {BAB_CARDS.map((card) => (
-          <button
-            key={card.id}
-            type="button"
-            className="material-header material-header-link"
-            onClick={() => router.push(card.href)}
-          >
-            <p className="material-eyebrow">Matematik Tingkatan 5</p>
-            <h2 className="material-title">{card.title}</h2>
-            <p className="material-subtitle">{card.subtitle}</p>
-            <p className="material-enter-link">Masuk ke subtopic learning map</p>
-          </button>
-        ))}
+        <div className="student-header-actions">
+          <div className="student-avatar" aria-label="Materials hub avatar">
+            M
+          </div>
+        </div>
+      </header>
+
+      <section className="level-card" aria-label="Choose a chapter">
+        <div className="level-card-content">
+          <p className="level-eyebrow">Learning Path</p>
+          <h2>Start from a chapter and move into the subtopic map.</h2>
+          <div className="level-progress-row">
+            <div className="level-progress-track" aria-hidden="true">
+              <div className="level-progress-fill level-progress-fill-full">
+                <span className="level-progress-dot" />
+              </div>
+            </div>
+            <span>{BAB_CARDS.length} available</span>
+          </div>
+        </div>
+        <div className="level-trophy" aria-hidden="true">
+          <span className="learn-hub-chip">5</span>
+        </div>
+      </section>
+
+      <div className="home-learning-stack">
+        {BAB_CARDS.map((card, index) => {
+          const tone = index === 0 ? "lesson" : index === 1 ? "game" : "path";
+          return (
+            <button
+              key={card.id}
+              type="button"
+              className={`learning-feature-card learning-feature-${tone} study-select-card`}
+              onClick={() => router.push(card.href)}
+            >
+              <div>
+                <p className="learning-feature-kicker">Matematik Tingkatan 5</p>
+                <h2>{card.title}</h2>
+                <p>{card.subtitle}</p>
+              </div>
+
+              <div className="feature-visual" aria-hidden="true">
+                <div className="feature-blob feature-blob-large" />
+                <div className="feature-blob feature-blob-small" />
+                <div className="feature-mini-card">{index + 1}</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
-    </div>
+    </section>
   );
 }

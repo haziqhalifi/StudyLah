@@ -180,15 +180,39 @@ export default function LearnPage() {
 
   if (view === "topics") {
     return (
-      <div className="page-enter">
-        <div className="diag-header">
-          <h1 className="font-display diag-title">
-            What do you want to practise?
-          </h1>
-          <p className="diag-sub">
-            Pick a subject to get an adaptive question set.
-          </p>
+      <section className="home-dashboard-shell page-enter" aria-label="Learning hub">
+        <header className="student-header">
+          <div className="student-header-copy">
+            <p className="student-time">Adaptive Practice</p>
+            <h1>What do you want to practise?</h1>
+            <div className="student-meta-row">
+              <span>Matematik Tingkatan 5</span>
+              <span aria-hidden="true">•</span>
+              <span>{MATH_F5_TOPICS.length} topics</span>
+              <span aria-hidden="true">•</span>
+              <span>{loadingPapers ? "Loading" : `${papers.length} trial papers`}</span>
+            </div>
+          </div>
+
+        </header>
+
+        <section className="level-card" aria-label="Choose a topic to practise">
+          <div className="level-card-content">
+            <p className="level-eyebrow">Learning Path</p>
+            <h2>Pick a topic and jump into adaptive practice.</h2>
+            <div className="level-progress-row">
+              <div className="level-progress-track" aria-hidden="true">
+                <div className="level-progress-fill level-progress-fill-full">
+                  <span className="level-progress-dot" />
+                </div>
+              </div>
+              <span>{MATH_F5_TOPICS.length} available</span>
+            </div>
+          </div>
+        <div className="level-trophy" aria-hidden="true">
+          <span className="learn-hub-chip">AI</span>
         </div>
+      </section>
 
         {loadingPapers ? (
           <div className="diag-subject-grid">
@@ -228,7 +252,7 @@ export default function LearnPage() {
             </button>
           </div>
         )}
-      </div>
+      </section>
     );
   }
 
