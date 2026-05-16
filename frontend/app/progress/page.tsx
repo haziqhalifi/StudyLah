@@ -384,7 +384,8 @@ export default function ProgressPage() {
     setName(n || "Noob");
 
     if (!userId) {
-      router.push("/");
+      setTopics(MOCK_TOPICS);
+      setLoading(false);
       return;
     }
 

@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState("");

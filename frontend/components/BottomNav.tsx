@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/materials", icon: BookIcon, label: "Lessons" },
   { href: "/exams", icon: PathIcon, label: "Exams" },
   { href: "/progress", icon: ProgressIcon, label: "Progress" },
-  { href: "/settings", icon: SettingsIcon, label: "Settings" },
+  { href: "/profile", icon: ProfileIcon, label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -78,11 +78,10 @@ function ProgressIcon() {
   );
 }
 
-function SettingsIcon() {
+function ProfileIcon() {
   return (
     <IconBase>
-      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-      <path d="M19 12a7.8 7.8 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7.7 7.7 0 0 0-1.7-1L14.5 3h-5l-.3 3.1a7.7 7.7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5a7.8 7.8 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a7.7 7.7 0 0 0 1.7 1l.3 3.1h5l.3-3.1a7.7 7.7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z" />
+      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </IconBase>
   );
 }
