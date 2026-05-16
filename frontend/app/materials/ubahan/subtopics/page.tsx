@@ -116,11 +116,11 @@ export default function UbahanSubtopicsPage() {
         }}
         className="material-current-head"
       >
-        <p className="material-eyebrow">Bab 1</p>
+        <p className="material-eyebrow">📖 Bab 1</p>
         <h1 className="material-title">
           {currentSubtopic.id} {currentSubtopic.title}
         </h1>
-        <p className="material-subtitle">Scroll map untuk tukar fokus subtopic semasa.</p>
+        <p className="material-subtitle">Scroll untuk tukar subtopik semasa.</p>
       </header>
 
       <section className="material-vertical-map" aria-label="Learning map menegak">
@@ -129,6 +129,7 @@ export default function UbahanSubtopicsPage() {
           const completed = isCompleted(step.id);
           const unlocked = isUnlocked(index);
           const sideClass = index % 2 === 0 ? "left" : "right";
+          const locked = !unlocked && !completed;
 
           return (
             <div
@@ -147,21 +148,32 @@ export default function UbahanSubtopicsPage() {
                   "material-zig-circle",
                   getStepTone(step.type),
                   completed ? "completed" : "",
-                  !unlocked && !completed ? "locked" : "",
+                  locked ? "locked" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
                 onClick={() => handleCircleClick(step, index)}
-                disabled={!unlocked && !completed}
+                disabled={locked}
+                aria-label={`${step.type} ${step.no}: ${step.title}${locked ? " (terkunci)" : completed ? " (selesai)" : ""}`}
               >
-                <span className="material-zig-no">{completed ? "OK" : step.no}</span>
+                {completed ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : locked ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                ) : (
+                  <span className="material-zig-no">{step.no}</span>
+                )}
               </button>
 
-              <div className={`material-zig-meta ${sideClass}`}>
+              <div className={`material-zig-meta${locked ? " locked-meta" : ""}`}>
                 <p className="material-zig-kicker">{step.type}</p>
-                <p className="material-zig-title">{`No.${step.no} ${step.title}`}</p>
+                <p className="material-zig-title">{step.title}</p>
                 <p className="material-zig-sub">{step.prompt}</p>
-                {!unlocked && !completed ? <p className="material-zig-lock">Complete previous circle.</p> : null}
               </div>
             </div>
           );
