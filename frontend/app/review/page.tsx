@@ -13,6 +13,8 @@ import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
 import QuizSheet from "@/components/QuizSheet";
+import StudyBuddyChat from "@/components/StudyBuddyChat";
+import type { LearningContext } from "@/lib/types";
 
 // ── Buddy message copy ────────────────────────────────────────────
 // Adjust these strings to tune the "buddy" tone
@@ -64,6 +66,7 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showBuddy, setShowBuddy] = useState(false);
   const [generatingExplanation, setGeneratingExplanation] = useState(false);
 
   function loadReview(uid: string) {
@@ -321,6 +324,51 @@ export default function ReviewPage() {
           onGenerateExplanation={handleGenerateExplanation}
           isGenerating={generatingExplanation}
         />
+      )}
+
+      {/* StudyBuddy — context-aware for the current review question */}
+      {userId && (
+        <StudyBuddyChat
+          userId={userId}
+          isOpen={showBuddy}
+          onClose={() => setShowBuddy(false)}
+          learningContext={
+            {
+              topicId: (item.question.topic_id ?? "ubahan") as LearningContext["topicId"],
+              topicName:
+                item.question.topic_id === "matriks"
+                  ? "Matriks (Matrices)"
+                  : item.question.topic_id === "insurans"
+                    ? "Insurans (Insurance)"
+                    : "Ubahan (Variation)",
+              currentQuestion: {
+                id: item.question.id,
+                text: item.question.text,
+                options: item.question.options,
+                difficulty: item.question.difficulty,
+              },
+              lastAttempt: result
+                ? {
+                    selectedOptionIndex: selected ?? 0,
+                    isCorrect: result.is_correct,
+                    correctOptionIndex: 0,
+                  }
+                : undefined,
+              pageContext: "review",
+            } satisfies LearningContext
+          }
+        />
+      )}
+
+      {!showBuddy && (
+        <button
+          type="button"
+          className="sb-fab"
+          onClick={() => setShowBuddy(true)}
+          aria-label="Ask StudyBuddy"
+        >
+          🤖
+        </button>
       )}
     </QuizSheet>
   );

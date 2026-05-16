@@ -16,7 +16,8 @@ import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
 import QuizSheet from "@/components/QuizSheet";
-import StudyBuddyPanel from "@/components/StudyBuddyPanel";
+import StudyBuddyChat from "@/components/StudyBuddyChat";
+import type { LearningContext } from "@/lib/types";
 
 type View = "topics" | "practice";
 
@@ -346,11 +347,36 @@ export default function LearnPage() {
       )}
 
       {/* Full-screen drawer — rendered outside QuizSheet scroll area via portal-like placement */}
-      {showBuddy && userId && (
-        <StudyBuddyPanel
+      {userId && (
+        <StudyBuddyChat
           userId={userId}
-          questionContext={question.text}
+          isOpen={showBuddy}
           onClose={() => setShowBuddy(false)}
+          learningContext={
+            {
+              topicId: (question.topic_id ?? "ubahan") as LearningContext["topicId"],
+              topicName:
+                question.topic_id === "matriks"
+                  ? "Matriks (Matrices)"
+                  : question.topic_id === "insurans"
+                    ? "Insurans (Insurance)"
+                    : "Ubahan (Variation)",
+              currentQuestion: {
+                id: question.id,
+                text: question.text,
+                options: question.options,
+                difficulty: question.difficulty,
+              },
+              lastAttempt: result
+                ? {
+                    selectedOptionIndex: selected ?? 0,
+                    isCorrect: result.is_correct,
+                    correctOptionIndex: 0,
+                  }
+                : undefined,
+              pageContext: "learn",
+            } satisfies LearningContext
+          }
         />
       )}
 

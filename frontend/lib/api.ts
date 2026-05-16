@@ -241,7 +241,13 @@ export interface ChatMessage {
 // Agent action emitted alongside every chat reply
 export type AgentAction =
   | { type: "none" }
-  | { type: "create_quiz"; quiz_id: string; topic_id: "ubahan" | "matriks" | "insurans" };
+  | {
+      type: "create_quiz";
+      quiz_id: string;
+      topic_id: "ubahan" | "matriks" | "insurans";
+      title: string;
+      question_count: number;
+    };
 
 // Full response from the agentic chat endpoint
 export interface ChatResponse {
@@ -254,8 +260,13 @@ export interface ChatResponse {
 export async function postStudyBuddyMessage(
   userId: string,
   messages: ChatMessage[],
+  learningContext?: import("./types").LearningContext,
 ): Promise<ChatResponse> {
-  return post("/api/assistant/study-buddy", { user_id: userId, messages });
+  return post("/api/assistant/study-buddy", {
+    user_id: userId,
+    messages,
+    ...(learningContext && { learning_context: learningContext }),
+  });
 }
 
 /** Legacy alias — kept for backwards compatibility with existing usages. */
@@ -293,36 +304,79 @@ export interface TopicProgress {
 // Personalised quiz
 // ---------------------------------------------------------------------------
 
-export interface QuizDetail {
-  quiz_id: string;
-  user_id: string;
-  topic_id: string;
-  title: string;
-  created_at: string; // ISO datetime
-  questions: Question[];
-}
+export type GeneratedQuestion = {
+  id: string;
+  text: string;
+  options: string[];
+  difficulty: Difficulty;
+  tags: string[];
+};
 
-export interface CreateQuizResponse {
-  quiz_id: string;
-  topic_id: string;
+export type QuizDetail = {
+  quizId: string;
+  topicId: "ubahan" | "matriks" | "insurans";
   title: string;
-  question_count: number;
-}
+  questions: GeneratedQuestion[];
+};
+
+export type QuizSubmitResult = {
+  score: number;
+  total: number;
+  percentage: number;
+  results: Array<{
+    questionId: string;
+    isCorrect: boolean;
+    correctOptionIndex: number;
+    explanation: { text: string; style: string };
+  }>;
+};
+
+export type CreateQuizResponse = {
+  quizId: string;
+  topicId: "ubahan" | "matriks" | "insurans";
+  title: string;
+  questionCount: number;
+};
 
 /** Fetch a previously-created personalised quiz by ID. */
-export async function fetchQuiz(quizId: string): Promise<QuizDetail> {
+export async function fetchQuizDetail(quizId: string): Promise<QuizDetail> {
   return get(`/api/quizzes/${quizId}`);
 }
 
+/** Backwards-compatible alias used by older pages. */
+export async function fetchQuiz(quizId: string): Promise<QuizDetail> {
+  return fetchQuizDetail(quizId);
+}
+
 /** Create a new personalised quiz for a topic. */
-export async function createPersonalisedQuiz(
+export async function createPersonalizedQuiz(
   userId: string,
   topicId: "ubahan" | "matriks" | "insurans",
   numQuestions = 5,
 ): Promise<CreateQuizResponse> {
   return post("/api/quizzes/personalized", {
-    user_id: userId,
-    topic_id: topicId,
-    num_questions: numQuestions,
+    userId,
+    topicId,
+    numQuestions,
+  });
+}
+
+/** Backwards-compatible alias with the original spelling. */
+export async function createPersonalisedQuiz(
+  userId: string,
+  topicId: "ubahan" | "matriks" | "insurans",
+  numQuestions = 5,
+): Promise<CreateQuizResponse> {
+  return createPersonalizedQuiz(userId, topicId, numQuestions);
+}
+
+export async function submitQuiz(
+  quizId: string,
+  userId: string,
+  answers: Array<{ questionId: string; selectedOptionIndex: number }>,
+): Promise<QuizSubmitResult> {
+  return post(`/api/quizzes/${quizId}/submit`, {
+    userId,
+    answers,
   });
 }
