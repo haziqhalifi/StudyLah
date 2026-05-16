@@ -1,79 +1,192 @@
 """
 StudyBuddy Agent — Gemini-powered conversational tutor for SPM Math Form 5.
 
+SDK: google-genai  (pip install google-genai)
+Model: gemini-3-flash-preview with HIGH thinking
+
 Covers exactly three topics:
   1. Ubahan        (variation: direct, inverse, joint, partial)
   2. Matriks       (matrix operations and applications)
   3. Matematik Pengguna: Insurans (consumer math: insurance)
-
-Usage:
-    agent = StudyBuddyAgent()
-    reply = await agent.chat(user_id="u123", messages=[
-        {"role": "user", "content": "How do I solve direct variation?"}
-    ])
 """
 
 from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from typing import Literal, TypedDict
 
-import google.generativeai as genai
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+
+# Load backend/.env so GEMINI_API_KEY is available regardless of cwd
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Model configuration — change MODEL_NAME here to swap models globally.
+# Model configuration — swap MODEL_NAME here to change the model globally.
 # ---------------------------------------------------------------------------
 
-MODEL_NAME = "gemini-1.5-pro"          # swap to "gemini-1.5-flash" for faster/cheaper
-TEMPERATURE = 0.4                       # lower = more consistent tutoring answers
-MAX_OUTPUT_TOKENS = 1024
+MODEL_NAME = "gemini-3-flash-preview"   # swap to "gemini-2.0-flash" as fallback
 
 # ---------------------------------------------------------------------------
-# System prompt — canonical StudyBuddy persona.
-# Update the block below to change the tutor's behaviour for all calls.
+# System prompt — canonical StudyBuddy persona (do not reformat).
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """You are "StudyBuddy", an AI tutor for Malaysian SPM Mathematics Form 5.
 Your job in this demo is to help students understand and practise ONLY these three topics:
-1. Ubahan (direct, inverse, joint and partial variation)
-2. Matriks (matrix operations and simple applications)
-3. Matematik Pengguna: Insurans (insurance concepts and calculations)
 
-Guiding principles:
-- Always respond in the same language the student uses (Bahasa Malaysia or English).
-- Be encouraging, patient, and concise — SPM students need clarity, not walls of text.
-- For calculations, show every step clearly and label each step.
-- When a student makes a mistake, gently point out the error and guide them to the right answer rather than just giving it.
-- Use Malaysian curriculum conventions (SPM marking scheme style).
-- If a student asks about anything outside the three topics above, politely decline and redirect:
-  "Untuk demo ini, saya hanya boleh bantu dengan Ubahan, Matriks, dan Insurans."
-  ("For this demo, I can only help with Ubahan, Matriks, and Insurans.")
-- Never fabricate formulae or rules; if unsure, say so.
+Ubahan (direct, inverse, joint and partial variation)
 
-Topic reference:
-UBAHAN
-  - Direct variation: y ∝ x  →  y = kx
-  - Inverse variation: y ∝ 1/x  →  y = k/x
-  - Joint variation: y ∝ xⁿzᵐ
-  - Partial variation: y = kx + c
+Matriks (matrix operations and simple applications)
 
-MATRIKS
-  - Matrix notation, order, equality
-  - Addition, subtraction, scalar multiplication
-  - Matrix multiplication (conformability rule)
-  - Identity matrix, inverse of a 2×2 matrix
-  - Solving simultaneous linear equations using matrices
+Matematik Pengguna: Insurans (insurance concepts and calculations)
 
-MATEMATIK PENGGUNA: INSURANS
-  - Types of insurance (life, motor, medical, fire)
-  - Premium calculation (basic premium, loading, NCD)
-  - Policy concepts: sum insured, excess, rider, beneficiary
-  - Claims process and indemnity principle
-  - Simple interest and compound interest applied to insurance savings plans
-"""
+High‑level goals
+
+Act as a friendly, encouraging study buddy, not a strict examiner.
+
+Focus on deep understanding + practice, not just giving final answers.
+
+Adapt your explanations to the student's level based on their answers.
+
+Use simple, clear language, with Malaysian context and examples when helpful.
+
+Language & tone
+
+Default to  Bahasa Melayu terms since students are preparing for SPM.
+
+Be concise, step‑by‑step, and positive.
+
+Avoid heavy jargon; when you must use it, define it in simple words.
+
+Always be respectful and supportive, especially when the student is wrong.
+
+Tutor behaviour (VERY IMPORTANT)
+
+Do NOT immediately give full solutions by default.
+
+First, restate the problem briefly.
+
+Then ask the student what they've tried or what they think the next step is.
+
+Guide them one step at a time.
+
+If the student explicitly says "Just give me the answer/solution", you may give a full solution, but still briefly explain the main idea.
+
+When a student's answer is wrong:
+
+Gently point out it is incorrect.
+
+Explain what is wrong with the reasoning.
+
+Show the correct step and invite them to try the next step themselves.
+
+Encourage retrieval practice:
+
+Ask "Can you explain this in your own words?" or "Which formula do you think fits here?".
+
+Topic‑specific guidance
+
+Ubahan (Variation)
+
+Cover direct, inverse, joint, and partial variation.
+
+Help students:
+
+Translate statements into algebraic forms, e.g. "y varies directly as x" → y = kx.
+
+Identify the type of variation from words or tables.
+
+Solve for the constant of variation k.
+
+Use the model to find new values.
+
+Emphasise:
+
+Distinguishing direct vs inverse vs joint.
+
+Checking units and proportional reasoning.
+
+Showing full workings clearly.
+
+Matriks (Matrices)
+
+Focus on:
+
+Matrix notation, order, and conformability for operations.
+
+Addition, subtraction, and multiplication of matrices.
+
+Finding the inverse of a 2×2 matrix (when it exists).
+
+Simple applications: e.g. cost/quantity problems modelled with matrices.
+
+Emphasise:
+
+Checking matrix dimensions before multiplying.
+
+Showing row‑by‑column multiplication clearly.
+
+Avoiding arithmetic slips in small examples.
+
+Matematik Pengguna: Insurans (Consumer Math: Insurance)
+
+Focus on:
+
+Basic insurance terms: premium, sum insured, rate, under‑insurance, compensation formula.
+
+Calculating premium given rate and sum insured.
+
+Using the average clause:
+Compensation = (Sum Insured / Value of Property) × Loss
+
+Simple word problems in a Malaysian context (RM, per annum, etc.).
+
+Emphasise:
+
+Identifying what is given (sum insured, property value, loss).
+
+Correctly applying the formula and interpreting the result.
+
+What you MUST avoid
+
+Do not answer questions outside the 3 topics (ubahan, matriks, insurans). Politely say you're focused on those topics for this demo.
+
+Do not produce full exam sets by yourself; instead, generate short practice sets (3–5 questions) when asked.
+
+Do not give long lectures. Prefer short explanation → question → student's attempt → feedback.
+
+When generating practice questions
+
+Ask the student which topic and difficulty they want: e.g. "Ubahan – easy", "Matriks – medium", or "Insurans – mixed".
+
+Generate 3–5 questions at a time.
+
+For each question, offer to:
+
+wait for their answer, OR
+
+give a small hint first.
+
+When revealing solutions:
+
+Show step‑by‑step workings.
+
+Highlight key formulas used.
+
+Connect back to the topic name ("This is inverse variation because…").
+
+Safety and boundaries
+
+Never give harmful, offensive, or inappropriate content.
+
+If the student is stressed about exams, respond empathetically and give encouragement along with the math support.
+
+Keep all content suitable for secondary school students."""
 
 # ---------------------------------------------------------------------------
 # Message type
@@ -89,23 +202,17 @@ class ChatMessage(TypedDict):
 # Topic guardrail — fast-path check before hitting Gemini.
 # ---------------------------------------------------------------------------
 
-# Keywords that strongly signal one of the three supported topics.
 _SUPPORTED_KEYWORDS: list[str] = [
-    # Ubahan / variation
     "ubahan", "variation", "direct variation", "inverse variation",
     "joint variation", "partial variation", "ubahan langsung",
     "ubahan songsang", "ubahan bersama", "ubahan separa",
-    # Matriks / matrices
     "matriks", "matrix", "matrices", "determinant", "inverse matrix",
     "transpose", "identity matrix", "simultaneous", "serentak",
-    # Insurans / insurance
     "insurans", "insurance", "premium", "polisi", "policy",
     "perlindungan", "coverage", "indemnity", "ncd", "no-claim",
     "beneficiary", "waris", "sum insured", "takaful",
 ]
 
-# Keywords that clearly signal out-of-scope subjects — used as a secondary
-# signal when no supported keywords are found.
 _BLOCKLIST_KEYWORDS: list[str] = [
     "chemistry", "kimia", "biology", "biologi", "physics", "fizik",
     "history", "sejarah", "geography", "geografi", "literature",
@@ -122,45 +229,31 @@ _OUT_OF_SCOPE_REPLY = (
 
 
 def is_supported_topic(message: str) -> bool:
-    """
-    Return True if the message appears to be within the three supported topics.
-
-    Strategy (in order):
-    1. If any supported keyword is present → in scope.
-    2. If any blocklist keyword is present and no supported keyword → out of scope.
-    3. Ambiguous / general math questions → assume in scope (let Gemini handle it).
-    """
     lower = message.lower()
-
     if any(kw in lower for kw in _SUPPORTED_KEYWORDS):
         return True
-
     if any(kw in lower for kw in _BLOCKLIST_KEYWORDS):
         return False
-
-    # Default: pass through to Gemini; the system prompt handles redirection.
-    return True
+    return True  # ambiguous → let Gemini's system prompt handle it
 
 
 # ---------------------------------------------------------------------------
-# Gemini client (lazy singleton)
+# Gemini client (lazy singleton — new google-genai SDK)
 # ---------------------------------------------------------------------------
 
-_gemini_configured = False
+_client: genai.Client | None = None
 
 
-def _configure_gemini() -> None:
-    global _gemini_configured
-    if _gemini_configured:
-        return
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY environment variable is not set. "
-            "Add it to your backend/.env file."
-        )
-    genai.configure(api_key=api_key)
-    _gemini_configured = True
+def _get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "GEMINI_API_KEY is not set. Add it to backend/.env."
+            )
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 # ---------------------------------------------------------------------------
@@ -170,25 +263,14 @@ def _configure_gemini() -> None:
 
 class StudyBuddyAgent:
     """
-    Conversational tutor agent backed by Google Gemini.
+    Conversational tutor backed by Google Gemini (google-genai SDK).
 
-    Each call to `chat()` is stateless — the caller passes the full
-    conversation history and receives the next assistant reply.
+    chat() is stateless — the caller provides the full conversation history
+    and receives the complete assistant reply as a string.
     """
 
-    def __init__(
-        self,
-        model_name: str = MODEL_NAME,
-        temperature: float = TEMPERATURE,
-        max_output_tokens: int = MAX_OUTPUT_TOKENS,
-    ) -> None:
+    def __init__(self, model_name: str = MODEL_NAME) -> None:
         self.model_name = model_name
-        self.temperature = temperature
-        self.max_output_tokens = max_output_tokens
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def chat(
         self,
@@ -198,87 +280,82 @@ class StudyBuddyAgent:
         skip_guardrail: bool = False,
     ) -> dict:
         """
-        Generate the next tutor reply.
-
-        Args:
-            user_id:        Caller's user ID (logged for tracing; not sent to Gemini).
-            messages:       Conversation history. Last entry must be role="user".
-            skip_guardrail: Set True to bypass the topic guardrail (for testing).
-
         Returns:
-            {
-                "reply": str,           # assistant message text
-                "out_of_scope": bool,   # True if guardrail blocked the call
-            }
+            { "reply": str, "out_of_scope": bool }
         """
         if not messages:
-            return {"reply": "Hi! Ask me anything about Ubahan, Matriks, or Insurans.", "out_of_scope": False}
+            return {
+                "reply": "Hi! I'm StudyBuddy. Ask me anything about Ubahan, Matriks, or Insurans.",
+                "out_of_scope": False,
+            }
 
-        latest_user_message = self._last_user_message(messages)
+        latest = self._last_user_message(messages)
 
-        # --- Topic guardrail (fast path) ---
-        if not skip_guardrail and not is_supported_topic(latest_user_message):
-            logger.info("StudyBuddy [%s]: out-of-scope message blocked", user_id)
+        if not skip_guardrail and not is_supported_topic(latest):
+            logger.info("StudyBuddy [%s]: out-of-scope blocked", user_id)
             return {"reply": _OUT_OF_SCOPE_REPLY, "out_of_scope": True}
 
-        # --- Call Gemini ---
         try:
             reply_text = self._call_gemini(messages)
-            logger.info("StudyBuddy [%s]: reply generated (%d chars)", user_id, len(reply_text))
+            logger.info("StudyBuddy [%s]: reply %d chars", user_id, len(reply_text))
             return {"reply": reply_text, "out_of_scope": False}
         except Exception as exc:
-            logger.error("StudyBuddy [%s]: Gemini call failed — %s", user_id, exc)
+            logger.error("StudyBuddy [%s]: Gemini error — %s", user_id, exc)
             raise
 
     # ------------------------------------------------------------------
-    # Internal helpers
+    # Internal
     # ------------------------------------------------------------------
 
     def _call_gemini(self, messages: list[ChatMessage]) -> str:
         """
-        Build the Gemini request and return the reply text.
-
-        Gemini's `GenerativeModel` uses a different history format than
-        OpenAI-style APIs:
-          - System instruction is passed at model construction time.
-          - History is a list of {"role": "user"|"model", "parts": [text]}.
-          - "assistant" role maps to "model" in Gemini's API.
+        Converts ChatMessage history → google-genai types.Content list,
+        then calls generate_content_stream with:
+          - system_instruction = SYSTEM_PROMPT
+          - thinking_config    = HIGH  (as in the reference code)
+        Collects all streamed chunks and returns the full reply string.
         """
-        _configure_gemini()
+        client = _get_client()
 
-        # Build the model with the system prompt baked in.
-        # To change temperature or model, adjust the constants at the top of
-        # this file or pass them to StudyBuddyAgent.__init__.
-        model = genai.GenerativeModel(
-            model_name=self.model_name,
-            system_instruction=SYSTEM_PROMPT,
-            generation_config=genai.types.GenerationConfig(
-                temperature=self.temperature,
-                max_output_tokens=self.max_output_tokens,
-            ),
-        )
-
-        # Convert ChatMessage list → Gemini history format.
-        # Skip any system-role messages (already handled by system_instruction).
-        history: list[dict] = []
-        for msg in messages[:-1]:                    # all but the last message
+        # Build contents list from history.
+        # "assistant" role → "model" in Gemini's API.
+        # Skip system-role messages (handled by system_instruction instead).
+        contents: list[types.Content] = []
+        for msg in messages:
             if msg["role"] == "system":
                 continue
-            history.append({
-                "role": "user" if msg["role"] == "user" else "model",
-                "parts": [msg["content"]],
-            })
+            gemini_role = "user" if msg["role"] == "user" else "model"
+            contents.append(
+                types.Content(
+                    role=gemini_role,
+                    parts=[types.Part.from_text(text=msg["content"])],
+                )
+            )
 
-        # The last message must be from the user; start a chat and send it.
-        last_msg = messages[-1]
-        chat_session = model.start_chat(history=history)
-        response = chat_session.send_message(last_msg["content"])
+        config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(
+                thinking_level="HIGH",
+            ),
+            system_instruction=[
+                types.Part.from_text(text=SYSTEM_PROMPT),
+            ],
+        )
 
-        return response.text
+        # Collect streamed response into a single string.
+        # To switch to non-streaming, replace with client.models.generate_content(...)
+        reply_parts: list[str] = []
+        for chunk in client.models.generate_content_stream(
+            model=self.model_name,
+            contents=contents,
+            config=config,
+        ):
+            if chunk.text:
+                reply_parts.append(chunk.text)
+
+        return "".join(reply_parts)
 
     @staticmethod
     def _last_user_message(messages: list[ChatMessage]) -> str:
-        """Return the content of the most recent user-role message."""
         for msg in reversed(messages):
             if msg["role"] == "user":
                 return msg["content"]

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 import BottomNav from "@/components/BottomNav";
 
 export const metadata: Metadata = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Explanation, ExplanationStyle } from "@/lib/api";
+import MathText from "@/components/MathText";
 
 interface Props {
   explanation: Explanation;
@@ -33,7 +34,7 @@ export default function ExplanationBlock({ explanation, isCorrect }: Props) {
           <span>{meta.label}</span>
         </span>
 
-        <p className="expblock-text">{explanation.text}</p>
+        <MathText className="expblock-text">{explanation.text}</MathText>
       </div>
     </div>
   );

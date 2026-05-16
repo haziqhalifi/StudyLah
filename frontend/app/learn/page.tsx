@@ -15,16 +15,33 @@ import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
 import QuizSheet from "@/components/QuizSheet";
+import StudyBuddyPanel from "@/components/StudyBuddyPanel";
 
 type View = "topics" | "practice";
 
-const SUBJECT_ICONS: Record<string, string> = {
-  Matematik: "∑",
-  Fizik: "⚛",
-  Sejarah: "📜",
-  "Bahasa Melayu": "✍",
-  "Bahasa Inggeris": "🗣",
-};
+const MATH_F5_TOPICS = [
+  {
+    id: "ubahan",
+    name: "Ubahan",
+    subtitle: "Variation",
+    icon: "∝",
+    desc: "Direct, inverse, joint & partial variation",
+  },
+  {
+    id: "matriks",
+    name: "Matriks",
+    subtitle: "Matrices",
+    icon: "⊞",
+    desc: "Matrix operations & simultaneous equations",
+  },
+  {
+    id: "insurans",
+    name: "Insurans",
+    subtitle: "Insurance",
+    icon: "🛡",
+    desc: "Premiums, policies & claims",
+  },
+];
 
 export default function LearnPage() {
   const router = useRouter();
@@ -33,7 +50,6 @@ export default function LearnPage() {
 
   // Topic picker state
   const [papers, setPapers] = useState<Paper[]>([]);
-  const [subjects, setSubjects] = useState<string[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
@@ -47,6 +63,7 @@ export default function LearnPage() {
   const [correct, setCorrect] = useState(0);
   const [prevDiff, setPrevDiff] = useState<string | null>(null);
   const [diffShift, setDiffShift] = useState<"up" | "down" | null>(null);
+  const [showBuddy, setShowBuddy] = useState(false);
 
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
@@ -72,8 +89,6 @@ export default function LearnPage() {
           (p) => (p.subject || "").toLowerCase() === "matematik",
         );
         setPapers(filtered);
-        const unique = [...new Set(filtered.map((p) => p.subject))].sort();
-        setSubjects(unique);
       })
       .finally(() => setLoadingPapers(false));
   }, [router]);
@@ -159,26 +174,20 @@ export default function LearnPage() {
           </div>
         ) : (
           <div className="learn-topic-grid">
-            {subjects.map((s) => {
-              const count = papers.filter((p) => p.subject === s).length;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  className="learn-topic-card"
-                  onClick={() => handlePickSubject(s)}
-                  disabled={starting}
-                >
-                  <span className="learn-topic-icon">
-                    {SUBJECT_ICONS[s] ?? "📚"}
-                  </span>
-                  <span className="learn-topic-name">{s}</span>
-                  <span className="learn-topic-meta">
-                    {count} paper{count !== 1 ? "s" : ""}
-                  </span>
-                </button>
-              );
-            })}
+            {MATH_F5_TOPICS.map((topic) => (
+              <button
+                key={topic.id}
+                type="button"
+                className="learn-topic-card"
+                onClick={() => handlePickSubject("Matematik")}
+                disabled={starting}
+              >
+                <span className="learn-topic-icon">{topic.icon}</span>
+                <span className="learn-topic-name">{topic.name}</span>
+                <span className="learn-topic-subtitle">{topic.subtitle}</span>
+                <span className="learn-topic-meta">{topic.desc}</span>
+              </button>
+            ))}
           </div>
         )}
 
@@ -231,7 +240,7 @@ export default function LearnPage() {
   );
 
   return (
-    <QuizSheet open={view === "practice"} bar={bar} onClose={() => { setView("topics"); setResult(null); setSelected(null); }}>
+    <QuizSheet open={view === "practice"} bar={bar} onClose={() => { setView("topics"); setResult(null); setSelected(null); setShowBuddy(false); }}>
       <div className="learn-stats">
         <div className="learn-stat">
           <div className="learn-stat-label">Done</div>
@@ -299,6 +308,25 @@ export default function LearnPage() {
           isCorrect={result.is_correct}
         />
       )}
+
+      {/* StudyBuddy chat panel — slides in above the sticky bar */}
+      {showBuddy && userId && (
+        <StudyBuddyPanel
+          userId={userId}
+          questionContext={question.text}
+          onClose={() => setShowBuddy(false)}
+        />
+      )}
+
+      {/* Floating StudyBuddy button */}
+      <button
+        type="button"
+        className={`sb-fab ${showBuddy ? "sb-fab-active" : ""}`}
+        onClick={() => setShowBuddy((v) => !v)}
+        aria-label="Ask StudyBuddy"
+      >
+        {showBuddy ? "✕" : "🤖"}
+      </button>
     </QuizSheet>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Question } from "@/lib/api";
+import MathText from "@/components/MathText";
 
 interface Props {
   question: Question;
@@ -65,7 +66,9 @@ export default function QuestionCard({
         <span className={diff.cls}>{diff.label}</span>
       </div>
 
-      <p className="font-display qcard-question">{question.text}</p>
+      <div className="font-display qcard-question">
+        <MathText>{question.text}</MathText>
+      </div>
 
       <div className="qcard-options">
         {question.options.map((opt, idx) => (
@@ -77,7 +80,9 @@ export default function QuestionCard({
             disabled={showResult}
           >
             <span className={letterClass(idx)}>{LETTERS[idx]}</span>
-            <span className="option-text">{opt}</span>
+            <span className="option-text">
+              <MathText inline>{opt}</MathText>
+            </span>
 
             {showResult && idx === selectedOptionIndex && (
               <span className="option-check">{isCorrect ? "✓" : "✗"}</span>
