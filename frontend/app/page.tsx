@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { postStudyBuddyMessage, getAssessment, getPapers } from "@/lib/api";
-import type { ChatMessage, TopicStats, Paper } from "@/lib/api";
+import type { ChatMessage, TopicStats } from "@/lib/api";
 
 const student = {
   name: "Amir",
@@ -399,29 +399,107 @@ function ChatDrawer({
   );
 }
 
+const TOPIC_META: Record<string, { name: string }> = {
+  ubahan:   { name: "Ubahan" },
+  matriks:  { name: "Matriks" },
+  insurans: { name: "Insurans" },
+};
+
 function RecentSessionCard() {
   const router = useRouter();
+  const [topics, setTopics] = useState<TopicStats[]>([]);
+  const [paperCount, setPaperCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const userId =
+      (typeof window !== "undefined" && sessionStorage.getItem("userId")) ||
+      "guest";
+    getAssessment(userId)
+      .then((res) => setTopics(res.topics))
+      .catch(() => {});
+    getPapers()
+      .then((res) => setPaperCount(res.papers.length))
+      .catch(() => {});
+  }, []);
+
+  const totalAttempts = topics.reduce((s, t) => s + t.attempts, 0);
+  const avgAccuracy =
+    topics.length > 0
+      ? Math.round(
+          (topics.reduce((s, t) => s + t.accuracy, 0) / topics.length) * 100,
+        )
+      : null;
+
+  const weakestTopic = topics.length > 0
+    ? topics.reduce((a, b) => (a.accuracy < b.accuracy ? a : b))
+    : null;
+
   return (
-    <section
-      className="recent-session-card"
-      aria-label="Continue recent session"
-    >
-      <div className="recent-session-info">
-        <p className="recent-session-label">Sambung semula</p>
-        <h3>Kuiz Matematik</h3>
-        <div className="recent-session-meta">
-          <span className="recent-session-progress-pill">25%</span>
-          <span>selesai</span>
-        </div>
+    <section className="sambung-section" aria-label="Sambung semula">
+      <h2 className="sambung-heading">Sambung semula</h2>
+      <div className="sambung-cards">
+        {/* Learning progress card */}
+        <button
+          type="button"
+          className="sambung-card sambung-card--learn"
+          onClick={() => router.push("/progress")}
+          aria-label="Lihat kemajuan pembelajaran"
+        >
+          <div className="sambung-card-icon" aria-hidden="true">
+            <ProgressIcon />
+          </div>
+          <div className="sambung-card-body">
+            <p className="sambung-card-label">Pembelajaran</p>
+            <p className="sambung-card-title">
+              {weakestTopic
+                ? `Fokus: ${TOPIC_META[weakestTopic.topic_id]?.name ?? weakestTopic.topic_id}`
+                : "Topik SPM"}
+            </p>
+            <div className="sambung-card-meta">
+              {avgAccuracy !== null ? (
+                <>
+                  <span className="sambung-pill">{avgAccuracy}%</span>
+                  <span>purata tepat</span>
+                </>
+              ) : (
+                <span className="sambung-pill-muted">Mulakan diagnostik</span>
+              )}
+            </div>
+          </div>
+          <span className="sambung-card-arrow" aria-hidden="true">
+            <ArrowIcon />
+          </span>
+        </button>
+
+        {/* Exams card */}
+        <button
+          type="button"
+          className="sambung-card sambung-card--exam"
+          onClick={() => router.push("/exams")}
+          aria-label="Sambung soalan peperiksaan"
+        >
+          <div className="sambung-card-icon" aria-hidden="true">
+            <QuizIcon />
+          </div>
+          <div className="sambung-card-body">
+            <p className="sambung-card-label">Peperiksaan</p>
+            <p className="sambung-card-title">Soalan SPM Lepas</p>
+            <div className="sambung-card-meta">
+              {paperCount !== null ? (
+                <>
+                  <span className="sambung-pill">{paperCount}</span>
+                  <span>kertas tersedia</span>
+                </>
+              ) : (
+                <span className="sambung-pill-muted">{totalAttempts > 0 ? `${totalAttempts} soalan dijawab` : "Mula latihan"}</span>
+              )}
+            </div>
+          </div>
+          <span className="sambung-card-arrow" aria-hidden="true">
+            <ArrowIcon />
+          </span>
+        </button>
       </div>
-      <button
-        type="button"
-        className="recent-session-btn"
-        aria-label="Continue quiz"
-        onClick={() => router.push("/exams")}
-      >
-        <ArrowIcon />
-      </button>
     </section>
   );
 }
