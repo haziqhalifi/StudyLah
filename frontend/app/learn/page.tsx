@@ -201,69 +201,102 @@ export default function LearnPage() {
 
   if (view === "topics") {
     return (
-      <div className="page-enter">
-        <div className="diag-header">
-          <h1 className="font-display diag-title">
-            What do you want to practise?
-          </h1>
-          <p className="diag-sub">
-            Pick a subject to get an adaptive question set.
-          </p>
-        </div>
+      <section className="home-dashboard-shell page-enter" aria-label="Learning hub">
+        <header className="student-header">
+          <div className="student-header-copy">
+            <p className="student-time">Adaptive Practice</p>
+            <h1>What do you want to practise?</h1>
+            <div className="student-meta-row">
+              <span>Matematik Tingkatan 5</span>
+              <span aria-hidden="true">•</span>
+              <span>{MATH_F5_TOPICS.length} topics</span>
+              <span aria-hidden="true">•</span>
+              <span>{loadingPapers ? "Loading" : `${papers.length} trial papers`}</span>
+            </div>
+          </div>
+
+          <div className="student-header-actions">
+            <div className="student-avatar" aria-label="Learning hub avatar">
+              L
+            </div>
+          </div>
+        </header>
+
+        <section className="level-card" aria-label="Choose a topic to practise">
+          <div className="level-card-content">
+            <p className="level-eyebrow">Learning Path</p>
+            <h2>Pick a topic and jump into adaptive practice.</h2>
+            <div className="level-progress-row">
+              <div className="level-progress-track" aria-hidden="true">
+                <div className="level-progress-fill level-progress-fill-full">
+                  <span className="level-progress-dot" />
+                </div>
+              </div>
+              <span>{MATH_F5_TOPICS.length} available</span>
+            </div>
+          </div>
+          <div className="level-trophy" aria-hidden="true">
+            <span className="learn-hub-chip">AI</span>
+          </div>
+        </section>
 
         {loadingPapers ? (
-          <div className="diag-subject-grid">
+          <div className="home-learning-stack">
             {[1, 2, 3].map((i) => (
               <div key={i} className="skeleton-card skeleton-topic-card" />
             ))}
           </div>
         ) : (
-          <div className="learn-topic-grid">
-            {MATH_F5_TOPICS.map((topic) => (
-              <button
-                key={topic.id}
-                type="button"
-                className="learn-topic-card"
-                onClick={() => handlePickSubject("Matematik")}
-                disabled={starting}
-              >
-                <span className="learn-topic-icon">{topic.icon}</span>
-                <span className="learn-topic-name">{topic.name}</span>
-                <span className="learn-topic-subtitle">{topic.subtitle}</span>
-                <span className="learn-topic-meta">{topic.desc}</span>
-              </button>
-            ))}
+          <div className="home-learning-stack">
+            {MATH_F5_TOPICS.map((topic, index) => {
+              const tone = index === 0 ? "lesson" : index === 1 ? "game" : "path";
+              return (
+                <button
+                  key={topic.id}
+                  type="button"
+                  className={`learning-feature-card learning-feature-${tone} study-select-card`}
+                  onClick={() => handlePickSubject("Matematik")}
+                  disabled={starting}
+                >
+                  <div>
+                    <p className="learning-feature-kicker">Matematik Tingkatan 5</p>
+                    <h2>{topic.name}</h2>
+                    <p>{topic.desc}</p>
+                    <p className="study-select-subtitle">{topic.subtitle}</p>
+                  </div>
+
+                  <div className="feature-visual" aria-hidden="true">
+                    <div className="feature-blob feature-blob-large" />
+                    <div className="feature-blob feature-blob-small" />
+                    <div className="feature-mini-card">{topic.icon}</div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
         {startError && <p className="diag-error">{startError}</p>}
 
         {question && (
-          <div className="sticky-bar">
+          <div className="home-actions">
             <button
               type="button"
-              className="btn-ghost"
+              className="home-action-primary"
               onClick={() => setView("practice")}
             >
-              ← Resume previous session
+              <span className="home-action-icon home-action-icon-light" aria-hidden="true">
+                ↺
+              </span>
+              <span>
+                <span className="home-action-label">Resume previous session</span>
+                <span className="home-action-sub">Continue where you left off</span>
+              </span>
+              <span className="home-action-arrow" aria-hidden="true">→</span>
             </button>
           </div>
         )}
-        <div className="learn-actions">
-          <button
-            className="btn-primary"
-            onClick={() => router.push("/assessment")}
-          >
-            View Your Progress
-          </button>
-          <button
-            className="btn-primary"
-            onClick={() => router.push("/review")}
-          >
-            Review Your Answer
-          </button>
-        </div>
-      </div>
+      </section>
     );
   }
 

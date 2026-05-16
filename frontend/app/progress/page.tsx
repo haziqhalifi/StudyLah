@@ -2,275 +2,356 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { getAssessment, TopicStats } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Static / mock data
 // ---------------------------------------------------------------------------
 
-const TOPIC_META: Record<string, { name: string; emoji: string }> = {
-  ubahan:   { name: "Ubahan",   emoji: "📐" },
-  matriks:  { name: "Matriks",  emoji: "🔢" },
-  insurans: { name: "Insurans", emoji: "🛡️" },
+const MOCK_TOPICS: TopicStats[] = [
+  { topic_id: "ubahan", accuracy: 0.4, attempts: 10, correct: 4, level: "developing" },
+  { topic_id: "matriks", accuracy: 0.2, attempts: 10, correct: 2, level: "beginner" },
+  { topic_id: "insurans", accuracy: 0.75, attempts: 8, correct: 6, level: "proficient" },
+];
+
+const TOPIC_META: Record<string, { name: string; color: string; bg: string }> = {
+  ubahan:   { name: "Ubahan",   color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)" },
+  matriks:  { name: "Matriks",  color: "#ff6b93", bg: "linear-gradient(135deg,#ff8dc0,#ffb0c9)" },
+  insurans: { name: "Insurans", color: "#22c55e", bg: "linear-gradient(135deg,#5bd4bc,#22c55e)" },
 };
 
-// Map the four DB levels → the three AI-engine buckets for display
-type DisplayLevel = "weak" | "okay" | "strong";
+const LEADERBOARD = [
+  { rank: 1, name: "VOLLEYBEAR", xp: 92000, avatar: "🚴" },
+  { rank: 2, name: "Clara",      xp: 8000,  avatar: "🦩" },
+  { rank: 3, name: "husna",      xp: 5700,  avatar: "🟤" },
+  { rank: 4, name: "DeionKingen",xp: 2300,  avatar: "🐧" },
+  { rank: 5, name: "You",        xp: 180,   avatar: "🐢", isMe: true },
+];
 
-function toDisplayLevel(level: TopicStats["level"]): DisplayLevel {
-  if (level === "beginner") return "weak";
-  if (level === "advanced" || level === "proficient") return "strong";
-  return "okay";
-}
+const WEEK_DAYS = ["Ah", "Is", "Se", "Ra", "Kh", "Ju", "Sa"];
 
-const LEVEL_CONFIG: Record<DisplayLevel, { label: string; bar: string; badge: string }> = {
-  weak:   { label: "Weak",   bar: "bg-red-400",    badge: "bg-red-100 text-red-700"    },
-  okay:   { label: "Okay",   bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-700" },
-  strong: { label: "Strong", bar: "bg-emerald-500",badge: "bg-emerald-100 text-emerald-700" },
-};
-
-// Generate a single "AI buddy" sentence across all three topics
-function buildBuddySentence(topics: TopicStats[]): string {
-  if (topics.length === 0) return "Complete the diagnostic to get started!";
-
-  const sorted = [...topics].sort((a, b) => a.accuracy - b.accuracy);
-  const weakest = sorted[0];
-  const strongest = sorted[sorted.length - 1];
-
-  const weakName  = TOPIC_META[weakest.topic_id]?.name  ?? weakest.topic_id;
-  const strongName = TOPIC_META[strongest.topic_id]?.name ?? strongest.topic_id;
-
-  if (weakest.topic_id === strongest.topic_id) {
-    return `Keep it up — you're making progress in ${weakName}! 🎯`;
-  }
-
-  const weakDisplay = toDisplayLevel(weakest.level);
-  if (weakDisplay === "weak") {
-    return `Let's focus on ${weakName} first, then keep reinforcing ${strongName}. You've got this! 💪`;
-  }
-  if (weakDisplay === "okay") {
-    return `${weakName} is coming along — push it to Strong and you'll be well-rounded. Keep going! 🚀`;
-  }
-  return `You're strong across the board! A quick review of ${weakName} will keep things sharp. ✨`;
+function formatXP(xp: number) {
+  if (xp >= 1000) return `${(xp / 1000).toFixed(xp % 1000 === 0 ? 0 : 1)}k XP`;
+  return `${xp} XP`;
 }
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function TopicCard({ topic }: { topic: TopicStats }) {
-  const meta   = TOPIC_META[topic.topic_id] ?? { name: topic.topic_id, emoji: "📚" };
-  const dlevel = toDisplayLevel(topic.level);
-  const cfg    = LEVEL_CONFIG[dlevel];
-  const pct    = Math.round(topic.accuracy * 100);
+function IconBase({ children }: { children: ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="progress-svg-icon">
+      {children}
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <IconBase>
+      <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6M12 3v12M8 7l4-4 4 4" />
+    </IconBase>
+  );
+}
+
+function ArrowRightIcon() {
+  return (
+    <IconBase>
+      <path d="M8 12h8M13 8l4 4-4 4" />
+    </IconBase>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Progress Header (matches StudentHeader on home)
+// ---------------------------------------------------------------------------
+
+function ProgressHeader({ name, xp, level }: { name: string; xp: number; level: number }) {
+  const toNext = 50;
+  const pct = Math.round((xp / toNext) * 100);
 
   return (
-    <div className="card topic-card page-enter" style={{ marginBottom: "0.75rem" }}>
-      {/* Header row */}
-      <div className="topic-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontSize: "1.5rem" }}>{meta.emoji}</span>
-          <div>
-            <h3 className="font-display topic-card-title">{meta.name}</h3>
-            <p className="topic-card-sub">
-              {topic.attempts} attempted · {topic.correct} correct
-            </p>
+    <header className="student-header">
+      <div className="student-header-copy">
+        <p className="student-time">Kemajuan</p>
+        <h1>{name || "Pelajar"}</h1>
+        <div className="student-meta-row">
+          <span>Tahap {level}</span>
+          <span aria-hidden="true">•</span>
+          <span>{xp} XP</span>
+        </div>
+      </div>
+
+      <div className="student-header-actions">
+        <div className="progress-xp-avatar" aria-label="Level badge">
+          {level}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// XP Progress bar card (like LevelProgressCard on home)
+// ---------------------------------------------------------------------------
+
+function XPProgressCard({ xp, level }: { xp: number; level: number }) {
+  const toNext = 50;
+  const pct = Math.min(Math.round((xp / toNext) * 100), 100);
+
+  return (
+    <section className="level-card" aria-label="XP progress">
+      <div className="level-card-content">
+        <p className="level-eyebrow">Tahap {level}: {toNext} XP</p>
+        <h2>Teruskan usaha, kamu hebat!</h2>
+        <div className="level-progress-row">
+          <div className="level-progress-track" aria-hidden="true">
+            <div className="level-progress-fill" style={{ width: `${pct}%` }}>
+              <span className="level-progress-dot" />
+            </div>
           </div>
-        </div>
-        {/* Level badge */}
-        <span
-          className={`chip ${cfg.badge}`}
-          style={{
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            padding: "0.2rem 0.55rem",
-            borderRadius: "999px",
-          }}
-        >
-          {cfg.label}
-        </span>
-      </div>
-
-      {/* Progress bar */}
-      <div style={{ marginTop: "0.75rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "0.75rem",
-            color: "var(--color-muted, #6b7280)",
-            marginBottom: "0.3rem",
-          }}
-        >
-          <span>Accuracy</span>
-          <span style={{ fontWeight: 700 }}>{pct}%</span>
-        </div>
-        <div
-          className="progress-track"
-          style={{ height: "8px", borderRadius: "999px", background: "#e5e7eb", overflow: "hidden" }}
-        >
-          <div
-            className={`${cfg.bar}`}
-            style={{
-              height: "100%",
-              width: `${pct}%`,
-              borderRadius: "999px",
-              transition: "width 0.6s ease",
-            }}
-          />
+          <span>{xp} XP</span>
         </div>
       </div>
-
-      {/* Next milestone hint */}
-      {dlevel === "weak" && (
-        <p className="topic-card-next" style={{ marginTop: "0.5rem", fontSize: "0.72rem", color: "#6b7280" }}>
-          Reach 40% accuracy to move to Okay ›
-        </p>
-      )}
-      {dlevel === "okay" && (
-        <p className="topic-card-next" style={{ marginTop: "0.5rem", fontSize: "0.72rem", color: "#6b7280" }}>
-          Reach 70% accuracy to move to Strong ›
-        </p>
-      )}
-    </div>
+      <div className="level-trophy" aria-hidden="true">
+        <FlameIcon />
+      </div>
+    </section>
   );
 }
 
-function BuddyBubble({ message }: { message: string }) {
+function FlameIcon() {
   return (
-    <div
-      className="buddy-bubble page-enter"
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: "0.6rem",
-        padding: "0.85rem 1rem",
-        background: "var(--color-surface-alt, #f0f4ff)",
-        borderRadius: "1rem",
-        marginBottom: "1.25rem",
-      }}
-    >
-      <span style={{ fontSize: "1.5rem", lineHeight: 1 }}>🤖</span>
-      <p
-        className="buddy-bubble-text"
-        style={{ fontSize: "0.88rem", lineHeight: 1.5, margin: 0 }}
-      >
-        {message}
-      </p>
-    </div>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ width: 54, height: 54 }}>
+      <path
+        d="M12 2C9.5 6 8 8.5 9 11.5c.4 1.2-.2 2.5-1.5 2.5C6.2 14 5 12.6 5 11c0 4 2 7.5 7 9 5-1.5 7-5 7-9 0-2.5-1.5-5-3-7-1 2.5-2.5 3-3 3-.5 0-1-.5-1-1 0-.5.5-2.5-1-5Z"
+        fill="rgba(255,255,255,0.9)"
+        stroke="none"
+      />
+    </svg>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Mock data — used when the user has no attempts yet (demo convenience)
+// Streak card with week calendar
 // ---------------------------------------------------------------------------
 
-const MOCK_TOPICS: TopicStats[] = [
-  { topic_id: "ubahan",   accuracy: 0.4,  attempts: 10, correct: 4,  level: "developing" },
-  { topic_id: "matriks",  accuracy: 0.2,  attempts: 10, correct: 2,  level: "beginner"   },
-  { topic_id: "insurans", accuracy: 0.75, attempts: 8,  correct: 6,  level: "proficient" },
-];
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
-export default function ProgressPage() {
-  const router = useRouter();
-  const [topics, setTopics]   = useState<TopicStats[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [usingMock, setUsingMock] = useState(false);
-  const [name, setName]       = useState("");
-
-  useEffect(() => {
-    const userId = sessionStorage.getItem("userId");
-    const n      = sessionStorage.getItem("userName") ?? "";
-    setName(n);
-
-    if (!userId) {
-      router.push("/");
-      return;
-    }
-
-    // TODO: replace with real API call once the backend is deployed
-    getAssessment(userId)
-      .then((res) => {
-        if (res.topics.length === 0) {
-          // No attempts yet — show mock data so the page is useful in the demo
-          setTopics(MOCK_TOPICS);
-          setUsingMock(true);
-        } else {
-          setTopics(res.topics);
-        }
-      })
-      .catch(() => {
-        // Fallback to mock data if the API is unavailable (e.g. local dev without backend)
-        setTopics(MOCK_TOPICS);
-        setUsingMock(true);
-      })
-      .finally(() => setLoading(false));
-  }, [router]);
-
-  const buddyMsg = buildBuddySentence(topics);
-
-  if (loading) return <LoadingShell />;
+function StreakCard({ streak }: { streak: number }) {
+  const today = new Date().getDay(); // 0 = Sunday
+  const weekStart = 10; // mock: week starts on day 10 of month
+  const activeDay = today; // 0-indexed in week
 
   return (
-    <div className="page-enter" style={{ padding: "0 0 6rem" }}>
-      {/* Header */}
-      <div
-        className="assessment-header"
-        style={{ marginBottom: "1.25rem" }}
-      >
-        <h1 className="font-display assessment-title" style={{ fontSize: "1.45rem" }}>
-          {name ? `${name}'s Progress` : "Your Progress"}
-        </h1>
-        <p className="assessment-sub" style={{ fontSize: "0.85rem", color: "#6b7280" }}>
-          Based on your practice sessions across all three topics.
-        </p>
-        {usingMock && (
-          <p
-            style={{
-              fontSize: "0.72rem",
-              color: "#9ca3af",
-              marginTop: "0.25rem",
-              fontStyle: "italic",
-            }}
+    <article className="progress-streak-card page-enter">
+      <div className="progress-streak-header">
+        <div>
+          <p className="progress-streak-kicker">Rentetan</p>
+          <h2 className="progress-streak-title">{streak} hari!</h2>
+        </div>
+        <div className="progress-streak-actions">
+          <div className="progress-gem-chip">
+            <span>💎</span>
+            <span>1</span>
+          </div>
+          <button type="button" className="progress-share-btn" aria-label="Kongsi">
+            <ShareIcon />
+          </button>
+        </div>
+      </div>
+
+      {/* Streak milestone hint */}
+      <div className="progress-streak-milestone">
+        <span className="progress-streak-milestone-icon">🔥</span>
+        <span className="progress-streak-milestone-arrow">→</span>
+        <span className="progress-streak-milestone-target">🏅</span>
+        <span className="progress-streak-milestone-text">10 soalan untuk dapatkan Emas</span>
+      </div>
+
+      {/* Week calendar */}
+      <div className="progress-week-grid" role="list" aria-label="Aktiviti minggu ini">
+        {WEEK_DAYS.map((day, i) => {
+          const dateNum = weekStart + i;
+          const isToday = i === activeDay;
+          const isDone = i < activeDay;
+          return (
+            <div
+              key={day}
+              role="listitem"
+              className={`progress-week-slot${isToday ? " today" : ""}${isDone ? " done" : ""}`}
+            >
+              <span className="progress-week-day">{day}</span>
+              <span className="progress-week-circle">
+                {isDone ? "🔥" : isToday ? "💎" : dateNum}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <button type="button" className="progress-gold-btn">
+        🎮 Dapatkan rentetan Emas
+      </button>
+    </article>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Set progress section
+// ---------------------------------------------------------------------------
+
+function SetProgressSection({ topics }: { topics: TopicStats[] }) {
+  return (
+    <section className="progress-set-section" aria-label="Kemajuan set">
+      <div className="progress-section-header">
+        <h2 className="progress-section-title">Kemajuan set</h2>
+        <button type="button" className="progress-see-all">Lihat semua</button>
+      </div>
+      <div className="progress-set-list">
+        {topics.map((t) => {
+          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)" };
+          const pct = Math.round(t.accuracy * 100);
+          const mastered = Math.round(t.correct);
+          const total = t.attempts;
+          return (
+            <article key={t.topic_id} className={`progress-set-card page-enter topic-${t.topic_id}`}>
+              <div className="progress-set-ring-wrap">
+                <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                  <circle
+                    cx="28" cy="28" r="22" fill="none"
+                    className="progress-ring-arc"
+                    strokeWidth="5"
+                    strokeDasharray={`${2 * Math.PI * 22}`}
+                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 28 28)"
+                  />
+                </svg>
+                <span className="progress-set-ring-pct">{pct}%</span>
+              </div>
+              <div className="progress-set-info">
+                <p className="progress-set-name">{meta.name}</p>
+                <p className="progress-set-sub">{mastered} daripada {total} kad dikuasai</p>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Leaderboard section
+// ---------------------------------------------------------------------------
+
+const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+
+function LeaderboardSection() {
+  const [tab, setTab] = useState<"hari" | "minggu" | "bulan" | "sepanjang">("sepanjang");
+  const tabs = [
+    { key: "hari", label: "Hari" },
+    { key: "minggu", label: "Minggu" },
+    { key: "bulan", label: "Bulan" },
+    { key: "sepanjang", label: "Sepanjang" },
+  ] as const;
+
+  return (
+    <section className="progress-leaderboard-section" aria-label="Papan kedudukan rakan">
+      <h2 className="progress-section-title">Papan kedudukan rakan anda</h2>
+
+      <div className="progress-tab-row" role="tablist">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            role="tab"
+            aria-selected={tab === t.key ? "true" : "false"}
+            type="button"
+            className={`progress-tab${tab === t.key ? " active" : ""}`}
+            onClick={() => setTab(t.key)}
           >
-            (Showing sample data — complete the diagnostic to see your real progress.)
-          </p>
-        )}
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* AI buddy sentence */}
-      <BuddyBubble message={buddyMsg} />
+      <div className="progress-leaderboard-list">
+        {LEADERBOARD.map((entry) => (
+          <div
+            key={entry.rank}
+            className={`progress-lb-row${entry.isMe ? " is-me" : ""}`}
+          >
+            <span className="progress-lb-rank">
+              {MEDAL[entry.rank] ?? entry.rank}
+            </span>
+            <span className="progress-lb-avatar">{entry.avatar}</span>
+            <span className="progress-lb-name">{entry.name}</span>
+            <span className="progress-lb-xp">{formatXP(entry.xp)}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
-      {/* Topic cards */}
-      {topics.map((t) => (
-        <TopicCard key={t.topic_id} topic={t} />
-      ))}
+// ---------------------------------------------------------------------------
+// Resume learning section (matches home "continue" pattern)
+// ---------------------------------------------------------------------------
 
-      {/* Actions */}
-      <div
-        className="assessment-actions"
-        style={{ display: "flex", flexDirection: "column", gap: "0.65rem", marginTop: "1.5rem" }}
-      >
+function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
+  const router = useRouter();
+  const first = topics[0];
+  if (!first) return null;
+  const meta = TOPIC_META[first.topic_id] ?? { name: first.topic_id, color: "#7f65ff", bg: "" };
+  const pct = Math.round(first.accuracy * 100);
+
+  return (
+    <section className="progress-resume-section" aria-label="Sambung semula">
+      <div className="progress-section-header">
+        <h2 className="progress-section-title">Sambung semula</h2>
+        <button type="button" className="progress-see-all">Lihat semua</button>
+      </div>
+      <div className="progress-resume-row">
+        <article
+          className={`progress-resume-card page-enter topic-${first.topic_id}`}
+          onClick={() => router.push("/materials")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && router.push("/materials")}
+          aria-label={`Sambung ${meta.name}`}
+        >
+          <div className="progress-set-ring-wrap">
+            <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
+              <circle
+                cx="28" cy="28" r="22" fill="none"
+                className="progress-ring-arc"
+                strokeWidth="5"
+                strokeDasharray={`${2 * Math.PI * 22}`}
+                strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                strokeLinecap="round"
+                transform="rotate(-90 28 28)"
+              />
+            </svg>
+            <span className="progress-set-ring-pct">{pct}%</span>
+          </div>
+          <div className="progress-set-info">
+            <p className="progress-set-name">{meta.name}</p>
+            <p className="progress-set-sub">Kuiz</p>
+          </div>
+        </article>
         <button
           type="button"
-          className="btn-primary"
-          onClick={() => router.push("/learn")}
+          className="progress-chat-btn"
+          aria-label="Buka chat"
+          onClick={() => router.push("/")}
         >
-          Continue Learning →
-        </button>
-        <button
-          type="button"
-          className="btn-ghost diag-skip-btn"
-          onClick={() => router.push("/review")}
-        >
-          Review Weak Topics ↺
+          <span>💬</span>
         </button>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -280,15 +361,55 @@ export default function ProgressPage() {
 
 function LoadingShell() {
   return (
-    <div className="page-enter">
-      <div className="assessment-header">
-        <div className="skeleton-title" />
-        <div className="skeleton-sub" />
-      </div>
-      <div style={{ height: "72px", borderRadius: "1rem", background: "#e5e7eb", marginBottom: "1.25rem" }} />
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="card topic-card skeleton-card-sm" style={{ marginBottom: "0.75rem" }} />
-      ))}
+    <div className="home-dashboard-shell page-enter">
+      <div style={{ height: 72, borderRadius: 20, background: "#e5e7eb" }} />
+      <div style={{ height: 154, borderRadius: 30, background: "#e5e7eb" }} />
+      <div style={{ height: 220, borderRadius: 30, background: "#e5e7eb" }} />
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default function ProgressPage() {
+  const router = useRouter();
+  const [topics, setTopics] = useState<TopicStats[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
+  const streak = 1;
+  const level = 2;
+  const xp = 30;
+
+  useEffect(() => {
+    const userId = sessionStorage.getItem("userId");
+    const n = sessionStorage.getItem("userName") ?? "";
+    setName(n || "Noob");
+
+    if (!userId) {
+      router.push("/");
+      return;
+    }
+
+    getAssessment(userId)
+      .then((res) => {
+        setTopics(res.topics.length === 0 ? MOCK_TOPICS : res.topics);
+      })
+      .catch(() => setTopics(MOCK_TOPICS))
+      .finally(() => setLoading(false));
+  }, [router]);
+
+  if (loading) return <LoadingShell />;
+
+  return (
+    <section className="home-dashboard-shell page-enter" aria-label="Halaman kemajuan">
+      <ProgressHeader name={name} xp={xp} level={level} />
+      <XPProgressCard xp={xp} level={level} />
+      <StreakCard streak={streak} />
+      <ResumeLearningSection topics={topics} />
+      <SetProgressSection topics={topics} />
+      <LeaderboardSection />
+    </section>
   );
 }
