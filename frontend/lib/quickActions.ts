@@ -12,19 +12,37 @@ export const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
     actionType: "ask_coach",
   },
   {
-    label: "Generate Ubahan Quiz",
+    label: "Flashcards: Ubahan",
+    emoji: "🃏",
+    message: "Create 8 flashcards for ubahan",
+    actionType: "generate_flashcards",
+  },
+  {
+    label: "Flashcards: Matriks",
+    emoji: "🃏",
+    message: "Create 8 flashcards for matriks",
+    actionType: "generate_flashcards",
+  },
+  {
+    label: "Flashcards: Insurans",
+    emoji: "🃏",
+    message: "Create 8 flashcards for insurans",
+    actionType: "generate_flashcards",
+  },
+  {
+    label: "Ubahan Quiz",
     emoji: "🎯",
     message: "Generate a personalised Ubahan quiz for me",
     actionType: "generate_quiz",
   },
   {
-    label: "Generate Matriks Quiz",
+    label: "Matriks Quiz",
     emoji: "🔢",
     message: "Generate a personalised Matriks quiz for me",
     actionType: "generate_quiz",
   },
   {
-    label: "Generate Insurans Quiz",
+    label: "Insurans Quiz",
     emoji: "🛡️",
     message: "Generate a personalised Insurans quiz for me",
     actionType: "generate_quiz",
@@ -34,12 +52,6 @@ export const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
     emoji: "🔄",
     message: "Show me questions I got wrong recently",
     actionType: "review_mistakes",
-  },
-  {
-    label: "Hard Question Please",
-    emoji: "💪",
-    message: "Give me a challenging question on this topic",
-    actionType: "give_hard_question",
   },
   {
     label: "My Progress",
@@ -114,16 +126,16 @@ function getCorrectAnswerActions(topicId: string): QuickAction[] {
       actionType: "generate_quiz",
     },
     {
+      label: `${label} Flashcards`,
+      emoji: "🃏",
+      message: `Create 8 flashcards for ${topicId}`,
+      actionType: "generate_flashcards",
+    },
+    {
       label: "Step-by-Step",
       emoji: "🔍",
       message: "Explain this question step by step",
       actionType: "explain_question",
-    },
-    {
-      label: "Teach Me This",
-      emoji: "📖",
-      message: "Teach me the concept behind this question",
-      actionType: "teach_concept",
     },
     COACH_CHIP,
   ];

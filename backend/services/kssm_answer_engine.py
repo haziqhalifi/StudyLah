@@ -45,6 +45,9 @@ logger = logging.getLogger(__name__)
 # OpenAI configuration for KSSM-grounded answers
 # ---------------------------------------------------------------------------
 
+# TODO: KssmAnswerEngine currently calls OpenAI (gpt-4o-mini) but the rest of
+# the stack uses Anthropic Claude / Gemini. Switch to Claude via anthropic SDK
+# or Gemini for consistency, and to avoid requiring a separate OPENAI_API_KEY.
 _KSSM_MODEL = "gpt-4o-mini"
 
 _KSSM_SYSTEM_PROMPT = (

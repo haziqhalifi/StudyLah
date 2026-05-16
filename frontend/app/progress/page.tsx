@@ -84,11 +84,7 @@ function ProgressHeader({ name, xp, level }: { name: string; xp: number; level: 
         </div>
       </div>
 
-      <div className="student-header-actions">
-        <div className="progress-xp-avatar" aria-label="Level badge">
-          {level}
-        </div>
-      </div>
+
     </header>
   );
 }
@@ -388,7 +384,8 @@ export default function ProgressPage() {
     setName(n || "Noob");
 
     if (!userId) {
-      router.push("/");
+      setTopics(MOCK_TOPICS);
+      setLoading(false);
       return;
     }
 

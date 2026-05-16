@@ -24,20 +24,23 @@ interface Props {
   inline?: boolean; // true → render as inline span, false → block div
 }
 
-// Regex: a token is "bare LaTeX" if it contains a backslash command, or
-// superscript/subscript brace notation, and is NOT already wrapped in $…$.
-// We wrap the whole segment between $ signs so remark-math processes it.
+// Convert all LaTeX delimiter styles to $ / $$ so remark-math can parse them.
 function normaliseMath(text: string): string {
-  // Already has delimiters — leave as-is.
-  if (/\$/.test(text)) return text;
+  let out = text;
 
-  // Bare LaTeX signal: \cmd  OR  ^{  OR  _{
-  if (/\\[a-zA-Z]|[\^_]\{/.test(text)) {
-    // Wrap the entire string as a single inline math expression.
-    return `$${text}$`;
+  // \[...\]  →  $$...$$  (display math)
+  out = out.replace(/\\\[([\s\S]*?)\\\]/g, (_m, inner) => `$$${inner}$$`);
+
+  // \(...\)  →  $...$   (inline math)
+  out = out.replace(/\\\(([\s\S]*?)\\\)/g, (_m, inner) => `$${inner}$`);
+
+  // If there are no $ delimiters at all but the text looks like bare LaTeX
+  // (contains \cmd or ^{} or _{}) wrap the whole thing as inline math.
+  if (!/\$/.test(out) && /\\[a-zA-Z]|[\^_]\{/.test(out)) {
+    out = `$${out}$`;
   }
 
-  return text;
+  return out;
 }
 
 export default function MathText({

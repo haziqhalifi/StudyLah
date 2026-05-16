@@ -68,8 +68,8 @@ class KssmRetriever:
           2. Rank remaining chunks by keyword overlap with user_question.
           3. Greedily select chunks until max_chunks or max_tokens is exhausted.
 
-        TODO (semantic retrieval upgrade):
-          Replace step 2 with a vector similarity search:
+        TODO: current retrieval is bag-of-words keyword overlap — works for demo
+          but will miss paraphrased questions. Upgrade to vector similarity:
             query_vec = embed_model.encode(user_question)
             candidates = vector_store.search(query_vec, topic_id=topic_id, k=max_chunks*2)
           Steps 1 and 3 stay the same.

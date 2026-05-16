@@ -73,12 +73,9 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <p className="student-time">9:41 AM</p>
         <h1>Hello, {student.name}</h1>
         <div className="student-meta-row">
           <span>{student.form}</span>
-          <span aria-hidden="true">•</span>
-          <span>Progress {student.progress}%</span>
           <span aria-hidden="true">•</span>
           <span>{student.xp} XP</span>
         </div>
@@ -343,7 +340,7 @@ function RecentSessionCard() {
     <section className="recent-session-card" aria-label="Continue recent session">
       <div className="recent-session-info">
         <p className="recent-session-label">Sambung semula</p>
-        <h3>Kuiz Matematik — Untitled</h3>
+        <h3>Kuiz Matematik</h3>
         <div className="recent-session-meta">
           <span className="recent-session-progress-pill">25%</span>
           <span>selesai</span>

@@ -10,6 +10,7 @@
 
 export type QuickActionType =
   | "generate_quiz"
+  | "generate_flashcards"
   | "review_mistakes"
   | "explain_topic"
   | "give_hard_question"

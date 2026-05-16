@@ -11,6 +11,7 @@ interface QuizSheetProps {
   subtitle?: string;
   progress?: number;
   total?: number;
+  timer?: React.ReactNode;
 }
 
 export default function QuizSheet({
@@ -22,6 +23,7 @@ export default function QuizSheet({
   subtitle,
   progress = 0,
   total = 1,
+  timer,
 }: QuizSheetProps) {
   const ref = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -63,6 +65,7 @@ export default function QuizSheet({
           {title && <span className="qs-title">{title}</span>}
           {subtitle && <span className="qs-subtitle">{subtitle}</span>}
         </div>
+        {timer && <div className="qs-header-timer">{timer}</div>}
       </header>
 
       <div

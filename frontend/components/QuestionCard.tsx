@@ -16,12 +16,6 @@ interface Props {
 
 const LETTERS = ["A", "B", "C", "D"];
 
-const DIFFICULTY_CHIP: Record<string, { label: string; cls: string }> = {
-  easy: { label: "Easy", cls: "chip chip-correct" },
-  medium: { label: "Medium", cls: "chip chip-warn" },
-  hard: { label: "Hard", cls: "chip chip-wrong" },
-};
-
 export default function QuestionCard({
   question,
   questionNumber,
@@ -32,8 +26,6 @@ export default function QuestionCard({
   correctOptionIndex,
   isReview = false,
 }: Props) {
-  const diff = DIFFICULTY_CHIP[question.difficulty] ?? DIFFICULTY_CHIP.medium;
-
   function optionClass(idx: number): string {
     const base = "option-card";
     if (!showResult)
@@ -74,7 +66,6 @@ export default function QuestionCard({
             <span className="chip chip-brand chip-ml">↺ Review</span>
           )}
         </span>
-        <span className={diff.cls}>{diff.label}</span>
       </div>
 
       <div className="font-display qcard-question">

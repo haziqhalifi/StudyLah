@@ -36,16 +36,10 @@ export default function MaterialsHubPage() {
             <span>Matematik Tingkatan 5</span>
             <span aria-hidden="true">•</span>
             <span>{BAB_CARDS.length} chapters</span>
-            <span aria-hidden="true">•</span>
-            <span>Lesson map</span>
           </div>
         </div>
 
-        <div className="student-header-actions">
-          <div className="student-avatar" aria-label="Materials hub avatar">
-            M
-          </div>
-        </div>
+
       </header>
 
       <section className="level-card" aria-label="Choose a chapter">
@@ -77,7 +71,6 @@ export default function MaterialsHubPage() {
               onClick={() => router.push(card.href)}
             >
               <div>
-                <p className="learning-feature-kicker">Matematik Tingkatan 5</p>
                 <h2>{card.title}</h2>
                 <p>{card.subtitle}</p>
               </div>

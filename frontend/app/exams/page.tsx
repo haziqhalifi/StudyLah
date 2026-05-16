@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import QuestionCard from "@/components/QuestionCard";
 import QuizSheet from "@/components/QuizSheet";
 import { Paper, Question, getPapers } from "@/lib/api";
@@ -9,7 +9,9 @@ const SUPABASE_URL = "https://pxzyfiysxzwihjplrfvo.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4enlmaXlzeHp3aWhqcGxyZnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTU2OTQsImV4cCI6MjA4OTA5MTY5NH0.NjUwwYGELfBI7MzaAmV_L26n45MVWrrpa2okuxA8VJM";
 
-type Stage = "pick" | "quiz";
+const EXAM_DURATION_SECONDS = 90 * 60; // 1h 30m
+
+type Stage = "pick" | "quiz" | "results";
 
 interface RawQuestion {
   id: number;
@@ -19,6 +21,8 @@ interface RawQuestion {
   difficulty: string;
   topic: string | null;
 }
+
+interface RawQuestionWithCorrect extends RawQuestion {}
 
 function mapQuestion(raw: RawQuestion): Question {
   return {
@@ -31,7 +35,7 @@ function mapQuestion(raw: RawQuestion): Question {
   };
 }
 
-async function getQuestionsByPaper(paperId: number): Promise<Question[]> {
+async function getQuestionsByPaper(paperId: number): Promise<{ questions: Question[]; correctMap: Record<string, number> }> {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/questions?select=id,question,options,correct_index,difficulty,topic&paper_id=eq.${paperId}&order=question_number`,
     {
@@ -42,8 +46,11 @@ async function getQuestionsByPaper(paperId: number): Promise<Question[]> {
     },
   );
   if (!res.ok) throw new Error(`Failed to fetch questions (${res.status})`);
-  const rows: RawQuestion[] = await res.json();
-  return rows.map(mapQuestion);
+  const rows: RawQuestionWithCorrect[] = await res.json();
+  const questions = rows.map(mapQuestion);
+  const correctMap: Record<string, number> = {};
+  rows.forEach((r) => { correctMap[String(r.id)] = r.correct_index; });
+  return { questions, correctMap };
 }
 
 function isMathPaper(paper: Paper) {
@@ -55,6 +62,14 @@ function isTrialPaper(paper: Paper) {
   return (paper.paper_type ?? "").toLowerCase() === "trial";
 }
 
+function formatTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export default function ExamsPage() {
   const [stage, setStage] = useState<Stage>("pick");
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -64,10 +79,15 @@ export default function ExamsPage() {
   const [error, setError] = useState("");
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [correctMap, setCorrectMap] = useState<Record<string, number>>({});
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  // Set of paper IDs that have been completed (all questions answered)
   const [completedPaperIds, setCompletedPaperIds] = useState<Set<number>>(new Set());
+
+  // Timer state
+  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_SECONDS);
+  const [timedOut, setTimedOut] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +97,33 @@ export default function ExamsPage() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  // Start/stop timer when quiz stage changes
+  useEffect(() => {
+    if (stage === "quiz") {
+      setTimeLeft(EXAM_DURATION_SECONDS);
+      setTimedOut(false);
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            setTimedOut(true);
+            setStage("results");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [stage]);
 
   const trialPapers = useMemo(() => {
     const math = papers.filter(isMathPaper);
@@ -95,10 +142,11 @@ export default function ExamsPage() {
     setLoadingPaperId(paper.id);
     setError("");
     try {
-      const qs = await getQuestionsByPaper(paper.id);
+      const { questions: qs, correctMap: cm } = await getQuestionsByPaper(paper.id);
       if (qs.length === 0) throw new Error("No questions found for this paper.");
       setSelectedPaper(paper);
       setQuestions(qs);
+      setCorrectMap(cm);
       setCurrent(0);
       setAnswers({});
       setStage("quiz");
@@ -113,18 +161,24 @@ export default function ExamsPage() {
     setAnswers((prev) => ({ ...prev, [questionId]: idx }));
   }
 
-  function handleCloseQuiz() {
-    // Mark paper as completed if all questions were answered
-    if (selectedPaper && questions.length > 0 && Object.keys(answers).length === questions.length) {
+  function handleSubmit() {
+    if (selectedPaper) {
       setCompletedPaperIds((prev) => new Set([...prev, selectedPaper.id]));
     }
+    setStage("results");
+  }
+
+  function handleCloseQuiz() {
     setStage("pick");
     setQuestions([]);
+    setCorrectMap({});
     setCurrent(0);
     setAnswers({});
     setError("");
+    setTimedOut(false);
   }
 
+  // ── Pick stage ─────────────────────────────────────────────────────
   if (stage === "pick") {
     return (
       <section className="home-dashboard-shell page-enter" aria-label="Exams hub">
@@ -208,9 +262,93 @@ export default function ExamsPage() {
     );
   }
 
+  // ── Results stage ──────────────────────────────────────────────────
+  if (stage === "results") {
+    const total = questions.length;
+    const attempted = Object.keys(answers).length;
+    const correct = questions.filter((q) => answers[q.id] !== undefined && answers[q.id] === correctMap[q.id]).length;
+    const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const grade = pct >= 90 ? "A+" : pct >= 80 ? "A" : pct >= 70 ? "B" : pct >= 60 ? "C" : pct >= 50 ? "D" : "E";
+    const emoji = pct >= 80 ? "🎉" : pct >= 60 ? "👍" : "💪";
+
+    return (
+      <div className="qs-shell">
+        <header className="qs-header">
+          <button type="button" className="qs-icon-btn" onClick={handleCloseQuiz} aria-label="Close">✕</button>
+          <div className="qs-header-center">
+            <span className="qs-title">Results</span>
+            <span className="qs-subtitle">{selectedPaper?.paper_name}</span>
+          </div>
+        </header>
+
+        <div className="qs-scroll">
+          {timedOut && (
+            <div className="exam-timeout-banner">
+              ⏰ Time's up! Your answers have been submitted.
+            </div>
+          )}
+
+          {/* Score card */}
+          <div className="exam-score-card">
+            <div className="exam-score-emoji">{emoji}</div>
+            <div className="exam-score-grade">{grade}</div>
+            <div className="exam-score-fraction">{correct} / {total}</div>
+            <div className="exam-score-pct">{pct}%</div>
+            <div className="exam-score-sub">{attempted < total ? `${total - attempted} unanswered` : "All questions attempted"}</div>
+          </div>
+
+          {/* Per-question breakdown */}
+          <div className="exam-review-list">
+            {questions.map((q, i) => {
+              const userIdx = answers[q.id];
+              const corrIdx = correctMap[q.id];
+              const answered = userIdx !== undefined;
+              const isCorrect = answered && userIdx === corrIdx;
+              return (
+                <div key={q.id} className={`exam-review-item${isCorrect ? " exam-review-correct" : answered ? " exam-review-wrong" : " exam-review-skipped"}`}>
+                  <div className="exam-review-top">
+                    <span className="exam-review-num">Q{i + 1}</span>
+                    <span className={`exam-review-badge${isCorrect ? " badge-correct" : answered ? " badge-wrong" : " badge-skipped"}`}>
+                      {isCorrect ? "✓ Correct" : answered ? "✗ Wrong" : "— Skipped"}
+                    </span>
+                  </div>
+                  <p className="exam-review-text">{q.text}</p>
+                  {answered && !isCorrect && (
+                    <p className="exam-review-your">Your answer: <strong>{q.options[userIdx]}</strong></p>
+                  )}
+                  <p className="exam-review-correct-ans">Correct: <strong>{q.options[corrIdx]}</strong></p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="qs-bar">
+          <div className="learn-actions">
+            <button type="button" className="btn-ghost" onClick={handleCloseQuiz}>Back</button>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setCurrent(0);
+                setAnswers({});
+                setStage("quiz");
+              }}
+            >
+              Retry Paper
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Quiz stage ─────────────────────────────────────────────────────
   const question = questions[current];
   const answered = Object.keys(answers).length;
   const isLast = current === questions.length - 1;
+  const isWarning = timeLeft <= 300; // last 5 min
+  const isCritical = timeLeft <= 60;
 
   const bar = (
     <div className="qs-nav-bar">
@@ -232,6 +370,16 @@ export default function ExamsPage() {
       >
         →
       </button>
+      {answered === questions.length && (
+        <button
+          type="button"
+          className="qs-nav-submit"
+          onClick={handleSubmit}
+          aria-label="Submit exam"
+        >
+          Submit
+        </button>
+      )}
     </div>
   );
 
@@ -253,6 +401,11 @@ export default function ExamsPage() {
       subtitle={paperSubtitle}
       progress={current + 1}
       total={questions.length}
+      timer={
+        <span className={`exam-timer${isWarning ? " exam-timer-warn" : ""}${isCritical ? " exam-timer-critical" : ""}`}>
+          ⏱ {formatTime(timeLeft)}
+        </span>
+      }
     >
       {question && (
         <QuestionCard

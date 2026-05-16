@@ -464,6 +464,8 @@ export default function DiagnosticResultPage() {
           {isStartingMain ? "Creating quiz…" : "Start personalised practice →"}
         </button>
 
+        {/* TODO: /dashboard route does not exist — this button will 404.
+            Either create the dashboard page or change this to router.push("/") */}
         <button
           type="button"
           className="btn-ghost"

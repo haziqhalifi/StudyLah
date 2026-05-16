@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import MathText from "@/components/MathText";
 import QuickActionChips from "@/components/QuickActionChips";
 import QuizDrawer from "@/components/QuizDrawer";
-import { postStudyBuddyMessage, fetchCoachMessage, ChatMessage } from "@/lib/api";
+import { postStudyBuddyMessage, fetchCoachMessage, ChatMessage, AgentAction } from "@/lib/api";
+import FlashcardReadyCard from "@/components/FlashcardReadyCard";
 import { LearningContext, QuickAction } from "@/lib/types";
 import { getChipsForContext } from "@/lib/quickActions";
 
@@ -23,9 +24,10 @@ interface StudyBuddyChatProps {
 // Types
 // ---------------------------------------------------------------------------
 
-// Extends ChatMessage with an optional flag for coach replies so we can style
-// them differently in the bubble list without touching the ChatMessage wire type.
-type DisplayMessage = ChatMessage & { isCoach?: boolean };
+// Extends ChatMessage with optional flags:
+//   isCoach  — style as AI Coach bubble
+//   action   — attach an agent action to a bot bubble (e.g. create_flashcards)
+type DisplayMessage = ChatMessage & { isCoach?: boolean; action?: AgentAction; pickFlashcardTopic?: boolean };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -128,7 +130,15 @@ export default function StudyBuddyChat({
     try {
       const res = await postStudyBuddyMessage(userId, historyToSend, learningContext);
 
-      setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: res.reply,
+          action: res.action?.type !== "none" ? res.action : undefined,
+          pickFlashcardTopic: res.meta?.pick_flashcard_topic === true,
+        },
+      ]);
       setChipsVisible(true);
 
       if (res.action?.type === "create_quiz") {
@@ -283,32 +293,67 @@ export default function StudyBuddyChat({
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`sb-bubble ${
-                msg.role === "user"
-                  ? "sb-bubble-user"
-                  : msg.isCoach
-                  ? "sb-bubble-coach"
-                  : "sb-bubble-bot"
-              }`}
+              className={
+                msg.role === "user" ? "sb-msg-group sb-msg-group--user" : "sb-msg-group"
+              }
             >
-              {msg.isCoach && (
-                <span className="sb-coach-label">🧑‍🏫 AI Coach</span>
+              <div
+                className={`sb-bubble ${
+                  msg.role === "user"
+                    ? "sb-bubble-user"
+                    : msg.isCoach
+                    ? "sb-bubble-coach"
+                    : "sb-bubble-bot"
+                }`}
+              >
+                {msg.isCoach && (
+                  <span className="sb-coach-label">🧑‍🏫 AI Coach</span>
+                )}
+                {msg.role === "user" ? (
+                  <span className="sb-bubble-text">{msg.content}</span>
+                ) : (
+                  <MathText className="sb-md">{msg.content}</MathText>
+                )}
+              </div>
+
+              {/* Flashcard ready card — shown beneath the bot reply bubble */}
+              {msg.action?.type === "create_flashcards" && (
+                <FlashcardReadyCard
+                  setId={msg.action.flashcard_set_id}
+                  title={msg.action.flashcard_title}
+                  topicId={msg.action.topic_id}
+                  numCards={msg.action.num_cards}
+                />
               )}
-              {msg.role === "user" ? (
-                <span className="sb-bubble-text">{msg.content}</span>
-              ) : (
-                <MathText className="sb-md">{msg.content}</MathText>
+
+              {/* Inline topic picker — shown when bot asks which topic for flashcards */}
+              {msg.pickFlashcardTopic && !loading && (
+                <div className="sb-topic-picker">
+                  {(["ubahan", "matriks", "insurans"] as const).map((tid) => (
+                    <button
+                      key={tid}
+                      type="button"
+                      className={`sb-topic-btn sb-topic-btn--${tid}`}
+                      onClick={() => sendMessage(`Create 8 flashcards for ${tid}`)}
+                      disabled={loading}
+                    >
+                      🃏 {tid.charAt(0).toUpperCase() + tid.slice(1)}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           ))}
 
           {loading && (
-            <div className="sb-bubble sb-bubble-bot">
-              <span className="sb-typing">
-                <span />
-                <span />
-                <span />
-              </span>
+            <div className="sb-msg-group">
+              <div className="sb-bubble sb-bubble-bot">
+                <span className="sb-typing">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </div>
             </div>
           )}
 

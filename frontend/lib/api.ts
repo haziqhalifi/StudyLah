@@ -300,13 +300,20 @@ export type AgentAction =
       topic_id: "ubahan" | "matriks" | "insurans";
       title: string;
       question_count: number;
+    }
+  | {
+      type: "create_flashcards";
+      flashcard_set_id: string;
+      flashcard_title: string;
+      topic_id: "ubahan" | "matriks" | "insurans";
+      num_cards: number;
     };
 
 // Full response from the agentic chat endpoint
 export interface ChatResponse {
   reply: string;
   action: AgentAction;
-  meta?: { out_of_scope?: boolean };
+  meta?: { out_of_scope?: boolean; pick_flashcard_topic?: boolean };
 }
 
 /** Send the full conversation history and receive an agentic reply. */
@@ -548,6 +555,70 @@ export async function fetchDiagnosticResult(
 ): Promise<DiagnosticResult> {
   return get("/api/diagnostic/result", { userId });
 }
+
+// ---------------------------------------------------------------------------
+// Flashcards
+// ---------------------------------------------------------------------------
+
+export type FlashcardTopicId = "ubahan" | "matriks" | "insurans";
+
+export interface Flashcard {
+  id: string;
+  set_id: string;
+  question: string;
+  answer: string;
+  topic_id: FlashcardTopicId;
+  subtopic?: string;
+  created_at: string;
+}
+
+export interface FlashcardSet {
+  id: string;
+  user_id: string;
+  topic_id: FlashcardTopicId;
+  subtopic?: string;
+  title: string;
+  description?: string;
+  cards: Flashcard[];
+  created_at: string;
+}
+
+export interface FlashcardSetSummary {
+  id: string;
+  title: string;
+  topic_id: FlashcardTopicId;
+  subtopic?: string;
+  card_count: number;
+}
+
+export async function fetchFlashcardSets(
+  userId: string,
+): Promise<FlashcardSetSummary[]> {
+  return get("/api/flashcards/sets", { userId });
+}
+
+export async function fetchFlashcardSet(setId: string): Promise<FlashcardSet> {
+  return get(`/api/flashcards/sets/${setId}`);
+}
+
+// Extend AgentAction to include the create_flashcards variant.
+// Re-declared here so consumers get the full union without importing from two places.
+export type AgentActionExtended =
+  | { type: "none" }
+  | {
+      type: "create_quiz";
+      quiz_id: string;
+      topic_id: FlashcardTopicId;
+      title: string;
+      question_count: number;
+    }
+  | {
+      type: "create_flashcards";
+      flashcard_set_id: string;
+      flashcard_title: string;
+      topic_id: FlashcardTopicId;
+      num_cards: number;
+    };
 
 /** Ask the coach a question and get a personalised reply + suggestions. */
 export async function fetchCoachMessage(
