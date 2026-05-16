@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createUser } from "@/lib/api";
+import LearningJourneySection from "@/components/LearningJourneySection";
 
 export default function Home() {
   const router = useRouter();
@@ -170,6 +171,27 @@ function Dashboard({ name, onReset }: { name: string; onReset: () => void }) {
         <button
           type="button"
           className="btn-ghost btn-ghost-sm"
+          onClick={() => router.push("/materials/ubahan")}
+        >
+          Bab 1 Material
+        </button>
+        <button
+          type="button"
+          className="btn-ghost btn-ghost-sm"
+          onClick={() => router.push("/materials/matriks")}
+        >
+          Bab 2 Material
+        </button>
+        <button
+          type="button"
+          className="btn-ghost btn-ghost-sm"
+          onClick={() => router.push("/materials/insurans")}
+        >
+          Bab 3 Material
+        </button>
+        <button
+          type="button"
+          className="btn-ghost btn-ghost-sm"
           onClick={() => router.push("/assessment")}
         >
           My Progress ▤
@@ -182,6 +204,8 @@ function Dashboard({ name, onReset }: { name: string; onReset: () => void }) {
           Switch user
         </button>
       </div>
+
+      <LearningJourneySection />
     </div>
   );
 }
