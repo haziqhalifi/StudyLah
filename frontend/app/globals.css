@@ -1466,7 +1466,7 @@ h3 {
 
 .material-current-head {
   position: sticky;
-  top: calc(-1 * var(--app-main-pad-top));
+  top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
   z-index: 40;
   border-radius: var(--r-xl);
   border: 1px solid #dbeafe;
@@ -1475,6 +1475,12 @@ h3 {
   padding: 0.95rem 1rem;
   box-shadow: var(--shadow-card);
   margin-bottom: 0.3rem;
+}
+
+@media (min-width: 769px) {
+  .material-current-head {
+    top: 1rem;
+  }
 }
 
 .material-current-head .material-title {
