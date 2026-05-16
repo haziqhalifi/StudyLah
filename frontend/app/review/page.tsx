@@ -202,7 +202,7 @@ export default function ReviewPage() {
           <button
             type="button"
             className="btn-ghost diag-skip-btn"
-            onClick={() => router.push("/assessment")}}
+            onClick={() => router.push("/assessment")}
           >
             Progress ▤
           </button>
