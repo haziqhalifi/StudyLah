@@ -73,7 +73,6 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <p className="student-time">9:41 AM</p>
         <h1>Hello, {student.name}</h1>
         <div className="student-meta-row">
           <span>{student.form}</span>
@@ -96,9 +95,6 @@ function StudentHeader() {
             aria-label="Unread notifications"
           />
         </button>
-        <div className="student-avatar" aria-label={`${student.name} avatar`}>
-          A
-        </div>
       </div>
     </header>
   );

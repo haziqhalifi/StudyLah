@@ -6,10 +6,10 @@ import type { ReactNode } from "react";
 
 const NAV_ITEMS = [
   { href: "/", icon: HomeIcon, label: "Home" },
-  { href: "/materials", icon: BookIcon, label: "Lessons" },
-  { href: "/diagnostic", icon: PathIcon, label: "Journey" },
-  { href: "/assessment", icon: ProgressIcon, label: "Progress" },
-  { href: "/review", icon: SettingsIcon, label: "Settings" },
+  { href: "/materials", icon: BookIcon, label: "Learning" },
+  { href: "/diagnostic", icon: AddIcon, label: "Add" },
+  { href: "/assessment", icon: SetIcon, label: "Set" },
+  { href: "/profile", icon: ProfileIcon, label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -62,27 +62,27 @@ function BookIcon() {
   );
 }
 
-function PathIcon() {
+function AddIcon() {
   return (
     <IconBase>
-      <path d="M6 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 5h4.5A3.5 3.5 0 0 1 16 8.5v0A3.5 3.5 0 0 1 12.5 12H11a3 3 0 0 0 0 6h5" />
+      <path d="M12 5v14M5 12h14" />
     </IconBase>
   );
 }
 
-function ProgressIcon() {
+function SetIcon() {
   return (
     <IconBase>
-      <path d="M5 19V9M12 19V5M19 19v-7" />
+      <path d="M5 7h14M7 12h10M9 17h6" />
     </IconBase>
   );
 }
 
-function SettingsIcon() {
+function ProfileIcon() {
   return (
     <IconBase>
-      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-      <path d="M19 12a7.8 7.8 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7.7 7.7 0 0 0-1.7-1L14.5 3h-5l-.3 3.1a7.7 7.7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5a7.8 7.8 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a7.7 7.7 0 0 0 1.7 1l.3 3.1h5l.3-3.1a7.7 7.7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z" />
+      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+      <path d="M4.5 20c.8-3.7 3.4-6 7.5-6s6.7 2.3 7.5 6" />
     </IconBase>
   );
 }
