@@ -56,6 +56,18 @@ def get_questions_by_ids(ids: List[str]) -> List[Question]:
     return [_row_to_question(r) for r in rows]
 
 
+def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
+    response = (
+        supabase.table("questions")
+        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .eq("paper_id", paper_id)
+        .not_.is_("question", "null")
+        .limit(limit)
+        .execute()
+    )
+    return [_row_to_question(r) for r in response.data]
+
+
 def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Question]:
     query = (
         supabase.table("questions")
@@ -63,7 +75,8 @@ def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Q
         .limit(limit)
     )
     if topic_id:
-        query = query.eq("topic", topic_id)
+        # `topic` column is currently unused (always null); filter by `subject` instead.
+        query = query.eq("subject", topic_id)
     response = query.execute()
     return [_row_to_question(r) for r in response.data]
 
@@ -126,7 +139,10 @@ def get_or_create_profile(user_id: str) -> SkillProfile:
         .maybe_single()
         .execute()
     )
-    if response.data:
+    # Some Supabase client implementations (or stubs) may return `None`
+    # for the entire response on failure; handle that case gracefully by
+    # treating it as an empty/no profile.
+    if response and getattr(response, "data", None):
         topics = {
             tid: TopicStats(**stats)
             for tid, stats in response.data["topics"].items()
