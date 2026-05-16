@@ -306,7 +306,8 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         )
     db.save_profile(db_profile)
 
-    explanation = _generate_explanation(question, attempt, ai_profile)
+    # Don't generate explanation immediately; let frontend request it on demand
+    explanation = None
 
     # Every _REVIEW_INJECTION_INTERVAL answers, serve an overdue review question
     # instead of a fresh adaptive one.
@@ -353,6 +354,41 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         skill_summary=topic_summary,
         is_review=is_review,
     )
+
+
+# ---------------------------------------------------------------------------
+# Endpoint: GET /api/session/generate_explanation
+# ---------------------------------------------------------------------------
+
+@router.get("/generate_explanation", response_model=Explanation)
+def generate_explanation(
+    user_id: str,
+    question_id: str,
+    selected_option_index: int,
+) -> Explanation:
+    """Generate an explanation for a previously answered question on demand."""
+    question = db.get_question_by_id(question_id)
+    if question is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Question '{question_id}' not found.",
+        )
+
+    # Create a synthetic attempt object for explanation generation
+    attempt = Attempt(
+        user_id=user_id,
+        question_id=question_id,
+        selected_option_index=selected_option_index,
+        is_correct=question.correct_option_index == selected_option_index,
+        timestamp=datetime.utcnow(),
+    )
+
+    # Build current skill profile from user's attempts
+    all_attempts = get_user_attempts(user_id)
+    ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
+
+    # Generate and return explanation
+    return _generate_explanation(question, attempt, ai_profile)
 
 
 # ---------------------------------------------------------------------------

@@ -17,9 +17,9 @@ interface Props {
 const LETTERS = ["A", "B", "C", "D"];
 
 const DIFFICULTY_CHIP: Record<string, { label: string; cls: string }> = {
-  easy:   { label: "Easy",   cls: "chip chip-correct" },
-  medium: { label: "Medium", cls: "chip chip-warn"    },
-  hard:   { label: "Hard",   cls: "chip chip-wrong"   },
+  easy: { label: "Easy", cls: "chip chip-correct" },
+  medium: { label: "Medium", cls: "chip chip-warn" },
+  hard: { label: "Hard", cls: "chip chip-wrong" },
 };
 
 export default function QuestionCard({
@@ -36,32 +36,43 @@ export default function QuestionCard({
 
   function optionClass(idx: number): string {
     const base = "option-card";
-    if (!showResult) return base + (idx === selectedOptionIndex ? " selected" : "");
+    if (!showResult)
+      return base + (idx === selectedOptionIndex ? " selected" : "");
     if (idx === correctOptionIndex) return `${base} correct disabled`;
-    if (idx === selectedOptionIndex && !isCorrect) return `${base} wrong disabled`;
+    if (idx === selectedOptionIndex && !isCorrect)
+      return `${base} wrong disabled`;
     return `${base} dimmed disabled`;
   }
 
   function letterClass(idx: number): string {
     const base = "option-letter";
-    if (!showResult && idx === selectedOptionIndex) return `${base} option-letter-selected`;
-    if (showResult && idx === correctOptionIndex)   return `${base} option-letter-correct`;
-    if (showResult && idx === selectedOptionIndex)  return `${base} option-letter-wrong`;
+    if (!showResult && idx === selectedOptionIndex)
+      return `${base} option-letter-selected`;
+    if (showResult && idx === correctOptionIndex)
+      return `${base} option-letter-correct`;
+    if (showResult && idx === selectedOptionIndex)
+      return `${base} option-letter-wrong`;
     return base;
   }
 
   const cardClass = [
     "card qcard page-enter",
-    showResult && isCorrect  ? "qcard-result-correct" : "",
-    showResult && !isCorrect ? "qcard-result-wrong"   : "",
-  ].filter(Boolean).join(" ");
+    showResult && isCorrect ? "qcard-result-correct" : "",
+    showResult && !isCorrect ? "qcard-result-wrong" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={cardClass}>
       <div className="qcard-header">
         <span className="qcard-label">
-          {questionNumber ? `Question ${questionNumber}` : question.topic_id.replace(/_/g, " ")}
-          {isReview && <span className="chip chip-brand chip-ml">↺ Review</span>}
+          {questionNumber
+            ? `Question ${questionNumber}`
+            : question.topic_id.replace(/_/g, " ")}
+          {isReview && (
+            <span className="chip chip-brand chip-ml">↺ Review</span>
+          )}
         </span>
         <span className={diff.cls}>{diff.label}</span>
       </div>
@@ -87,9 +98,11 @@ export default function QuestionCard({
             {showResult && idx === selectedOptionIndex && (
               <span className="option-check">{isCorrect ? "✓" : "✗"}</span>
             )}
-            {showResult && idx === correctOptionIndex && idx !== selectedOptionIndex && (
-              <span className="option-check option-check-correct">✓</span>
-            )}
+            {showResult &&
+              idx === correctOptionIndex &&
+              idx !== selectedOptionIndex && (
+                <span className="option-check option-check-correct">✓</span>
+              )}
           </button>
         ))}
       </div>

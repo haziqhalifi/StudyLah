@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Explanation, ExplanationStyle } from "@/lib/api";
 import MathText from "@/components/MathText";
 
 interface Props {
-  explanation: Explanation;
+  explanation?: Explanation | null;
   isCorrect: boolean;
+  onGenerateExplanation?: () => Promise<void>;
+  isGenerating?: boolean;
 }
 
 const STYLE_META: Record<ExplanationStyle, { label: string; icon: string; cls: string }> = {
@@ -15,7 +18,41 @@ const STYLE_META: Record<ExplanationStyle, { label: string; icon: string; cls: s
   shortcut_tips: { label: "Shortcut tip",    icon: "⚡", cls: "expblock-shortcut" },
 };
 
-export default function ExplanationBlock({ explanation, isCorrect }: Props) {
+export default function ExplanationBlock({
+  explanation,
+  isCorrect,
+  onGenerateExplanation,
+  isGenerating = false,
+}: Props) {
+  // If no explanation yet, show generate button
+  if (!explanation) {
+    return (
+      <div className="expblock card page-enter">
+        {/* Result banner */}
+        <div className={`expblock-banner ${isCorrect ? "expblock-banner-correct" : "expblock-banner-wrong"}`}>
+          <span className="expblock-banner-icon">{isCorrect ? "✓" : "✗"}</span>
+          {isCorrect ? "Correct!" : "Not quite — here's why"}
+        </div>
+
+        {/* Body */}
+        <div className="expblock-body">
+          <p className="expblock-text" style={{ color: "#888", fontSize: "0.95rem", marginBottom: "1rem" }}>
+            Want to understand this better? Let me generate a personalized explanation.
+          </p>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={onGenerateExplanation}
+            disabled={isGenerating}
+            style={{ width: "100%" }}
+          >
+            {isGenerating ? "Generating…" : "Generate Explanation"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const meta = STYLE_META[explanation.style] ?? STYLE_META.step_by_step;
   const hasSteps = explanation.style === "step_by_step" && explanation.steps && explanation.steps.length > 0;
 

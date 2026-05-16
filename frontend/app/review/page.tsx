@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   getReview,
   submitAnswer,
+  generateExplanation,
   ReviewItem,
   SubmitAnswerResponse,
 } from "@/lib/api";
@@ -27,6 +28,7 @@ export default function ReviewPage() {
   const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generatingExplanation, setGeneratingExplanation] = useState(false);
 
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
@@ -67,6 +69,23 @@ export default function ReviewPage() {
     setIdx((i) => i + 1);
     setSelected(null);
     setResult(null);
+  }
+
+  async function handleGenerateExplanation() {
+    if (!result || !item || !userId || selected === null) return;
+    setGeneratingExplanation(true);
+    try {
+      const explanation = await generateExplanation(userId, item.question.id, selected);
+      // Update the result with the generated explanation
+      setResult({
+        ...result,
+        explanation,
+      });
+    } catch {
+      alert("Failed to generate explanation. Please try again.");
+    } finally {
+      setGeneratingExplanation(false);
+    }
   }
 
   if (loading) return <LoadingShell />;
@@ -179,6 +198,9 @@ export default function ReviewPage() {
         <ExplanationBlock
           explanation={result.explanation}
           isCorrect={result.is_correct}
+          onGenerateExplanation={handleGenerateExplanation}
+          isGenerating={generatingExplanation}
+        />
         />
       )}
     </QuizSheet>

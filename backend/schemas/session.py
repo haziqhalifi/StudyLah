@@ -54,7 +54,7 @@ class Explanation(BaseModel):
 
 class SubmitAnswerResponse(BaseModel):
     is_correct: bool
-    explanation: Explanation
+    explanation: Optional[Explanation] = None
     next_question: QuestionPublic
     skill_summary: Optional[TopicStats] = None
     # True when next_question is a spaced-repetition review item, not a fresh question.

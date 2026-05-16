@@ -167,6 +167,18 @@ export async function submitAnswer(
   });
 }
 
+export async function generateExplanation(
+  userId: string,
+  questionId: string,
+  selectedOptionIndex: number
+): Promise<Explanation> {
+  return get("/api/session/generate_explanation", {
+    user_id: userId,
+    question_id: questionId,
+    selected_option_index: selectedOptionIndex.toString(),
+  });
+}
+
 export async function getAssessment(userId: string): Promise<AssessmentResponse> {
   return get("/api/session/assessment", { user_id: userId });
 }

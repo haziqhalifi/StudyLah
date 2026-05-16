@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   submitAnswer,
+  generateExplanation,
   startDiagnostic,
   submitDiagnostic,
   getPapers,
@@ -59,6 +60,7 @@ export default function LearnPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [generatingExplanation, setGeneratingExplanation] = useState(false);
   const [count, setCount] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [prevDiff, setPrevDiff] = useState<string | null>(null);
@@ -152,6 +154,23 @@ export default function LearnPage() {
     setQuestion(next);
     setSelected(null);
     setResult(null);
+  }
+
+  async function handleGenerateExplanation() {
+    if (!result || !question || !userId || selected === null) return;
+    setGeneratingExplanation(true);
+    try {
+      const explanation = await generateExplanation(userId, question.id, selected);
+      // Update the result with the generated explanation
+      setResult({
+        ...result,
+        explanation,
+      });
+    } catch {
+      alert("Failed to generate explanation. Please try again.");
+    } finally {
+      setGeneratingExplanation(false);
+    }
   }
 
   if (view === "topics") {
@@ -306,6 +325,8 @@ export default function LearnPage() {
         <ExplanationBlock
           explanation={result.explanation}
           isCorrect={result.is_correct}
+          onGenerateExplanation={handleGenerateExplanation}
+          isGenerating={generatingExplanation}
         />
       )}
 

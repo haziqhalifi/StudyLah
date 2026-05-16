@@ -42,10 +42,11 @@ function normaliseMath(text: string): string {
 
 export default function MathText({ children, className, inline = false }: Props) {
   const normalised = normaliseMath(children);
+  const responsiveClass = [className, "math-text-responsive"].filter(Boolean).join(" ");
 
   if (inline) {
     return (
-      <span className={className}>
+      <span className={responsiveClass}>
         <ReactMarkdown
           remarkPlugins={[remarkMath]}
           rehypePlugins={[rehypeKatex]}
@@ -61,7 +62,7 @@ export default function MathText({ children, className, inline = false }: Props)
   }
 
   return (
-    <div className={className}>
+    <div className={responsiveClass}>
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex]}

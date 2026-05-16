@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import BottomNav from "@/components/BottomNav";
+import "./responsive-math.css";
 
 export const metadata: Metadata = {
   title: "StudyLah – AI-Powered Learning",
