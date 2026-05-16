@@ -13,7 +13,7 @@ import {
   submitDiagnostic,
 } from "@/lib/api";
 
-type Stage = "pick" | "quiz";
+type Stage = "pick" | "preview" | "quiz";
 
 function isMathPaper(paper: Paper) {
   const subject = (paper.subject ?? "").trim().toLowerCase();
@@ -72,7 +72,7 @@ export default function ExamsPage() {
     [trialPapers, selectedPaperId],
   );
 
-  async function handleStartPaper() {
+  async function handlePreviewPaper() {
     const userId = sessionStorage.getItem("userId");
     if (!userId) {
       router.push("/");
@@ -91,12 +91,16 @@ export default function ExamsPage() {
       setQuestions(res.questions);
       setCurrent(0);
       setAnswers({});
-      setStage("quiz");
+      setStage("preview");
     } catch {
-      setError("Could not start this paper. Try another one.");
+      setError("Could not load this paper. Try another one.");
     } finally {
       setStarting(false);
     }
+  }
+
+  function handleBeginExam() {
+    setStage("quiz");
   }
 
   function selectOption(questionId: string, idx: number) {
@@ -131,6 +135,14 @@ export default function ExamsPage() {
     }
   }
 
+  function handleClosePreview() {
+    setStage("pick");
+    setQuestions([]);
+    setCurrent(0);
+    setAnswers({});
+    setError("");
+  }
+
   function handleCloseQuiz() {
     setStage("pick");
     setQuestions([]);
@@ -155,11 +167,6 @@ export default function ExamsPage() {
             </div>
           </div>
 
-          <div className="student-header-actions">
-            <div className="student-avatar" aria-label="Exams hub avatar">
-              E
-            </div>
-          </div>
         </header>
 
         <section className="level-card" aria-label="Pick a paper to begin">
@@ -229,7 +236,7 @@ export default function ExamsPage() {
           <button
             type="button"
             className="home-action-primary"
-            onClick={handleStartPaper}
+            onClick={handlePreviewPaper}
             disabled={starting || loading || !selectedPaper}
           >
             <span className="home-action-icon home-action-icon-light" aria-hidden="true">
@@ -237,9 +244,100 @@ export default function ExamsPage() {
             </span>
             <span>
               <span className="home-action-label">
-                {starting ? "Loading paper..." : "Start Selected Paper"}
+                {starting ? "Loading paper..." : "Preview Questions"}
               </span>
-              <span className="home-action-sub">Launch the same adaptive diagnostic flow</span>
+              <span className="home-action-sub">See all questions before starting the exam</span>
+            </span>
+            <span className="home-action-arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (stage === "preview") {
+    return (
+      <section className="home-dashboard-shell page-enter" aria-label="Paper preview">
+        <header className="student-header">
+          <div className="student-header-copy">
+            <p className="student-time">Question Preview</p>
+            <h1>{selectedPaper?.paper_name ?? "Math Trial Paper"}</h1>
+            <div className="student-meta-row">
+              <span>{selectedPaper?.state ?? "SPM"}</span>
+              <span aria-hidden="true">•</span>
+              <span>{selectedPaper?.year}</span>
+              <span aria-hidden="true">•</span>
+              <span>{questions.length} questions</span>
+            </div>
+          </div>
+          <div className="student-header-actions">
+            <button
+              type="button"
+              className="btn-ghost preview-back-btn"
+              onClick={handleClosePreview}
+              aria-label="Back to paper list"
+            >
+              ← Back
+            </button>
+          </div>
+        </header>
+
+        <section className="level-card" aria-label="Paper summary">
+          <div className="level-card-content">
+            <p className="level-eyebrow">Paper Overview</p>
+            <h2>{questions.length} questions ready — review them before you start.</h2>
+            <div className="level-progress-row">
+              <div className="level-progress-track" aria-hidden="true">
+                <div className="level-progress-fill level-progress-fill-full">
+                  <span className="level-progress-dot" />
+                </div>
+              </div>
+              <span>{selectedPaper?.paper_type || "Paper 1"}</span>
+            </div>
+          </div>
+          <div className="level-trophy" aria-hidden="true">
+            <span className="learn-hub-chip">Math</span>
+          </div>
+        </section>
+
+        <div className="home-learning-stack">
+          {questions.map((q, index) => (
+            <div key={q.id} className="ai-assistant-card preview-q-row">
+              <div className="ai-assistant-avatar preview-q-num" aria-hidden="true">
+                {index + 1}
+              </div>
+              <div className="preview-q-body">
+                <div className="preview-q-meta">
+                  <span className={`preview-difficulty preview-difficulty-${q.difficulty}`}>
+                    {q.difficulty}
+                  </span>
+                  {q.tags?.slice(0, 2).map((tag) => (
+                    <span key={tag} className="preview-tag">{tag}</span>
+                  ))}
+                </div>
+                <p className="preview-q-text">
+                  {q.text.length > 120 ? `${q.text.slice(0, 120)}…` : q.text}
+                </p>
+                <p className="preview-q-options-count">{q.options.length} options</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {error && <p className="diag-error">{error}</p>}
+
+        <div className="preview-start-wrap">
+          <button
+            type="button"
+            className="home-action-primary"
+            onClick={handleBeginExam}
+          >
+            <span className="home-action-icon home-action-icon-light" aria-hidden="true">
+              ▶
+            </span>
+            <span>
+              <span className="home-action-label">Start Exam</span>
+              <span className="home-action-sub">Begin answering all {questions.length} questions</span>
             </span>
             <span className="home-action-arrow" aria-hidden="true">→</span>
           </button>

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { postStudyBuddyMessage } from "@/lib/api";
+import type { ChatMessage } from "@/lib/api";
 
 const student = {
   name: "Amir",
@@ -10,34 +12,13 @@ const student = {
   progress: 10,
   level: 1,
   xp: 180,
+  streak: 1,
 };
 
-const categories = [
-  { label: "Lessons", icon: BookIcon },
-  { label: "Games", icon: GameIcon },
-  { label: "Stories", icon: StoryIcon },
-  { label: "Activities", icon: ActivityIcon },
-  { label: "Discover", icon: CompassIcon },
-];
-
-const cards = [
-  {
-    title: "Lessons",
-    description: "Fun learning lessons that help you grow smarter daily.",
-    tone: "lesson",
-  },
-  {
-    title: "Games",
-    description:
-      "Practice your skills through quick challenges and interactive quizzes.",
-    tone: "game",
-  },
-  {
-    title: "Learning Path",
-    description:
-      "Follow your AI-recommended journey from lesson to practice and mastery.",
-    tone: "path",
-  },
+const quickActions = [
+  { label: "Ambil Kuiz", icon: QuizIcon, href: "/exams", color: "#7f65ff" },
+  { label: "Bahan", icon: BookIcon, href: "/materials", color: "#ff8dc0" },
+  { label: "Kemajuan", icon: ProgressIcon, href: "/progress", color: "#5bd4bc" },
 ] as const;
 
 export default function Home() {
@@ -45,15 +26,15 @@ export default function Home() {
 }
 
 function HomeDashboard() {
-  const [activeCategory, setActiveCategory] = useState("Lessons");
   const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerInitialMsg, setDrawerInitialMsg] = useState("");
 
   useEffect(() => {
     try {
       const uid = sessionStorage.getItem("userId");
       const shown = localStorage.getItem("onboardingDiagnosticShown");
       if (uid && !shown) {
-        // Mark as shown so we only display once during onboarding
         localStorage.setItem("onboardingDiagnosticShown", "1");
         router.push("/diagnostic");
       }
@@ -62,26 +43,29 @@ function HomeDashboard() {
     }
   }, [router]);
 
+  function openChat(initialMsg = "") {
+    setDrawerInitialMsg(initialMsg);
+    setDrawerOpen(true);
+  }
+
   return (
-    <section
-      className="home-dashboard-shell page-enter"
-      aria-label="Student home dashboard"
-    >
-      <StudentHeader />
-      <LevelProgressCard />
-      <CategoryShortcut
-        activeCategory={activeCategory}
-        onSelect={setActiveCategory}
+    <>
+      <section
+        className="home-dashboard-shell page-enter"
+        aria-label="Student home dashboard"
+      >
+        <StudentHeader />
+        <LevelProgressCard />
+        <QuickActionsRow />
+        <AIChatCard onOpen={openChat} />
+        <RecentSessionCard />
+      </section>
+      <ChatDrawer
+        open={drawerOpen}
+        initialMessage={drawerInitialMsg}
+        onClose={() => setDrawerOpen(false)}
       />
-
-      <div className="home-learning-stack" aria-label="Learning sections">
-        {cards.map((card) => (
-          <LearningFeatureCard key={card.title} {...card} />
-        ))}
-      </div>
-
-      <AIAssistantCard />
-    </section>
+    </>
   );
 }
 
@@ -112,9 +96,6 @@ function StudentHeader() {
             aria-label="Unread notifications"
           />
         </button>
-        <div className="student-avatar" aria-label={`${student.name} avatar`}>
-          A
-        </div>
       </div>
     </header>
   );
@@ -148,105 +129,234 @@ function LevelProgressCard() {
   );
 }
 
-function CategoryShortcut({
-  activeCategory,
-  onSelect,
-}: {
-  activeCategory: string;
-  onSelect: (category: string) => void;
-}) {
+function QuickActionsRow() {
+  const router = useRouter();
   return (
-    <nav className="category-shortcuts" aria-label="Learning categories">
-      {categories.map(({ label, icon: Icon }) => {
-        const active = label === activeCategory;
-        return (
-          <button
-            type="button"
-            key={label}
-            className={`category-shortcut${active ? " active" : ""}`}
-            aria-pressed={active}
-            onClick={() => onSelect(label)}
-          >
-            <span className="category-icon">
-              <Icon />
-            </span>
-            <span>{label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
-function LearningFeatureCard({
-  title,
-  description,
-  tone,
-}: {
-  title: string;
-  description: string;
-  tone: "lesson" | "game" | "path";
-}) {
-  return (
-    <article className={`learning-feature-card learning-feature-${tone}`}>
-      <div>
-        <p className="learning-feature-kicker">
-          {tone === "path" ? "Journey" : title}
-        </p>
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </div>
-      <button
-        type="button"
-        className="feature-arrow-button"
-        aria-label={`Open ${title}`}
-        onClick={() => (window.location.href = "/materials")}
-      >
-        <ArrowIcon />
-      </button>
-      <FeatureVisual tone={tone} />
-    </article>
-  );
-}
-
-function FeatureVisual({ tone }: { tone: "lesson" | "game" | "path" }) {
-  if (tone === "path") {
-    return (
-      <div className="feature-visual path-visual" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-    );
-  }
-
-  return (
-    <div className="feature-visual" aria-hidden="true">
-      <div className="feature-blob feature-blob-large" />
-      <div className="feature-blob feature-blob-small" />
-      <div className="feature-mini-card">
-        {tone === "lesson" ? <BookIcon /> : <GameIcon />}
-      </div>
+    <div className="quick-actions-row" aria-label="Quick actions">
+      {quickActions.map(({ label, icon: Icon, href, color }) => (
+        <button
+          key={label}
+          type="button"
+          className="quick-action-btn"
+          data-color={color}
+          onClick={() => router.push(href)}
+        >
+          <span className="quick-action-icon">
+            <Icon />
+          </span>
+          <span>{label}</span>
+        </button>
+      ))}
     </div>
   );
 }
 
-function AIAssistantCard() {
+const CHAT_CHIPS = [
+  "Terangkan fungsi kuadratik",
+  "Beri contoh soalan",
+  "Semak kelemahan saya",
+];
+
+function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
   return (
-    <section
-      className="ai-assistant-card"
-      aria-label="AI learning assistant recommendation"
-    >
-      <div className="ai-assistant-avatar" aria-hidden="true">
-        AI
+    <section className="ai-chat-card" aria-label="AI tutor chat">
+      <button
+        type="button"
+        className="ai-chat-header ai-chat-header-btn"
+        onClick={() => onOpen()}
+        aria-label="Buka chat tutor AI"
+      >
+        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+        <div className="ai-chat-header-text">
+          <h2>Tanya Tutor AI</h2>
+          <p className="ai-chat-subtitle">Topik lemah anda: Fungsi Kuadratik</p>
+        </div>
+        <span className="ai-chat-open-hint" aria-hidden="true"><ArrowIcon /></span>
+      </button>
+      <div className="ai-chat-suggestions">
+        {CHAT_CHIPS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            className="ai-chat-chip"
+            onClick={() => onOpen(s)}
+          >
+            {s}
+          </button>
+        ))}
       </div>
-      <div>
-        <h2>AI Learning Assistant</h2>
-        <p>
-          Start with Quadratic Functions Lesson. I selected this because your
-          diagnostic shows this is one of your weak topics.
-        </p>
+    </section>
+  );
+}
+
+function ChatDrawer({
+  open,
+  initialMessage,
+  onClose,
+}: {
+  open: boolean;
+  initialMessage: string;
+  onClose: () => void;
+}) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // When drawer opens with a pre-filled message, send it immediately
+  useEffect(() => {
+    if (!open) return;
+    setTimeout(() => inputRef.current?.focus(), 100);
+    if (initialMessage) {
+      sendMessage(initialMessage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialMessage]);
+
+  // Reset messages when drawer closes
+  useEffect(() => {
+    if (!open) setMessages([]);
+  }, [open]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  async function sendMessage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
+    setInput("");
+    const next: ChatMessage[] = [...messages, { role: "user", content: trimmed }];
+    setMessages(next);
+    setLoading(true);
+    try {
+      const userId = (typeof window !== "undefined" && sessionStorage.getItem("userId")) || "guest";
+      const res = await postStudyBuddyMessage(userId, next);
+      setMessages([...next, { role: "assistant", content: res.reply }]);
+    } catch {
+      setMessages([...next, { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    sendMessage(input);
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`chat-drawer-backdrop${open ? " open" : ""}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      {/* Drawer */}
+      <div
+        className={`chat-drawer${open ? " open" : ""}`}
+        role="dialog"
+        aria-label="AI Tutor Chat"
+        aria-modal="true"
+      >
+        <div className="chat-drawer-handle" aria-hidden="true" />
+        <header className="chat-drawer-header">
+          <div className="chat-drawer-avatar" aria-hidden="true">AI</div>
+          <div>
+            <h2>Tutor AI</h2>
+            <p>StudyBuddy — sedia membantu</p>
+          </div>
+          <button
+            type="button"
+            className="chat-drawer-close"
+            onClick={onClose}
+            aria-label="Tutup chat"
+          >
+            <CloseIcon />
+          </button>
+        </header>
+
+        <div className="chat-drawer-messages">
+          {messages.length === 0 && !loading && (
+            <div className="chat-drawer-empty">
+              <p>Tanya apa sahaja tentang pelajaran anda!</p>
+              <div className="ai-chat-suggestions">
+                {CHAT_CHIPS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="ai-chat-chip"
+                    onClick={() => sendMessage(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={`chat-bubble ${m.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}`}
+            >
+              {m.content}
+            </div>
+          ))}
+          {loading && (
+            <div className="chat-bubble chat-bubble-ai chat-bubble-typing">
+              <span /><span /><span />
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        <form className="chat-drawer-input-row" onSubmit={handleSubmit}>
+          <input
+            ref={inputRef}
+            className="ai-chat-input"
+            type="text"
+            placeholder="Tanya soalan..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            aria-label="Chat input"
+            disabled={loading}
+          />
+          <button
+            type="submit"
+            className="ai-chat-send"
+            aria-label="Hantar"
+            disabled={loading || !input.trim()}
+          >
+            <SendIcon />
+          </button>
+        </form>
       </div>
+    </>
+  );
+}
+
+function RecentSessionCard() {
+  const router = useRouter();
+  return (
+    <section className="recent-session-card" aria-label="Continue recent session">
+      <div className="recent-session-info">
+        <p className="recent-session-label">Sambung semula</p>
+        <h3>Kuiz Matematik — Untitled</h3>
+        <div className="recent-session-meta">
+          <span className="recent-session-progress-pill">25%</span>
+          <span>selesai</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="recent-session-btn"
+        aria-label="Continue quiz"
+        onClick={() => router.push("/exams")}
+      >
+        <ArrowIcon />
+      </button>
     </section>
   );
 }
@@ -268,37 +378,20 @@ function BookIcon() {
   );
 }
 
-function GameIcon() {
+function QuizIcon() {
   return (
     <IconBase>
-      <path d="M8 10h8c2.2 0 4 1.8 4 4v1.5c0 1.4-1.1 2.5-2.5 2.5-.8 0-1.5-.4-2-1l-.9-1.2H9.4L8.5 17c-.5.6-1.2 1-2 1A2.5 2.5 0 0 1 4 15.5V14c0-2.2 1.8-4 4-4Z" />
-      <path d="M8 13v2M7 14h2M16.5 13.3h.1M18 15h.1" />
+      <path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+      <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2Z" />
+      <path d="m9 14 2 2 4-4" />
     </IconBase>
   );
 }
 
-function StoryIcon() {
+function ProgressIcon() {
   return (
     <IconBase>
-      <path d="M6 4h9l3 3v13H6V4Z" />
-      <path d="M15 4v4h4M9 11h6M9 15h6" />
-    </IconBase>
-  );
-}
-
-function ActivityIcon() {
-  return (
-    <IconBase>
-      <path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM17 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM4 20c.4-3 2.2-5 5-5s4.6 2 5 5M12 20c.4-2.5 2-4 4.5-4 1.8 0 3.1.8 3.8 2.2" />
-    </IconBase>
-  );
-}
-
-function CompassIcon() {
-  return (
-    <IconBase>
-      <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
-      <path d="m14.8 9.2-1.2 4.4-4.4 1.2 1.2-4.4 4.4-1.2Z" />
+      <path d="M5 19V9M12 19V5M19 19v-7" />
     </IconBase>
   );
 }
@@ -325,6 +418,22 @@ function ArrowIcon() {
   return (
     <IconBase>
       <path d="M8 12h8M13 8l4 4-4 4" />
+    </IconBase>
+  );
+}
+
+function SendIcon() {
+  return (
+    <IconBase>
+      <path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7Z" />
+    </IconBase>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <IconBase>
+      <path d="M18 6 6 18M6 6l12 12" />
     </IconBase>
   );
 }
