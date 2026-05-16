@@ -2502,6 +2502,298 @@ button.map-node:hover {
   }
 }
 /* ── Quiz sheet overlay ───────────────────────────────────────── */
+/* ── New quiz shell (qs-*) ────────────────────────────────── */
+.qs-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@media (min-width: 481px) {
+  .qs-shell {
+    max-width: 480px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (min-width: 769px) {
+  .qs-shell {
+    max-width: 520px;
+    border-radius: var(--r-2xl);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 90vh;
+    animation: sheetCenter 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
+.qs-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.qs-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.qs-icon-btn:hover {
+  background: var(--border);
+  color: var(--ink);
+}
+
+.qs-header-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.qs-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+}
+
+.qs-subtitle {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.qs-progress-track {
+  height: 6px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.qs-progress-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 0 3px 3px 0;
+  position: relative;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.qs-progress-dot {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--surface);
+}
+
+.qs-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1rem 1rem;
+}
+
+.qs-bar {
+  flex-shrink: 0;
+  padding: 0.875rem 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.qs-bar .btn-primary,
+.qs-bar button.btn-primary {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: var(--r-xl);
+  background: #58cc02;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.qs-bar .btn-primary:hover {
+  background: #46a302;
+}
+.qs-bar .btn-primary:active {
+  transform: scale(0.98);
+}
+.qs-bar .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.qs-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.qs-nav-icon-btn {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.qs-nav-icon-btn:hover:not(:disabled) {
+  background: var(--border);
+}
+.qs-nav-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.qs-nav-submit {
+  flex: 1;
+  height: 3rem;
+  border-radius: var(--r-xl);
+  border: none;
+  background: #58cc02;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.qs-nav-submit:hover:not(:disabled) {
+  background: #46a302;
+}
+.qs-nav-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.qs-nav-submit:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+
+.qs-bar .learn-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+.qs-bar .learn-actions .btn-ghost {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--r-xl);
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.qs-bar .learn-actions .btn-ghost:hover {
+  background: var(--border);
+}
+.qs-bar .learn-actions .btn-primary {
+  flex: 2;
+}
+
+.qs-error {
+  color: var(--wrong);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+
+/* ── Option cards inside qs-shell ─────────────────────────── */
+.qs-shell .option-card {
+  border-radius: var(--r-xl);
+  border: 2px solid var(--border);
+  background: var(--card);
+  padding: 1rem 1.1rem;
+  gap: 0.9rem;
+  min-height: 58px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.qs-shell .option-card:hover {
+  border-color: var(--brand-muted);
+}
+.qs-shell .option-card.selected {
+  border-color: var(--brand);
+  background: var(--brand-light);
+}
+.qs-shell .option-letter {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--muted);
+}
+.qs-shell .option-letter-selected {
+  background: var(--brand);
+  color: #fff;
+}
+
+/* ── Question card inside qs-shell ───────────────────────── */
+.qs-shell .qcard {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+.qs-shell .qcard-question {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  color: var(--ink);
+}
+.qs-shell .qcard-header {
+  margin-bottom: 0.75rem;
+}
+
+/* Legacy quiz-sheet kept for other pages */
 .quiz-sheet {
   position: fixed;
   inset: 0;
@@ -4471,79 +4763,171 @@ button.map-node:hover {
   flex-shrink: 0;
 }
 
-/* ── Exams preview stage ──────────────────────────────────── */
-.preview-back-btn {
-  font-size: 1.25rem;
-  padding: 0.5rem 1rem;
+
+/* ── Learning feature cards (materials, exams, learn hub) ──────── */
+.home-learning-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
 }
 
-.preview-q-row {
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.preview-q-num {
-  min-width: 2.5rem;
-  font-size: 0.875rem;
-}
-
-.preview-q-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.preview-q-meta {
+.learning-feature-card {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-family: var(--font-body);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(91, 76, 245, 0.18);
 }
 
-.preview-difficulty {
+.learning-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(91, 76, 245, 0.24);
+}
+
+.learning-feature-card:active {
+  transform: scale(0.98);
+}
+
+.learning-feature-lesson {
+  background: linear-gradient(135deg, #7f65ff 0%, #5b4cf5 100%);
+}
+
+.learning-feature-game {
+  background: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+}
+
+.learning-feature-path {
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+
+.learning-feature-kicker {
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-radius: 999px;
-  padding: 0.15rem 0.6rem;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+  margin: 0 0 0.3rem;
 }
 
-.preview-difficulty-easy {
-  color: #22c55e;
-  background: #22c55e18;
+.learning-feature-card h2 {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  color: #fff;
 }
 
-.preview-difficulty-medium {
-  color: #f59e0b;
-  background: #f59e0b18;
-}
-
-.preview-difficulty-hard {
-  color: #ef4444;
-  background: #ef444418;
-}
-
-.preview-tag {
-  font-size: 0.7rem;
-  color: var(--text-secondary, #888);
-  background: var(--surface-2, #f3f3f3);
-  border-radius: 999px;
-  padding: 0.15rem 0.55rem;
-}
-
-.preview-q-text {
+.learning-feature-card p {
+  font-size: 0.8rem;
+  opacity: 0.85;
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  word-break: break-word;
+  line-height: 1.4;
 }
 
-.preview-q-options-count {
-  margin: 0.35rem 0 0;
-  font-size: 0.75rem;
-  color: var(--text-secondary, #888);
+.study-select-subtitle {
+  font-size: 0.72rem !important;
+  opacity: 0.65 !important;
+  margin-top: 0.4rem !important;
 }
 
-.preview-start-wrap {
-  padding: 1rem 1.25rem 2rem;
+.study-select-card-active {
+  box-shadow: 0 0 0 3px #fff, 0 8px 28px rgba(91, 76, 245, 0.3) !important;
+}
+
+/* Feature visual (blob + mini card) */
+.feature-visual {
+  position: relative;
+  width: 80px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.feature-blob {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.feature-blob-large {
+  width: 64px;
+  height: 64px;
+  right: 0;
+  bottom: 0;
+}
+
+.feature-blob-small {
+  width: 40px;
+  height: 40px;
+  right: 18px;
+  top: 0;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.feature-mini-card {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* Learn hub chip (level-trophy area label) */
+.learn-hub-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+/* AI assistant card (empty state) */
+.ai-assistant-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--card);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.ai-assistant-avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--brand);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
 }
