@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #6c47ff;
+  --brand-light: #ede9ff;
+  --correct: #16a34a;
+  --wrong: #dc2626;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background: #f8f7ff;
+  color: #1a1a2e;
+}
