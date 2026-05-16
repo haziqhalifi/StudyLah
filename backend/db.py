@@ -78,7 +78,7 @@ def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Q
         # `topic` column is currently unused (always null); filter by `subject` instead.
         query = query.eq("subject", topic_id)
     response = query.execute()
-    return [_row_to_question(r) for r in response.data]
+    return [_row_to_question(r) for r in response.data if r.get("question") is not None]
 
 
 # ---------------------------------------------------------------------------

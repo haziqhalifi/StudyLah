@@ -133,7 +133,10 @@ def choose_next_question_for_user(
     ai_profile: ai_engine.SkillProfile,
 ) -> Question:
     attempts = get_user_attempts(user_id)
-    return ai_engine.choose_next_question(ai_profile, db.get_all_questions(), attempts)
+    try:
+        return ai_engine.choose_next_question(ai_profile, db.get_all_questions(), attempts)
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -193,7 +196,10 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
     if not req.answers:
         raise HTTPException(status_code=400, detail="No answers provided.")
 
-    question_map: Dict[str, Question] = {q.id: q for q in db.get_all_questions()}
+    db.ensure_user(req.user_id)
+
+    submitted_ids = [ans.question_id for ans in req.answers]
+    question_map: Dict[str, Question] = {q.id: q for q in db.get_questions_by_ids(submitted_ids)}
     diagnostic_questions: List[Question] = []
     new_attempts: List[Attempt] = []
 
@@ -259,6 +265,8 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
     6. Pick the next question.
     7. Return SubmitAnswerResponse.
     """
+    db.ensure_user(req.user_id)
+
     question = db.get_question_by_id(req.question_id)
     if question is None:
         raise HTTPException(

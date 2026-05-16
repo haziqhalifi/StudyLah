@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from the backend directory regardless of where uvicorn is launched from
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 try:
 	from supabase import create_client, Client  # type: ignore
@@ -33,6 +35,10 @@ except Exception:
 			self._filters: Dict[str, Any] = {}
 			self._maybe_single = False
 			self._op: Optional[str] = None
+			self._conflict: str = ""
+			self._order_key: Optional[str] = None
+			self._order_desc: bool = False
+			self._limit: Optional[int] = None
 
 		def upsert(self, payload: Dict[str, Any], on_conflict: str = ""):
 			self._op = "upsert"
@@ -54,18 +60,30 @@ except Exception:
 			return self
 
 		def eq(self, key: str, value: Any):
-			self._filters[key] = value
+			self._filters[key] = ("eq", value)
 			return self
 
-		def order(self, key: str):
+		def in_(self, key: str, values: List[Any]):
+			self._filters[key] = ("in", values)
+			return self
+
+		def limit(self, n: int):
+			self._limit = n
+			return self
+
+		def order(self, key: str, desc: bool = False):
 			self._order_key = key
+			self._order_desc = desc
+			return self
+
+		@property
+		def not_(self):
 			return self
 
 		def execute(self):
 			table = self.store.setdefault(self.name, [])
 			if self._op == "upsert" and self._payload is not None:
 				key = self._conflict
-				# find by conflict key, default to 'id' or 'user_id'
 				conflict_key = key or ("id" if "id" in self._payload else "user_id")
 				found = False
 				for i, row in enumerate(table):
@@ -82,13 +100,24 @@ except Exception:
 				return _Response({})
 
 			if self._op == "select":
-				# apply filters
-				results = [r for r in table]
+				results = list(table)
 				for k, v in self._filters.items():
-					results = [r for r in results if r.get(k) == v]
-				# ordering
-				if hasattr(self, "_order_key"):
-					results.sort(key=lambda x: x.get(self._order_key))
+					if isinstance(v, tuple):
+						op, val = v
+						if op == "eq":
+							results = [r for r in results if r.get(k) == val]
+						elif op == "in":
+							results = [r for r in results if r.get(k) in val]
+					else:
+						results = [r for r in results if r.get(k) == v]
+				if self._order_key is not None:
+					ok = self._order_key
+					results.sort(
+						key=lambda x: (x.get(ok) is None, x.get(ok)),
+						reverse=self._order_desc,
+					)
+				if self._limit is not None:
+					results = results[: self._limit]
 				if self._maybe_single:
 					return _Response(results[0] if results else None)
 				return _Response(results)
