@@ -1,298 +1,351 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import BuddyHeader from "@/components/BuddyHeader";
+import BuddyBubble from "@/components/BuddyBubble";
+import OptionCard from "@/components/OptionCard";
 import {
-  fetchQuiz,
-  submitAnswer,
-  generateExplanation,
   QuizDetail,
-  Question,
-  Explanation,
+  QuizSubmitResult,
+  fetchQuizDetail,
+  submitQuiz,
 } from "@/lib/api";
-import QuestionCard from "@/components/QuestionCard";
-import ExplanationBlock from "@/components/ExplanationBlock";
-import QuizSheet from "@/components/QuizSheet";
 
-// ---------------------------------------------------------------------------
-// Per-question result state
-// ---------------------------------------------------------------------------
-
-interface QuestionResult {
-  isCorrect: boolean;
-  correctOptionIndex: number;
-  explanation: Explanation | null;
-}
-
-// ---------------------------------------------------------------------------
-// Topic display helpers
-// ---------------------------------------------------------------------------
-
-const TOPIC_META: Record<string, { name: string; emoji: string; chip: string }> = {
-  ubahan:   { name: "Ubahan",   emoji: "📐", chip: "chip chip-brand"   },
-  matriks:  { name: "Matriks",  emoji: "🔢", chip: "chip chip-warn"    },
-  insurans: { name: "Insurans", emoji: "🛡️", chip: "chip chip-correct" },
+const TOPIC_META: Record<QuizDetail["topicId"], { label: string; chip: string; emoji: string }> = {
+  ubahan: { label: "Ubahan", chip: "chip chip-brand", emoji: "📐" },
+  matriks: { label: "Matriks", chip: "chip chip-warn", emoji: "🔢" },
+  insurans: { label: "Insurans", chip: "chip chip-correct", emoji: "🛡️" },
 };
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
+type QuizState = {
+  userId: string;
+  quiz: QuizDetail | null;
+  loading: boolean;
+  error: string | null;
+  answers: Record<string, number>;
+  currentIndex: number;
+  submitted: boolean;
+  result: QuizSubmitResult | null;
+  submitting: boolean;
+};
 
 export default function QuizPage() {
   const router = useRouter();
-  const params = useParams();
-  const quizId = params?.id as string;
+  const params = useParams<{ id?: string | string[] }>();
+  const quizId = Array.isArray(params?.id) ? params.id[0] : params?.id ?? "";
 
-  // auth
-  const [userId, setUserId] = useState<string | null>(null);
+  const [state, setState] = useState<QuizState>({
+    userId: "",
+    quiz: null,
+    loading: true,
+    error: null,
+    answers: {},
+    currentIndex: 0,
+    submitted: false,
+    result: null,
+    submitting: false,
+  });
 
-  // quiz data
-  const [quiz, setQuiz] = useState<QuizDetail | null>(null);
-  const [loadingQuiz, setLoadingQuiz] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-
-  // progress through questions
-  const [idx, setIdx] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<QuestionResult | null>(null);
-  const [generatingExp, setGeneratingExp] = useState(false);
-
-  // summary after last question
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  // ── Load quiz on mount ────────────────────────────────────────────
   useEffect(() => {
-    const uid = sessionStorage.getItem("userId");
-    if (!uid) {
+    const storedUserId = sessionStorage.getItem("userId") ?? "";
+    if (!storedUserId) {
       router.push("/");
       return;
     }
-    setUserId(uid);
 
-    if (!quizId) return;
+    if (!quizId) {
+      setState((prev) => ({ ...prev, loading: false, error: "Missing quiz ID." }));
+      return;
+    }
 
-    fetchQuiz(quizId)
-      .then((data) => setQuiz(data))
-      .catch(() => setLoadError(true))
-      .finally(() => setLoadingQuiz(false));
+    setState((prev) => ({ ...prev, userId: storedUserId, loading: true, error: null }));
+
+    fetchQuizDetail(quizId)
+      .then((quiz) => {
+        setState((prev) => ({
+          ...prev,
+          quiz,
+          loading: false,
+          currentIndex: 0,
+          answers: {},
+          submitted: false,
+          result: null,
+        }));
+      })
+      .catch(() => {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: "I couldn't load this quiz. Please try again.",
+        }));
+      });
   }, [quizId, router]);
 
-  // ── Derived values ────────────────────────────────────────────────
-  const questions: Question[] = quiz?.questions ?? [];
-  const currentQ: Question | undefined = questions[idx];
-  const topicMeta = TOPIC_META[quiz?.topic_id ?? ""] ?? { name: quiz?.topic_id ?? "", emoji: "📚", chip: "chip" };
-
-  // ── Submit answer ─────────────────────────────────────────────────
-  async function handleSubmit() {
-    if (selected === null || !currentQ || !userId) return;
-    setSubmitting(true);
-    try {
-      const res = await submitAnswer(userId, currentQ.id, selected);
-      if (res.is_correct) setScore((s) => s + 1);
-      setResult({
-        isCorrect: res.is_correct,
-        // Backend's submit_answer returns an explanation; derive correct index
-        // from the explanation presence. The QuestionCard needs correctOptionIndex
-        // but backend doesn't expose it — we show correctness visually only.
-        correctOptionIndex: selected, // placeholder; see note below
-        explanation: res.explanation ?? null,
-      });
-    } catch (err) {
-      console.error("Submit failed:", err);
-      setSubmitError("Failed to submit. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  // ── Generate on-demand explanation ───────────────────────────────
-  async function handleGenerateExplanation() {
-    if (!result || !currentQ || !userId || selected === null) return;
-    setGeneratingExp(true);
-    try {
-      const exp = await generateExplanation(userId, currentQ.id, selected);
-      setResult((prev) => prev ? { ...prev, explanation: exp } : prev);
-    } catch {
-      // silent
-    } finally {
-      setGeneratingExp(false);
-    }
-  }
-
-  // ── Advance to next question ──────────────────────────────────────
-  function handleNext() {
-    if (idx + 1 >= questions.length) {
-      setFinished(true);
-    } else {
-      setIdx((i) => i + 1);
-      setSelected(null);
-      setResult(null);
-    }
-  }
-
-  // ── Loading state ─────────────────────────────────────────────────
-  if (loadingQuiz) return <LoadingShell />;
-
-  // ── Error state ───────────────────────────────────────────────────
-  if (loadError || !quiz) {
-    return (
-      <div className="review-done page-enter">
-        <div className="review-done-emoji">😬</div>
-        <p className="review-done-sub" style={{ marginBottom: "1.5rem" }}>
-          Couldn&apos;t load this quiz. It may have expired.
-        </p>
-        <button
-          type="button"
-          className="btn-primary"
-          style={{ maxWidth: 240, margin: "0 auto" }}
-          onClick={() => router.push("/")}
-        >
-          Go home
-        </button>
-      </div>
-    );
-  }
-
-  // ── Finished state ────────────────────────────────────────────────
-  if (finished) {
-    const pct = Math.round((score / questions.length) * 100);
-    const emoji = pct >= 70 ? "🎉" : pct >= 40 ? "💪" : "📖";
-    const msg =
-      pct >= 70
-        ? "Great job! You're getting stronger."
-        : pct >= 40
-        ? "Good effort! Keep practising to improve."
-        : "Let's keep going — every attempt builds knowledge.";
-
-    return (
-      <div className="review-done page-enter">
-        <div className="review-done-emoji">{emoji}</div>
-        <h2 className="font-display review-done-title">Quiz Complete!</h2>
-        <p className="review-done-sub" style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0.5rem 0" }}>
-          Score: {score} / {questions.length} ({pct}%)
-        </p>
-        <p className="review-done-sub">{msg}</p>
-        <div className="review-done-actions">
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => router.push("/learn")}
-          >
-            Continue Learning →
-          </button>
-          <button
-            type="button"
-            className="btn-ghost diag-skip-btn"
-            onClick={() => router.push("/progress")}
-          >
-            View Progress ▤
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Bottom action bar ─────────────────────────────────────────────
-  const bar = !result ? (
-    <div>
-      <div className="review-bar-row">
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => { setSubmitError(""); handleSubmit(); }}
-          disabled={selected === null || submitting}
-        >
-          {submitting ? "Checking…" : "Check Answer"}
-        </button>
-        <button
-          type="button"
-          className="btn-ghost diag-skip-btn"
-          onClick={handleNext}
-          disabled={submitting}
-        >
-          Skip
-        </button>
-      </div>
-      {submitError && (
-        <p className="quiz-submit-error">{submitError}</p>
-      )}
-    </div>
-  ) : (
-    <button type="button" className="btn-primary" onClick={handleNext}>
-      {idx + 1 < questions.length ? "Next Question →" : "See Results →"}
-    </button>
+  const topicMeta = state.quiz ? TOPIC_META[state.quiz.topicId] : null;
+  const questions = state.quiz?.questions ?? [];
+  const currentQuestion = questions[state.currentIndex];
+  const answeredCount = useMemo(
+    () => Object.keys(state.answers).length,
+    [state.answers],
   );
+  const allAnswered = questions.length > 0 && questions.every((question) => state.answers[question.id] !== undefined);
 
-  // ── Main quiz UI ──────────────────────────────────────────────────
-  return (
-    <QuizSheet open bar={bar} onClose={() => router.push("/")}>
-      {/* Header */}
-      <div className="ai-cue ai-cue-review review-banner">
-        <div className="review-banner-reason">
-          <span className={topicMeta.chip}>{topicMeta.emoji} {topicMeta.name}</span>
+  const scoreMessage = useMemo(() => {
+    if (!state.result) return "";
+    if (state.result.percentage >= 80) return "Amazing! You're getting really strong at this.";
+    if (state.result.percentage >= 50) return "Good effort! Let's review the ones you missed.";
+    return "No worries, let's go through this together.";
+  }, [state.result]);
+
+  async function handleSubmitQuiz() {
+    if (!state.quiz || state.submitting || !allAnswered) return;
+    setState((prev) => ({ ...prev, submitting: true, error: null }));
+    try {
+      const result = await submitQuiz(
+        state.quiz.quizId,
+        state.userId,
+        questions.map((question) => ({
+          questionId: question.id,
+          selectedOptionIndex: state.answers[question.id],
+        })),
+      );
+      setState((prev) => ({
+        ...prev,
+        submitted: true,
+        result,
+        submitting: false,
+      }));
+    } catch {
+      setState((prev) => ({
+        ...prev,
+        submitting: false,
+        error: "I couldn't submit your quiz. Please try again.",
+      }));
+    }
+  }
+
+  function handleTryAgain() {
+    setState((prev) => ({
+      ...prev,
+      answers: {},
+      currentIndex: 0,
+      submitted: false,
+      result: null,
+      error: null,
+    }));
+  }
+
+  if (state.loading) {
+    return <LoadingState />;
+  }
+
+  if (state.error && !state.quiz) {
+    return (
+      <div className="min-h-screen bg-[#f6f7fb] pb-24">
+        <BuddyHeader title="Quiz time" subtitle="Let's build your personalised practice set." />
+        <BuddyBubble emoji="😕">{state.error}</BuddyBubble>
+        <div className="max-w-md mx-auto px-4 mt-4">
+          <button
+            type="button"
+            className="w-full h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
+            onClick={() => router.push("/")}
+          >
+            Back to Home
+          </button>
         </div>
-        <h1 className="font-display review-banner-title">{quiz.title}</h1>
-        <p className="review-banner-sub">Your personalised practice set</p>
       </div>
+    );
+  }
 
-      {/* Progress bar */}
-      <div className="review-progress-row">
-        <span className="review-progress-label">Question</span>
-        <span className="review-progress-frac">
-          {idx + 1} / {questions.length}
-        </span>
-      </div>
-      <div className="progress-track review-progress-track">
-        <div
-          className="progress-fill"
-          style={{ width: `${Math.round(((idx + 1) / questions.length) * 100)}%` }}
-        />
-      </div>
+  if (!state.quiz || !currentQuestion || !topicMeta) {
+    return null;
+  }
 
-      {/* Score tracker */}
-      <div style={{ textAlign: "right", fontSize: "0.78rem", color: "#6b7280", marginBottom: "0.5rem" }}>
-        Score: {score} correct
-      </div>
+  if (state.submitted && state.result) {
+    return (
+      <div className="min-h-screen bg-[#f6f7fb] pb-24">
+        <BuddyHeader title="Quiz complete" subtitle={state.quiz.title} />
+        <BuddyBubble emoji={state.result.percentage >= 80 ? "🎉" : state.result.percentage >= 50 ? "💪" : "📘"}>
+          {scoreMessage}
+        </BuddyBubble>
 
-      {/* Question card */}
-      <div className="diag-questions review-questions-gap">
-        <QuestionCard
-          question={currentQ}
-          questionNumber={idx + 1}
-          selectedOptionIndex={selected}
-          onSelectOption={result ? undefined : setSelected}
-          showResult={result !== null}
-          isCorrect={result?.isCorrect}
-          correctOptionIndex={result?.correctOptionIndex}
-        />
-      </div>
+        <div className="max-w-md mx-auto px-4 mt-4">
+          <div className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-5">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm text-slate-500">Your score</p>
+                <div className="text-4xl font-semibold text-slate-900 mt-1">
+                  {state.result.score} / {state.result.total}
+                </div>
+              </div>
+              <div className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-medium">
+                {state.result.percentage}%
+              </div>
+            </div>
+          </div>
+        </div>
 
-      {/* Explanation */}
-      {result && (
-        <ExplanationBlock
-          explanation={result.explanation}
-          isCorrect={result.isCorrect}
-          onGenerateExplanation={handleGenerateExplanation}
-          isGenerating={generatingExp}
-        />
-      )}
-    </QuizSheet>
+        <div className="max-w-md mx-auto px-4 mt-4 space-y-3">
+          {questions.map((question, index) => {
+            const item = state.result?.results[index];
+            if (!item) return null;
+            const correctAnswer = question.options[item.correctOptionIndex] ?? "";
+            return (
+              <div key={question.id} className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="text-sm font-medium text-slate-500">Q{index + 1}</div>
+                  <div className={`text-xs px-2 py-1 rounded-full ${item.isCorrect ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                    {item.isCorrect ? "✓ Correct" : "✗ Missed"}
+                  </div>
+                </div>
+                <h3 className="text-base font-medium text-slate-900">{question.text}</h3>
+                <div className="mt-3 text-sm text-slate-600">
+                  Correct answer: <span className="font-semibold text-slate-900">{correctAnswer}</span>
+                </div>
+                <div className="mt-2 text-xs uppercase tracking-wide text-slate-400">
+                  {item.explanation.style.replaceAll("_", " ")}
+                </div>
+                <p className="mt-2 text-sm text-slate-700 leading-6">{item.explanation.text}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="max-w-md mx-auto px-4 mt-5 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium"
+            onClick={handleTryAgain}
+          >
+            Try again
+          </button>
+          <button
+            type="button"
+            className="h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
+            onClick={() => router.push("/")}
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f6f7fb] pb-28">
+      <BuddyHeader title={state.quiz.title} subtitle="Personalised quiz practice" />
+
+      <BuddyBubble emoji={topicMeta.emoji}>
+        <div>
+          <div>{topicMeta.label} quiz is ready.</div>
+          <div className="mt-1">Question {state.currentIndex + 1} of {questions.length}. Answer all questions before submitting.</div>
+        </div>
+      </BuddyBubble>
+
+      <div className="max-w-md mx-auto px-4 mt-4">
+        <div className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4">
+          <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
+            <span className={topicMeta.chip}>{topicMeta.label}</span>
+            <span>Q{state.currentIndex + 1} of {questions.length}</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#1f5eff] transition-all"
+              style={{ width: `${Math.max(8, (answeredCount / questions.length) * 100)}%` }}
+            />
+          </div>
+
+          <div className="mt-5 text-base font-semibold text-slate-900 leading-7">
+            {currentQuestion.text}
+          </div>
+
+          <div className="mt-4 space-y-2">
+            {currentQuestion.options.map((option, optionIndex) => (
+              <OptionCard
+                key={optionIndex}
+                text={option}
+                selected={state.answers[currentQuestion.id] === optionIndex}
+                onClick={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    answers: { ...prev.answers, [currentQuestion.id]: optionIndex },
+                  }))
+                }
+              />
+            ))}
+          </div>
+
+          {currentQuestion.tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {currentQuestion.tags.map((tag) => (
+                <span key={tag} className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {state.error && (
+          <p className="mt-3 text-sm text-rose-600">{state.error}</p>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <button
+            type="button"
+            className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium disabled:opacity-40"
+            onClick={() => setState((prev) => ({ ...prev, currentIndex: Math.max(0, prev.currentIndex - 1) }))}
+            disabled={state.currentIndex === 0}
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium disabled:opacity-40"
+            onClick={() => setState((prev) => ({ ...prev, currentIndex: Math.min(questions.length - 1, prev.currentIndex + 1) }))}
+            disabled={state.currentIndex >= questions.length - 1}
+          >
+            Next
+          </button>
+        </div>
+
+        <div className="fixed inset-x-0 bottom-4 px-4">
+          <div className="max-w-md mx-auto rounded-[24px] bg-white shadow-lg border border-slate-100 p-3 flex gap-3">
+            <button
+              type="button"
+              className="flex-1 h-12 rounded-2xl bg-[#1f5eff] text-white font-semibold disabled:bg-slate-300"
+              disabled={!allAnswered || state.submitting}
+              onClick={handleSubmitQuiz}
+            >
+              {state.submitting ? "Submitting…" : "Submit Quiz"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Loading skeleton
-// ---------------------------------------------------------------------------
-
-function LoadingShell() {
+function LoadingState() {
   return (
-    <div className="page-enter">
-      <div className="card skeleton-card-sm review-banner" />
-      <div className="buddy-bubble-skeleton" />
-      <div className="card skeleton-card" />
+    <div className="min-h-screen bg-[#f6f7fb] pb-24">
+      <BuddyHeader title="Loading quiz" subtitle="Building your personalised set…" />
+      <BuddyBubble>Hang tight — I’m preparing your questions.</BuddyBubble>
+      <div className="max-w-md mx-auto px-4 mt-4 space-y-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4 animate-pulse">
+            <div className="h-4 w-24 bg-slate-100 rounded-full" />
+            <div className="mt-4 h-6 w-4/5 bg-slate-100 rounded-full" />
+            <div className="mt-4 space-y-2">
+              <div className="h-12 bg-slate-100 rounded-2xl" />
+              <div className="h-12 bg-slate-100 rounded-2xl" />
+              <div className="h-12 bg-slate-100 rounded-2xl" />
+              <div className="h-12 bg-slate-100 rounded-2xl" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

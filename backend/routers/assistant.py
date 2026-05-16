@@ -21,10 +21,15 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, field_validator
 
 try:
-    from backend.services.study_buddy_agent import StudyBuddyAgent, ChatMessage
+    from backend import db
+except ModuleNotFoundError:
+    import db  # type: ignore
+
+try:
+    from backend.services.study_buddy_agent import StudyBuddyAgent, ChatMessage, LearningContext
     from backend.services.quiz_service import create_personalized_quiz, TOPIC_NAMES
 except ModuleNotFoundError:
-    from services.study_buddy_agent import StudyBuddyAgent, ChatMessage  # type: ignore
+    from services.study_buddy_agent import StudyBuddyAgent, ChatMessage, LearningContext  # type: ignore
     from services.quiz_service import create_personalized_quiz, TOPIC_NAMES  # type: ignore
 
 logger = logging.getLogger(__name__)
@@ -54,6 +59,10 @@ class MessageDTO(BaseModel):
 class StudyBuddyRequest(BaseModel):
     user_id: str
     messages: list[MessageDTO]
+    # Optional learning context passed from Learn/Review/Quiz pages.
+    # When present, injected into Gemini for hyper-relevant answers.
+    # TODO: extend with more fields as the frontend LearningContext grows.
+    learning_context: dict | None = None
 
     @field_validator("user_id")
     @classmethod
@@ -82,6 +91,8 @@ class CreateQuizAction(BaseModel):
     type: Literal["create_quiz"] = "create_quiz"
     quiz_id: str
     topic_id: str
+    title: str
+    question_count: int
 
 
 AgentAction = Union[NoAction, CreateQuizAction]
@@ -133,12 +144,13 @@ def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
             quiz = create_personalized_quiz(
                 user_id=body.user_id,
                 topic_id=topic_id,
+                skill_profile=db.get_or_create_profile(body.user_id),
                 num_questions=num_questions,
             )
         except Exception as exc:
             logger.error("Quiz creation failed for user %s: %s", body.user_id, exc)
             # Fall through to normal chat reply on failure
-            return _chat_reply(body.user_id, messages)
+            return _chat_reply(body.user_id, messages, body.learning_context)
 
         topic_name = TOPIC_NAMES.get(topic_id, topic_id)
         reply_text = (
@@ -152,11 +164,16 @@ def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
         )
         return ChatResponse(
             reply=reply_text,
-            action=CreateQuizAction(quiz_id=quiz.id, topic_id=topic_id),
+            action=CreateQuizAction(
+                quiz_id=quiz.id,
+                topic_id=topic_id,
+                title=quiz.title,
+                question_count=quiz.question_count,
+            ),
         )
 
     # --- Step 2b: normal chat path ---
-    return _chat_reply(body.user_id, messages)
+    return _chat_reply(body.user_id, messages, body.learning_context)
 
 
 # ---------------------------------------------------------------------------
@@ -164,10 +181,17 @@ def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
 # ---------------------------------------------------------------------------
 
 
-def _chat_reply(user_id: str, messages: list[ChatMessage]) -> ChatResponse:
+def _chat_reply(
+    user_id: str,
+    messages: list[ChatMessage],
+    raw_context: dict | None = None,
+) -> ChatResponse:
     """Run the full StudyBuddy conversation and wrap in ChatResponse."""
+    # Cast the raw dict to LearningContext (TypedDict — no runtime overhead).
+    ctx: LearningContext | None = raw_context  # type: ignore[assignment]
+
     try:
-        result = _agent.chat(user_id=user_id, messages=messages)
+        result = _agent.chat(user_id=user_id, messages=messages, learning_context=ctx)
     except RuntimeError as exc:
         logger.error("StudyBuddy config error for user %s: %s", user_id, exc)
         raise HTTPException(

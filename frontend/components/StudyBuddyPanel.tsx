@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import MathText from "@/components/MathText";
 import { postStudyBuddyMessage, ChatMessage } from "@/lib/api";
 import { useState } from "react";
+import QuizReadyCard from "@/components/QuizReadyCard";
 
 interface Props {
   userId: string;
@@ -23,6 +24,12 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [quizReady, setQuizReady] = useState<null | {
+    quizId: string;
+    title: string;
+    topicId: string;
+    questionCount: number;
+  }>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -63,6 +70,7 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
     }
 
     setMessages((prev) => [...prev, userMsg]);
+    setQuizReady(null);
     setInput("");
     // Reset textarea height
     if (inputRef.current) {
@@ -78,13 +86,15 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
         { role: "assistant", content: res.reply },
       ]);
 
-      // Agent action: navigate to the newly-created quiz page
       if (res.action?.type === "create_quiz") {
-        const { quiz_id } = res.action;
-        setTimeout(() => {
-          onClose();
-          router.push(`/quiz/${quiz_id}`);
-        }, 1200);
+        setQuizReady({
+          quizId: res.action.quiz_id,
+          title: res.action.title,
+          topicId: res.action.topic_id,
+          questionCount: res.action.question_count,
+        });
+      } else {
+        setQuizReady(null);
       }
     } catch {
       setMessages((prev) => [
@@ -155,6 +165,19 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
               )}
             </div>
           ))}
+
+          {quizReady && (
+            <QuizReadyCard
+              quizId={quizReady.quizId}
+              title={quizReady.title}
+              topicId={quizReady.topicId}
+              questionCount={quizReady.questionCount}
+              onStart={() => {
+                onClose();
+                router.push(`/quiz/${quizReady.quizId}`);
+              }}
+            />
+          )}
 
           {loading && (
             <div className="sb-bubble sb-bubble-bot">

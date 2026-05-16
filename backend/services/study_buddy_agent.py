@@ -200,6 +200,90 @@ class ChatMessage(TypedDict):
 
 
 # ---------------------------------------------------------------------------
+# Learning context — injected from the frontend when student is on a page
+# with an active question. Maps to the frontend LearningContext type.
+# ---------------------------------------------------------------------------
+
+
+class LearningContext(TypedDict, total=False):
+    topicId: str          # "ubahan" | "matriks" | "insurans"
+    topicName: str        # e.g. "Ubahan (Variation)"
+    chapterName: str      # e.g. "Direct Variation"
+    currentQuestion: Dict[str, Any]   # {id, text, options, difficulty}
+    lastAttempt: Dict[str, Any]       # {selectedOptionIndex, isCorrect, correctOptionIndex}
+    recentAttempts: list              # [{questionId, isCorrect, topicId}, ...]
+    pageContext: str       # "learn" | "review" | "quiz" | "general"
+
+
+_OPTION_LABELS = ["A", "B", "C", "D", "E"]
+
+
+def build_context_message(ctx: LearningContext) -> str:
+    """
+    Render a plain-text block that is injected as the first user turn so
+    Gemini can give hyper-relevant, personalised answers.
+
+    TODO: extend this function with:
+      - ctx.get("streakCount") — praise or encourage based on streak
+      - ctx.get("weakSubtopics") — hint which subtopics need attention
+      - ctx.get("sessionDuration") — adapt pace if student has been studying a long time
+    """
+    lines: list[str] = ["--- STUDENT CONTEXT ---"]
+
+    topic_name = ctx.get("topicName") or ctx.get("topicId", "Unknown")
+    chapter = ctx.get("chapterName")
+    if chapter:
+        lines.append(f"Topic: {topic_name} > {chapter}")
+    else:
+        lines.append(f"Topic: {topic_name}")
+
+    page = ctx.get("pageContext", "general")
+    lines.append(f"Page: {page}")
+
+    q = ctx.get("currentQuestion")
+    if q:
+        difficulty = q.get("difficulty", "unknown")
+        lines.append(f"Difficulty: {difficulty}")
+        lines.append(f'Current question: "{q.get("text", "")}"')
+        options: list[str] = q.get("options", [])
+        if options:
+            formatted = "  ".join(
+                f"{_OPTION_LABELS[i]}) {opt}"
+                for i, opt in enumerate(options)
+            )
+            lines.append(f"Options: {formatted}")
+
+    attempt = ctx.get("lastAttempt")
+    if attempt and q:
+        sel_idx: int = attempt.get("selectedOptionIndex", -1)
+        correct_idx: int = attempt.get("correctOptionIndex", -1)
+        is_correct: bool = attempt.get("isCorrect", False)
+        options = q.get("options", [])
+
+        sel_label = _OPTION_LABELS[sel_idx] if 0 <= sel_idx < len(_OPTION_LABELS) else "?"
+        correct_label = _OPTION_LABELS[correct_idx] if 0 <= correct_idx < len(_OPTION_LABELS) else "?"
+
+        if is_correct:
+            lines.append(f"Student's last answer: Option {sel_label} (CORRECT ✓)")
+        else:
+            lines.append(
+                f"Student's last answer: Option {sel_label} (WRONG ✗) — correct was Option {correct_label}"
+            )
+
+    recent: list = ctx.get("recentAttempts", [])
+    if recent:
+        correct_count = sum(1 for a in recent if a.get("isCorrect"))
+        total = len(recent)
+        lines.append(
+            f"Recent performance: {correct_count} correct out of last {total} attempt{'s' if total != 1 else ''}"
+        )
+
+    lines.append("-----------------------")
+    lines.append("Use this context to give a relevant, personalised response.")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Topic guardrail — fast-path check before hitting Gemini.
 # ---------------------------------------------------------------------------
 
@@ -331,10 +415,15 @@ class StudyBuddyAgent:
         messages: list[ChatMessage],
         *,
         skip_guardrail: bool = False,
+        learning_context: Optional[LearningContext] = None,
     ) -> dict:
         """
         Returns:
             { "reply": str, "out_of_scope": bool }
+
+        When learning_context is provided, a plain-text context block is
+        prepended to the conversation as a system-style user turn so Gemini
+        can give hyper-relevant, personalised answers.
         """
         if not messages:
             return {
@@ -349,7 +438,7 @@ class StudyBuddyAgent:
             return {"reply": _OUT_OF_SCOPE_REPLY, "out_of_scope": True}
 
         try:
-            reply_text = self._call_gemini(messages)
+            reply_text = self._call_gemini(messages, learning_context=learning_context)
             logger.info("StudyBuddy [%s]: reply %d chars", user_id, len(reply_text))
             return {"reply": reply_text, "out_of_scope": False}
         except Exception as exc:
@@ -360,13 +449,26 @@ class StudyBuddyAgent:
     # Internal
     # ------------------------------------------------------------------
 
-    def _call_gemini(self, messages: list[ChatMessage]) -> str:
+    def _call_gemini(
+        self,
+        messages: list[ChatMessage],
+        *,
+        learning_context: Optional[LearningContext] = None,
+    ) -> str:
         """
         Converts ChatMessage history → google-genai types.Content list,
         then calls generate_content_stream with:
           - system_instruction = SYSTEM_PROMPT
           - thinking_config    = HIGH  (as in the reference code)
         Collects all streamed chunks and returns the full reply string.
+
+        When learning_context is provided, a context block is injected as the
+        very first user turn (before the conversation history) so Gemini
+        always has the student's current situation in view.
+
+        TODO: tune the context block format in build_context_message() to
+        improve Gemini's response quality — e.g. add subtopic hints or
+        session stats as more data becomes available.
         """
         client = _get_client()
 
@@ -374,6 +476,27 @@ class StudyBuddyAgent:
         # "assistant" role → "model" in Gemini's API.
         # Skip system-role messages (handled by system_instruction instead).
         contents: list[types.Content] = []
+
+        # Prepend learning context as the first user turn when available.
+        if learning_context:
+            ctx_text = build_context_message(learning_context)
+            contents.append(
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=ctx_text)],
+                )
+            )
+            # Gemini requires alternating user/model turns, so add a brief
+            # model acknowledgement to keep the conversation valid.
+            contents.append(
+                types.Content(
+                    role="model",
+                    parts=[types.Part.from_text(
+                        text="Understood. I have the student's context and will tailor my response accordingly."
+                    )],
+                )
+            )
+
         for msg in messages:
             if msg["role"] == "system":
                 continue

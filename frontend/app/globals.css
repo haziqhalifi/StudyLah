@@ -2051,3 +2051,134 @@ h3 {
   border-top: 1px solid var(--border);
   margin: 0.5rem 0;
 }
+
+/* ── StudyBuddy context banner ───────────────────────────────────── */
+.sb-context-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  background: var(--brand-light);
+  border-bottom: 1px solid var(--brand-muted);
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.sb-context-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.sb-context-text {
+  flex: 1;
+  min-width: 0;
+}
+.sb-context-text strong {
+  color: var(--brand-dark);
+}
+.sb-context-attempt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.sb-context-correct {
+  background: #d1fae5;
+  color: #065f46;
+}
+.sb-context-wrong {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ── Quick action chips ──────────────────────────────────────────── */
+.sb-chips-container {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem 0.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}
+.sb-chips-toggle {
+  display: block;
+  width: 100%;
+  text-align: right;
+  font-size: 0.68rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0 0.35rem;
+  transition: color 0.15s;
+}
+.sb-chips-toggle:hover {
+  color: var(--brand);
+}
+.sb-chips-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  /* Hide scrollbar on all browsers */
+  scrollbar-width: none;
+}
+.sb-chips-row::-webkit-scrollbar {
+  display: none;
+}
+.sb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 99px;
+  border: 1.5px solid var(--brand-muted);
+  background: var(--brand-light);
+  color: var(--brand-dark);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+.sb-chip:hover:not(:disabled) {
+  background: var(--brand-muted);
+  border-color: var(--brand);
+}
+.sb-chip:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.sb-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.sb-chip-emoji {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.sb-chip-label {
+  line-height: 1;
+}
+
+/* "⚡ Quick actions" collapsed re-show button */
+.sb-chips-show-btn {
+  display: block;
+  width: 100%;
+  padding: 0.35rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-light);
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.sb-chips-show-btn:hover {
+  background: var(--brand-muted);
+}
