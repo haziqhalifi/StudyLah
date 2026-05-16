@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/",           icon: "⌂",  label: "Home"       },
-  { href: "/diagnostic", icon: "◎",  label: "Diagnostic" },
-  { href: "/learn",      icon: "✦",  label: "Learn"      },
-  { href: "/assessment", icon: "▤",  label: "Progress"   },
-  { href: "/review",     icon: "↺",  label: "Review"     },
+  { href: "/", icon: "🏠", label: "Home" },
+  { href: "/exam", icon: "📝", label: "Exam" },
+  { href: "/learn", icon: "📚", label: "Learn" },
+  { href: "/kemajuan", icon: "🏆", label: "Kemajuan" },
+  { href: "/profile", icon: "👤", label: "Profile" },
 ];
 
 export default function BottomNav() {

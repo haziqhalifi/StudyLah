@@ -146,7 +146,11 @@ export default function LearnPage() {
       setCorrectOptionIndex(inferredCorrect);
       setRecentAttempts((prev) => [
         ...prev.slice(-9),
-        { questionId: question.id, isCorrect: res.is_correct, topicId: question.topic_id },
+        {
+          questionId: question.id,
+          isCorrect: res.is_correct,
+          topicId: question.topic_id,
+        },
       ]);
 
       const nextDiff = res.next_question?.difficulty;
@@ -245,6 +249,20 @@ export default function LearnPage() {
             </button>
           </div>
         )}
+        <div className="learn-actions">
+          <button
+            className="btn-primary"
+            onClick={() => router.push("/assessment")}
+          >
+            View Your Progress
+          </button>
+          <button
+            className="btn-primary"
+            onClick={() => router.push("/review")}
+          >
+            Review Your Answer
+          </button>
+        </div>
       </div>
     );
   }
@@ -319,6 +337,20 @@ export default function LearnPage() {
           />
         )}
       </div>
+      <div className="learn-actions">
+        <button
+          className="btn-primary"
+          onClick={() => router.push("/assessment")}
+        >
+          View Your Progress
+        </button>
+        <button
+          className="btn-secondary"
+          onClick={() => router.push("/review")}
+        >
+          Start a Review Session
+        </button>
+      </div>
 
       {showReview && (
         <div className="learn-review-banner">
@@ -362,7 +394,8 @@ export default function LearnPage() {
           onClose={() => setShowBuddy(false)}
           learningContext={
             {
-              topicId: (question.topic_id ?? "ubahan") as LearningContext["topicId"],
+              topicId: (question.topic_id ??
+                "ubahan") as LearningContext["topicId"],
               topicName:
                 question.topic_id === "matriks"
                   ? "Matriks (Matrices)"
