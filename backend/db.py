@@ -68,10 +68,26 @@ def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
     return [_row_to_question(r) for r in response.data]
 
 
+_DIAGNOSTIC_CHAPTER_IDS = [87, 88, 89]  # Ubahan, Matriks, Matematik Pengguna: Insurans (Form 5)
+
+def get_questions_from_trial_papers(limit: int = 200) -> List[Question]:
+    """Fetch diagnostic questions from the first 3 Form 5 Matematik chapters."""
+    response = (
+        supabase.table("questions")
+        .select("id, question, options, correct_index, difficulty, topic, subject, chapter_id")
+        .in_("chapter_id", _DIAGNOSTIC_CHAPTER_IDS)
+        .not_.is_("question", "null")
+        .limit(limit)
+        .execute()
+    )
+    return [_row_to_question(r) for r in response.data]
+
+
 def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Question]:
     query = (
         supabase.table("questions")
         .select("id, question, options, correct_index, difficulty, topic, subject")
+        .not_.is_("question", "null")
         .limit(limit)
     )
     if topic_id:

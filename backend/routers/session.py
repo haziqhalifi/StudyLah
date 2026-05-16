@@ -26,6 +26,8 @@ from backend.schemas.session import (
     Explanation,
     ReviewItem,
     ReviewResponse,
+    ReviewSubmitRequest,
+    ReviewSubmitResponse,
     StartDiagnosticRequest,
     StartDiagnosticResponse,
     SubmitAnswerRequest,
@@ -68,13 +70,13 @@ _DIAGNOSTIC_COUNT   = 5
 _DIAGNOSTIC_WEIGHTS = {"easy": 3, "medium": 2, "hard": 1}
 
 
-def select_diagnostic_questions(topic_id: str, paper_id: Optional[int] = None) -> List[Question]:
+def select_diagnostic_questions() -> List[Question]:
     """Return a small, mixed-difficulty set for the diagnostic.
 
     Prefers easy/medium questions; hard ones are weighted lower so beginners
     are not immediately overwhelmed.
     """
-    pool = db.get_questions_by_paper(paper_id) if paper_id else get_questions_by_topic(topic_id)
+    pool = db.get_questions_from_trial_papers()
     if not pool:
         return []
 
@@ -153,6 +155,19 @@ def _generate_explanation(
 # Endpoint: POST /api/session/start_diagnostic
 # ---------------------------------------------------------------------------
 
+@router.get("/papers")
+def list_papers():
+    """Return all papers grouped by subject for the diagnostic picker."""
+    from backend.supabase_client import supabase
+    response = (
+        supabase.table("papers")
+        .select("id, subject, state, year, paper_type, paper_name")
+        .order("subject")
+        .execute()
+    )
+    return {"papers": response.data}
+
+
 @router.post("/start_diagnostic", response_model=StartDiagnosticResponse)
 def start_diagnostic(req: StartDiagnosticRequest) -> StartDiagnosticResponse:
     """
@@ -163,7 +178,7 @@ def start_diagnostic(req: StartDiagnosticRequest) -> StartDiagnosticResponse:
     - Strips correct_option_index before responding (uses QuestionPublic).
     - No attempts are saved here; that happens in submit_diagnostic.
     """
-    questions = select_diagnostic_questions(req.topic_id, req.paper_id)
+    questions = select_diagnostic_questions()
     if not questions:
         raise HTTPException(
             status_code=404,
@@ -193,7 +208,8 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
     if not req.answers:
         raise HTTPException(status_code=400, detail="No answers provided.")
 
-    question_map: Dict[str, Question] = {q.id: q for q in db.get_all_questions()}
+    submitted_ids = [ans.question_id for ans in req.answers]
+    question_map: Dict[str, Question] = {q.id: q for q in db.get_questions_by_ids(submitted_ids)}
     diagnostic_questions: List[Question] = []
     new_attempts: List[Attempt] = []
 
@@ -292,7 +308,8 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         )
     db.save_profile(db_profile)
 
-    explanation = _generate_explanation(question, attempt, ai_profile)
+    # Don't generate explanation immediately; let frontend request it on demand
+    explanation = None
 
     # Every _REVIEW_INJECTION_INTERVAL answers, serve an overdue review question
     # instead of a fresh adaptive one.
@@ -339,6 +356,41 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         skill_summary=topic_summary,
         is_review=is_review,
     )
+
+
+# ---------------------------------------------------------------------------
+# Endpoint: GET /api/session/generate_explanation
+# ---------------------------------------------------------------------------
+
+@router.get("/generate_explanation", response_model=Explanation)
+def generate_explanation(
+    user_id: str,
+    question_id: str,
+    selected_option_index: int,
+) -> Explanation:
+    """Generate an explanation for a previously answered question on demand."""
+    question = db.get_question_by_id(question_id)
+    if question is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Question '{question_id}' not found.",
+        )
+
+    # Create a synthetic attempt object for explanation generation
+    attempt = Attempt(
+        user_id=user_id,
+        question_id=question_id,
+        selected_option_index=selected_option_index,
+        is_correct=question.correct_option_index == selected_option_index,
+        timestamp=datetime.utcnow(),
+    )
+
+    # Build current skill profile from user's attempts
+    all_attempts = get_user_attempts(user_id)
+    ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
+
+    # Generate and return explanation
+    return _generate_explanation(question, attempt, ai_profile)
 
 
 # ---------------------------------------------------------------------------
@@ -406,10 +458,11 @@ def get_review(user_id: str) -> ReviewResponse:
     )
 
     # Map reviewer's ReviewItemOut → schemas ReviewItem
+    # reason is now a 3-value literal — pass through as-is
     review_questions = [
         ReviewItem(
             question=item.question,  # type: ignore[arg-type]
-            reason=item.reason if item.reason in ("low_accuracy", "not_seen_recently") else "low_accuracy",
+            reason=item.reason,
         )
         for item in due
     ]
@@ -422,11 +475,42 @@ def get_review(user_id: str) -> ReviewResponse:
     )
 
     suggested_topics = [
-        SuggestedTopic(
-            topic_id=s.topic_id,
-            reason=s.reason if s.reason in ("low_accuracy", "not_seen_recently") else "low_accuracy",
-        )
+        SuggestedTopic(topic_id=s.topic_id, reason=s.reason)
         for s in topic_suggestions_raw
     ]
 
     return ReviewResponse(review_questions=review_questions, suggested_topics=suggested_topics)
+
+
+# ---------------------------------------------------------------------------
+# Endpoint: POST /api/session/review/submit
+# ---------------------------------------------------------------------------
+
+@router.post("/review/submit", response_model=ReviewSubmitResponse)
+def submit_review_answer(body: ReviewSubmitRequest) -> ReviewSubmitResponse:
+    """
+    Score a review answer, update the spaced-repetition schedule,
+    and return correctness + explanation + next review time.
+    """
+    from datetime import timezone
+
+    question = db.get_question_by_id(body.question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    is_correct = question.correct_option_index == body.selected_option_index
+
+    now = datetime.now(timezone.utc)
+    schedule_entry = review_scheduler.mark_reviewed(
+        user_id=body.user_id,
+        question_id=body.question_id,
+        topic_id=question.topic_id,
+        is_correct=is_correct,
+        now=now,
+    )
+
+    return ReviewSubmitResponse(
+        is_correct=is_correct,
+        explanation=None,  # client calls /generate_explanation separately if desired
+        next_review_at=schedule_entry.next_review_at.isoformat(),
+    )

@@ -54,7 +54,7 @@ class Explanation(BaseModel):
 
 class SubmitAnswerResponse(BaseModel):
     is_correct: bool
-    explanation: Explanation
+    explanation: Optional[Explanation] = None
     next_question: QuestionPublic
     skill_summary: Optional[TopicStats] = None
     # True when next_question is a spaced-repetition review item, not a fresh question.
@@ -76,12 +76,24 @@ class AssessmentResponse(BaseModel):
 
 class ReviewItem(BaseModel):
     question: QuestionPublic
-    reason: Literal["low_accuracy", "not_seen_recently"]
+    reason: Literal["low_accuracy", "not_seen_recently", "weak_topic"]
 
 
 class SuggestedTopic(BaseModel):
     topic_id: str
-    reason: Literal["low_accuracy", "not_seen_recently"]
+    reason: str  # open string — scheduler may return any reason label
+
+
+class ReviewSubmitRequest(BaseModel):
+    user_id: str
+    question_id: str
+    selected_option_index: int
+
+
+class ReviewSubmitResponse(BaseModel):
+    is_correct: bool
+    explanation: Optional[Explanation] = None
+    next_review_at: str  # ISO datetime
 
 
 class ReviewResponse(BaseModel):

@@ -41,7 +41,7 @@ export default function ProgressSummary({ topics }: Props) {
               {/* width driven via CSS custom property to avoid inline style warning */}
               <div
                 className={meta.fill}
-                style={{ ["--bar-w" as string]: `${pct}%` }}
+                style={{ width: `${pct}%` }}
               />
             </div>
 

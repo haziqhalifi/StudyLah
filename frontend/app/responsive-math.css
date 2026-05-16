@@ -1,0 +1,130 @@
+/* ── Math text (KaTeX) responsiveness ─────────────────────────── */
+.katex {
+  font-size: inherit !important;
+}
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (max-width: 480px) {
+  .katex {
+    font-size: 0.9em !important;
+  }
+
+  .katex-display {
+    font-size: 0.95em !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .katex {
+    font-size: 0.95em !important;
+  }
+
+  .katex-display {
+    font-size: 1em !important;
+  }
+}
+
+/* ── Improved text layout in options on all screens ─────────────── */
+.option-card span {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .option-card {
+    align-items: flex-start;
+  }
+
+  .option-letter {
+    margin-top: 0.25rem;
+  }
+}
+
+/* ── Responsive home and diagnostic sections ────────────────────── */
+@media (max-width: 480px) {
+  .home-greeting-title {
+    font-size: 1.5rem;
+  }
+
+  .diag-title {
+    font-size: 1.2rem;
+  }
+
+  .assessment-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .home-greeting-title {
+    font-size: 1.65rem;
+  }
+
+  .diag-title {
+    font-size: 1.3rem;
+  }
+
+  .assessment-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .home-greeting-title {
+    font-size: 2rem;
+  }
+
+  .diag-title {
+    font-size: 1.5rem;
+  }
+
+  .assessment-title {
+    font-size: 1.5rem;
+  }
+
+  .learn-stats {
+    max-width: 800px;
+  }
+
+  .diag-questions {
+    max-width: 800px;
+  }
+}
+
+/* ── Learn and review page responsiveness ──────────────────────── */
+@media (max-width: 480px) {
+  .learn-ai-cues {
+    gap: 0.35rem;
+  }
+
+  .learn-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .review-done-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (min-width: 481px) {
+  .learn-actions {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .learn-actions > * {
+    flex: 1;
+  }
+
+  .review-done-actions {
+    flex-direction: row;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+}

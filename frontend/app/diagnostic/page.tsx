@@ -1,39 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { startDiagnostic, submitDiagnostic, Question, DiagnosticAnswer } from "@/lib/api";
+import {
+  startDiagnostic,
+  submitDiagnostic,
+  Question,
+  DiagnosticAnswer,
+} from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
+import QuizSheet from "@/components/QuizSheet";
+
+type Step = "pick" | "quiz";
+
+const SUBJECTS = ["Matematik"];
 
 export default function DiagnosticPage() {
   const router = useRouter();
-  const [questions, setQuestions]   = useState<Question[]>([]);
-  const [current, setCurrent]       = useState(0);
-  const [answers, setAnswers]       = useState<Record<string, number>>({});
-  const [loading, setLoading]       = useState(true);
+  const [step, setStep] = useState<Step>("pick");
+  const [subject, setSubject] = useState<string>(SUBJECTS[0]);
+  const [starting, setStarting] = useState(false);
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError]           = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
+  async function handleStart() {
     const userId = sessionStorage.getItem("userId");
-    if (!userId) { router.push("/"); return; }
-
-    startDiagnostic(userId, "Matematik", 3)
-      .then((res) => setQuestions(res.questions))
-      .catch(() => setError("Failed to load diagnostic questions."))
-      .finally(() => setLoading(false));
-  }, [router]);
+    if (!userId) {
+      router.push("/");
+      return;
+    }
+    setStarting(true);
+    setError("");
+    try {
+      const res = await startDiagnostic(userId, subject);
+      setQuestions(res.questions);
+      setStep("quiz");
+    } catch {
+      setError("Failed to load questions for this subject.");
+    } finally {
+      setStarting(false);
+    }
+  }
 
   function selectOption(questionId: string, idx: number) {
     setAnswers((prev) => ({ ...prev, [questionId]: idx }));
-  }
-
-  function handleNext() {
-    if (current < questions.length - 1) setCurrent((c) => c + 1);
-  }
-
-  function handleSkip() {
-    if (current < questions.length - 1) setCurrent((c) => c + 1);
   }
 
   async function handleSubmit() {
@@ -42,7 +56,9 @@ export default function DiagnosticPage() {
 
     const unanswered = questions.filter((q) => answers[q.id] === undefined);
     if (unanswered.length > 0) {
-      setError(`${unanswered.length} question(s) unanswered. Skip them or answer before submitting.`);
+      setError(
+        `${unanswered.length} question(s) unanswered. Skip them or answer before submitting.`,
+      );
       return;
     }
 
@@ -54,8 +70,14 @@ export default function DiagnosticPage() {
         selected_option_index: answers[q.id] ?? 0,
       }));
       const result = await submitDiagnostic(userId, payload);
-      sessionStorage.setItem("currentQuestion", JSON.stringify(result.next_question));
-      sessionStorage.setItem("skillProfile", JSON.stringify(result.skill_profile));
+      sessionStorage.setItem(
+        "currentQuestion",
+        JSON.stringify(result.next_question),
+      );
+      sessionStorage.setItem(
+        "skillProfile",
+        JSON.stringify(result.skill_profile),
+      );
       router.push("/learn");
     } catch {
       setError("Submission failed. Please try again.");
@@ -64,17 +86,104 @@ export default function DiagnosticPage() {
     }
   }
 
-  if (loading) return <LoadingShell />;
+  if (step === "pick") {
+    return (
+      <div className="page-enter">
+        <div className="diag-header">
+          <h1 className="font-display diag-title">Choose Your Subject</h1>
+          <p className="diag-sub">Pick a subject to start your diagnostic.</p>
+        </div>
 
-  const q            = questions[current];
-  const answered     = Object.keys(answers).length;
-  const isLast       = current === questions.length - 1;
-  const allAnswered  = answered === questions.length;
+        <div className="diag-picker-section">
+          <p className="diag-picker-label">Subject</p>
+          <div className="diag-subject-grid">
+            {SUBJECTS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`diag-subject-btn ${subject === s ? "active" : ""}`}
+                onClick={() => setSubject(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error && <p className="diag-error">{error}</p>}
+
+        <div className="sticky-bar">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleStart}
+            disabled={starting}
+          >
+            {starting ? "Loading questions…" : "Start Diagnostic →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const q = questions[current];
+  const answered = Object.keys(answers).length;
+  const isLast = current === questions.length - 1;
+  const allAnswered = answered === questions.length;
+
+  const bar = isLast ? (
+    <button
+      type="button"
+      className="btn-primary"
+      onClick={handleSubmit}
+      disabled={submitting}
+    >
+      {submitting
+        ? "Analysing your answers…"
+        : allAnswered
+          ? "Submit & Start Learning →"
+          : `Submit (${answered}/${questions.length} answered)`}
+    </button>
+  ) : (
+    <div className="learn-actions">
+      <button
+        type="button"
+        className="btn-ghost diag-skip-btn"
+        onClick={() => setCurrent((c) => c + 1)}
+      >
+        Skip
+      </button>
+      <button
+        type="button"
+        className="btn-primary"
+        onClick={() => setCurrent((c) => c + 1)}
+        disabled={answers[q?.id] === undefined}
+      >
+        Next →
+      </button>
+    </div>
+  );
+
+  function handleClose() {
+    setStep("pick");
+    setQuestions([]);
+    setCurrent(0);
+    setAnswers({});
+    setError("");
+  }
 
   return (
-    <div>
-      {/* Step dots */}
+    <QuizSheet open={step === "quiz"} bar={bar} onClose={handleClose}>
       <div className="diag-step-indicator">
+        <button
+          type="button"
+          className="quiz-sheet-back"
+          onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+          disabled={current === 0}
+          aria-label="Previous question"
+        >
+          ←
+        </button>
         {questions.map((_, i) => (
           <button
             type="button"
@@ -86,20 +195,23 @@ export default function DiagnosticPage() {
         ))}
       </div>
 
-      {/* Header */}
       <div className="diag-header page-enter">
         <h1 className="font-display diag-title">Diagnostic</h1>
         <p className="diag-sub">
           Answer to personalise your learning path — just do your best!
         </p>
         <div className="diag-progress-row">
-          <span className="diag-progress-label">Question {current + 1} of {questions.length}</span>
+          <span className="diag-progress-label">
+            Question {current + 1} of {questions.length}
+          </span>
           <span className="diag-progress-count">{answered} answered</span>
         </div>
         <div className="progress-track">
           <div
             className="progress-fill"
-            style={{ ["--bar-w" as string]: `${Math.round((answered / questions.length) * 100)}%` }}
+            style={{
+              width: `${Math.round((answered / questions.length) * 100)}%`,
+            }}
           />
         </div>
       </div>
@@ -115,46 +227,6 @@ export default function DiagnosticPage() {
       )}
 
       {error && <p className="diag-error">{error}</p>}
-
-      {/* Actions */}
-      <div className="sticky-bar">
-        {isLast ? (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? "Analysing your answers…" : allAnswered ? "Submit & Start Learning →" : `Submit (${answered}/${questions.length} answered)`}
-          </button>
-        ) : (
-          <div className="learn-actions">
-            <button type="button" className="btn-ghost diag-skip-btn" onClick={handleSkip}>
-              Skip
-            </button>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handleNext}
-              disabled={answers[q?.id] === undefined}
-            >
-              Next →
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function LoadingShell() {
-  return (
-    <div className="page-enter">
-      <div className="diag-header">
-        <div className="skeleton-title" />
-        <div className="skeleton-sub" />
-      </div>
-      <div className="card skeleton-card" />
-    </div>
+    </QuizSheet>
   );
 }
