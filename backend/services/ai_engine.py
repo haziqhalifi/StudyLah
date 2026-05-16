@@ -556,9 +556,9 @@ Student's answer: "{selected_text}" — {result_word}
         from pathlib import Path
         load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-        api_key = os.environ.get("GEMINI_API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         if not api_key:
-            raise RuntimeError("GEMINI_API_KEY not set")
+            raise RuntimeError("Gemini API key not set (GEMINI_API_KEY or GOOGLE_API_KEY)")
 
         _gclient = _genai.Client(api_key=api_key)
         config = _types.GenerateContentConfig(
