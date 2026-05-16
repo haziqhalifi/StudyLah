@@ -5137,3 +5137,290 @@ button.map-node:hover {
   font-size: 1rem;
   font-weight: 800;
 }
+
+/* ── Exam timer ───────────────────────────────────────────────── */
+.qs-header-timer {
+  flex-shrink: 0;
+}
+
+.exam-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  background: var(--border);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--r-xl);
+  letter-spacing: 0.02em;
+  transition: background 0.3s, color 0.3s;
+}
+
+.exam-timer.exam-timer-warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.exam-timer.exam-timer-critical {
+  background: #fee2e2;
+  color: #991b1b;
+  animation: timerPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Exam timeout banner ─────────────────────────────────────── */
+.exam-timeout-banner {
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: var(--r-xl);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+/* ── Exam score card ─────────────────────────────────────────── */
+.exam-score-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2xl);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.exam-score-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.exam-score-grade {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.exam-score-fraction {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.exam-score-pct {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.exam-score-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ── Exam review list ────────────────────────────────────────── */
+.exam-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 1.5rem;
+}
+
+.exam-review-item {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 0.875rem 1rem;
+}
+
+.exam-review-item.exam-review-correct {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.exam-review-item.exam-review-wrong {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.exam-review-item.exam-review-skipped {
+  border-color: var(--border);
+  opacity: 0.7;
+}
+
+.exam-review-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.exam-review-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.exam-review-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.exam-review-badge.badge-correct {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.exam-review-badge.badge-wrong {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.exam-review-badge.badge-skipped {
+  background: var(--border);
+  color: var(--muted);
+}
+
+.exam-review-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+  line-height: 1.5;
+}
+
+.exam-review-your {
+  font-size: 0.8rem;
+  color: #991b1b;
+  margin-bottom: 0.2rem;
+}
+
+.exam-review-correct-ans {
+  font-size: 0.8rem;
+  color: #166534;
+}
+
+/* Settings page */
+.settings-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.25rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.settings-card-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #766f91;
+  margin-bottom: 0.1rem;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.4rem;
+}
+
+.settings-row--static {
+  border-top: 1px solid #f0eef8;
+  padding-top: 0.65rem;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.settings-row-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.settings-row-value {
+  font-size: 0.85rem;
+  color: #766f91;
+}
+
+.settings-edit-btn {
+  background: none;
+  border: 1.5px solid #7f65ff;
+  color: #7f65ff;
+  border-radius: 10px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.settings-edit-btn:hover {
+  background: #f3f0ff;
+}
+
+.settings-name-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.settings-name-input {
+  width: 100%;
+  padding: 0.55rem 0.9rem;
+  border: 1.5px solid #7f65ff;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--ink);
+  outline: none;
+  background: #faf9ff;
+}
+
+.settings-name-input:focus {
+  border-color: #5b43e8;
+  box-shadow: 0 0 0 3px rgba(127,101,255,0.12);
+}
+
+.settings-name-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.settings-name-actions .btn-primary,
+.settings-name-actions .btn-ghost {
+  flex: 1;
+  padding: 0.5rem 0;
+  font-size: 0.88rem;
+}
+
+.settings-saved-hint {
+  font-size: 0.82rem;
+  color: #22c55e;
+  font-weight: 500;
+  margin: 0;
+}

@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/materials", icon: BookIcon, label: "Lessons" },
   { href: "/exams", icon: PathIcon, label: "Exams" },
   { href: "/progress", icon: ProgressIcon, label: "Progress" },
-  { href: "/review", icon: SettingsIcon, label: "Settings" },
+  { href: "/settings", icon: SettingsIcon, label: "Settings" },
 ];
 
 export default function BottomNav() {
