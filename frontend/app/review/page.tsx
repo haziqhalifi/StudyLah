@@ -2,39 +2,53 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getReview, submitAnswer, ReviewItem, SubmitAnswerResponse } from "@/lib/api";
+import {
+  getReview,
+  submitAnswer,
+  ReviewItem,
+  SubmitAnswerResponse,
+} from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
 
 const REASON_LABEL: Record<string, string> = {
-  low_accuracy:     "Low accuracy — let's fix this",
+  low_accuracy: "Low accuracy — let's fix this",
   not_seen_recently: "Not seen recently",
 };
 
 export default function ReviewPage() {
   const router = useRouter();
-  const [userId, setUserId]         = useState<string | null>(null);
-  const [items, setItems]           = useState<ReviewItem[]>([]);
-  const [idx, setIdx]               = useState(0);
-  const [selected, setSelected]     = useState<number | null>(null);
-  const [result, setResult]         = useState<SubmitAnswerResponse | null>(null);
-  const [loading, setLoading]       = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [items, setItems] = useState<ReviewItem[]>([]);
+  const [idx, setIdx] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
-    if (!uid) { router.push("/"); return; }
+    if (!uid) {
+      router.push("/");
+      return;
+    }
     setUserId(uid);
 
     getReview(uid)
-      .then((res) => setItems(res.review_questions))
+      .then((res) => {
+        // Show only 'matematik' subject for now
+        const filtered = res.review_questions.filter(
+          (it) => (it.question.topic_id || "").toLowerCase() === "matematik",
+        );
+        setItems(filtered);
+      })
       .catch(() => alert("Failed to load review questions."))
       .finally(() => setLoading(false));
   }, [router]);
 
-  const item  = items[idx];
-  const done  = idx >= items.length && !loading;
+  const item = items[idx];
+  const done = idx >= items.length && !loading;
   const empty = !loading && items.length === 0;
 
   async function handleSubmit() {
@@ -56,34 +70,54 @@ export default function ReviewPage() {
 
   if (loading) return <LoadingShell />;
 
-  if (empty) return (
-    <div className="review-done page-enter">
-      <div className="review-done-emoji">📚</div>
-      <h2 className="font-display review-done-title">Nothing to review yet!</h2>
-      <p className="review-done-sub">Keep practising and we&apos;ll surface your weak spots here.</p>
-      <div className="review-done-actions">
-        <button type="button" className="btn-primary" onClick={() => router.push("/learn")}>
-          Go Learn →
-        </button>
+  if (empty)
+    return (
+      <div className="review-done page-enter">
+        <div className="review-done-emoji">📚</div>
+        <h2 className="font-display review-done-title">
+          Nothing to review yet!
+        </h2>
+        <p className="review-done-sub">
+          Keep practising and we&apos;ll surface your weak spots here.
+        </p>
+        <div className="review-done-actions">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => router.push("/learn")}
+          >
+            Go Learn →
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
 
-  if (done) return (
-    <div className="review-done page-enter">
-      <div className="review-done-emoji">🎉</div>
-      <h2 className="font-display review-done-title">Review complete!</h2>
-      <p className="review-done-sub">You&apos;ve revisited all your weak spots. Keep it up!</p>
-      <div className="review-done-actions">
-        <button type="button" className="btn-primary" onClick={() => router.push("/learn")}>
-          Continue Learning →
-        </button>
-        <button type="button" className="btn-ghost diag-skip-btn" onClick={() => router.push("/assessment")}>
-          Progress ▤
-        </button>
+  if (done)
+    return (
+      <div className="review-done page-enter">
+        <div className="review-done-emoji">🎉</div>
+        <h2 className="font-display review-done-title">Review complete!</h2>
+        <p className="review-done-sub">
+          You&apos;ve revisited all your weak spots. Keep it up!
+        </p>
+        <div className="review-done-actions">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => router.push("/learn")}
+          >
+            Continue Learning →
+          </button>
+          <button
+            type="button"
+            className="btn-ghost diag-skip-btn"
+            onClick={() => router.push("/assessment")}
+          >
+            Progress ▤
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div>
@@ -99,7 +133,9 @@ export default function ReviewPage() {
       {/* Progress */}
       <div className="review-progress-row">
         <span className="review-progress-label">Spaced repetition</span>
-        <span className="review-progress-frac">{idx + 1} / {items.length}</span>
+        <span className="review-progress-frac">
+          {idx + 1} / {items.length}
+        </span>
       </div>
       <div className="progress-track review-progress-track">
         <div
@@ -108,7 +144,10 @@ export default function ReviewPage() {
         />
       </div>
 
-      <AiBadge variant="review" label={`Review from: ${REASON_LABEL[item.reason] ?? item.reason}`} />
+      <AiBadge
+        variant="review"
+        label={`Review from: ${REASON_LABEL[item.reason] ?? item.reason}`}
+      />
 
       <div className="diag-questions review-questions-gap">
         <QuestionCard
@@ -122,7 +161,12 @@ export default function ReviewPage() {
         />
       </div>
 
-      {result && <ExplanationBlock explanation={result.explanation} isCorrect={result.is_correct} />}
+      {result && (
+        <ExplanationBlock
+          explanation={result.explanation}
+          isCorrect={result.is_correct}
+        />
+      )}
 
       <div className="sticky-bar">
         {!result ? (

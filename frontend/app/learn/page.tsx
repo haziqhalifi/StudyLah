@@ -19,38 +19,41 @@ type View = "topics" | "practice";
 
 const SUBJECT_ICONS: Record<string, string> = {
   Matematik: "∑",
-  Fizik:     "⚛",
-  Sejarah:   "📜",
+  Fizik: "⚛",
+  Sejarah: "📜",
   "Bahasa Melayu": "✍",
   "Bahasa Inggeris": "🗣",
 };
 
 export default function LearnPage() {
   const router = useRouter();
-  const [userId, setUserId]         = useState<string | null>(null);
-  const [view, setView]             = useState<View>("topics");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [view, setView] = useState<View>("topics");
 
   // Topic picker state
-  const [papers, setPapers]         = useState<Paper[]>([]);
-  const [subjects, setSubjects]     = useState<string[]>([]);
+  const [papers, setPapers] = useState<Paper[]>([]);
+  const [subjects, setSubjects] = useState<string[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
-  const [starting, setStarting]     = useState(false);
+  const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
 
   // Practice state
-  const [question, setQuestion]     = useState<Question | null>(null);
-  const [selected, setSelected]     = useState<number | null>(null);
-  const [result, setResult]         = useState<SubmitAnswerResponse | null>(null);
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [count, setCount]           = useState(0);
-  const [correct, setCorrect]       = useState(0);
-  const [prevDiff, setPrevDiff]     = useState<string | null>(null);
-  const [diffShift, setDiffShift]   = useState<"up" | "down" | null>(null);
+  const [count, setCount] = useState(0);
+  const [correct, setCorrect] = useState(0);
+  const [prevDiff, setPrevDiff] = useState<string | null>(null);
+  const [diffShift, setDiffShift] = useState<"up" | "down" | null>(null);
 
   useEffect(() => {
-    const uid  = sessionStorage.getItem("userId");
+    const uid = sessionStorage.getItem("userId");
     const qRaw = sessionStorage.getItem("currentQuestion");
-    if (!uid) { router.push("/"); return; }
+    if (!uid) {
+      router.push("/");
+      return;
+    }
     setUserId(uid);
 
     // If coming from diagnostic, go straight to practice
@@ -63,8 +66,12 @@ export default function LearnPage() {
 
     getPapers()
       .then((res) => {
-        setPapers(res.papers);
-        const unique = [...new Set(res.papers.map((p) => p.subject))].sort();
+        // Limit to only 'matematik' subject for now (case-insensitive)
+        const filtered = res.papers.filter(
+          (p) => (p.subject || "").toLowerCase() === "matematik",
+        );
+        setPapers(filtered);
+        const unique = [...new Set(filtered.map((p) => p.subject))].sort();
         setSubjects(unique);
       })
       .finally(() => setLoadingPapers(false));
@@ -135,13 +142,19 @@ export default function LearnPage() {
     return (
       <div className="page-enter">
         <div className="diag-header">
-          <h1 className="font-display diag-title">What do you want to practise?</h1>
-          <p className="diag-sub">Pick a subject to get an adaptive question set.</p>
+          <h1 className="font-display diag-title">
+            What do you want to practise?
+          </h1>
+          <p className="diag-sub">
+            Pick a subject to get an adaptive question set.
+          </p>
         </div>
 
         {loadingPapers ? (
           <div className="diag-subject-grid">
-            {[1, 2, 3].map((i) => <div key={i} className="skeleton-card skeleton-topic-card" />)}
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="skeleton-card skeleton-topic-card" />
+            ))}
           </div>
         ) : (
           <div className="learn-topic-grid">
@@ -155,9 +168,13 @@ export default function LearnPage() {
                   onClick={() => handlePickSubject(s)}
                   disabled={starting}
                 >
-                  <span className="learn-topic-icon">{SUBJECT_ICONS[s] ?? "📚"}</span>
+                  <span className="learn-topic-icon">
+                    {SUBJECT_ICONS[s] ?? "📚"}
+                  </span>
                   <span className="learn-topic-name">{s}</span>
-                  <span className="learn-topic-meta">{count} paper{count !== 1 ? "s" : ""}</span>
+                  <span className="learn-topic-meta">
+                    {count} paper{count !== 1 ? "s" : ""}
+                  </span>
                 </button>
               );
             })}
@@ -181,11 +198,12 @@ export default function LearnPage() {
     );
   }
 
-  if (!question) return <div className="page-enter diag-sub">Loading question…</div>;
+  if (!question)
+    return <div className="page-enter diag-sub">Loading question…</div>;
 
-  const accuracy   = count > 0 ? Math.round((correct / count) * 100) : 0;
+  const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
   const showReview = count > 0 && count % 5 === 0 && !result;
-  const isReview   = question.tags?.includes("review") ?? false;
+  const isReview = question.tags?.includes("review") ?? false;
 
   return (
     <div>
@@ -193,7 +211,11 @@ export default function LearnPage() {
       <button
         type="button"
         className="btn-ghost btn-ghost-sm learn-back-btn"
-        onClick={() => { setView("topics"); setResult(null); setSelected(null); }}
+        onClick={() => {
+          setView("topics");
+          setResult(null);
+          setSelected(null);
+        }}
       >
         ← Topics
       </button>
@@ -209,30 +231,43 @@ export default function LearnPage() {
         </div>
         <div className="learn-stat">
           <div className="learn-stat-label">Accuracy</div>
-          <div className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}>
+          <div
+            className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}
+          >
             {count > 0 ? `${accuracy}%` : "—"}
           </div>
         </div>
         {result?.skill_summary && (
           <div className="learn-stat">
             <div className="learn-stat-label">Level</div>
-            <div className="learn-stat-value brand">{result.skill_summary.level}</div>
+            <div className="learn-stat-value brand">
+              {result.skill_summary.level}
+            </div>
           </div>
         )}
       </div>
 
       <div className="learn-ai-cues">
         {diffShift && <AiBadge variant={diffShift} />}
-        {isReview   && <AiBadge variant="review" />}
+        {isReview && <AiBadge variant="review" />}
         {result?.explanation && (
-          <AiBadge variant="style" label={`Explanation: ${result.explanation.style.replace(/_/g, " ")}`} />
+          <AiBadge
+            variant="style"
+            label={`Explanation: ${result.explanation.style.replace(/_/g, " ")}`}
+          />
         )}
       </div>
 
       {showReview && (
         <div className="learn-review-banner">
-          <span className="learn-review-banner-text">↺ Time to revisit something tricky!</span>
-          <button type="button" className="btn-primary btn-primary-sm" onClick={() => router.push("/review")}>
+          <span className="learn-review-banner-text">
+            ↺ Time to revisit something tricky!
+          </span>
+          <button
+            type="button"
+            className="btn-primary btn-primary-sm"
+            onClick={() => router.push("/review")}
+          >
             Review
           </button>
         </div>
@@ -248,7 +283,12 @@ export default function LearnPage() {
         isReview={isReview}
       />
 
-      {result && <ExplanationBlock explanation={result.explanation} isCorrect={result.is_correct} />}
+      {result && (
+        <ExplanationBlock
+          explanation={result.explanation}
+          isCorrect={result.is_correct}
+        />
+      )}
 
       <div className="sticky-bar">
         {!result ? (
@@ -265,7 +305,11 @@ export default function LearnPage() {
             <button type="button" className="btn-primary" onClick={handleNext}>
               Next Question →
             </button>
-            <button type="button" className="btn-ghost diag-skip-btn" onClick={() => router.push("/assessment")}>
+            <button
+              type="button"
+              className="btn-ghost diag-skip-btn"
+              onClick={() => router.push("/assessment")}
+            >
               Progress ▤
             </button>
           </div>

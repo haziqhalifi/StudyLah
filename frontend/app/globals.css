@@ -407,6 +407,10 @@ h1, h2, h3 {
   overflow-y: auto;
 }
 
+.app-main--fullscreen {
+  padding-bottom: 5rem;
+}
+
 /* ── ExplanationBlock ─────────────────────────────────────────── */
 .expblock {
   margin-top: 1rem;
@@ -806,6 +810,18 @@ h1, h2, h3 {
   background: linear-gradient(to top, var(--surface) 70%, transparent);
   padding: 0.75rem 0 0;
   margin-top: 1rem;
+}
+
+.app-main--fullscreen .sticky-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
 }
 
 /* ── Page enter animation helper ──────────────────────────────── */

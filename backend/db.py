@@ -68,6 +68,38 @@ def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
     return [_row_to_question(r) for r in response.data]
 
 
+def get_questions_from_trial_papers(subject: str, limit: int = 200) -> List[Question]:
+    """Fetch questions from all trial papers for the given subject."""
+    papers_resp = (
+        supabase.table("papers")
+        .select("id")
+        .ilike("subject", subject)
+        .ilike("paper_type", "trial")
+        .execute()
+    )
+    paper_ids = [row["id"] for row in (papers_resp.data or [])]
+    if not paper_ids:
+        # Fall back to any paper for this subject
+        papers_resp = (
+            supabase.table("papers")
+            .select("id")
+            .ilike("subject", subject)
+            .execute()
+        )
+        paper_ids = [row["id"] for row in (papers_resp.data or [])]
+    if not paper_ids:
+        return []
+    response = (
+        supabase.table("questions")
+        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .in_("paper_id", paper_ids)
+        .not_.is_("question", "null")
+        .limit(limit)
+        .execute()
+    )
+    return [_row_to_question(r) for r in response.data]
+
+
 def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Question]:
     query = (
         supabase.table("questions")
