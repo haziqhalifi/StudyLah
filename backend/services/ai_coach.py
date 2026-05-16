@@ -1,7 +1,7 @@
 """
 AI Coach — personalised coaching suggestions for SPM Math students.
 
-Combines rule-based recommendation logic with Gemini-powered phrasing
+Combines rule-based recommendation logic with OpenAI-powered phrasing
 to produce short, friendly coaching messages based on a user's learning data.
 
 Covers the three SPM Form 5 Math topics:
@@ -78,7 +78,7 @@ class CoachSuggestion(BaseModel):
 class AICoach:
     """
     Generates personalised coaching suggestions based on the user's learning data.
-    Uses rule-based logic for recommendations and Gemini for natural language phrasing.
+    Uses rule-based logic for recommendations and OpenAI for natural language phrasing.
     """
 
     # ------------------------------------------------------------------
@@ -273,7 +273,7 @@ class AICoach:
         return suggestions[:5]
 
     # ------------------------------------------------------------------
-    # 3. Gemini phrasing
+    # 3. OpenAI phrasing
     # ------------------------------------------------------------------
 
     async def phrase_suggestions_with_gemini(
@@ -283,7 +283,7 @@ class AICoach:
     ) -> list[CoachSuggestion]:
         """
         Rewrite suggestion titles and messages in a friendly SPM-student tone.
-        Falls back to the original rule-based text if Gemini fails.
+        Falls back to the original rule-based text if OpenAI fails.
 
         TODO: Localise to full Bahasa Melayu by adjusting the system prompt below.
         TODO: Inject upcoming_exam_date (e.g. "SPM in 45 days") for urgency cues.
@@ -295,7 +295,6 @@ class AICoach:
         try:
             import json
             from backend.services.study_buddy_agent import _get_client, MODEL_NAME
-            from google.genai import types as genai_types
 
             client = _get_client()
 
@@ -320,20 +319,17 @@ class AICoach:
                 f"Rewrite these suggestions:\n{json.dumps(raw_list, ensure_ascii=False, indent=2)}"
             )
 
-            config = genai_types.GenerateContentConfig(
-                system_instruction=[genai_types.Part.from_text(text=coach_system_prompt)],
-            )
-            response = client.models.generate_content(
+            response = client.chat.completions.create(
                 model=MODEL_NAME,
-                contents=[genai_types.Content(
-                    role="user",
-                    parts=[genai_types.Part.from_text(text=user_payload)],
-                )],
-                config=config,
+                temperature=0.5,
+                messages=[
+                    {"role": "system", "content": coach_system_prompt},
+                    {"role": "user", "content": user_payload},
+                ],
             )
 
-            text = response.text.strip()
-            # Strip markdown code fences if Gemini wraps the JSON
+            text = (response.choices[0].message.content or "").strip()
+            # Strip markdown code fences if present
             if text.startswith("```"):
                 lines = text.split("\n")
                 text = "\n".join(lines[1:])
@@ -356,7 +352,7 @@ class AICoach:
             return updated
 
         except Exception as exc:
-            logger.warning("AICoach: Gemini phrasing failed, returning raw suggestions — %s", exc)
+            logger.warning("AICoach: OpenAI phrasing failed, returning raw suggestions — %s", exc)
             return suggestions
 
     # ------------------------------------------------------------------
@@ -368,7 +364,7 @@ class AICoach:
         user_id: str,
         use_gemini: bool = True,
     ) -> tuple[LearningSnapshot, list[CoachSuggestion]]:
-        """Build snapshot, run rules, optionally rephrase with Gemini."""
+        """Build snapshot, run rules, optionally rephrase with OpenAI."""
         snapshot = self.build_learning_snapshot(user_id)
         suggestions = self.generate_raw_recommendations(snapshot)
         if use_gemini and suggestions:
@@ -391,14 +387,11 @@ class AICoach:
         TODO: Add more BM phrases when targeting fully Malay-medium students.
         TODO: Inject upcoming_exam_date from user profile once that feature lands.
         """
-        # Build snapshot + raw suggestions (no Gemini phrasing yet — we'll do it after)
         snapshot = self.build_learning_snapshot(user_id)
         suggestions = self.generate_raw_recommendations(snapshot)
 
-        # Generate conversational reply with Gemini
-        reply = await self._gemini_coach_reply(snapshot, question, page_context, topic_id)
+        reply = await self._openai_coach_reply(snapshot, question, page_context, topic_id)
 
-        # Now rephrase suggestions
         if suggestions:
             suggestions = await self.phrase_suggestions_with_gemini(snapshot, suggestions)
 
@@ -408,17 +401,16 @@ class AICoach:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    async def _gemini_coach_reply(
+    async def _openai_coach_reply(
         self,
         snapshot: LearningSnapshot,
         question: str,
         page_context: str,
         topic_id: Optional[str],
     ) -> str:
-        """Call Gemini for a personalised coach reply; fall back to rule-based text."""
+        """Call OpenAI for a personalised coach reply; fall back to rule-based text."""
         try:
             from backend.services.study_buddy_agent import _get_client, MODEL_NAME
-            from google.genai import types as genai_types
 
             client = _get_client()
 
@@ -454,21 +446,17 @@ class AICoach:
                 f"Student asks: {question}"
             )
 
-            config = genai_types.GenerateContentConfig(
-                system_instruction=[genai_types.Part.from_text(text=coach_system)],
-            )
-            response = client.models.generate_content(
+            response = client.chat.completions.create(
                 model=MODEL_NAME,
-                contents=[genai_types.Content(
-                    role="user",
-                    parts=[genai_types.Part.from_text(text=context_block)],
-                )],
-                config=config,
+                messages=[
+                    {"role": "system", "content": coach_system},
+                    {"role": "user", "content": context_block},
+                ],
             )
-            return response.text.strip()
+            return (response.choices[0].message.content or "").strip()
 
         except Exception as exc:
-            logger.warning("AICoach: Gemini reply failed — %s", exc)
+            logger.warning("AICoach: OpenAI reply failed — %s", exc)
             return _build_fallback_reply(snapshot)
 
 
@@ -509,7 +497,7 @@ def _weakest_topic(snapshot: LearningSnapshot) -> str:
 
 
 def _build_fallback_reply(snapshot: LearningSnapshot) -> str:
-    """Rule-based coach reply used when Gemini is unavailable."""
+    """Rule-based coach reply used when OpenAI is unavailable."""
     tried = [t for t in snapshot.topics if t.attempts > 0]
     if not tried:
         return (

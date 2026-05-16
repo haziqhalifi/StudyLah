@@ -1,18 +1,26 @@
 """
-FlashcardGenerator — uses Gemini to generate Q-A flashcards grounded in
+FlashcardGenerator — uses OpenAI to generate Q-A flashcards grounded in
 KSSM SPM Form 5 Mathematics content (Ubahan, Matriks, Insurans).
 
-Falls back to hard-coded seed pairs when Gemini is unavailable.
+Falls back to hard-coded seed pairs when OpenAI is unavailable.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import os
 import re
+from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 logger = logging.getLogger(__name__)
+
+_MODEL = "gpt-4o-mini"
 
 # ---------------------------------------------------------------------------
 # Topic-specific prompt hints
@@ -47,7 +55,7 @@ _TOPIC_NAMES: dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
-# Fallback seed flashcards (used when Gemini is unavailable)
+# Fallback seed flashcards (used when OpenAI is unavailable)
 # ---------------------------------------------------------------------------
 
 _SEED_CARDS: dict[str, list[dict]] = {
@@ -81,32 +89,22 @@ _SEED_CARDS: dict[str, list[dict]] = {
 
 class FlashcardGenerator:
     """
-    Generates Q-A flashcards using Gemini.
+    Generates Q-A flashcards using OpenAI.
     Optionally uses a KssmRetriever for KSSM-grounded context.
     """
 
     def __init__(self, kssm_retriever=None) -> None:
         self._kssm_retriever = kssm_retriever
-        self._gemini = self._init_gemini()
+        self._client = None  # lazy-initialised on first use
 
-    def _init_gemini(self):
-        try:
-            from backend.config.settings import settings  # type: ignore
-        except ModuleNotFoundError:
-            from config.settings import settings  # type: ignore
-
-        api_key = getattr(settings, "gemini_api_key", None)
-        model_name = getattr(settings, "gemini_model_name", "gemini-1.5-flash")
-        if not api_key:
-            logger.warning("FlashcardGenerator: GEMINI_API_KEY not set — will use seed fallback.")
-            return None
-        try:
-            import google.generativeai as genai  # type: ignore
-            genai.configure(api_key=api_key)
-            return genai.GenerativeModel(model_name)
-        except Exception as exc:
-            logger.warning("FlashcardGenerator: Gemini init failed (%s) — will use seed fallback.", exc)
-            return None
+    def _get_client(self):
+        if self._client is None:
+            from openai import OpenAI
+            api_key = os.environ.get("OPENAI_API_KEY")
+            if not api_key:
+                raise RuntimeError("OPENAI_API_KEY not set.")
+            self._client = OpenAI(api_key=api_key)
+        return self._client
 
     # ------------------------------------------------------------------
     # Public API
@@ -120,22 +118,20 @@ class FlashcardGenerator:
     ) -> list[dict]:
         """
         Return num_cards items: [{"question": str, "answer": str}, ...].
-        Falls back to seed cards if Gemini is unavailable or fails.
+        Falls back to seed cards if OpenAI is unavailable or fails.
         """
         num_cards = max(3, min(num_cards, 20))
 
-        if self._gemini is None:
-            return self._seed_fallback(topic_id, num_cards)
-
         prompt = self._build_prompt(topic_id, subtopic_hint, num_cards)
         try:
-            raw = self._call_gemini(prompt)
+            client = self._get_client()
+            raw = self._call_openai(client, prompt)
             cards = self._parse_response(raw)
             if len(cards) >= 3:
                 return cards[:num_cards]
-            logger.warning("FlashcardGenerator: Gemini returned too few cards (%d), using seed.", len(cards))
+            logger.warning("FlashcardGenerator: OpenAI returned too few cards (%d), using seed.", len(cards))
         except Exception as exc:
-            logger.error("FlashcardGenerator: Gemini call failed — %s", exc)
+            logger.error("FlashcardGenerator: OpenAI call failed — %s", exc)
 
         return self._seed_fallback(topic_id, num_cards)
 
@@ -174,12 +170,15 @@ class FlashcardGenerator:
             '{"flashcards": [{"question": "...", "answer": "..."}, ...]}'
         )
 
-    def _call_gemini(self, prompt: str) -> str:
-        response = self._gemini.generate_content(prompt)
-        return response.text.strip()
+    def _call_openai(self, client, prompt: str) -> str:
+        response = client.chat.completions.create(
+            model=_MODEL,
+            temperature=0.5,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return (response.choices[0].message.content or "").strip()
 
     def _parse_response(self, raw: str) -> list[dict]:
-        # Strip markdown code fences if present
         cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.MULTILINE)
         data = json.loads(cleaned)
         cards = data.get("flashcards", [])
@@ -191,7 +190,6 @@ class FlashcardGenerator:
 
     def _seed_fallback(self, topic_id: str, num_cards: int) -> list[dict]:
         seeds = _SEED_CARDS.get(topic_id, _SEED_CARDS["ubahan"])
-        # Cycle seeds to fill num_cards
         result = []
         for i in range(num_cards):
             result.append(seeds[i % len(seeds)])

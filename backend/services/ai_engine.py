@@ -9,16 +9,16 @@ Each public function (analyze_diagnostic, choose_next_question, …) checks
 settings.adaptive_engine and delegates to the Gemini engine when enabled.
 If Gemini raises for any reason the rule-based result is used instead.
 
-Claude integration uses the Anthropic SDK:
+OpenAI integration uses the openai SDK:
 
-    import anthropic
-    client = anthropic.Anthropic()   # reads ANTHROPIC_API_KEY from env
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
+    from openai import OpenAI
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
     )
-    result = response.content[0].text  # parsed as JSON where needed
+    result = response.choices[0].message.content  # parsed as JSON where needed
 """
 
 from __future__ import annotations
@@ -33,7 +33,6 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Optional
 if TYPE_CHECKING:
     from backend.services.adaptive_engine_gemini import GeminiAdaptiveEngine
 
-import anthropic
 from pydantic import BaseModel, computed_field
 
 from backend.config.settings import settings
@@ -42,18 +41,18 @@ from backend.schemas.question import Question, Attempt
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Anthropic client (lazy singleton — initialised on first use so tests that
-# don't set ANTHROPIC_API_KEY still import this module without crashing)
+# OpenAI client (lazy singleton)
 # ---------------------------------------------------------------------------
 
-_anthropic_client: Optional[anthropic.Anthropic] = None
+_openai_client = None  # OpenAI instance, lazy-initialised
 
 
-def _client() -> anthropic.Anthropic:
-    global _anthropic_client
-    if _anthropic_client is None:
-        _anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    return _anthropic_client
+def _client():
+    global _openai_client
+    if _openai_client is None:
+        from openai import OpenAI
+        _openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    return _openai_client
 
 
 # ---------------------------------------------------------------------------
@@ -85,22 +84,19 @@ def _gemini_enabled() -> bool:
 
 
 def _call_claude(prompt: str, max_tokens: int = 1024) -> Optional[str]:
-    """Send a single-turn prompt to Claude and return the text response.
+    """Send a single-turn prompt to OpenAI and return the text response.
 
     Returns None on any error so callers can fall back to heuristics.
     """
     try:
-        response = _client().messages.create(
-            model="claude-sonnet-4-6",
+        response = _client().chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
-        block = response.content[0]
-        if isinstance(block, anthropic.types.TextBlock):
-            return block.text
-        return None
+        return (response.choices[0].message.content or "").strip() or None
     except Exception as exc:
-        logger.warning("Claude API call failed, falling back to heuristic: %s", exc)
+        logger.warning("OpenAI API call failed, falling back to heuristic: %s", exc)
         return None
 
 
@@ -550,36 +546,19 @@ Student's answer: "{selected_text}" — {result_word}
 
     explanation_text = _EXPLANATION_TEMPLATES[style]  # default fallback
     try:
-        from google import genai as _genai
-        from google.genai import types as _types
-        from dotenv import load_dotenv
-        from pathlib import Path
-        load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            raise RuntimeError("Gemini API key not set (GEMINI_API_KEY or GOOGLE_API_KEY)")
-
-        _gclient = _genai.Client(api_key=api_key)
-        config = _types.GenerateContentConfig(
-            thinking_config=_types.ThinkingConfig(thinking_level=_types.ThinkingLevel.HIGH),
-            system_instruction=[_types.Part.from_text(text=system)],
-        )
-        response = _gclient.models.generate_content(
-            model="gemini-3-flash-preview",   # swap model here if needed
-            contents=[
-                _types.Content(
-                    role="user",
-                    parts=[_types.Part.from_text(text=user)],
-                )
+        response = _client().chat.completions.create(
+            model="gpt-4o-mini",
+            max_tokens=512,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
             ],
-            config=config,
         )
-        text = (response.text or "").strip()
+        text = (response.choices[0].message.content or "").strip()
         if text:
             explanation_text = text
     except Exception as exc:
-        logger.warning("Gemini explanation failed, using template: %s", exc)
+        logger.warning("OpenAI explanation failed, using template: %s", exc)
 
     return Explanation(text=explanation_text, style=style)
 

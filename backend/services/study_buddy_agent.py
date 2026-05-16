@@ -33,9 +33,6 @@ logger = logging.getLogger(__name__)
 # Model configuration — swap MODEL_NAME here to change the model globally.
 # ---------------------------------------------------------------------------
 
-# TODO: StudyBuddyAgent uses OpenAI (gpt-4o-mini) while ai_coach.py / ai_engine.py
-# use Anthropic/Gemini. Unify on one provider to simplify key management.
-# Switch to Claude (anthropic SDK) or Gemini to remove the OpenAI dependency.
 MODEL_NAME = "gpt-4o-mini"
 
 # ---------------------------------------------------------------------------
