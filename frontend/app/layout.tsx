@@ -24,6 +24,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link
+          rel="preload"
+          href="/assets/mascot.webp"
+          as="image"
+          type="image/webp"
+        />
+      </head>
       <body>
         {/* 1. Add splash div — inline styles so it works before Tailwind loads */}
         <div
@@ -32,14 +40,22 @@ export default function RootLayout({
             position: "fixed",
             inset: 0,
             zIndex: 9999, // higher than BottomNav's z-index
-            background: "#fff", // match your app's bg color
+            background: "#eef2ff", // match your app's bg color
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
           {/* your logo/spinner here */}
-          <img src="/logo.svg" alt="Loading" width={80} />
+          <img
+            src="/assets/mascot.webp"
+            alt="StudyLah Logo"
+            width={200}
+            height={200}
+            loading="eager"
+            decoding="sync"
+            style={{ objectFit: "contain" }}
+          />
         </div>
 
         <div className="app-shell">

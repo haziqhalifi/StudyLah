@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: "/", icon: HomeIcon, label: "Home" },
   { href: "/materials", icon: BookIcon, label: "Lessons" },
   { href: "/exams", icon: PathIcon, label: "Exams" },
-  { href: "/kemajuan", icon: TrophyIcon, label: "Kemajuan" },
+  { href: "/diagnostic", icon: TrophyIcon, label: "Kemajuan" },
   { href: "/profile", icon: ProfileIcon, label: "Profile" },
 ];
 
