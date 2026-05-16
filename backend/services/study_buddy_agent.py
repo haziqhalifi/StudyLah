@@ -1,8 +1,8 @@
 """
-StudyBuddy Agent — Gemini-powered conversational tutor for SPM Math Form 5.
+StudyBuddy Agent — OpenAI-powered conversational tutor for SPM Math Form 5.
 
-SDK: google-genai  (pip install google-genai)
-Model: gemini-3-flash-preview with HIGH thinking
+SDK: openai  (pip install openai)
+Model: gpt-4o-mini
 
 Covers exactly three topics:
   1. Ubahan        (variation: direct, inverse, joint, partial)
@@ -19,14 +19,12 @@ from pathlib import Path
 from typing import Any, Dict, Literal, Optional, TypedDict
 
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 # KSSM RAG components — imported lazily inside StudyBuddyAgent to avoid
 # circular imports and to keep startup fast when RAG is not used.
-# Direct imports are only triggered on the first KSSM-routed request.
 
-# Load backend/.env so GEMINI_API_KEY is available regardless of cwd
+# Load backend/.env so OPENAI_API_KEY is available regardless of cwd
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 logger = logging.getLogger(__name__)
@@ -35,7 +33,7 @@ logger = logging.getLogger(__name__)
 # Model configuration — swap MODEL_NAME here to change the model globally.
 # ---------------------------------------------------------------------------
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gpt-4o-mini"
 
 # ---------------------------------------------------------------------------
 # System prompt — canonical StudyBuddy persona (do not reformat).
@@ -228,13 +226,8 @@ _OPTION_LABELS = ["A", "B", "C", "D", "E"]
 
 def build_context_message(ctx: LearningContext) -> str:
     """
-    Render a plain-text block that is injected as the first user turn so
-    Gemini can give hyper-relevant, personalised answers.
-
-    TODO: extend this function with:
-      - ctx.get("streakCount") — praise or encourage based on streak
-      - ctx.get("weakSubtopics") — hint which subtopics need attention
-      - ctx.get("sessionDuration") — adapt pace if student has been studying a long time
+    Render a plain-text block that is injected as a system message so
+    the model can give hyper-relevant, personalised answers.
     """
     lines: list[str] = ["--- STUDENT CONTEXT ---"]
 
@@ -292,7 +285,7 @@ def build_context_message(ctx: LearningContext) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Topic guardrail — fast-path check before hitting Gemini.
+# Topic guardrail — fast-path check before hitting the API.
 # ---------------------------------------------------------------------------
 
 _SUPPORTED_KEYWORDS: list[str] = [
@@ -324,13 +317,8 @@ _OUT_OF_SCOPE_REPLY = (
 # KSSM RAG routing helpers
 # ---------------------------------------------------------------------------
 
-# Topics that have KSSM syllabus chunks available for RAG.
 _KSSM_SUPPORTED_TOPICS: frozenset[str] = frozenset({"ubahan", "matriks", "insurans"})
 
-# Question patterns that indicate the student wants a conceptual explanation
-# (as opposed to a quiz request or a casual greeting).
-# When the learning context topic is supported AND the message matches one of
-# these patterns, chat() routes through the KSSM answer engine.
 _CONCEPTUAL_KEYWORDS: list[str] = [
     # English
     "explain", "what is", "what are", "what does", "how to", "how do",
@@ -344,7 +332,6 @@ _CONCEPTUAL_KEYWORDS: list[str] = [
 
 
 def _is_conceptual_question(message: str) -> bool:
-    """Return True when the message looks like a conceptual/explanation request."""
     lower = message.lower()
     return any(kw in lower for kw in _CONCEPTUAL_KEYWORDS)
 
@@ -355,30 +342,29 @@ def is_supported_topic(message: str) -> bool:
         return True
     if any(kw in lower for kw in _BLOCKLIST_KEYWORDS):
         return False
-    return True  # ambiguous → let Gemini's system prompt handle it
+    return True  # ambiguous → let the system prompt handle it
 
 
 # ---------------------------------------------------------------------------
-# Gemini client (lazy singleton — new google-genai SDK)
+# OpenAI client (lazy singleton)
 # ---------------------------------------------------------------------------
 
-_client: genai.Client | None = None
+_client: OpenAI | None = None
 
 
-def _get_gemini_api_key() -> str:
-    # Accept both names to reduce env mismatch across local/dev/prod setups.
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+def _get_openai_api_key() -> str:
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "Gemini API key is not set. Add GEMINI_API_KEY (or GOOGLE_API_KEY) to backend/.env."
+            "OpenAI API key is not set. Add OPENAI_API_KEY to backend/.env."
         )
     return api_key
 
 
-def _get_client() -> genai.Client:
+def _get_client() -> OpenAI:
     global _client
     if _client is None:
-        _client = genai.Client(api_key=_get_gemini_api_key())
+        _client = OpenAI(api_key=_get_openai_api_key())
     return _client
 
 
@@ -406,10 +392,6 @@ def _classify_intent(message: str, context_topic: Optional[str] = None) -> Dict[
     """
     Keyword-based intent classifier — no API call, no latency.
 
-    context_topic: topicId from the frontend LearningContext (e.g. "ubahan").
-    Used as a fallback when the user asks for a quiz without naming the topic
-    (e.g. "create more questions", "bagi soalan lagi").
-
     Returns {"intent": "create_quiz", "topic_id": ..., "num_questions": 5}
     or      {"intent": "chat"}.
     """
@@ -419,21 +401,18 @@ def _classify_intent(message: str, context_topic: Optional[str] = None) -> Dict[
     if not is_quiz_request:
         return {"intent": "chat"}
 
-    # Detect which topic was mentioned in the message itself
     detected_topic: Optional[str] = None
     for topic_id, keywords in _TOPIC_KEYWORDS.items():
         if any(kw in lower for kw in keywords):
             detected_topic = topic_id
             break
 
-    # Fall back to the current page topic from learning context
     if not detected_topic:
         if context_topic and context_topic in _TOPIC_KEYWORDS:
             detected_topic = context_topic
         else:
             return {"intent": "chat"}
 
-    # Try to parse an explicit number (e.g. "5 questions", "10 soalan")
     num_match = re.search(r"\b(\d+)\s*(?:soalan|questions?|qs?)\b", lower)
     num_questions = int(num_match.group(1)) if num_match else 5
     num_questions = max(3, min(num_questions, 10))
@@ -449,7 +428,7 @@ def _classify_intent(message: str, context_topic: Optional[str] = None) -> Dict[
 
 class StudyBuddyAgent:
     """
-    Conversational tutor backed by Google Gemini (google-genai SDK).
+    Conversational tutor backed by OpenAI.
 
     chat() is stateless — the caller provides the full conversation history
     and receives the complete assistant reply as a string.
@@ -458,22 +437,21 @@ class StudyBuddyAgent:
     -------------
     When kssm_mode is "auto" (default), chat() routes conceptual questions on
     supported topics (ubahan / matriks / insurans) through the KssmAnswerEngine
-    so answers are grounded in KSSM syllabus chunks rather than free-form Gemini.
+    so answers are grounded in KSSM syllabus chunks rather than free-form AI.
 
     kssm_mode values:
       "auto"   — use KSSM when topic is supported AND question looks conceptual.
       "strict" — use KSSM whenever topic is supported (ignores question type).
-      "off"    — never use KSSM; always use the normal Gemini chat pipeline.
+      "off"    — never use KSSM; always use the normal chat pipeline.
     """
 
     def __init__(self, model_name: str = MODEL_NAME) -> None:
         self.model_name = model_name
-        # KSSM engine + retriever are created lazily on first use.
         self._kssm_engine = None
         self._kssm_retriever = None
 
     # ------------------------------------------------------------------
-    # Lazy KSSM singletons (avoid circular imports at module load time)
+    # Lazy KSSM singletons
     # ------------------------------------------------------------------
 
     @property
@@ -512,10 +490,6 @@ class StudyBuddyAgent:
         """
         Returns:
             { "reply": str, "out_of_scope": bool }
-
-        kssm_mode controls KSSM RAG routing (see class docstring).
-        When learning_context is provided, a plain-text context block is
-        prepended to the conversation so Gemini gives personalised answers.
         """
         if not messages:
             return {
@@ -529,14 +503,6 @@ class StudyBuddyAgent:
             logger.info("StudyBuddy [%s]: out-of-scope blocked", user_id)
             return {"reply": _OUT_OF_SCOPE_REPLY, "out_of_scope": True}
 
-        # ── KSSM RAG path ────────────────────────────────────────────────
-        # Route through KssmAnswerEngine when:
-        #   • kssm_mode != "off"
-        #   • topic is one of the three supported KSSM topics
-        #   • kssm_mode == "strict"  OR  question looks conceptual ("auto")
-        #
-        # TODO: extend _is_conceptual_question() with Malay phrasing patterns
-        # as more real-world queries are collected.
         topic_id: str = (learning_context or {}).get("topicId", "")  # type: ignore[arg-type]
         if self._should_use_kssm(latest, topic_id, kssm_mode):
             logger.info(
@@ -550,13 +516,12 @@ class StudyBuddyAgent:
             )
             return {"reply": answer, "out_of_scope": False}
 
-        # ── Normal Gemini chat path ──────────────────────────────────────
         try:
-            reply_text = self._call_gemini(messages, learning_context=learning_context)
+            reply_text = self._call_openai(messages, learning_context=learning_context)
             logger.info("StudyBuddy [%s]: reply %d chars", user_id, len(reply_text))
             return {"reply": reply_text, "out_of_scope": False}
         except Exception as exc:
-            logger.error("StudyBuddy [%s]: Gemini error — %s", user_id, exc)
+            logger.error("StudyBuddy [%s]: OpenAI error — %s", user_id, exc)
             raise
 
     # ------------------------------------------------------------------
@@ -565,97 +530,51 @@ class StudyBuddyAgent:
 
     @staticmethod
     def _should_use_kssm(message: str, topic_id: str, kssm_mode: str) -> bool:
-        """Return True when the request should be handled by the KSSM engine."""
         if kssm_mode == "off":
             return False
         if topic_id not in _KSSM_SUPPORTED_TOPICS:
             return False
         if kssm_mode == "strict":
             return True
-        # "auto": only for conceptual/explanation questions
         return _is_conceptual_question(message)
 
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
 
-    def _call_gemini(
+    def _call_openai(
         self,
         messages: list[ChatMessage],
         *,
         learning_context: Optional[LearningContext] = None,
     ) -> str:
         """
-        Converts ChatMessage history → google-genai types.Content list,
-        then calls generate_content_stream with:
-          - system_instruction = SYSTEM_PROMPT
-          - thinking_config    = HIGH  (as in the reference code)
-        Collects all streamed chunks and returns the full reply string.
+        Converts ChatMessage history → OpenAI messages list and calls
+        chat.completions.create with the StudyBuddy system prompt.
 
-        When learning_context is provided, a context block is injected as the
-        very first user turn (before the conversation history) so Gemini
-        always has the student's current situation in view.
-
-        TODO: tune the context block format in build_context_message() to
-        improve Gemini's response quality — e.g. add subtopic hints or
-        session stats as more data becomes available.
+        When learning_context is provided, a context block is injected as an
+        additional system message so the model always has the student's
+        current situation in view.
         """
         client = _get_client()
 
-        # Build contents list from history.
-        # "assistant" role → "model" in Gemini's API.
-        # Skip system-role messages (handled by system_instruction instead).
-        contents: list[types.Content] = []
+        openai_messages: list[dict] = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-        # Prepend learning context as the first user turn when available.
         if learning_context:
             ctx_text = build_context_message(learning_context)
-            contents.append(
-                types.Content(
-                    role="user",
-                    parts=[types.Part.from_text(text=ctx_text)],
-                )
-            )
-            # Gemini requires alternating user/model turns, so add a brief
-            # model acknowledgement to keep the conversation valid.
-            contents.append(
-                types.Content(
-                    role="model",
-                    parts=[types.Part.from_text(
-                        text="Understood. I have the student's context and will tailor my response accordingly."
-                    )],
-                )
-            )
+            openai_messages.append({"role": "system", "content": ctx_text})
 
         for msg in messages:
             if msg["role"] == "system":
                 continue
-            gemini_role = "user" if msg["role"] == "user" else "model"
-            contents.append(
-                types.Content(
-                    role=gemini_role,
-                    parts=[types.Part.from_text(text=msg["content"])],
-                )
-            )
+            openai_messages.append({"role": msg["role"], "content": msg["content"]})
 
-        config = types.GenerateContentConfig(
-            system_instruction=[
-                types.Part.from_text(text=SYSTEM_PROMPT),
-            ],
+        response = client.chat.completions.create(
+            model=self.model_name,
+            messages=openai_messages,  # type: ignore[arg-type]
         )
 
-        # Collect streamed response into a single string.
-        # To switch to non-streaming, replace with client.models.generate_content(...)
-        reply_parts: list[str] = []
-        for chunk in client.models.generate_content_stream(
-            model=self.model_name,
-            contents=contents,
-            config=config,
-        ):
-            if chunk.text:
-                reply_parts.append(chunk.text)
-
-        return "".join(reply_parts)
+        return (response.choices[0].message.content or "").strip()
 
     def decide_intent_and_reply(
         self, user_message: str, context_topic: Optional[str] = None
@@ -663,9 +582,6 @@ class StudyBuddyAgent:
         """
         Classify the user's message as quiz-creation or normal chat using
         keyword matching (fast, no extra API call).
-
-        context_topic: topicId from LearningContext — used as fallback when
-        the user asks for more questions without naming the topic explicitly.
 
         Returns one of:
             {"intent": "chat"}

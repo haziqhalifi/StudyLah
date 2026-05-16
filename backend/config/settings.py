@@ -4,13 +4,9 @@ Application settings loaded from environment variables.
 Usage:
     from backend.config.settings import settings
 
-    if settings.adaptive_engine == "gemini":
-        ...
-
 Add to backend/.env (or set as real env vars):
-    ADAPTIVE_ENGINE=gemini
-    GEMINI_API_KEY=AIza...
-    GEMINI_MODEL_NAME=gemini-1.5-pro   # optional, has default
+    OPENAI_API_KEY=sk-...
+    OPENAI_MODEL_NAME=gpt-4o-mini   # optional, has default
 """
 
 from __future__ import annotations
@@ -34,21 +30,20 @@ class Settings(BaseSettings):
     adaptive_engine: str = "rule_based"
 
     # -----------------------------------------------------------------------
-    # Gemini
+    # OpenAI
     # -----------------------------------------------------------------------
-    gemini_api_key: Optional[str] = None
-    gemini_model_name: str = "gemini-1.5-pro"       # swap to "gemini-2.0-flash" if needed
-    gemini_temperature: float = 0.2                  # low = more deterministic JSON output
-    gemini_timeout_seconds: int = 15                 # per-request timeout
+    openai_api_key: Optional[str] = None
+    openai_model_name: str = "gpt-4o-mini"
+    openai_temperature: float = 0.2                  # low = more deterministic JSON output
+    openai_timeout_seconds: int = 15                 # per-request timeout
 
     # -----------------------------------------------------------------------
     # KSSM RAG — controls where explanation text comes from.
-    #   "gemini"  — free-form Gemini (default, no syllabus grounding)
+    #   "openai"  — free-form OpenAI (default, no syllabus grounding)
     #   "kssm"    — KSSM-grounded via KssmAnswerEngine (RAG pipeline)
-    # Used by ai_engine.generate_explanation to optionally route through KSSM.
     # Set EXPLANATIONS_SOURCE=kssm in backend/.env to enable grounded explanations.
     # -----------------------------------------------------------------------
-    explanations_source: str = "gemini"
+    explanations_source: str = "openai"
 
     # -----------------------------------------------------------------------
     # Anthropic (kept for backwards compatibility with existing ai_engine)

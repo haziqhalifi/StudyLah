@@ -1,11 +1,11 @@
 """
 KSSM Answer Engine — generation layer of the StudyLah RAG pipeline.
 
-Gemini is given the retrieved KSSM syllabus context and instructed to answer
+OpenAI is given the retrieved KSSM syllabus context and instructed to answer
 using ONLY that context.  This eliminates hallucinated formulas or definitions
 that conflict with the Malaysian KSSM syllabus.
 
-Prompt structure sent to Gemini
+Prompt structure sent to OpenAI
 ────────────────────────────────
 SYSTEM:
   You are an SPM Mathematics Form 5 tutor. You MUST answer using ONLY the
@@ -42,11 +42,10 @@ except ModuleNotFoundError:
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Gemini configuration for KSSM-grounded answers
-# Low temperature → more faithful, less creative.
+# OpenAI configuration for KSSM-grounded answers
 # ---------------------------------------------------------------------------
 
-_KSSM_MODEL = "gemini-2.0-flash"
+_KSSM_MODEL = "gpt-4o-mini"
 
 _KSSM_SYSTEM_PROMPT = (
     "Anda adalah tutor Matematik SPM Tingkatan 5 untuk pelajar Malaysia. "
@@ -67,14 +66,14 @@ _NO_CONTEXT_REPLY = (
     "Saya tidak mempunyai cukup bahan silibus untuk soalan ini. "
     "Sila tanya soalan lain atau pilih topik lain (Ubahan, Matriks, atau Insurans)."
 )
-_GEMINI_ERROR_REPLY = (
+_API_ERROR_REPLY = (
     "Saya tidak dapat mengakses kandungan silibus pada masa ini. Sila cuba lagi."
 )
 
 
 class KssmAnswerEngine:
     """
-    Generates KSSM-grounded answers using Gemini + retrieved syllabus context.
+    Generates KSSM-grounded answers using OpenAI + retrieved syllabus context.
 
     Example
     -------
@@ -107,24 +106,15 @@ class KssmAnswerEngine:
         Pipeline:
           1. Retrieve relevant KSSM syllabus chunks via the retriever.
           2. If none found → return polite "not enough material" message.
-          3. Build Gemini prompt: KSSM context block + student question.
-          4. Call Gemini with low temperature (0.2) to minimise hallucination.
+          3. Build prompt: KSSM context block + student question.
+          4. Call OpenAI with low temperature (0.2) to minimise hallucination.
           5. On any error → return graceful fallback message.
-
-        This method is synchronous and safe to call from a FastAPI sync endpoint.
-
-        TODO (async upgrade):
-          Change signature to `async def answer_with_kssm(...)` and replace
-          `_call_gemini` with an async Gemini call when the router is converted
-          to `async def`.
         """
-        # Step 1 — retrieve context
         chunks = retriever.retrieve_context(
             topic_id=topic_id,
             user_question=user_question,
         )
 
-        # Step 2 — bail early when no relevant chunks are available
         if not chunks:
             logger.info(
                 "KssmAnswerEngine: no chunks found (topic=%s, q=%r)",
@@ -133,69 +123,51 @@ class KssmAnswerEngine:
             )
             return _NO_CONTEXT_REPLY
 
-        # Step 3 — build the user message: context block + question
         context_block = retriever.format_context_for_prompt(chunks)
         user_message = (
             f"{context_block}\n\n"
             f"STUDENT QUESTION:\n{user_question}"
         )
 
-        # Step 4 — call Gemini
         logger.info(
-            "KssmAnswerEngine: calling Gemini with %d chunks (topic=%s)",
+            "KssmAnswerEngine: calling OpenAI with %d chunks (topic=%s)",
             len(chunks),
             topic_id,
         )
         try:
-            return self._call_gemini(user_message)
+            return self._call_openai(user_message)
         except Exception as exc:
-            logger.error("KssmAnswerEngine: Gemini error — %s", exc)
-            return _GEMINI_ERROR_REPLY
+            logger.error("KssmAnswerEngine: OpenAI error — %s", exc)
+            return _API_ERROR_REPLY
 
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
 
     def _get_client(self):
-        """Lazy-initialise the google-genai client (same SDK as StudyBuddy)."""
         if self._client is None:
-            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+            api_key = os.environ.get("OPENAI_API_KEY")
             if not api_key:
                 raise RuntimeError(
-                    "Gemini API key not set. Add GEMINI_API_KEY to backend/.env."
+                    "OpenAI API key not set. Add OPENAI_API_KEY to backend/.env."
                 )
-            from google import genai
-            self._client = genai.Client(api_key=api_key)
+            from openai import OpenAI
+            self._client = OpenAI(api_key=api_key)
         return self._client
 
-    def _call_gemini(self, user_message: str) -> str:
-        """
-        Non-streaming Gemini call with the KSSM system prompt.
-
-        Uses generate_content (not streaming) because the grounded-answer path
-        does not need incremental output — the full answer is returned at once.
-        Temperature is fixed at _KSSM_TEMPERATURE (0.2).
-        """
-        from google.genai import types
-
+    def _call_openai(self, user_message: str) -> str:
         client = self._get_client()
 
-        config = types.GenerateContentConfig(
-            system_instruction=[types.Part.from_text(text=_KSSM_SYSTEM_PROMPT)],
-        )
-
-        response = client.models.generate_content(
+        response = client.chat.completions.create(
             model=self.model_name,
-            contents=[
-                types.Content(
-                    role="user",
-                    parts=[types.Part.from_text(text=user_message)],
-                )
+            temperature=0.2,
+            messages=[
+                {"role": "system", "content": _KSSM_SYSTEM_PROMPT},
+                {"role": "user", "content": user_message},
             ],
-            config=config,
         )
 
-        text = (response.text or "").strip()
+        text = (response.choices[0].message.content or "").strip()
         return text if text else _NO_CONTEXT_REPLY
 
 
