@@ -3,6 +3,7 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import MaterialQuizSession from "@/components/MaterialQuizSession";
 import { UBAHAN_STEPS, UBAHAN_SUBTOPICS } from "../../data";
 
 type LessonPage = {
@@ -101,6 +102,18 @@ export default function UbahanStepPage() {
     if (!current.includes(step.id)) current.push(step.id);
     sessionStorage.setItem(COMPLETION_KEY, JSON.stringify(current));
     router.push("/materials/ubahan/subtopics");
+  }
+
+  if (step.type !== "Content") {
+    return (
+      <MaterialQuizSession
+        chapter="ubahan"
+        step={step}
+        subtopic={subtopic}
+        onClose={closePage}
+        onContinue={continueToMap}
+      />
+    );
   }
 
   return (

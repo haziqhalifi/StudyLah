@@ -362,25 +362,6 @@ function LearningJourneyMap({
   return (
     <div className="learning-map-wrap">
       <AIMapGuide message="Pilih node untuk terus buka content, latihan, atau assessment bagi setiap subtopic Bab 1." />
-      <div className="learning-map">
-        <MapPath />
-        <div className="map-nodes-row">
-          {nodes.map((node, index) => (
-            <LevelNode
-              key={node.id}
-              node={node}
-              index={index}
-              active={node.id === selectedNodeId}
-              onOpen={onOpen}
-            />
-          ))}
-        </div>
-      </div>
-      {currentNode ? (
-        <p className="map-current-caption">
-          Current Level: {currentNode.topic} {currentNode.stage}
-        </p>
-      ) : null}
     </div>
   );
 }
@@ -463,7 +444,6 @@ export default function LearningJourneySection() {
     <section className="journey-section card page-enter page-enter-delay-2">
       <ProgressSummary profile={profile} />
       <LearningJourneyMap nodes={MAP_NODES} selectedNodeId={selectedNodeId} onOpen={handleOpen} />
-      <MaterialPanel node={selectedNode} />
     </section>
   );
 }

@@ -244,15 +244,20 @@ def is_supported_topic(message: str) -> bool:
 _client: genai.Client | None = None
 
 
+def _get_gemini_api_key() -> str:
+    # Accept both names to reduce env mismatch across local/dev/prod setups.
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "Gemini API key is not set. Add GEMINI_API_KEY (or GOOGLE_API_KEY) to backend/.env."
+        )
+    return api_key
+
+
 def _get_client() -> genai.Client:
     global _client
     if _client is None:
-        api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            raise RuntimeError(
-                "GEMINI_API_KEY is not set. Add it to backend/.env."
-            )
-        _client = genai.Client(api_key=api_key)
+        _client = genai.Client(api_key=_get_gemini_api_key())
     return _client
 
 

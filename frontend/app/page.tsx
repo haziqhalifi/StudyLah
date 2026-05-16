@@ -171,23 +171,9 @@ function Dashboard({ name, onReset }: { name: string; onReset: () => void }) {
         <button
           type="button"
           className="btn-ghost btn-ghost-sm"
-          onClick={() => router.push("/materials/ubahan")}
+          onClick={() => router.push("/materials")}
         >
-          Bab 1 Material
-        </button>
-        <button
-          type="button"
-          className="btn-ghost btn-ghost-sm"
-          onClick={() => router.push("/materials/matriks")}
-        >
-          Bab 2 Material
-        </button>
-        <button
-          type="button"
-          className="btn-ghost btn-ghost-sm"
-          onClick={() => router.push("/materials/insurans")}
-        >
-          Bab 3 Material
+          Bahan Mengikut Bab
         </button>
         <button
           type="button"

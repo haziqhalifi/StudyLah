@@ -1390,12 +1390,35 @@ h3 {
   gap: 1rem;
 }
 
+.material-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
 .material-header {
   border-radius: var(--r-xl);
   background: linear-gradient(135deg, #ffffff 0%, #eef2ff 58%, #ecfdf5 100%);
   border: 1px solid #dbe4ff;
   padding: 1.25rem;
   box-shadow: var(--shadow-card);
+}
+
+.material-header-highlight {
+  background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 58%, #0f766e 100%);
+  border-color: #1d4ed8;
+  color: #f8fafc;
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.3),
+    0 14px 30px rgba(15, 23, 42, 0.35);
+}
+
+.material-header-highlight .material-eyebrow {
+  color: #bfdbfe;
+}
+
+.material-header-highlight .material-title {
+  color: #f8fafc;
 }
 
 .material-header-link {

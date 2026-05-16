@@ -3,6 +3,7 @@
 import type React from "react";
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import MaterialQuizSession from "@/components/MaterialQuizSession";
 import { MATRIKS_STEPS, MATRIKS_SUBTOPICS } from "../../data";
 
 type LessonPage = {
@@ -103,6 +104,18 @@ export default function MatriksStepPage() {
     router.push("/materials/matriks/subtopics");
   }
 
+  if (step.type !== "Content") {
+    return (
+      <MaterialQuizSession
+        chapter="matriks"
+        step={step}
+        subtopic={subtopic}
+        onClose={closePage}
+        onContinue={continueToMap}
+      />
+    );
+  }
+
   return (
     <div className="material-step-page page-enter">
       {!showAppreciation ? (
@@ -164,4 +177,3 @@ export default function MatriksStepPage() {
     </div>
   );
 }
-
