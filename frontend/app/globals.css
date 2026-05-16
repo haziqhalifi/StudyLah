@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap");
 
 @import "tailwindcss";
 
-/* ── Design tokens ─────────────────────────────────────────────── */
+/* â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --font-display: "Fraunces", serif;
   --font-body: "DM Sans", system-ui, sans-serif;
@@ -34,7 +34,7 @@
   --r-md: 12px;
   --r-lg: 16px;
   --r-xl: 20px;
-  /* ── Responsive buttons ── */
+  /* â”€â”€ Responsive buttons â”€â”€ */
   @media (max-width: 480px) {
     .btn-primary {
       padding: 0.75rem 1.25rem;
@@ -76,7 +76,7 @@
   --shadow-brand: 0 4px 20px rgba(91, 76, 245, 0.28);
 }
 
-/* ── Base ──────────────────────────────────────────────────────── */
+/* â”€â”€ Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *,
 *::before,
 *::after {
@@ -105,7 +105,7 @@ h3 {
   font-family: var(--font-display);
   line-height: 1.2;
 
-  /* ── Responsive QuestionCard adjustments ── */
+  /* â”€â”€ Responsive QuestionCard adjustments â”€â”€ */
   @media (max-width: 480px) {
     .qcard {
       padding: 1.25rem 1rem;
@@ -185,7 +185,7 @@ h3 {
   font-weight: 700;
 }
 
-/* ── Utility layer ─────────────────────────────────────────────── */
+/* â”€â”€ Utility layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @layer utilities {
   .font-display {
     font-family: var(--font-display);
@@ -222,7 +222,7 @@ h3 {
   }
 }
 
-/* ── Keyframes ─────────────────────────────────────────────────── */
+/* â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -309,9 +309,9 @@ h3 {
   }
 }
 
-/* ── Component layer ───────────────────────────────────────────── */
+/* â”€â”€ Component layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @layer components {
-  /* ── Buttons ── */
+  /* â”€â”€ Buttons â”€â”€ */
   .btn-primary {
     display: flex;
     align-items: center;
@@ -373,7 +373,7 @@ h3 {
     transform: scale(0.98);
   }
 
-  /* ── Option card ── */
+  /* â”€â”€ Option card â”€â”€ */
   .option-card {
     display: flex;
     align-items: center;
@@ -426,7 +426,7 @@ h3 {
     cursor: default;
   }
 
-  /* ── Progress bar ── */
+  /* â”€â”€ Progress bar â”€â”€ */
   .progress-track {
     height: 6px;
     border-radius: 99px;
@@ -452,7 +452,7 @@ h3 {
     width: 0%;
   }
 
-  /* ── Chip / badge ── */
+  /* â”€â”€ Chip / badge â”€â”€ */
   .chip {
     display: inline-flex;
     align-items: center;
@@ -485,7 +485,7 @@ h3 {
     color: var(--muted);
   }
 
-  /* ── Bottom nav ── */
+  /* â”€â”€ Bottom nav â”€â”€ */
   body.quiz-open .bottom-nav {
     display: none;
   }
@@ -545,7 +545,7 @@ h3 {
     background: var(--brand);
   }
 
-  /* ── AI cue banner ── */
+  /* â”€â”€ AI cue banner â”€â”€ */
   .ai-cue {
     display: flex;
     align-items: center;
@@ -573,7 +573,7 @@ h3 {
   }
 }
 
-/* ── QuestionCard ─────────────────────────────────────────────── */
+/* â”€â”€ QuestionCard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qcard {
   padding: 1.5rem;
   border: 2px solid transparent;
@@ -652,7 +652,7 @@ h3 {
   margin-left: 0.5rem;
 }
 
-/* ── App shell layout ─────────────────────────────────────────── */
+/* â”€â”€ App shell layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .app-shell {
   max-width: 480px;
   margin: 0 auto;
@@ -669,7 +669,7 @@ h3 {
   overflow-y: auto;
 }
 
-/* ── Responsive app shell ── */
+/* â”€â”€ Responsive app shell â”€â”€ */
 @media (min-width: 481px) and (max-width: 768px) {
   .app-shell {
     max-width: 768px;
@@ -691,7 +691,7 @@ h3 {
   }
 }
 
-/* ── ExplanationBlock ─────────────────────────────────────────── */
+/* â”€â”€ ExplanationBlock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .expblock {
   margin-top: 1rem;
   overflow: hidden;
@@ -800,7 +800,7 @@ h3 {
   margin: 0;
 }
 
-/* ── ProgressSummary ──────────────────────────────────────────── */
+/* â”€â”€ ProgressSummary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .progress-summary {
   display: flex;
   flex-direction: column;
@@ -846,7 +846,7 @@ h3 {
   margin: 0.6rem 0 0;
 }
 
-/* ── Home / Dashboard ─────────────────────────────────────────── */
+/* â”€â”€ Home / Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .home-greeting {
   margin-bottom: 1.5rem;
   animation: fadeUp 0.3s ease both;
@@ -1022,7 +1022,7 @@ h3 {
   gap: 0.4rem;
 }
 
-/* ── Diagnostic page ──────────────────────────────────────────── */
+/* â”€â”€ Diagnostic page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .diag-header {
   margin-bottom: 1.5rem;
 }
@@ -1086,7 +1086,7 @@ h3 {
   background: var(--brand-muted);
 }
 
-/* ── Learn page ───────────────────────────────────────────────── */
+/* â”€â”€ Learn page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .learn-stats {
   display: flex;
   gap: 0;
@@ -1156,7 +1156,7 @@ h3 {
   color: var(--brand-dark);
 }
 
-/* ── Assessment page ──────────────────────────────────────────── */
+/* â”€â”€ Assessment page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .assessment-header {
   margin-bottom: 1.5rem;
 }
@@ -1189,7 +1189,7 @@ h3 {
   margin: 0 0 1.25rem;
 }
 
-/* ── Review page ──────────────────────────────────────────────── */
+/* â”€â”€ Review page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .review-progress-track {
   margin-bottom: 1rem;
 }
@@ -1284,7 +1284,7 @@ h3 {
   color: var(--brand);
 }
 
-/* ── Review page extras ───────────────────────────────────────── */
+/* â”€â”€ Review page extras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .buddy-bubble {
   display: flex;
   align-items: flex-start;
@@ -1371,7 +1371,7 @@ h3 {
   gap: 0.5rem;
 }
 
-/* ── Learn page extras ────────────────────────────────────────── */
+/* â”€â”€ Learn page extras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn-primary-sm {
   width: auto;
   min-height: 36px;
@@ -1379,7 +1379,7 @@ h3 {
   font-size: 0.82rem;
 }
 
-/* ── Diagnostic page extras ───────────────────────────────────── */
+/* â”€â”€ Diagnostic page extras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .diag-skip-btn {
   flex: 0 0 auto;
   min-height: 52px;
@@ -1408,7 +1408,7 @@ h3 {
   margin-bottom: 1rem;
 }
 
-/* ── Home page extras ─────────────────────────────────────────── */
+/* â”€â”€ Home page extras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .home-hero-title {
   font-size: 2rem;
 }
@@ -1577,7 +1577,7 @@ h3 {
   line-height: 1.25;
 }
 
-/* ── Profile page ──────────────────────────────────────────────── */
+/* â”€â”€ Profile page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .app-main {
   min-height: 100vh;
   background: var(--surface);
@@ -1588,39 +1588,45 @@ h3 {
   flex-direction: column;
   max-width: 480px;
   margin: 0 auto;
-  padding: 0 0 6rem;
+  padding: 0 0 6.25rem;
+  gap: 0.2rem;
 }
 
 .profile-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.1rem 0.5rem;
+  padding: 0.9rem 1.1rem 0.35rem;
 }
 
 .profile-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .profile-icon-button {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
+  border-radius: 14px;
+  border: 1px solid #ececf8;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(30, 41, 59, 0.06);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ink-2);
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s;
   position: relative;
 }
 
 .profile-icon-button:hover {
-  background: var(--brand-light);
+  background: #f7f7ff;
+}
+
+.profile-icon-button:active {
+  transform: scale(0.97);
 }
 
 .profile-icon-button svg {
@@ -1649,11 +1655,11 @@ h3 {
 
 .profile-header-card {
   margin: 0.5rem 1.1rem;
-  background: var(--card);
-  border-radius: var(--r-xl);
-  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7ff 100%);
+  border-radius: 24px;
+  border: 1px solid #ececf8;
   padding: 1.25rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 12px 28px rgba(91, 76, 245, 0.1);
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
@@ -1666,18 +1672,19 @@ h3 {
 }
 
 .profile-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--brand) 0%, #818cf8 100%);
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #7f65ff 0%, #ff8dc0 100%);
   color: #fff;
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 12px 24px rgba(127, 101, 255, 0.26);
 }
 
 .profile-identity h1 {
@@ -1689,9 +1696,9 @@ h3 {
 }
 
 .profile-kicker {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--brand);
   margin: 0 0 0.2rem;
@@ -1715,13 +1722,14 @@ h3 {
 }
 
 .profile-stat-card {
-  background: var(--surface);
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #ececf8;
   padding: 0.65rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-height: 64px;
 }
 
 .profile-stat-card strong {
@@ -1755,11 +1763,11 @@ h3 {
   background: var(--brand);
   color: #fff;
   border: none;
-  border-radius: var(--r-lg);
+  border-radius: 14px;
   padding: 0.75rem 1rem;
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
 }
@@ -1785,9 +1793,10 @@ h3 {
 .profile-action-icon {
   width: 44px;
   height: 44px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
+  border-radius: 14px;
+  border: 1px solid #ececf8;
   background: var(--card);
+  box-shadow: 0 6px 16px rgba(30, 41, 59, 0.05);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1812,31 +1821,48 @@ h3 {
 
 .profile-tabs {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.85rem;
   margin: 0 1.1rem 0.75rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 0.3rem;
+  padding: 0.1rem 0.1rem 0.35rem;
+  border-bottom: 1px solid #ebe9fb;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.profile-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .profile-tab {
-  flex: 1;
+  flex: 0 0 auto;
   border: none;
   background: transparent;
-  border-radius: var(--r-md);
-  padding: 0.55rem 0.5rem;
+  border-radius: 0;
+  padding: 0.45rem 0.1rem;
   font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.84rem;
+  font-weight: 700;
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s;
+  position: relative;
+  white-space: nowrap;
 }
 
 .profile-tab.active {
+  background: transparent;
+  color: var(--ink);
+}
+
+.profile-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -0.48rem;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 999px;
   background: var(--brand);
-  color: #fff;
 }
 
 .profile-tab-panel {
@@ -1851,7 +1877,7 @@ h3 {
 
 .profile-invite-card {
   background: linear-gradient(135deg, var(--brand) 0%, #818cf8 100%);
-  border-radius: var(--r-xl);
+  border-radius: 24px;
   padding: 1.25rem;
   color: #fff;
   display: flex;
@@ -1909,8 +1935,8 @@ h3 {
 
 .profile-leaderboard-card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
+  border: 1px solid #ececf8;
+  border-radius: 24px;
   padding: 1.25rem;
   display: flex;
   align-items: center;
@@ -1968,8 +1994,8 @@ h3 {
 
 .profile-summary-card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
+  border: 1px solid #ececf8;
+  border-radius: 24px;
   padding: 1.25rem;
   box-shadow: var(--shadow-card);
 }
@@ -1985,6 +2011,170 @@ h3 {
   gap: 0.6rem;
 }
 
+.profile-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.profile-metric-card,
+.profile-info-card {
+  background: var(--card);
+  border: 1px solid #ececf8;
+  border-radius: 24px;
+  padding: 1.15rem;
+  box-shadow: var(--shadow-card);
+}
+
+.profile-metric-card h2,
+.profile-info-card h2 {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.profile-metric-card span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.profile-progress-track {
+  margin-top: 0.7rem;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #e8e7fb;
+  overflow: hidden;
+}
+
+.profile-progress-track > div {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand) 0%, #818cf8 100%);
+}
+
+.profile-growth-card {
+  background: linear-gradient(135deg, #5b4cf5 0%, #7f65ff 45%, #ff8dc0 100%);
+  color: #fff;
+  border-radius: 24px;
+  padding: 1.2rem;
+  box-shadow: 0 16px 30px rgba(67, 56, 202, 0.24);
+}
+
+.profile-growth-card h2 {
+  margin: 0.1rem 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.profile-growth-card strong {
+  display: block;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  margin-bottom: 0.2rem;
+}
+
+.profile-growth-card p {
+  margin: 0;
+  opacity: 0.86;
+  font-size: 0.82rem;
+}
+
+.profile-performance-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+
+.profile-badge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.profile-badge-card {
+  background: var(--card);
+  border: 1px solid #ececf8;
+  border-radius: var(--r-lg);
+  padding: 1rem 0.9rem;
+  box-shadow: var(--shadow-card);
+}
+
+.profile-badge-card h2 {
+  margin: 0.7rem 0 0.2rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.profile-badge-card p {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #4b5563;
+}
+
+.profile-badge-medal {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f472b6 0%, #7f65ff 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-badge-medal svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-badge-card.locked {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.profile-badge-card.locked .profile-badge-medal {
+  background: #d1d5db;
+  color: #6b7280;
+}
+
+.profile-badge-card.locked h2,
+.profile-badge-card.locked p {
+  color: #9ca3af;
+}
+
+.profile-goal-title {
+  margin: 0.15rem 0 0.3rem;
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.profile-goal-progress {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+@media (max-width: 420px) {
+  .profile-stat-grid,
+  .profile-badge-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .profile-page {
+    max-width: 560px;
+  }
+}
 .material-current-head .material-subtitle {
   font-size: 0.8rem;
   color: var(--muted);
@@ -2972,10 +3162,10 @@ button.map-node:hover {
   }
 }
 
-/* ── Shared sticky bottom bar ─────────────────────────────────── */
+/* â”€â”€ Shared sticky bottom bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sticky-bar {
   position: sticky;
-  bottom: 5rem; /* sit above bottom-nav (≈72px) */
+  bottom: 5rem; /* sit above bottom-nav (â‰ˆ72px) */
   z-index: 10;
   background: linear-gradient(to top, var(--surface) 70%, transparent);
   padding: 0.75rem 0 0;
@@ -2999,8 +3189,8 @@ button.map-node:hover {
     margin-bottom: 3rem;
   }
 }
-/* ── Quiz sheet overlay ───────────────────────────────────────── */
-/* ── New quiz shell (qs-*) ────────────────────────────────── */
+/* â”€â”€ Quiz sheet overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* â”€â”€ New quiz shell (qs-*) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qs-shell {
   position: fixed;
   inset: 0;
@@ -3240,7 +3430,7 @@ button.map-node:hover {
 }
 
 
-/* ── Option cards inside qs-shell ─────────────────────────── */
+/* â”€â”€ Option cards inside qs-shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qs-shell .option-card {
   border-radius: var(--r-xl);
   border: 2px solid var(--border);
@@ -3273,7 +3463,7 @@ button.map-node:hover {
   color: #fff;
 }
 
-/* ── Question card inside qs-shell ───────────────────────── */
+/* â”€â”€ Question card inside qs-shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qs-shell .qcard {
   background: transparent;
   border: none;
@@ -3415,7 +3605,7 @@ button.map-node:hover {
   margin-top: 0.4rem;
 }
 
-/* ── Page enter animation helper ──────────────────────────────── */
+/* â”€â”€ Page enter animation helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .page-enter {
   animation: fadeUp 0.3s ease both;
 }
@@ -3432,7 +3622,7 @@ button.map-node:hover {
   animation-delay: 0.2s;
 }
 
-/* ── Diagnostic paper picker ───────────────────────────────────── */
+/* â”€â”€ Diagnostic paper picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .diag-picker-section {
   margin-bottom: 1.5rem;
 }
@@ -3513,7 +3703,7 @@ button.map-node:hover {
   margin-top: 0.15rem;
 }
 
-/* ── Learn topic grid ──────────────────────────────────────────── */
+/* â”€â”€ Learn topic grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .learn-topic-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -3575,7 +3765,7 @@ button.map-node:hover {
   margin-bottom: 0.75rem;
 }
 
-/* ── StudyBuddy FAB ─────────────────────────────────────────────── */
+/* â”€â”€ StudyBuddy FAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sb-fab {
   position: fixed;
   bottom: calc(72px + env(safe-area-inset-bottom) + 0.75rem);
@@ -3610,7 +3800,7 @@ button.map-node:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
-/* ── StudyBuddy drawer backdrop ─────────────────────────────────── */
+/* â”€â”€ StudyBuddy drawer backdrop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sb-backdrop {
   position: fixed;
   inset: 0;
@@ -3623,7 +3813,7 @@ button.map-node:hover {
   to   { opacity: 1; }
 }
 
-/* ── StudyBuddy full drawer ──────────────────────────────────────── */
+/* â”€â”€ StudyBuddy full drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sb-panel {
   position: fixed;
   bottom: 0;
@@ -3813,7 +4003,7 @@ button.map-node:hover {
   white-space: pre-wrap;
 }
 
-/* ── Message group (bubble + optional action card) ── */
+/* â”€â”€ Message group (bubble + optional action card) â”€â”€ */
 .sb-msg-group {
   display: flex;
   flex-direction: column;
@@ -3824,7 +4014,7 @@ button.map-node:hover {
   align-items: flex-end;
 }
 
-/* ── FlashcardReadyCard (inline in chat) ── */
+/* â”€â”€ FlashcardReadyCard (inline in chat) â”€â”€ */
 .fc-ready-card {
   background: var(--brand-light);
   border: 1.5px solid var(--brand-muted);
@@ -3992,7 +4182,7 @@ button.map-node:hover {
   cursor: not-allowed;
 }
 
-/* ── Markdown inside bot bubbles ────────────────────────────────── */
+/* â”€â”€ Markdown inside bot bubbles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sb-md {
   font-size: 0.85rem;
   line-height: 1.6;
@@ -4061,7 +4251,7 @@ button.map-node:hover {
   margin: 0.5rem 0;
 }
 
-/* ── StudyBuddy context banner ───────────────────────────────────── */
+/* â”€â”€ StudyBuddy context banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sb-context-banner {
   display: flex;
   align-items: center;
@@ -4573,7 +4763,7 @@ button.map-node:hover {
   height: 20px;
 }
 
-/* AI Chat card — header as button */
+/* AI Chat card â€” header as button */
 .ai-chat-header-btn {
   width: 100%;
   background: none;
@@ -4864,7 +5054,7 @@ button.map-node:hover {
   text-overflow: ellipsis;
 }
 
-/* ── Quick action chips ──────────────────────────────────────────── */
+/* â”€â”€ Quick action chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sb-chips-container {
   flex-shrink: 0;
   padding: 0.5rem 1rem 0.25rem;
@@ -4935,7 +5125,7 @@ button.map-node:hover {
   line-height: 1;
 }
 
-/* "⚡ Quick actions" collapsed re-show button */
+/* "âš¡ Quick actions" collapsed re-show button */
 .sb-chips-show-btn {
   display: block;
   width: 100%;
@@ -5371,7 +5561,7 @@ button.map-node:hover {
 }
 
 
-/* ── Learning feature cards (materials, exams, learn hub) ──────── */
+/* â”€â”€ Learning feature cards (materials, exams, learn hub) â”€â”€â”€â”€â”€â”€â”€â”€ */
 .home-learning-stack {
   display: flex;
   flex-direction: column;
@@ -5546,7 +5736,7 @@ button.map-node:hover {
   font-weight: 800;
 }
 
-/* ── Exam timer ───────────────────────────────────────────────── */
+/* â”€â”€ Exam timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qs-header-timer {
   flex-shrink: 0;
 }
@@ -5582,7 +5772,7 @@ button.map-node:hover {
   50% { opacity: 0.6; }
 }
 
-/* ── Exam timeout banner ─────────────────────────────────────── */
+/* â”€â”€ Exam timeout banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .exam-timeout-banner {
   background: #fee2e2;
   color: #991b1b;
@@ -5594,7 +5784,7 @@ button.map-node:hover {
   text-align: center;
 }
 
-/* ── Exam score card ─────────────────────────────────────────── */
+/* â”€â”€ Exam score card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .exam-score-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -5637,7 +5827,7 @@ button.map-node:hover {
   color: var(--muted);
 }
 
-/* ── Exam review list ────────────────────────────────────────── */
+/* â”€â”€ Exam review list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .exam-review-list {
   display: flex;
   flex-direction: column;
@@ -5832,3 +6022,4 @@ button.map-node:hover {
   font-weight: 500;
   margin: 0;
 }
+
