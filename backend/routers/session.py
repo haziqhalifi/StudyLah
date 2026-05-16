@@ -26,12 +26,15 @@ from schemas.session import (
     AssessmentResponse,
     DiagnosticAnswer,
     Explanation,
+    ReviewItem,
+    ReviewResponse,
     StartDiagnosticRequest,
     StartDiagnosticResponse,
     SubmitAnswerRequest,
     SubmitAnswerResponse,
     SubmitDiagnosticRequest,
     SubmitDiagnosticResponse,
+    SuggestedTopic,
 )
 from services import ai_engine, review_scheduler
 from services.ai_engine import SkillStats
@@ -429,3 +432,62 @@ def get_assessment(user_id: str) -> AssessmentResponse:
         db_profile = db.get_or_create_profile(user_id)
 
     return AssessmentResponse(topics=list(db_profile.topics.values()))
+
+
+# ---------------------------------------------------------------------------
+# Endpoint: GET /api/session/review
+# ---------------------------------------------------------------------------
+
+@router.get("/review", response_model=ReviewResponse)
+def get_review(user_id: str) -> ReviewResponse:
+    """
+    Return spaced-repetition review questions and topic suggestions for a user.
+
+    Fetches all attempts from Supabase, builds the skill profile, then delegates
+    to review_scheduler.get_due_reviews and get_topic_suggestions.
+    """
+    from datetime import timezone
+    all_attempts = get_user_attempts(user_id)
+    now = datetime.now(timezone.utc)
+
+    if not all_attempts:
+        return ReviewResponse(review_questions=[], suggested_topics=[])
+
+    engine_questions = [ai_engine.Question(**q.model_dump()) for q in QUESTIONS_DB]
+    engine_attempts = [ai_engine.Attempt(**a.model_dump()) for a in all_attempts]
+    ai_profile = ai_engine.analyze_diagnostic(engine_questions, engine_attempts)
+
+    due = review_scheduler.get_due_reviews(
+        user_id=user_id,
+        all_questions=engine_questions,
+        attempts=engine_attempts,
+        skill_profile=ai_profile,
+        now=now,
+        limit=10,
+    )
+
+    # Map reviewer's ReviewItemOut → schemas ReviewItem
+    review_questions = [
+        ReviewItem(
+            question=item.question,  # type: ignore[arg-type]
+            reason=item.reason if item.reason in ("low_accuracy", "not_seen_recently") else "low_accuracy",
+        )
+        for item in due
+    ]
+
+    topic_suggestions_raw = review_scheduler.get_topic_suggestions(
+        skill_profile=ai_profile,
+        all_topics=list(ai_profile.keys()),
+        now=now,
+        user_id=user_id,
+    )
+
+    suggested_topics = [
+        SuggestedTopic(
+            topic_id=s.topic_id,
+            reason=s.reason if s.reason in ("low_accuracy", "not_seen_recently") else "low_accuracy",
+        )
+        for s in topic_suggestions_raw
+    ]
+
+    return ReviewResponse(review_questions=review_questions, suggested_topics=suggested_topics)
