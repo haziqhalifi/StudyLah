@@ -337,20 +337,6 @@ export default function LearnPage() {
           />
         )}
       </div>
-      <div className="learn-actions">
-        <button
-          className="btn-primary"
-          onClick={() => router.push("/assessment")}
-        >
-          View Your Progress
-        </button>
-        <button
-          className="btn-secondary"
-          onClick={() => router.push("/review")}
-        >
-          Start a Review Session
-        </button>
-      </div>
 
       {showReview && (
         <div className="learn-review-banner">
