@@ -24,9 +24,10 @@ import os
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://study-lah-tau.vercel.app",
 ]
 
-# Add production frontend URL from env (set this to your Vercel URL)
+# Add any additional frontend URL from env (e.g. preview deployments)
 if frontend_url := os.getenv("FRONTEND_URL"):
     ALLOWED_ORIGINS.append(frontend_url)
 
