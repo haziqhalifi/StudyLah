@@ -338,9 +338,24 @@ export type CreateQuizResponse = {
   questionCount: number;
 };
 
+function normalizeCreateQuizResponse(raw: any): CreateQuizResponse {
+  return {
+    quizId: raw.quizId ?? raw.quiz_id,
+    topicId: raw.topicId ?? raw.topic_id,
+    title: raw.title,
+    questionCount: raw.questionCount ?? raw.question_count,
+  };
+}
+
 /** Fetch a previously-created personalised quiz by ID. */
 export async function fetchQuizDetail(quizId: string): Promise<QuizDetail> {
-  return get(`/api/quizzes/${quizId}`);
+  const raw = await get<any>(`/api/quizzes/${quizId}`);
+  return {
+    quizId: raw.quizId ?? raw.quiz_id,
+    topicId: raw.topicId ?? raw.topic_id,
+    title: raw.title,
+    questions: raw.questions,
+  };
 }
 
 /** Backwards-compatible alias used by older pages. */
@@ -354,11 +369,15 @@ export async function createPersonalizedQuiz(
   topicId: "ubahan" | "matriks" | "insurans",
   numQuestions = 5,
 ): Promise<CreateQuizResponse> {
-  return post("/api/quizzes/personalized", {
+  const raw = await post<any>("/api/quizzes/personalized", {
     userId,
+    user_id: userId,
     topicId,
+    topic_id: topicId,
     numQuestions,
+    num_questions: numQuestions,
   });
+  return normalizeCreateQuizResponse(raw);
 }
 
 /** Backwards-compatible alias with the original spelling. */
@@ -377,6 +396,7 @@ export async function submitQuiz(
 ): Promise<QuizSubmitResult> {
   return post(`/api/quizzes/${quizId}/submit`, {
     userId,
+    user_id: userId,
     answers,
   });
 }
