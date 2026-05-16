@@ -215,11 +215,6 @@ export default function LearnPage() {
             </div>
           </div>
 
-          <div className="student-header-actions">
-            <div className="student-avatar" aria-label="Learning hub avatar">
-              L
-            </div>
-          </div>
         </header>
 
         <section className="level-card" aria-label="Choose a topic to practise">

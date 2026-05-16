@@ -1,19 +1,50 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import QuestionCard from "@/components/QuestionCard";
 import QuizSheet from "@/components/QuizSheet";
-import {
-  DiagnosticAnswer,
-  Paper,
-  Question,
-  getPapers,
-  startDiagnostic,
-  submitDiagnostic,
-} from "@/lib/api";
+import { Paper, Question, getPapers } from "@/lib/api";
+
+const SUPABASE_URL = "https://pxzyfiysxzwihjplrfvo.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4enlmaXlzeHp3aWhqcGxyZnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTU2OTQsImV4cCI6MjA4OTA5MTY5NH0.NjUwwYGELfBI7MzaAmV_L26n45MVWrrpa2okuxA8VJM";
 
 type Stage = "pick" | "quiz";
+
+interface RawQuestion {
+  id: number;
+  question: string | null;
+  options: string[];
+  correct_index: number;
+  difficulty: string;
+  topic: string | null;
+}
+
+function mapQuestion(raw: RawQuestion): Question {
+  return {
+    id: String(raw.id),
+    text: raw.question ?? "",
+    options: raw.options ?? [],
+    difficulty: (raw.difficulty as Question["difficulty"]) ?? "medium",
+    topic_id: raw.topic ?? "",
+    tags: raw.topic ? [raw.topic] : [],
+  };
+}
+
+async function getQuestionsByPaper(paperId: number): Promise<Question[]> {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/questions?select=id,question,options,correct_index,difficulty,topic&paper_id=eq.${paperId}&order=question_number`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    },
+  );
+  if (!res.ok) throw new Error(`Failed to fetch questions (${res.status})`);
+  const rows: RawQuestion[] = await res.json();
+  return rows.map(mapQuestion);
+}
 
 function isMathPaper(paper: Paper) {
   const subject = (paper.subject ?? "").trim().toLowerCase();
@@ -21,81 +52,60 @@ function isMathPaper(paper: Paper) {
 }
 
 function isTrialPaper(paper: Paper) {
-  const blob = `${paper.paper_type ?? ""} ${paper.paper_name ?? ""}`.toLowerCase();
-  return blob.includes("trial") || blob.includes("percubaan") || blob.includes("exam") || blob.includes("peperiksaan");
+  return (paper.paper_type ?? "").toLowerCase() === "trial";
 }
 
 export default function ExamsPage() {
-  const router = useRouter();
   const [stage, setStage] = useState<Stage>("pick");
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPaperId, setSelectedPaperId] = useState<number | null>(null);
-  const [starting, setStarting] = useState(false);
+  const [loadingPaperId, setLoadingPaperId] = useState<number | null>(null);
+  const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
   const [error, setError] = useState("");
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [submitting, setSubmitting] = useState(false);
+  // Set of paper IDs that have been completed (all questions answered)
+  const [completedPaperIds, setCompletedPaperIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
-
     getPapers()
-      .then((res) => {
-        if (cancelled) return;
-        setPapers(res.papers);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError("Failed to load trial papers from Supabase.");
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      .then((res) => { if (!cancelled) setPapers(res.papers); })
+      .catch(() => { if (!cancelled) setError("Failed to load papers."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
-  const mathPapers = useMemo(() => papers.filter(isMathPaper), [papers]);
   const trialPapers = useMemo(() => {
-    const filtered = mathPapers.filter(isTrialPaper);
-    return filtered.length > 0 ? filtered : mathPapers;
-  }, [mathPapers]);
+    const math = papers.filter(isMathPaper);
+    const trial = math.filter(isTrialPaper);
+    return trial.length > 0 ? trial : math;
+  }, [papers]);
 
-  const selectedPaper = useMemo(
-    () => trialPapers.find((paper) => paper.id === selectedPaperId) ?? null,
-    [trialPapers, selectedPaperId],
-  );
+  function isPaperUnlocked(index: number): boolean {
+    if (index === 0) return true;
+    const prevPaper = trialPapers[index - 1];
+    return prevPaper ? completedPaperIds.has(prevPaper.id) : false;
+  }
 
-  async function handleStartPaper() {
-    const userId = sessionStorage.getItem("userId");
-    if (!userId) {
-      router.push("/");
-      return;
-    }
-
-    if (!selectedPaper) {
-      setError("Pick a math trial paper first.");
-      return;
-    }
-
-    setStarting(true);
+  async function handlePickPaper(paper: Paper, index: number) {
+    if (loadingPaperId !== null || !isPaperUnlocked(index)) return;
+    setLoadingPaperId(paper.id);
     setError("");
     try {
-      const res = await startDiagnostic(userId, "matematik", selectedPaper.id);
-      setQuestions(res.questions);
+      const qs = await getQuestionsByPaper(paper.id);
+      if (qs.length === 0) throw new Error("No questions found for this paper.");
+      setSelectedPaper(paper);
+      setQuestions(qs);
       setCurrent(0);
       setAnswers({});
       setStage("quiz");
-    } catch {
-      setError("Could not start this paper. Try another one.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load questions.");
     } finally {
-      setStarting(false);
+      setLoadingPaperId(null);
     }
   }
 
@@ -103,35 +113,11 @@ export default function ExamsPage() {
     setAnswers((prev) => ({ ...prev, [questionId]: idx }));
   }
 
-  async function handleSubmit() {
-    const userId = sessionStorage.getItem("userId");
-    if (!userId) return;
-
-    const unanswered = questions.filter((question) => answers[question.id] === undefined);
-    if (unanswered.length > 0) {
-      setError(`${unanswered.length} question(s) unanswered. Answer them before submitting.`);
-      return;
-    }
-
-    setSubmitting(true);
-    setError("");
-    try {
-      const payload: DiagnosticAnswer[] = questions.map((question) => ({
-        question_id: question.id,
-        selected_option_index: answers[question.id] ?? 0,
-      }));
-      const result = await submitDiagnostic(userId, payload);
-      sessionStorage.setItem("currentQuestion", JSON.stringify(result.next_question));
-      sessionStorage.setItem("skillProfile", JSON.stringify(result.skill_profile));
-      router.push("/materials");
-    } catch {
-      setError("Submission failed. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   function handleCloseQuiz() {
+    // Mark paper as completed if all questions were answered
+    if (selectedPaper && questions.length > 0 && Object.keys(answers).length === questions.length) {
+      setCompletedPaperIds((prev) => new Set([...prev, selectedPaper.id]));
+    }
     setStage("pick");
     setQuestions([]);
     setCurrent(0);
@@ -147,17 +133,11 @@ export default function ExamsPage() {
             <p className="student-time">Trial Papers</p>
             <h1>Choose a Math Trial Paper</h1>
             <div className="student-meta-row">
-              <span>Supabase</span>
+              <span>{loading ? "Loading…" : `${trialPapers.length} papers`}</span>
               <span aria-hidden="true">•</span>
-              <span>{loading ? "Loading" : `${trialPapers.length} papers`}</span>
+              <span>Matematik</span>
               <span aria-hidden="true">•</span>
-              <span>Math only</span>
-            </div>
-          </div>
-
-          <div className="student-header-actions">
-            <div className="student-avatar" aria-label="Exams hub avatar">
-              E
+              <span>SPM</span>
             </div>
           </div>
         </header>
@@ -165,7 +145,7 @@ export default function ExamsPage() {
         <section className="level-card" aria-label="Pick a paper to begin">
           <div className="level-card-content">
             <p className="level-eyebrow">Paper Picker</p>
-            <h2>Start with a trial paper that matches the same adaptive flow.</h2>
+            <h2>Tap a paper to start the exam instantly.</h2>
             <div className="level-progress-row">
               <div className="level-progress-track" aria-hidden="true">
                 <div className="level-progress-fill level-progress-fill-full">
@@ -182,31 +162,31 @@ export default function ExamsPage() {
 
         <div className="home-learning-stack">
           {trialPapers.map((paper, index) => {
-            const active = paper.id === selectedPaperId;
+            const isLoading = loadingPaperId === paper.id;
+            const unlocked = isPaperUnlocked(index);
+            const completed = completedPaperIds.has(paper.id);
             const tone = index % 3 === 0 ? "lesson" : index % 3 === 1 ? "game" : "path";
+            const statusLabel = isLoading ? "Loading questions…" : !unlocked ? "Complete the previous paper to unlock" : completed ? "Completed — tap to retry" : "Tap to start";
             return (
               <button
                 key={paper.id}
                 type="button"
-                className={`learning-feature-card learning-feature-${tone} study-select-card${active ? " study-select-card-active" : ""}`}
-                onClick={() => setSelectedPaperId(paper.id)}
+                className={`learning-feature-card learning-feature-${tone}${isLoading ? " study-select-card-active" : ""}${!unlocked ? " exams-paper-locked" : ""}`}
+                onClick={() => handlePickPaper(paper, index)}
+                disabled={loadingPaperId !== null || !unlocked}
               >
                 <div>
-                  <p className="learning-feature-kicker">Math Trial Paper</p>
-                  <h2>{paper.paper_name}</h2>
-                  <p>
-                    {paper.state ? `${paper.state} • ` : ""}
-                    {paper.year} • {paper.paper_type || "Paper"}
-                  </p>
-                  <p className="study-select-subtitle">
-                    Paper ID {paper.id} {active ? "• Selected" : "• Tap to select"}
-                  </p>
+                  <p className="learning-feature-kicker">{paper.year} · {paper.paper_type}</p>
+                  <h2>{paper.state ?? "SPM"}</h2>
+                  <p>{paper.paper_name}</p>
+                  <p className="study-select-subtitle">{statusLabel}</p>
                 </div>
-
                 <div className="feature-visual" aria-hidden="true">
                   <div className="feature-blob feature-blob-large" />
                   <div className="feature-blob feature-blob-small" />
-                  <div className="feature-mini-card">Q</div>
+                  <div className="feature-mini-card">
+                    {isLoading ? "…" : !unlocked ? "🔒" : completed ? "✓" : "Q"}
+                  </div>
                 </div>
               </button>
             );
@@ -214,35 +194,15 @@ export default function ExamsPage() {
 
           {!loading && trialPapers.length === 0 && (
             <div className="ai-assistant-card">
-              <div className="ai-assistant-avatar" aria-hidden="true">
-                !
-              </div>
+              <div className="ai-assistant-avatar" aria-hidden="true">!</div>
               <div>
                 <h2>No math trial papers found</h2>
-                <p>Supabase returned no trial papers for Mathematics.</p>
+                <p>Check your Supabase connection.</p>
               </div>
             </div>
           )}
 
           {error && <p className="diag-error">{error}</p>}
-
-          <button
-            type="button"
-            className="home-action-primary"
-            onClick={handleStartPaper}
-            disabled={starting || loading || !selectedPaper}
-          >
-            <span className="home-action-icon home-action-icon-light" aria-hidden="true">
-              ▶
-            </span>
-            <span>
-              <span className="home-action-label">
-                {starting ? "Loading paper..." : "Start Selected Paper"}
-              </span>
-              <span className="home-action-sub">Launch the same adaptive diagnostic flow</span>
-            </span>
-            <span className="home-action-arrow" aria-hidden="true">→</span>
-          </button>
         </div>
       </section>
     );
@@ -252,63 +212,48 @@ export default function ExamsPage() {
   const answered = Object.keys(answers).length;
   const isLast = current === questions.length - 1;
 
-  const bar = isLast ? (
-    <button type="button" className="btn-primary" onClick={handleSubmit} disabled={submitting}>
-      {submitting ? "Analysing your answers…" : `Submit (${answered}/${questions.length})`}
-    </button>
-  ) : (
-    <div className="learn-actions">
-      <button type="button" className="btn-ghost diag-skip-btn" onClick={() => setCurrent((value) => value + 1)}>
-        Skip
+  const bar = (
+    <div className="qs-nav-bar">
+      <button
+        type="button"
+        className="qs-nav-icon-btn"
+        onClick={() => setCurrent((v) => v - 1)}
+        disabled={current === 0}
+        aria-label="Previous question"
+      >
+        ←
       </button>
       <button
         type="button"
-        className="btn-primary"
-        onClick={() => setCurrent((value) => value + 1)}
-        disabled={question ? answers[question.id] === undefined : true}
+        className="qs-nav-icon-btn"
+        onClick={() => setCurrent((v) => v + 1)}
+        disabled={isLast}
+        aria-label="Next question"
       >
-        Next →
+        →
       </button>
     </div>
   );
 
+  const paperSubtitle = [
+    selectedPaper?.paper_name,
+    selectedPaper?.paper_type,
+    selectedPaper?.year,
+    selectedPaper?.state,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <QuizSheet open={stage === "quiz"} bar={bar} onClose={handleCloseQuiz}>
-      <div className="diag-step-indicator">
-        <button
-          type="button"
-          className="quiz-sheet-back"
-          onClick={() => setCurrent((value) => Math.max(0, value - 1))}
-          disabled={current === 0}
-          aria-label="Previous question"
-        >
-          ←
-        </button>
-        {questions.map((_, index) => (
-          <button
-            type="button"
-            key={index}
-            className={`diag-step-dot ${index === current ? "active" : answers[questions[index]?.id] !== undefined ? "completed" : ""}`}
-            onClick={() => setCurrent(index)}
-            aria-label={`Go to question ${index + 1}`}
-          />
-        ))}
-      </div>
-
-      <div className="diag-header page-enter">
-        <h1 className="font-display diag-title">Math Trial Paper</h1>
-        <p className="diag-sub">
-          {selectedPaper ? selectedPaper.paper_name : "Answer the paper to personalise your learning path."}
-        </p>
-        <div className="diag-progress-row">
-          <span className="diag-progress-label">
-            Question {current + 1} of {questions.length}
-          </span>
-          <span className="diag-progress-count">{answered} answered</span>
-        </div>
-        <p className="material-subtitle">Use the dots above to jump between questions.</p>
-      </div>
-
+    <QuizSheet
+      open={stage === "quiz"}
+      bar={bar}
+      onClose={handleCloseQuiz}
+      title="Matematik"
+      subtitle={paperSubtitle}
+      progress={current + 1}
+      total={questions.length}
+    >
       {question && (
         <QuestionCard
           key={question.id}
@@ -319,7 +264,7 @@ export default function ExamsPage() {
         />
       )}
 
-      {error && <p className="diag-error">{error}</p>}
+      {error && <p className="qs-error">{error}</p>}
     </QuizSheet>
   );
 }

@@ -80,7 +80,6 @@ export default function MaterialsHubPage() {
                 <p className="learning-feature-kicker">Matematik Tingkatan 5</p>
                 <h2>{card.title}</h2>
                 <p>{card.subtitle}</p>
-                <p className="study-select-subtitle">Masuk ke subtopic learning map</p>
               </div>
 
               <div className="feature-visual" aria-hidden="true">
