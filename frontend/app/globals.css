@@ -2896,6 +2896,22 @@ button.map-node:hover {
   color: var(--ink);
   border-bottom-left-radius: 4px;
 }
+.sb-bubble-coach {
+  align-self: flex-start;
+  background: #f0fdf4;
+  color: var(--ink);
+  border: 1px solid #bbf7d0;
+  border-bottom-left-radius: 4px;
+}
+.sb-coach-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #16a34a;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
 .sb-bubble-user {
   align-self: flex-end;
   background: var(--brand);

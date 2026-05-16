@@ -380,3 +380,75 @@ export async function submitQuiz(
     answers,
   });
 }
+
+// ---------------------------------------------------------------------------
+// AI Coach
+// ---------------------------------------------------------------------------
+
+export interface CoachTopicStats {
+  topic_id: string;
+  topic_name: string;
+  accuracy: number; // 0–1
+  attempts: number;
+  last_attempt_at: string | null; // ISO datetime
+}
+
+export interface LearningSnapshot {
+  user_id: string;
+  topics: CoachTopicStats[];
+  total_questions_answered: number;
+  questions_answered_this_week: number;
+  last_active_at: string | null; // ISO datetime
+  upcoming_exam_date: string | null; // ISO datetime
+}
+
+export type CoachSuggestionType =
+  | "do_quiz"
+  | "do_review"
+  | "focus_topic"
+  | "celebration"
+  | "consistency_nudge";
+
+export interface CoachSuggestion {
+  id: string;
+  type: CoachSuggestionType;
+  title: string;
+  message: string;
+  cta_label: string | null;
+  cta_action: Record<string, unknown> | null;
+  priority: "high" | "medium" | "low";
+  created_at: string; // ISO datetime
+}
+
+export interface CoachSummaryResponse {
+  snapshot: LearningSnapshot;
+  suggestions: CoachSuggestion[];
+}
+
+export interface CoachMessageResponse {
+  reply: string;
+  snapshot: LearningSnapshot;
+  suggestions: CoachSuggestion[];
+}
+
+/** Fetch dashboard-level coaching snapshot + suggestions. */
+export async function fetchCoachSummary(
+  userId: string,
+): Promise<CoachSummaryResponse> {
+  return get("/api/coach/summary", { userId });
+}
+
+/** Ask the coach a question and get a personalised reply + suggestions. */
+export async function fetchCoachMessage(
+  userId: string,
+  question: string,
+  pageContext = "general",
+  topicId?: string,
+): Promise<CoachMessageResponse> {
+  return post("/api/coach/message", {
+    userId,
+    question,
+    pageContext,
+    ...(topicId && { topicId }),
+  });
+}

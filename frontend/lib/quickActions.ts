@@ -6,6 +6,12 @@ import type { LearningContext, QuickAction } from "./types";
 
 export const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
   {
+    label: "Ask AI Coach",
+    emoji: "🧑‍🏫",
+    message: "Based on my recent performance, what should I focus on next?",
+    actionType: "ask_coach",
+  },
+  {
     label: "Generate Ubahan Quiz",
     emoji: "🎯",
     message: "Generate a personalised Ubahan quiz for me",
