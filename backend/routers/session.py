@@ -7,9 +7,7 @@ POST /api/session/start_diagnostic   – return diagnostic question set
 POST /api/session/submit_diagnostic  – score diagnostic, build skill profile, pick first question
 POST /api/session/submit_answer      – score one answer, explain, pick next question
 GET  /api/session/assessment         – return per-topic skill summary for a user
-
-All AI calls are rule-based stubs; every integration point is marked
-# TODO: integrate ai_engine.* so the real calls can be dropped in later.
+GET  /api/session/review             – return spaced-repetition review questions and topic suggestions
 """
 
 from __future__ import annotations
@@ -20,9 +18,9 @@ from typing import Dict, List, Literal, Optional
 
 from fastapi import APIRouter, HTTPException
 
-import db
-from schemas.question import Attempt, Question, QuestionPublic, SkillProfile, TopicStats
-from schemas.session import (
+from backend import db
+from backend.schemas.question import Attempt, Question, QuestionPublic, SkillProfile, TopicStats
+from backend.schemas.session import (
     AssessmentResponse,
     DiagnosticAnswer,
     Explanation,
@@ -36,19 +34,14 @@ from schemas.session import (
     SubmitDiagnosticResponse,
     SuggestedTopic,
 )
-from services import ai_engine, review_scheduler
-from services.ai_engine import SkillStats
+from backend.services import ai_engine, review_scheduler
+from backend.services.ai_engine import SkillStats
 
 router = APIRouter(prefix="/api/session", tags=["session"])
 
 
-# ---------------------------------------------------------------------------
-# In-memory stubs (replace with real DB queries)
-# ---------------------------------------------------------------------------
-
-# TODO: Replace these with real database queries
-QUESTIONS_DB: List[Question] = db.QUESTION_BANK          # aliased for clarity
-ATTEMPTS_DB:  List[Attempt]  = []                         # shadowed by db.user_attempts
+# How often (every N answers) to inject a spaced-repetition review question.
+_REVIEW_INJECTION_INTERVAL = 4
 
 
 # ---------------------------------------------------------------------------
@@ -56,8 +49,7 @@ ATTEMPTS_DB:  List[Attempt]  = []                         # shadowed by db.user_
 # ---------------------------------------------------------------------------
 
 def get_questions_by_topic(topic_id: str) -> List[Question]:
-    # TODO: Replace with a real DB query filtered by topic_id
-    return [q for q in QUESTIONS_DB if q.topic_id == topic_id]
+    return db.get_all_questions(topic_id=topic_id)
 
 
 # ---------------------------------------------------------------------------
@@ -65,7 +57,6 @@ def get_questions_by_topic(topic_id: str) -> List[Question]:
 # ---------------------------------------------------------------------------
 
 def get_user_attempts(user_id: str) -> List[Attempt]:
-    # TODO: Replace with a real DB query filtered by user_id
     return db.get_user_attempts(user_id)
 
 
@@ -77,16 +68,13 @@ _DIAGNOSTIC_COUNT   = 5
 _DIAGNOSTIC_WEIGHTS = {"easy": 3, "medium": 2, "hard": 1}
 
 
-def select_diagnostic_questions(topic_id: str) -> List[Question]:
-    """
-    Return a small, mixed-difficulty set for the diagnostic.
+def select_diagnostic_questions(topic_id: str, paper_id: Optional[int] = None) -> List[Question]:
+    """Return a small, mixed-difficulty set for the diagnostic.
 
-    Strategy: prefer easy and medium questions; hard ones are allowed but
-    weighted lower so beginners are not immediately overwhelmed.
-
-    # TODO: integrate ai_engine.select_diagnostic_questions(...) once available.
+    Prefers easy/medium questions; hard ones are weighted lower so beginners
+    are not immediately overwhelmed.
     """
-    pool = get_questions_by_topic(topic_id)
+    pool = db.get_questions_by_paper(paper_id) if paper_id else get_questions_by_topic(topic_id)
     if not pool:
         return []
 
@@ -107,25 +95,6 @@ def select_diagnostic_questions(topic_id: str) -> List[Question]:
             break
 
     return chosen
-
-
-# ---------------------------------------------------------------------------
-# Helper: build an ai_engine SkillProfile (Dict[str, SkillStats]) for a user
-# ---------------------------------------------------------------------------
-
-def _build_ai_skill_profile(user_id: str) -> ai_engine.SkillProfile:
-    """
-    Reconstruct an ai_engine.SkillProfile from the user's recorded attempts.
-
-    The ai_engine uses its own SkillProfile type alias (Dict[str, SkillStats])
-    which is separate from schemas.question.SkillProfile (a Pydantic model).
-    This helper bridges the two.
-
-    # TODO: cache / persist this in the DB so it doesn't recompute each request.
-    """
-    attempts = get_user_attempts(user_id)
-    questions = QUESTIONS_DB
-    return ai_engine.analyze_diagnostic(questions, attempts)
 
 
 # ---------------------------------------------------------------------------
@@ -163,17 +132,8 @@ def choose_next_question_for_user(
     user_id: str,
     ai_profile: ai_engine.SkillProfile,
 ) -> Question:
-    """
-    Pick the next question using the AI engine's adaptive heuristic.
-
-    Prefers questions from the weakest topic at an appropriate difficulty.
-
-    # TODO: Replace with ai_engine.choose_next_question(...) — already implemented
-    #       in services/ai_engine.py; wire up once caller signatures are finalised.
-    """
     attempts = get_user_attempts(user_id)
-    # TODO: integrate ai_engine.choose_next_question(ai_profile, QUESTIONS_DB, attempts)
-    return ai_engine.choose_next_question(ai_profile, QUESTIONS_DB, attempts)
+    return ai_engine.choose_next_question(ai_profile, db.get_all_questions(), attempts)
 
 
 # ---------------------------------------------------------------------------
@@ -185,13 +145,6 @@ def _generate_explanation(
     attempt: Attempt,
     ai_profile: ai_engine.SkillProfile,
 ) -> Explanation:
-    """
-    Delegate to the AI engine's rule-based explanation stub.
-
-    # TODO: integrate ai_engine.generate_explanation(...) — already implemented.
-    #       This wrapper exists so the call site only imports schemas.Explanation.
-    """
-    # TODO: Call ai_engine.generate_explanation(...) here instead of rule-based text
     engine_expl = ai_engine.generate_explanation(question, attempt, ai_profile)
     return Explanation(text=engine_expl.text, style=engine_expl.style)
 
@@ -210,7 +163,7 @@ def start_diagnostic(req: StartDiagnosticRequest) -> StartDiagnosticResponse:
     - Strips correct_option_index before responding (uses QuestionPublic).
     - No attempts are saved here; that happens in submit_diagnostic.
     """
-    questions = select_diagnostic_questions(req.topic_id)
+    questions = select_diagnostic_questions(req.topic_id, req.paper_id)
     if not questions:
         raise HTTPException(
             status_code=404,
@@ -240,7 +193,7 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
     if not req.answers:
         raise HTTPException(status_code=400, detail="No answers provided.")
 
-    question_map: Dict[str, Question] = {q.id: q for q in QUESTIONS_DB}
+    question_map: Dict[str, Question] = {q.id: q for q in db.get_all_questions()}
     diagnostic_questions: List[Question] = []
     new_attempts: List[Attempt] = []
 
@@ -263,9 +216,6 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
         diagnostic_questions.append(q)
         new_attempts.append(attempt)
 
-    # Build AI engine skill profile from all attempts (diagnostic + any prior)
-    # TODO: integrate ai_engine.analyze_diagnostic once DB persistence is in place
-    all_attempts = get_user_attempts(req.user_id)
     ai_profile = ai_engine.analyze_diagnostic(diagnostic_questions, new_attempts)
 
     # Also update/persist the schemas-layer profile in db
@@ -282,7 +232,6 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
 
     schema_profile = _to_schema_skill_profile(req.user_id, ai_profile)
 
-    # TODO: Replace choose_next_question_for_user with ai_engine.choose_next_question(...)
     next_q = choose_next_question_for_user(req.user_id, ai_profile)
 
     return SubmitDiagnosticResponse(
@@ -328,11 +277,8 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
     )
     db.record_attempt(attempt)
 
-    # Rebuild AI profile from full attempt history (includes the new attempt)
     all_attempts = get_user_attempts(req.user_id)
-    # TODO: integrate ai_engine.apply_incremental_update(...) for O(1) update
-    #       once that function is available, instead of recomputing the full profile.
-    ai_profile = ai_engine.analyze_diagnostic(QUESTIONS_DB, all_attempts)
+    ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
 
     # Persist updated stats back into the db-layer profile
     db_profile = db.get_or_create_profile(req.user_id)
@@ -346,19 +292,16 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         )
     db.save_profile(db_profile)
 
-    # TODO: Call ai_engine.generate_explanation(...) here instead of rule-based text
     explanation = _generate_explanation(question, attempt, ai_profile)
 
-    # Review injection: every 4th answer, check for overdue reviews and serve one
-    # instead of a fresh adaptive question.
-    # TODO: Make the review injection frequency dynamic (e.g., based on how many
-    #       reviews are overdue vs total questions remaining).
+    # Every _REVIEW_INJECTION_INTERVAL answers, serve an overdue review question
+    # instead of a fresh adaptive one.
     answer_count = review_scheduler.increment_answer_counter(req.user_id)
     is_review = False
-    if answer_count % 4 == 0:
+    if answer_count % _REVIEW_INJECTION_INTERVAL == 0:
         # Convert schemas.question types to ai_engine types for the scheduler.
         engine_questions = [
-            ai_engine.Question(**q.model_dump()) for q in QUESTIONS_DB
+            ai_engine.Question(**q.model_dump()) for q in db.get_all_questions()
         ]
         engine_attempts = [
             ai_engine.Attempt(**a.model_dump()) for a in all_attempts
@@ -385,7 +328,6 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
         else:
             next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
     else:
-        # TODO: Call ai_engine.choose_next_question(...) here for more advanced logic
         next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
 
     topic_summary: Optional[TopicStats] = db_profile.topics.get(question.topic_id)
@@ -405,18 +347,15 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
 
 @router.get("/assessment", response_model=AssessmentResponse)
 def get_assessment(user_id: str) -> AssessmentResponse:
-    """
-    Return the per-topic skill summary for the given user.
+    """Return the per-topic skill summary for the given user.
 
-    Recomputes the full skill profile from recorded attempts so the response
-    always reflects the latest state.
-
-    # TODO: Replace recomputation with a DB read once profiles are persisted.
+    Recomputes the full skill profile from recorded attempts and syncs it
+    to the DB-layer profile so the response always reflects the latest state.
     """
     all_attempts = get_user_attempts(user_id)
 
     if all_attempts:
-        ai_profile = ai_engine.analyze_diagnostic(QUESTIONS_DB, all_attempts)
+        ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
         # Keep db-layer profile in sync
         db_profile = db.get_or_create_profile(user_id)
         for tid, stats in ai_profile.items():
@@ -453,7 +392,7 @@ def get_review(user_id: str) -> ReviewResponse:
     if not all_attempts:
         return ReviewResponse(review_questions=[], suggested_topics=[])
 
-    engine_questions = [ai_engine.Question(**q.model_dump()) for q in QUESTIONS_DB]
+    engine_questions = [ai_engine.Question(**q.model_dump()) for q in db.get_all_questions()]
     engine_attempts = [ai_engine.Attempt(**a.model_dump()) for a in all_attempts]
     ai_profile = ai_engine.analyze_diagnostic(engine_questions, engine_attempts)
 

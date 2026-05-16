@@ -17,7 +17,7 @@ export default function DiagnosticPage() {
     const userId = sessionStorage.getItem("userId");
     if (!userId) { router.push("/"); return; }
 
-    startDiagnostic(userId, "quadratic_equations")
+    startDiagnostic(userId, "Matematik", 3)
       .then((res) => setQuestions(res.questions))
       .catch(() => setError("Failed to load diagnostic questions."))
       .finally(() => setLoading(false));

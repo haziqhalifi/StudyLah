@@ -11,9 +11,9 @@ from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
-from services import ai_engine
-from services.ai_engine import Question, Attempt, SkillProfile
-from supabase_client import supabase
+from backend.services import ai_engine
+from backend.services.ai_engine import Question, Attempt, SkillProfile
+from backend.supabase_client import supabase
 
 
 # ---------------------------------------------------------------------------

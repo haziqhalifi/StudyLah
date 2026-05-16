@@ -4,7 +4,7 @@ from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
-from schemas.question import QuestionPublic, SkillProfile, TopicStats
+from backend.schemas.question import QuestionPublic, SkillProfile, TopicStats
 
 
 # ---------------------------------------------------------------------------
@@ -14,6 +14,7 @@ from schemas.question import QuestionPublic, SkillProfile, TopicStats
 class StartDiagnosticRequest(BaseModel):
     user_id: str
     topic_id: str
+    paper_id: Optional[int] = None
 
 
 class StartDiagnosticResponse(BaseModel):

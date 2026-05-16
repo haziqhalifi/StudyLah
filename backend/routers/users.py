@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-import db
-from schemas.session import CreateUserRequest, UserResponse
-from schemas.question import SkillProfile, TopicStats
+from backend import db
+from backend.schemas.session import CreateUserRequest, UserResponse
+from backend.schemas.question import SkillProfile, TopicStats
 
 router = APIRouter()
 

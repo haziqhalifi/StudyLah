@@ -124,9 +124,14 @@ export async function createUser(userId: string, name: string) {
 
 export async function startDiagnostic(
   userId: string,
-  topicId: string
+  topicId: string,
+  paperId?: number
 ): Promise<StartDiagnosticResponse> {
-  return post("/api/session/start_diagnostic", { user_id: userId, topic_id: topicId });
+  return post("/api/session/start_diagnostic", {
+    user_id: userId,
+    topic_id: topicId,
+    ...(paperId !== undefined && { paper_id: paperId }),
+  });
 }
 
 export async function submitDiagnostic(

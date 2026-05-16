@@ -1,10 +1,11 @@
 """
 AI engine layer for StudyLah adaptive education platform.
 
-All adaptive logic lives here as rule-based heuristics.
-Every # TODO: Call Claude here marker is a drop-in point for Anthropic API calls.
+All adaptive logic lives here. Rule-based heuristics run first; Claude is
+called for richer inference and generation, with the heuristic result as a
+safe fallback whenever the API is unavailable or returns unparseable output.
 
-Integration pattern (for when Claude is wired in):
+Claude integration uses the Anthropic SDK:
 
     import anthropic
     client = anthropic.Anthropic()   # reads ANTHROPIC_API_KEY from env
@@ -13,48 +14,70 @@ Integration pattern (for when Claude is wired in):
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
     )
-    result = response.content[0].text  # parse as JSON
-
-No external services or LLM calls are made by this file.
+    result = response.content[0].text  # parsed as JSON where needed
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 import random
 from datetime import datetime
 from typing import Dict, List, Literal, Optional
 
+import anthropic
 from pydantic import BaseModel
 
+from backend.schemas.question import Question, Attempt
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Data models (Phase 1 domain models reproduced here for self-containment)
+# Anthropic client (lazy singleton — initialised on first use so tests that
+# don't set ANTHROPIC_API_KEY still import this module without crashing)
 # ---------------------------------------------------------------------------
 
-class Question(BaseModel):
-    id: str
-    topic_id: str
-    text: str
-    options: List[str]
-    correct_option_index: int
-    difficulty: Literal["easy", "medium", "hard"]
-    tags: List[str] = []
+_anthropic_client: Optional[anthropic.Anthropic] = None
 
 
-class Attempt(BaseModel):
-    user_id: str
-    question_id: str
-    selected_option_index: int
-    is_correct: bool
-    timestamp: datetime
-    topic_id: Optional[str] = None  # convenience field; may be populated by caller
+def _client() -> anthropic.Anthropic:
+    global _anthropic_client
+    if _anthropic_client is None:
+        _anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    return _anthropic_client
 
+
+def _call_claude(prompt: str, max_tokens: int = 1024) -> Optional[str]:
+    """Send a single-turn prompt to Claude and return the text response.
+
+    Returns None on any error so callers can fall back to heuristics.
+    """
+    try:
+        response = _client().messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=max_tokens,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        block = response.content[0]
+        if isinstance(block, anthropic.types.TextBlock):
+            return block.text
+        return None
+    except Exception as exc:
+        logger.warning("Claude API call failed, falling back to heuristic: %s", exc)
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Domain models
+# ---------------------------------------------------------------------------
 
 class SkillStats(BaseModel):
     topic_id: str
     correct_count: int = 0
     attempt_count: int = 0
     estimated_level: Literal["weak", "okay", "strong"] = "weak"
+    misconceptions: List[str] = []
 
     @classmethod
     def _compute_level(cls, accuracy: float) -> Literal["weak", "okay", "strong"]:
@@ -77,10 +100,6 @@ class SkillStats(BaseModel):
 SkillProfile = Dict[str, SkillStats]
 
 
-# ---------------------------------------------------------------------------
-# Data models defined in this layer
-# ---------------------------------------------------------------------------
-
 class Explanation(BaseModel):
     text: str
     style: Literal["step_by_step", "analogy", "formula_first", "shortcut_tips"]
@@ -96,15 +115,7 @@ class ReviewItem(BaseModel):
 # ---------------------------------------------------------------------------
 
 def get_topic_accuracy(skill_profile: SkillProfile, topic_id: str) -> float:
-    """Return accuracy for a topic from skill_profile, defaulting to 0.5.
-
-    Args:
-        skill_profile: The student's current skill profile.
-        topic_id: The topic to look up.
-
-    Returns:
-        Accuracy in [0.0, 1.0], or 0.5 if the topic has no recorded stats.
-    """
+    """Return accuracy for a topic, defaulting to 0.5 if unseen."""
     stats: Optional[SkillStats] = skill_profile.get(topic_id)
     if stats is None or stats.attempt_count == 0:
         return 0.5
@@ -112,15 +123,7 @@ def get_topic_accuracy(skill_profile: SkillProfile, topic_id: str) -> float:
 
 
 def get_last_seen(question_id: str, attempts: List[Attempt]) -> Optional[datetime]:
-    """Return the most recent attempt timestamp for a given question, or None.
-
-    Args:
-        question_id: ID of the question to search for.
-        attempts: Full list of attempts to search through.
-
-    Returns:
-        The most recent datetime the question was attempted, or None if never.
-    """
+    """Return the most recent attempt timestamp for a given question, or None."""
     seen_at: List[datetime] = [
         a.timestamp for a in attempts if a.question_id == question_id
     ]
@@ -132,16 +135,7 @@ def filter_unattempted_recently(
     attempts: List[Attempt],
     window: int = 10,
 ) -> List[Question]:
-    """Remove questions that appear in the last `window` attempts.
-
-    Args:
-        questions: Candidate question pool.
-        attempts: Full attempt history (ordered oldest→newest).
-        window: How many recent attempts to treat as "recently seen".
-
-    Returns:
-        Subset of questions not seen in the last `window` attempts.
-    """
+    """Remove questions that appear in the last `window` attempts."""
     recent_ids: set[str] = {a.question_id for a in attempts[-window:]}
     return [q for q in questions if q.id not in recent_ids]
 
@@ -204,15 +198,13 @@ def analyze_diagnostic(
             0.40–0.70 → "okay"
             > 0.70  → "strong"
 
+        When Claude is available, each SkillStats entry is enriched with a
+        ``misconceptions`` list of inferred error patterns (e.g.
+        "confuses discriminant calculation with root substitution").
+
     Heuristic:
         Groups attempts by topic_id via question metadata, tallies
         correct/total per topic, and derives estimated_level.
-
-    Claude integration point:
-        Deeper misconception inference from answer patterns replaces this.
-        e.g., detect if a student confuses discriminant calculation vs root
-        substitution. Claude returns per-topic misconception labels that
-        enrich the SkillProfile beyond simple accuracy.
     """
     question_map: Dict[str, Question] = {q.id: q for q in questions}
     profile: SkillProfile = {}
@@ -226,10 +218,43 @@ def analyze_diagnostic(
             profile[tid] = SkillStats(topic_id=tid)
         profile[tid].update(attempt.is_correct)
 
-    # TODO: Call Claude here to infer deeper misconceptions from answer patterns.
-    # e.g., detect if student confuses discriminant calculation vs root substitution.
-    # Prompt Claude with: question texts, option choices, selected options, correct options.
-    # Claude should return: list of misconception labels per topic.
+    # --- Claude: infer deeper misconceptions from answer patterns ----------
+    if profile:
+        attempt_details = []
+        for attempt in attempts:
+            q = question_map.get(attempt.question_id)
+            if q is None:
+                continue
+            attempt_details.append({
+                "topic_id": q.topic_id,
+                "question": q.text,
+                "options": q.options,
+                "correct_option_index": q.correct_option_index,
+                "selected_option_index": attempt.selected_option_index,
+                "is_correct": attempt.is_correct,
+            })
+
+        prompt = f"""You are an expert tutor analysing a student's diagnostic quiz results.
+
+Below is a list of question attempts. For each topic, identify specific misconceptions or error patterns the student shows based on WRONG answers only. Be concise and precise.
+
+Attempts (JSON):
+{json.dumps(attempt_details, indent=2)}
+
+Return ONLY a JSON object mapping topic_id to a list of misconception strings (max 3 per topic). Example:
+{{"algebra": ["confuses expanding brackets with factorising"], "geometry": []}}
+
+If a topic has no wrong answers, return an empty list for it. Return only the JSON, no explanation."""
+
+        raw = _call_claude(prompt, max_tokens=512)
+        if raw:
+            try:
+                misconception_map: Dict[str, List[str]] = json.loads(raw)
+                for tid, labels in misconception_map.items():
+                    if tid in profile and isinstance(labels, list):
+                        profile[tid].misconceptions = [str(l) for l in labels]
+            except (json.JSONDecodeError, TypeError, ValueError) as exc:
+                logger.warning("Could not parse misconception response: %s", exc)
 
     return profile
 
@@ -265,12 +290,8 @@ def choose_next_question(
              Otherwise              → keep current difficulty.
         3. Exclude questions the student got correct recently.
         4. Filter by (topic, difficulty); relax difficulty if pool is empty.
-        5. Choose uniformly at random.
-
-    Claude integration point:
-        Ranking candidate questions by expected learning gain replaces step 5.
-        Claude receives the skill_profile snapshot, recent_attempts, and the
-        candidate list, then returns ranked question IDs with short reasoning.
+        5. Rank candidates by expected learning gain via Claude; fall back to
+           random choice if Claude is unavailable.
     """
     if not all_questions:
         raise ValueError("No questions available.")
@@ -290,10 +311,9 @@ def choose_next_question(
 
     target_topic_id = sorted_topics[0][0]
 
-    # Resolve topic for each recent attempt via the question bank
     topic_recent = [
         a for a in recent_attempts
-        if (a.topic_id or _question_topic(a.question_id, all_questions)) == target_topic_id
+        if (_question_topic(a.question_id, all_questions)) == target_topic_id
     ][-3:]
 
     last_q_difficulty = (
@@ -313,21 +333,65 @@ def choose_next_question(
 
     mastered_ids: set[str] = {a.question_id for a in recent_attempts if a.is_correct}
 
-    # TODO: Call Claude here to rank candidate questions by expected learning gain.
-    # Prompt: skill_profile snapshot + recent_attempts + candidate question list.
-    # Claude should return: ranked question IDs with short reasoning.
-
-    def _pick(difficulty: Optional[str]) -> Optional[Question]:
-        pool = [
+    def _pick(difficulty: Optional[str]) -> List[Question]:
+        return [
             q for q in all_questions
             if q.topic_id == target_topic_id
             and (difficulty is None or q.difficulty == difficulty)
             and q.id not in mastered_ids
         ]
-        return random.choice(pool) if pool else None
 
-    chosen = _pick(target_difficulty) or _pick(None) or random.choice(all_questions)
-    return chosen
+    candidates = _pick(target_difficulty) or _pick(None)
+    if not candidates:
+        candidates = list(all_questions)
+
+    # --- Claude: rank candidates by expected learning gain -----------------
+    if len(candidates) > 1:
+        profile_summary = {
+            tid: {
+                "level": s.estimated_level,
+                "accuracy": round(s.correct_count / s.attempt_count, 2) if s.attempt_count else 0.5,
+                "misconceptions": s.misconceptions,
+            }
+            for tid, s in skill_profile.items()
+        }
+        recent_summary = [
+            {"question_id": a.question_id, "is_correct": a.is_correct}
+            for a in recent_attempts[-10:]
+        ]
+        candidate_summary = [
+            {"id": q.id, "text": q.text, "difficulty": q.difficulty, "topic_id": q.topic_id}
+            for q in candidates
+        ]
+
+        prompt = f"""You are an adaptive learning system. Rank the following candidate questions by expected learning gain for this student.
+
+Student skill profile:
+{json.dumps(profile_summary, indent=2)}
+
+Recent attempts (oldest first):
+{json.dumps(recent_summary, indent=2)}
+
+Candidate questions:
+{json.dumps(candidate_summary, indent=2)}
+
+Return ONLY a JSON array of question IDs ordered from highest to lowest expected learning gain. Example:
+["q3", "q1", "q2"]
+
+Return only the JSON array, no explanation."""
+
+        raw = _call_claude(prompt, max_tokens=256)
+        if raw:
+            try:
+                ranked_ids: List[str] = json.loads(raw)
+                id_to_q = {q.id: q for q in candidates}
+                ordered = [id_to_q[qid] for qid in ranked_ids if qid in id_to_q]
+                if ordered:
+                    return ordered[0]
+            except (json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
+                logger.warning("Could not parse ranking response: %s", exc)
+
+    return random.choice(candidates)
 
 
 # ---------------------------------------------------------------------------
@@ -352,8 +416,8 @@ _EXPLANATION_TEMPLATES: Dict[str, str] = {
         "Eliminating obviously wrong answers first can save valuable time."
     ),
     "analogy": (
-        "Think of it like this: [concept] works just like [simple real-world analogy]. "
-        "So in this question, the approach is to map each element onto that analogy "
+        "Think of it like this: the concept works just like a familiar real-world pattern. "
+        "Map each element onto that analogy "
         "and let the familiar pattern guide your reasoning."
     ),
 }
@@ -372,21 +436,14 @@ def generate_explanation(
         skill_profile: Current skill snapshot used to look up topic accuracy.
 
     Returns:
-        An Explanation with a style tag and placeholder text.
+        An Explanation with a style tag and personalised text from Claude,
+        falling back to a template string if Claude is unavailable.
 
     Heuristic (style selection from topic accuracy):
         accuracy < 0.40               → "step_by_step"
         0.40 ≤ accuracy < 0.70        → "formula_first"
         accuracy ≥ 0.70 + wrong answer → "shortcut_tips"
         accuracy ≥ 0.70 + correct      → "analogy"
-
-    Claude integration point:
-        High-quality personalised text replaces the template strings.
-        Claude receives question.text, question.options,
-        attempt.selected_option_index, correct_option_index,
-        skill_profile stats for this topic, and the chosen style.
-        Claude returns explanation text in that style, referencing the
-        student's specific wrong choice where relevant.
     """
     accuracy = get_topic_accuracy(skill_profile, question.topic_id)
 
@@ -399,13 +456,43 @@ def generate_explanation(
     else:
         style = "analogy"
 
-    # TODO: Call Claude here to generate high-quality personalised explanation text.
-    # Prompt: question.text, question.options, attempt.selected_option_index,
-    #         correct_option_index, skill_profile stats for this topic, chosen style.
-    # Claude should return: explanation text in the chosen style, referencing the
-    #         student's specific wrong choice where relevant.
+    stats = skill_profile.get(question.topic_id)
+    topic_stats_summary = {
+        "accuracy": round(accuracy, 2),
+        "attempts": stats.attempt_count if stats else 0,
+        "level": stats.estimated_level if stats else "weak",
+        "misconceptions": stats.misconceptions if stats else [],
+    }
 
-    return Explanation(text=_EXPLANATION_TEMPLATES[style], style=style)
+    style_descriptions = {
+        "step_by_step": "a clear step-by-step walkthrough of the solution",
+        "formula_first": "lead with the key formula, then show how to apply it",
+        "shortcut_tips": "a quick practical tip that helps avoid the mistake the student made",
+        "analogy": "a memorable real-world analogy that makes the concept click",
+    }
+
+    selected_text = (
+        question.options[attempt.selected_option_index]
+        if 0 <= attempt.selected_option_index < len(question.options)
+        else "unknown"
+    )
+    correct_text = question.options[question.correct_option_index]
+
+    prompt = f"""You are a friendly, expert tutor explaining a question to a student.
+
+Question: {question.text}
+Options: {json.dumps(question.options)}
+Student selected: "{selected_text}" (option {attempt.selected_option_index}) — {"CORRECT" if attempt.is_correct else "WRONG"}
+Correct answer: "{correct_text}" (option {question.correct_option_index})
+
+Student topic stats: {json.dumps(topic_stats_summary)}
+
+Write {style_descriptions[style]}. Be concise (2-4 sentences), warm, and encouraging. If the student was wrong, reference their specific wrong choice and explain why the correct answer is right. Do not use bullet points or headers — write in plain prose."""
+
+    raw = _call_claude(prompt, max_tokens=300)
+    explanation_text = raw.strip() if raw else _EXPLANATION_TEMPLATES[style]
+
+    return Explanation(text=explanation_text, style=style)
 
 
 # ---------------------------------------------------------------------------
@@ -417,33 +504,30 @@ def generate_personalized_question(
     base_questions: List[Question],
     recent_attempts: List[Attempt],
 ) -> Question:
-    """Select (or eventually generate) a question targeting the student's skill gap.
+    """Select or generate a question targeting the student's skill gap.
 
     Args:
         skill_profile: Current skill snapshot.
-        base_questions: Full question bank used as the selection pool.
+        base_questions: Full question bank used as the selection pool and as
+            format examples for Claude-generated questions.
         recent_attempts: Attempt history for recency filtering.
 
     Returns:
         A Question tagged with "personalised" to signal adaptive selection.
+        When Claude generates a brand-new question, it is prepended with the
+        id prefix "gen-" so callers can distinguish generated from banked items.
 
     Raises:
-        ValueError: If no questions exist for the weakest topic.
+        ValueError: If no questions exist for the weakest topic and Claude
+            generation also fails.
 
     Heuristic:
         1. Find the weakest topic with ≥ 2 attempts (lowest accuracy).
            Falls back to any topic if none have 2+ attempts.
-        2. Filter base_questions for that topic; prefer easy/medium difficulty.
-        3. Exclude questions seen in the last 10 attempts.
-        4. Tag the chosen question "personalised" in-place.
-        5. Fall back to any question on the weakest topic if pool is empty.
-
-    Claude integration point:
-        Brand-new MCQ generation replaces selection from the existing bank.
-        Claude receives topic name, student's weak sub-tags, and past question
-        examples for format reference, then returns a new question text + 4 MCQ
-        options + correct_option_index + difficulty. The generated question is
-        validated for syntactic correctness before being returned.
+        2. Try to generate a brand-new MCQ via Claude targeting that topic.
+        3. If generation fails or returns an invalid question, fall back to
+           selecting from the existing bank (preferring easy/medium, excluding
+           recently seen questions).
     """
     eligible = [
         (tid, stats)
@@ -465,16 +549,80 @@ def generate_personalized_question(
         key=lambda kv: get_topic_accuracy(skill_profile, kv[0]),
     )[0]
 
+    weakest_stats = skill_profile.get(weakest_topic_id)
+
+    # --- Claude: generate a brand-new MCQ targeting the skill gap ----------
+    example_questions = [
+        {"text": q.text, "options": q.options, "correct_option_index": q.correct_option_index, "difficulty": q.difficulty}
+        for q in base_questions
+        if q.topic_id == weakest_topic_id
+    ][:3]
+
+    if not example_questions:
+        # Use any questions as format examples
+        example_questions = [
+            {"text": q.text, "options": q.options, "correct_option_index": q.correct_option_index, "difficulty": q.difficulty}
+            for q in base_questions[:3]
+        ]
+
+    misconceptions = weakest_stats.misconceptions if weakest_stats else []
+    accuracy = get_topic_accuracy(skill_profile, weakest_topic_id)
+
+    prompt = f"""You are an expert question writer for a student revision app. Generate ONE new multiple-choice question targeting the student's weak area.
+
+Topic: {weakest_topic_id}
+Student accuracy on this topic: {round(accuracy, 2)} ({"weak" if accuracy < 0.40 else "developing"})
+Known misconceptions: {json.dumps(misconceptions) if misconceptions else "none identified"}
+
+The question should be at "easy" or "medium" difficulty to help the student build confidence while addressing the gap.
+
+Format your question to match these examples:
+{json.dumps(example_questions, indent=2)}
+
+Return ONLY a JSON object with these exact keys:
+{{
+  "text": "<question text>",
+  "options": ["<option A>", "<option B>", "<option C>", "<option D>"],
+  "correct_option_index": <0-3>,
+  "difficulty": "easy" | "medium"
+}}
+
+Return only the JSON, no explanation."""
+
+    generated: Optional[Question] = None
+    raw = _call_claude(prompt, max_tokens=512)
+    if raw:
+        try:
+            data = json.loads(raw)
+            if (
+                isinstance(data.get("text"), str)
+                and isinstance(data.get("options"), list)
+                and len(data["options"]) == 4
+                and isinstance(data.get("correct_option_index"), int)
+                and 0 <= data["correct_option_index"] <= 3
+                and data.get("difficulty") in ("easy", "medium", "hard")
+            ):
+                generated = Question(
+                    id=f"gen-{weakest_topic_id}-{random.randint(10000, 99999)}",
+                    topic_id=weakest_topic_id,
+                    text=data["text"],
+                    options=[str(o) for o in data["options"]],
+                    correct_option_index=data["correct_option_index"],
+                    difficulty=data["difficulty"],
+                    tags=["personalised", "generated"],
+                )
+        except (json.JSONDecodeError, TypeError, ValueError) as exc:
+            logger.warning("Could not parse generated question: %s", exc)
+
+    if generated is not None:
+        return generated
+
+    # Fallback: select from existing bank
     topic_questions = [q for q in base_questions if q.topic_id == weakest_topic_id]
     preferred = [q for q in topic_questions if q.difficulty in ("easy", "medium")]
     candidates = filter_unattempted_recently(
         preferred or topic_questions, recent_attempts, window=10
     )
-
-    # TODO: Call Claude here to generate a brand-new MCQ targeting the skill gap.
-    # Prompt: topic name, student's weak sub-tags, past question examples for format reference.
-    # Claude should return: new question text + 4 MCQ options + correct_option_index + difficulty.
-    # Validate that the generated question is syntactically valid before returning.
 
     pool = candidates or preferred or topic_questions
     if not pool:
@@ -530,11 +678,10 @@ def select_review_questions(
         "not_seen_recently" — time component ≥ accuracy component
         "low_accuracy"      — otherwise
 
-    Claude integration point:
-        A more nuanced forgetting curve replaces the score formula.
-        Claude receives per-question accuracy history, timestamps, and topic
-        context, then returns a priority-ranked list of question IDs with
-        predicted retention scores.
+    Claude augmentation:
+        After heuristic scoring, Claude re-ranks using a more nuanced
+        forgetting-curve model. Falls back to heuristic ranking if Claude
+        is unavailable.
     """
     scored: List[tuple[float, Question, Literal["low_accuracy", "not_seen_recently", "weak_topic"]]] = []
 
@@ -566,9 +713,63 @@ def select_review_questions(
 
         scored.append((score, question, reason))
 
-    # TODO: Call Claude here to model a more nuanced forgetting curve.
-    # Prompt: per-question accuracy history + timestamps + topic context.
-    # Claude should return: priority-ranked list of question IDs with predicted retention scores.
-
     scored.sort(key=lambda t: t[0], reverse=True)
+
+    # Use a larger candidate pool for Claude re-ranking (up to 3× top_n)
+    candidate_pool = scored[: top_n * 3] if len(scored) > top_n else scored
+
+    # --- Claude: re-rank using forgetting-curve model ----------------------
+    if len(candidate_pool) > top_n:
+        attempt_history: Dict[str, list] = {}
+        for a in attempts:
+            attempt_history.setdefault(a.question_id, []).append(
+                {"is_correct": a.is_correct, "timestamp": a.timestamp.isoformat()}
+            )
+
+        candidate_data = []
+        for _, q, r in candidate_pool:
+            last_seen_q = get_last_seen(q.id, attempts)
+            candidate_data.append({
+                "id": q.id,
+                "topic_id": q.topic_id,
+                "difficulty": q.difficulty,
+                "heuristic_reason": r,
+                "attempt_history": attempt_history.get(q.id, []),
+                "minutes_since_last_seen": (
+                    (now - last_seen_q).total_seconds() / 60.0
+                    if last_seen_q else _NEVER_SEEN_MINUTES
+                ),
+            })
+
+        profile_summary = {
+            tid: {"level": s.estimated_level, "accuracy": round(s.correct_count / s.attempt_count, 2) if s.attempt_count else 0.5}
+            for tid, s in skill_profile.items()
+        }
+
+        prompt = f"""You are a spaced-repetition system. Re-rank these candidate review questions by how urgently the student needs to review them, using a forgetting-curve model (consider recency, accuracy history, and difficulty).
+
+Student skill profile:
+{json.dumps(profile_summary, indent=2)}
+
+Candidate questions (JSON):
+{json.dumps(candidate_data, indent=2)}
+
+Return ONLY a JSON array of exactly {top_n} question IDs in priority order (highest urgency first). Example:
+["q2", "q5", "q1", "q4", "q3"]
+
+Return only the JSON array, no explanation."""
+
+        raw = _call_claude(prompt, max_tokens=256)
+        if raw:
+            try:
+                ranked_ids: List[str] = json.loads(raw)
+                id_to_item: Dict[str, tuple[float, Question, Literal["low_accuracy", "not_seen_recently", "weak_topic"]]] = {
+                    q.id: (score, q, r) for score, q, r in candidate_pool
+                }
+                reranked = [id_to_item[qid] for qid in ranked_ids if qid in id_to_item]
+                if len(reranked) >= top_n:
+                    return [ReviewItem(question=q, reason=r) for _, q, r in reranked[:top_n]]
+            except (json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
+                logger.warning("Could not parse review ranking response: %s", exc)
+
     return [ReviewItem(question=q, reason=r) for _, q, r in scored[:top_n]]
