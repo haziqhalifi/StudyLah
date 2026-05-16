@@ -27,7 +27,7 @@ from datetime import datetime
 from typing import Dict, List, Literal, Optional
 
 import anthropic
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 from backend.schemas.question import Question, Attempt
 
@@ -78,6 +78,13 @@ class SkillStats(BaseModel):
     attempt_count: int = 0
     estimated_level: Literal["weak", "okay", "strong"] = "weak"
     misconceptions: List[str] = []
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def accuracy(self) -> float:
+        if self.attempt_count == 0:
+            return 0.0
+        return self.correct_count / self.attempt_count
 
     @classmethod
     def _compute_level(cls, accuracy: float) -> Literal["weak", "okay", "strong"]:

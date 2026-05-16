@@ -72,6 +72,7 @@ def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Q
     query = (
         supabase.table("questions")
         .select("id, question, options, correct_index, difficulty, topic, subject")
+        .not_.is_("question", "null")
         .limit(limit)
     )
     if topic_id:

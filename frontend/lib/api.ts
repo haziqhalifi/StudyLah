@@ -86,6 +86,19 @@ export interface ReviewResponse {
   suggested_topics: SuggestedTopic[];
 }
 
+export interface Paper {
+  id: number;
+  subject: string;
+  state: string | null;
+  year: number;
+  paper_type: string;
+  paper_name: string;
+}
+
+export interface PapersResponse {
+  papers: Paper[];
+}
+
 // ---------------------------------------------------------------------------
 // API helpers
 // ---------------------------------------------------------------------------
@@ -159,4 +172,8 @@ export async function getAssessment(userId: string): Promise<AssessmentResponse>
 
 export async function getReview(userId: string): Promise<ReviewResponse> {
   return get("/api/session/review", { user_id: userId });
+}
+
+export async function getPapers(): Promise<PapersResponse> {
+  return get("/api/session/papers");
 }

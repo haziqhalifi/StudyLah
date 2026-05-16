@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Dict, List, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Question(BaseModel):
@@ -37,6 +38,7 @@ class QuestionPublic(BaseModel):
 
 
 class Attempt(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     question_id: str
     selected_option_index: int

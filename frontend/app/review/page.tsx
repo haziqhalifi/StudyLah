@@ -104,7 +104,7 @@ export default function ReviewPage() {
       <div className="progress-track review-progress-track">
         <div
           className="progress-fill"
-          style={{ ["--bar-w" as string]: `${Math.round(((idx + 1) / items.length) * 100)}%` }}
+          style={{ width: `${Math.round(((idx + 1) / items.length) * 100)}%` }}
         />
       </div>
 

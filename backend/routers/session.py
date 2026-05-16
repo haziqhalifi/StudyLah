@@ -153,6 +153,19 @@ def _generate_explanation(
 # Endpoint: POST /api/session/start_diagnostic
 # ---------------------------------------------------------------------------
 
+@router.get("/papers")
+def list_papers():
+    """Return all papers grouped by subject for the diagnostic picker."""
+    from backend.supabase_client import supabase
+    response = (
+        supabase.table("papers")
+        .select("id, subject, state, year, paper_type, paper_name")
+        .order("subject")
+        .execute()
+    )
+    return {"papers": response.data}
+
+
 @router.post("/start_diagnostic", response_model=StartDiagnosticResponse)
 def start_diagnostic(req: StartDiagnosticRequest) -> StartDiagnosticResponse:
     """
@@ -193,7 +206,8 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
     if not req.answers:
         raise HTTPException(status_code=400, detail="No answers provided.")
 
-    question_map: Dict[str, Question] = {q.id: q for q in db.get_all_questions()}
+    submitted_ids = [ans.question_id for ans in req.answers]
+    question_map: Dict[str, Question] = {q.id: q for q in db.get_questions_by_ids(submitted_ids)}
     diagnostic_questions: List[Question] = []
     new_attempts: List[Attempt] = []
 

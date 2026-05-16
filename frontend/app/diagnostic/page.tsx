@@ -2,15 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { startDiagnostic, submitDiagnostic, Question, DiagnosticAnswer } from "@/lib/api";
+import {
+  getPapers,
+  startDiagnostic,
+  submitDiagnostic,
+  Question,
+  DiagnosticAnswer,
+  Paper,
+} from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
+
+type Step = "pick" | "quiz";
 
 export default function DiagnosticPage() {
   const router = useRouter();
+  const [step, setStep]             = useState<Step>("pick");
+  const [papers, setPapers]         = useState<Paper[]>([]);
+  const [subjects, setSubjects]     = useState<string[]>([]);
+  const [subject, setSubject]       = useState<string>("");
+  const [paperId, setPaperId]       = useState<number | null>(null);
+  const [loadingPapers, setLoadingPapers] = useState(true);
+  const [starting, setStarting]     = useState(false);
+
   const [questions, setQuestions]   = useState<Question[]>([]);
   const [current, setCurrent]       = useState(0);
   const [answers, setAnswers]       = useState<Record<string, number>>({});
-  const [loading, setLoading]       = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState("");
 
@@ -18,22 +34,39 @@ export default function DiagnosticPage() {
     const userId = sessionStorage.getItem("userId");
     if (!userId) { router.push("/"); return; }
 
-    startDiagnostic(userId, "Matematik", 3)
-      .then((res) => setQuestions(res.questions))
-      .catch(() => setError("Failed to load diagnostic questions."))
-      .finally(() => setLoading(false));
+    getPapers()
+      .then((res) => {
+        setPapers(res.papers);
+        const uniqueSubjects = [...new Set(res.papers.map((p) => p.subject))].sort();
+        setSubjects(uniqueSubjects);
+      })
+      .catch(() => setError("Failed to load papers."))
+      .finally(() => setLoadingPapers(false));
   }, [router]);
+
+  const filteredPapers = subject
+    ? papers.filter((p) => p.subject === subject)
+    : [];
+
+  async function handleStart() {
+    if (!paperId) return;
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) return;
+    setStarting(true);
+    setError("");
+    try {
+      const res = await startDiagnostic(userId, subject, paperId);
+      setQuestions(res.questions);
+      setStep("quiz");
+    } catch {
+      setError("Failed to load questions for this paper.");
+    } finally {
+      setStarting(false);
+    }
+  }
 
   function selectOption(questionId: string, idx: number) {
     setAnswers((prev) => ({ ...prev, [questionId]: idx }));
-  }
-
-  function handleNext() {
-    if (current < questions.length - 1) setCurrent((c) => c + 1);
-  }
-
-  function handleSkip() {
-    if (current < questions.length - 1) setCurrent((c) => c + 1);
   }
 
   async function handleSubmit() {
@@ -64,16 +97,76 @@ export default function DiagnosticPage() {
     }
   }
 
-  if (loading) return <LoadingShell />;
+  if (loadingPapers) return <LoadingShell />;
 
-  const q            = questions[current];
-  const answered     = Object.keys(answers).length;
-  const isLast       = current === questions.length - 1;
-  const allAnswered  = answered === questions.length;
+  if (step === "pick") {
+    return (
+      <div className="page-enter">
+        <div className="diag-header">
+          <h1 className="font-display diag-title">Choose Your Paper</h1>
+          <p className="diag-sub">Pick a subject and paper to start your diagnostic.</p>
+        </div>
+
+        <div className="diag-picker-section">
+          <p className="diag-picker-label">Subject</p>
+          <div className="diag-subject-grid">
+            {subjects.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`diag-subject-btn ${subject === s ? "active" : ""}`}
+                onClick={() => { setSubject(s); setPaperId(null); }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {subject && (
+          <div className="diag-picker-section">
+            <p className="diag-picker-label">Paper</p>
+            <div className="diag-paper-list">
+              {filteredPapers.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`diag-paper-btn ${paperId === p.id ? "active" : ""}`}
+                  onClick={() => setPaperId(p.id)}
+                >
+                  <span className="diag-paper-title">
+                    {p.state ?? p.paper_type.toUpperCase()} {p.year}
+                  </span>
+                  <span className="diag-paper-sub">{p.paper_name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {error && <p className="diag-error">{error}</p>}
+
+        <div className="sticky-bar">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleStart}
+            disabled={!paperId || starting}
+          >
+            {starting ? "Loading questions…" : "Start Diagnostic →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const q           = questions[current];
+  const answered    = Object.keys(answers).length;
+  const isLast      = current === questions.length - 1;
+  const allAnswered = answered === questions.length;
 
   return (
     <div>
-      {/* Step dots */}
       <div className="diag-step-indicator">
         {questions.map((_, i) => (
           <button
@@ -86,7 +179,6 @@ export default function DiagnosticPage() {
         ))}
       </div>
 
-      {/* Header */}
       <div className="diag-header page-enter">
         <h1 className="font-display diag-title">Diagnostic</h1>
         <p className="diag-sub">
@@ -99,7 +191,7 @@ export default function DiagnosticPage() {
         <div className="progress-track">
           <div
             className="progress-fill"
-            style={{ ["--bar-w" as string]: `${Math.round((answered / questions.length) * 100)}%` }}
+            style={{ width: `${Math.round((answered / questions.length) * 100)}%` }}
           />
         </div>
       </div>
@@ -116,7 +208,6 @@ export default function DiagnosticPage() {
 
       {error && <p className="diag-error">{error}</p>}
 
-      {/* Actions */}
       <div className="sticky-bar">
         {isLast ? (
           <button
@@ -129,13 +220,13 @@ export default function DiagnosticPage() {
           </button>
         ) : (
           <div className="learn-actions">
-            <button type="button" className="btn-ghost diag-skip-btn" onClick={handleSkip}>
+            <button type="button" className="btn-ghost diag-skip-btn" onClick={() => setCurrent((c) => c + 1)}>
               Skip
             </button>
             <button
               type="button"
               className="btn-primary"
-              onClick={handleNext}
+              onClick={() => setCurrent((c) => c + 1)}
               disabled={answers[q?.id] === undefined}
             >
               Next →
