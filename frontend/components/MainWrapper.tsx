@@ -2,9 +2,13 @@
 
 import { usePathname } from "next/navigation";
 
-const FULLSCREEN_PATHS = ["/diagnostic", "/learn", "/review"];
+const FULLSCREEN_PATHS = ["/diagnostic", "/materials", "/review"];
 
-export default function MainWrapper({ children }: { children: React.ReactNode }) {
+export default function MainWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const fullscreen = FULLSCREEN_PATHS.includes(pathname);
 

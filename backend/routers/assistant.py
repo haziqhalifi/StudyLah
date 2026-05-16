@@ -90,6 +90,11 @@ class StudyBuddyRequest(BaseModel):
     user_id: str
     messages: list[MessageDTO]
     learning_context: LearningContextDTO | None = None
+    # mode controls KSSM RAG routing:
+    #   "standard"    — KSSM only for conceptual questions on supported topics (default)
+    #   "kssm_strict" — always use KSSM when topic is ubahan / matriks / insurans
+    #   "kssm_off"    — never use KSSM; normal Gemini chat for everything
+    mode: str = "standard"
 
     @field_validator("user_id")
     @classmethod
@@ -200,8 +205,8 @@ def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
             ),
         )
 
-    # --- Step 2b: normal chat path ---
-    return _chat_reply(body.user_id, messages, body.learning_context)
+    # --- Step 2b: normal chat path (may use KSSM engine depending on mode) ---
+    return _chat_reply(body.user_id, messages, body.learning_context, body.mode)
 
 
 # ---------------------------------------------------------------------------
@@ -213,8 +218,18 @@ def _chat_reply(
     user_id: str,
     messages: list[ChatMessage],
     raw_context: LearningContextDTO | None = None,
+    mode: str = "standard",
 ) -> ChatResponse:
-    """Run the full StudyBuddy conversation and wrap in ChatResponse."""
+    """Run the full StudyBuddy conversation and wrap in ChatResponse.
+
+    mode mapping → kssm_mode passed to the agent:
+      "standard"    → "auto"   (KSSM for conceptual questions on supported topics)
+      "kssm_strict" → "strict" (always use KSSM for supported topics)
+      "kssm_off"    → "off"    (never use KSSM)
+    """
+    _mode_map = {"standard": "auto", "kssm_strict": "strict", "kssm_off": "off"}
+    kssm_mode = _mode_map.get(mode, "auto")
+
     # Convert Pydantic model → plain dict so the agent's TypedDict-based
     # build_context_message() receives the same camelCase keys the frontend sends.
     ctx: LearningContext | None = (
@@ -223,7 +238,12 @@ def _chat_reply(
     )
 
     try:
-        result = _agent.chat(user_id=user_id, messages=messages, learning_context=ctx)
+        result = _agent.chat(
+            user_id=user_id,
+            messages=messages,
+            learning_context=ctx,
+            kssm_mode=kssm_mode,
+        )
     except RuntimeError as exc:
         logger.error("StudyBuddy config error for user %s: %s", user_id, exc)
         raise HTTPException(

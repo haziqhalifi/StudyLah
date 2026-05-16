@@ -84,7 +84,7 @@ def _topic_focus_text(topic_id: str, questions: list[Question]) -> str:
 def _persist_question(question: Question) -> None:
     _QUESTION_STORE[question.id] = question
     try:
-        db.save_question(question)
+        db.save_generated_question(question)
     except Exception:
         logger.debug("Question save skipped for %s", question.id, exc_info=True)
 
@@ -161,23 +161,53 @@ def create_personalized_quiz(
         question_ids=[question.id for question in chosen],
     )
     _QUIZ_STORE[quiz.id] = quiz
+    try:
+        db.save_quiz(
+            quiz_id=quiz.id,
+            user_id=quiz.user_id,
+            topic_id=quiz.topic_id,
+            title=quiz.title,
+            question_ids=quiz.question_ids,
+        )
+    except Exception:
+        logger.debug("Quiz save skipped for %s", quiz.id, exc_info=True)
     return quiz
 
 
 def get_quiz_by_id(quiz_id: str) -> Optional[Quiz]:
-    return _QUIZ_STORE.get(quiz_id)
+    if quiz_id in _QUIZ_STORE:
+        return _QUIZ_STORE[quiz_id]
+    try:
+        row = db.get_quiz_by_id(quiz_id)
+        if row:
+            quiz = Quiz(
+                id=row["id"],
+                user_id=row["user_id"],
+                topic_id=row["topic_id"],
+                title=row["title"],
+                question_ids=row["question_ids"],
+                created_at=row.get("created_at", datetime.now(timezone.utc)),
+            )
+            _QUIZ_STORE[quiz.id] = quiz
+            return quiz
+    except Exception:
+        logger.debug("Quiz load from DB failed for %s", quiz_id, exc_info=True)
+    return None
 
 
 def get_quiz_questions(quiz_id: str) -> list[Question]:
-    quiz = _QUIZ_STORE.get(quiz_id)
+    quiz = get_quiz_by_id(quiz_id)
     if quiz is None:
         return []
     questions: list[Question] = []
     for question_id in quiz.question_ids:
         question = _QUESTION_STORE.get(question_id)
         if question is None:
+            question = db.get_generated_question_by_id(question_id)
+        if question is None:
             question = db.get_question_by_id(question_id)
         if question is not None:
+            _QUESTION_STORE[question_id] = question
             questions.append(question)
     return questions
 
