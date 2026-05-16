@@ -16,7 +16,7 @@ export type ExplanationStyle =
   | "formula_first"
   | "shortcut_tips";
 export type Level = "beginner" | "developing" | "proficient" | "advanced";
-export type ReviewReason = "low_accuracy" | "not_seen_recently";
+export type ReviewReason = "low_accuracy" | "not_seen_recently" | "weak_topic";
 
 export interface Question {
   id: string;
@@ -59,6 +59,14 @@ export interface ReviewItem {
 export interface SuggestedTopic {
   topic_id: string;
   reason: ReviewReason;
+}
+
+// Extended suggestion type used by the progress/review pages
+export interface TopicSuggestion {
+  topicId: string;
+  topicName: string;
+  reason: string;
+  priority: "high" | "medium" | "low";
 }
 
 // ---------------------------------------------------------------------------
@@ -240,4 +248,27 @@ export async function chatWithStudyBuddy(
   messages: ChatMessage[],
 ): Promise<StudyBuddyResponse> {
   return post("/api/assistant/study-buddy", { user_id: userId, messages });
+}
+
+// ---------------------------------------------------------------------------
+// Camel-case aliases for the Review flow (matches the feature spec)
+// ---------------------------------------------------------------------------
+
+/** Alias for getReview — returns review items and suggested topics. */
+export async function fetchReview(userId: string): Promise<ReviewResponse> {
+  return getReview(userId);
+}
+// submitReviewAnswer is already exported at line ~214 — use it directly.
+
+// ---------------------------------------------------------------------------
+// Topic progress (used by /progress page)
+// ---------------------------------------------------------------------------
+
+export type TopicLevel = "weak" | "okay" | "strong";
+
+export interface TopicProgress {
+  topicId: string;
+  topicName: string;
+  accuracy: number; // 0–1
+  level: TopicLevel;
 }
