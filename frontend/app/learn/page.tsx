@@ -266,18 +266,9 @@ export default function LearnPage() {
       {submitting ? "Checking…" : "Submit Answer"}
     </button>
   ) : (
-    <div className="learn-actions">
-      <button type="button" className="btn-primary" onClick={handleNext}>
-        Next Question →
-      </button>
-      <button
-        type="button"
-        className="btn-ghost diag-skip-btn"
-        onClick={() => router.push("/assessment")}
-      >
-        Progress ▤
-      </button>
-    </div>
+    <button type="button" className="btn-primary" onClick={handleNext}>
+      Next Question →
+    </button>
   );
 
   return (

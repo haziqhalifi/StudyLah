@@ -438,6 +438,44 @@ export async function fetchCoachSummary(
   return get("/api/coach/summary", { userId });
 }
 
+// ---------------------------------------------------------------------------
+// Diagnostic Result
+// ---------------------------------------------------------------------------
+
+export type DiagnosticTopicId = "ubahan" | "matriks" | "insurans";
+
+export type TopicDiagnostic = {
+  topicId: DiagnosticTopicId;
+  topicName: string;
+  accuracy: number; // 0–1
+  attempts: number;
+  level: "weak" | "okay" | "strong";
+  lastAttemptAt?: string;
+};
+
+export type DiagnosticRecommendation = {
+  title: string;
+  message: string;
+  topicId: DiagnosticTopicId;
+  suggestedQuizLength: number;
+};
+
+export type DiagnosticResult = {
+  userId: string;
+  totalQuestions: number;
+  correctQuestions: number;
+  overallAccuracy: number;
+  topics: TopicDiagnostic[];
+  mainRecommendation: DiagnosticRecommendation;
+  secondaryRecommendation?: DiagnosticRecommendation;
+};
+
+export async function fetchDiagnosticResult(
+  userId: string,
+): Promise<DiagnosticResult> {
+  return get("/api/diagnostic/result", { userId });
+}
+
 /** Ask the coach a question and get a personalised reply + suggestions. */
 export async function fetchCoachMessage(
   userId: string,

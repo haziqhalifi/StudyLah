@@ -78,7 +78,7 @@ export default function DiagnosticPage() {
         "skillProfile",
         JSON.stringify(result.skill_profile),
       );
-      router.push("/learn");
+      router.push("/diagnostic/result");
     } catch {
       setError("Submission failed. Please try again.");
     } finally {

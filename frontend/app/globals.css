@@ -486,6 +486,10 @@ h3 {
   }
 
   /* ── Bottom nav ── */
+  body.quiz-open .bottom-nav {
+    display: none;
+  }
+
   .bottom-nav {
     position: fixed;
     bottom: 0;
