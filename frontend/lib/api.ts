@@ -10,7 +10,11 @@ const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 // ---------------------------------------------------------------------------
 
 export type Difficulty = "easy" | "medium" | "hard";
-export type ExplanationStyle = "step_by_step" | "analogy" | "formula_first" | "shortcut_tips";
+export type ExplanationStyle =
+  | "step_by_step"
+  | "analogy"
+  | "formula_first"
+  | "shortcut_tips";
 export type Level = "beginner" | "developing" | "proficient" | "advanced";
 export type ReviewReason = "low_accuracy" | "not_seen_recently";
 
@@ -87,6 +91,12 @@ export interface ReviewResponse {
   suggested_topics: SuggestedTopic[];
 }
 
+export interface ReviewSubmitResponse {
+  is_correct: boolean;
+  explanation: Explanation;
+  next_review_at: string; // ISO datetime
+}
+
 export interface Paper {
   id: number;
   subject: string;
@@ -117,9 +127,13 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-async function get<T>(path: string, params?: Record<string, string>): Promise<T> {
+async function get<T>(
+  path: string,
+  params?: Record<string, string>,
+): Promise<T> {
   const url = new URL(`${BASE}${path}`);
-  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  if (params)
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   const res = await fetch(url.toString());
   if (!res.ok) {
     const err = await res.text();
@@ -139,7 +153,7 @@ export async function createUser(userId: string, name: string) {
 export async function startDiagnostic(
   userId: string,
   topicId: string,
-  paperId?: number
+  paperId?: number,
 ): Promise<StartDiagnosticResponse> {
   return post("/api/session/start_diagnostic", {
     user_id: userId,
@@ -150,7 +164,7 @@ export async function startDiagnostic(
 
 export async function submitDiagnostic(
   userId: string,
-  answers: DiagnosticAnswer[]
+  answers: DiagnosticAnswer[],
 ): Promise<SubmitDiagnosticResponse> {
   return post("/api/session/submit_diagnostic", { user_id: userId, answers });
 }
@@ -158,7 +172,7 @@ export async function submitDiagnostic(
 export async function submitAnswer(
   userId: string,
   questionId: string,
-  selectedOptionIndex: number
+  selectedOptionIndex: number,
 ): Promise<SubmitAnswerResponse> {
   return post("/api/session/submit_answer", {
     user_id: userId,
@@ -170,7 +184,7 @@ export async function submitAnswer(
 export async function generateExplanation(
   userId: string,
   questionId: string,
-  selectedOptionIndex: number
+  selectedOptionIndex: number,
 ): Promise<Explanation> {
   return get("/api/session/generate_explanation", {
     user_id: userId,
@@ -179,12 +193,26 @@ export async function generateExplanation(
   });
 }
 
-export async function getAssessment(userId: string): Promise<AssessmentResponse> {
+export async function getAssessment(
+  userId: string,
+): Promise<AssessmentResponse> {
   return get("/api/session/assessment", { user_id: userId });
 }
 
 export async function getReview(userId: string): Promise<ReviewResponse> {
   return get("/api/session/review", { user_id: userId });
+}
+
+export async function submitReviewAnswer(
+  userId: string,
+  questionId: string,
+  selectedOptionIndex: number,
+): Promise<ReviewSubmitResponse> {
+  return post("/api/session/review/submit", {
+    user_id: userId,
+    question_id: questionId,
+    selected_option_index: selectedOptionIndex,
+  });
 }
 
 export async function getPapers(): Promise<PapersResponse> {
@@ -209,7 +237,7 @@ export interface StudyBuddyResponse {
 
 export async function chatWithStudyBuddy(
   userId: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
 ): Promise<StudyBuddyResponse> {
   return post("/api/assistant/study-buddy", { user_id: userId, messages });
 }

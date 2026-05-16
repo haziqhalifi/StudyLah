@@ -160,7 +160,11 @@ export default function LearnPage() {
     if (!result || !question || !userId || selected === null) return;
     setGeneratingExplanation(true);
     try {
-      const explanation = await generateExplanation(userId, question.id, selected);
+      const explanation = await generateExplanation(
+        userId,
+        question.id,
+        selected,
+      );
       // Update the result with the generated explanation
       setResult({
         ...result,
@@ -259,7 +263,16 @@ export default function LearnPage() {
   );
 
   return (
-    <QuizSheet open={view === "practice"} bar={bar} onClose={() => { setView("topics"); setResult(null); setSelected(null); setShowBuddy(false); }}>
+    <QuizSheet
+      open={view === "practice"}
+      bar={bar}
+      onClose={() => {
+        setView("topics");
+        setResult(null);
+        setSelected(null);
+        setShowBuddy(false);
+      }}
+    >
       <div className="learn-stats">
         <div className="learn-stat">
           <div className="learn-stat-label">Done</div>
@@ -271,7 +284,9 @@ export default function LearnPage() {
         </div>
         <div className="learn-stat">
           <div className="learn-stat-label">Accuracy</div>
-          <div className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}>
+          <div
+            className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}
+          >
             {count > 0 ? `${accuracy}%` : "—"}
           </div>
         </div>

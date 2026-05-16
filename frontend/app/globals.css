@@ -1254,6 +1254,66 @@ h3 {
   color: var(--brand);
 }
 
+/* ── Review page extras ───────────────────────────────────────── */
+.buddy-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: var(--brand-light);
+  border: 1px solid var(--brand-muted);
+  border-radius: var(--r-lg);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.buddy-bubble-avatar {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+.buddy-bubble-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brand-dark);
+  margin: 0;
+  line-height: 1.5;
+}
+.buddy-bubble-skeleton {
+  height: 56px;
+  border-radius: var(--r-lg);
+  background: var(--border);
+  margin-bottom: 0.75rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.review-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+
+.review-bar-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+.review-bar-row .btn-primary {
+  flex: 1;
+}
+
+.review-next-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
 /* ── Learn page extras ────────────────────────────────────────── */
 .btn-primary-sm {
   width: auto;
@@ -1604,6 +1664,11 @@ h3 {
   font-weight: 600;
   color: var(--ink);
   text-align: center;
+}
+.learn-topic-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
 }
 .learn-topic-meta {
   font-size: 0.72rem;
