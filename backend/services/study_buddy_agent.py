@@ -14,8 +14,9 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Any, Dict, Literal, Optional, TypedDict
 
 from dotenv import load_dotenv
 from google import genai
@@ -262,6 +263,58 @@ def _get_client() -> genai.Client:
 
 
 # ---------------------------------------------------------------------------
+# Keyword-based intent classifier (no extra API call)
+# ---------------------------------------------------------------------------
+
+_QUIZ_TRIGGERS = [
+    "quiz", "kuiz", "soalan", "question", "questions", "generate",
+    "buat", "create", "personalised", "personalized", "set", "practice set",
+    "give me", "bagi", "sediakan", "buatkan", "hasilkan",
+]
+
+_TOPIC_KEYWORDS: Dict[str, list[str]] = {
+    "ubahan":   ["ubahan", "variation", "langsung", "songsang", "bersama", "separa",
+                 "direct", "inverse", "joint", "partial"],
+    "matriks":  ["matriks", "matrix", "matrices", "determinant", "inverse matrix",
+                 "transpose", "serentak", "simultaneous"],
+    "insurans": ["insurans", "insurance", "premium", "polisi", "policy",
+                 "takaful", "perlindungan", "coverage"],
+}
+
+
+def _classify_intent(message: str) -> Dict[str, Any]:
+    """
+    Keyword-based intent classifier — no API call, no latency.
+
+    Returns {"intent": "create_quiz", "topic_id": ..., "num_questions": 5}
+    or      {"intent": "chat"}.
+    """
+    lower = message.lower()
+
+    is_quiz_request = any(kw in lower for kw in _QUIZ_TRIGGERS)
+    if not is_quiz_request:
+        return {"intent": "chat"}
+
+    # Detect which topic was mentioned
+    detected_topic: Optional[str] = None
+    for topic_id, keywords in _TOPIC_KEYWORDS.items():
+        if any(kw in lower for kw in keywords):
+            detected_topic = topic_id
+            break
+
+    if not detected_topic:
+        return {"intent": "chat"}
+
+    # Try to parse an explicit number (e.g. "5 questions", "10 soalan")
+    num_match = re.search(r"\b(\d+)\s*(?:soalan|questions?|qs?)\b", lower)
+    num_questions = int(num_match.group(1)) if num_match else 5
+    num_questions = max(3, min(num_questions, 10))
+
+    logger.info("Intent classifier: create_quiz topic=%s n=%d", detected_topic, num_questions)
+    return {"intent": "create_quiz", "topic_id": detected_topic, "num_questions": num_questions}
+
+
+# ---------------------------------------------------------------------------
 # StudyBuddyAgent
 # ---------------------------------------------------------------------------
 
@@ -358,6 +411,18 @@ class StudyBuddyAgent:
                 reply_parts.append(chunk.text)
 
         return "".join(reply_parts)
+
+    def decide_intent_and_reply(self, user_message: str) -> Dict[str, Any]:
+        """
+        Classify the user's message as quiz-creation or normal chat using
+        keyword matching (fast, no extra API call).
+
+        Returns one of:
+            {"intent": "chat"}
+            {"intent": "create_quiz", "topic_id": "ubahan"|"matriks"|"insurans",
+                                      "num_questions": 5}
+        """
+        return _classify_intent(user_message)
 
     @staticmethod
     def _last_user_message(messages: list[ChatMessage]) -> str:

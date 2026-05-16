@@ -1,32 +1,41 @@
 """
 POST /api/assistant/study-buddy
 
-Conversational endpoint for the StudyBuddy Gemini-powered tutor.
-Accepts a conversation history and returns the next assistant reply.
+Agentic chatbot endpoint.  Every response now carries:
+  - reply   : human-readable assistant message
+  - action  : { type: "none" } | { type: "create_quiz", quiz_id, topic_id }
+
+When the student asks to generate a personalised quiz the agent:
+  1. Classifies the intent (Gemini, JSON-only prompt).
+  2. Calls quiz_service.create_personalized_quiz().
+  3. Returns ChatResponse with action.type == "create_quiz" so the frontend
+     can navigate to /quiz/<quiz_id> automatically.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Literal
+from typing import Literal, Union
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, field_validator
 
 try:
     from backend.services.study_buddy_agent import StudyBuddyAgent, ChatMessage
+    from backend.services.quiz_service import create_personalized_quiz, TOPIC_NAMES
 except ModuleNotFoundError:
-    from services.study_buddy_agent import StudyBuddyAgent, ChatMessage
+    from services.study_buddy_agent import StudyBuddyAgent, ChatMessage  # type: ignore
+    from services.quiz_service import create_personalized_quiz, TOPIC_NAMES  # type: ignore
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/assistant", tags=["assistant"])
 
-# Singleton agent — constructed once, reused across requests.
 _agent = StudyBuddyAgent()
 
+
 # ---------------------------------------------------------------------------
-# Request / response schemas
+# Pydantic schemas
 # ---------------------------------------------------------------------------
 
 
@@ -63,9 +72,25 @@ class StudyBuddyRequest(BaseModel):
         return v
 
 
-class StudyBuddyResponse(BaseModel):
+# --- Agent action models ---
+
+class NoAction(BaseModel):
+    type: Literal["none"] = "none"
+
+
+class CreateQuizAction(BaseModel):
+    type: Literal["create_quiz"] = "create_quiz"
+    quiz_id: str
+    topic_id: str
+
+
+AgentAction = Union[NoAction, CreateQuizAction]
+
+
+class ChatResponse(BaseModel):
     reply: str
-    meta: dict
+    action: AgentAction
+    meta: dict = {}
 
 
 # ---------------------------------------------------------------------------
@@ -73,36 +98,98 @@ class StudyBuddyResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-@router.post("/study-buddy", response_model=StudyBuddyResponse)
-def study_buddy_chat(body: StudyBuddyRequest) -> StudyBuddyResponse:
+@router.post("/study-buddy", response_model=ChatResponse)
+def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
     """
-    Chat with the StudyBuddy tutor (Gemini-backed).
+    Agentic study-buddy chat.
 
-    Request body:
-        user_id  – caller identifier (used for logging/tracing)
-        messages – full conversation history; last entry must be role="user"
-
-    Returns:
-        reply        – assistant's next message
-        meta         – auxiliary flags, e.g. { "out_of_scope": false }
+    Flow:
+      1. Extract the latest user message.
+      2. Run intent classification via Gemini (decide_intent_and_reply).
+      3a. intent == "create_quiz"  → create quiz, return action payload.
+      3b. intent == "chat"         → run normal StudyBuddy conversation.
     """
-    # Convert Pydantic DTOs → plain TypedDicts expected by the agent.
     messages: list[ChatMessage] = [
         {"role": m.role, "content": m.content} for m in body.messages
     ]
 
-    try:
-        result = _agent.chat(user_id=body.user_id, messages=messages)
-    except RuntimeError as exc:
-        # Configuration errors (e.g. missing API key) — surface as 500.
-        logger.error("StudyBuddy config error for user %s: %s", body.user_id, exc)
-        raise HTTPException(status_code=500, detail="AI service is not configured correctly. Contact support.")
-    except Exception as exc:
-        # Gemini API failures — log full error, return generic message.
-        logger.error("StudyBuddy Gemini failure for user %s: %s", body.user_id, exc)
-        raise HTTPException(status_code=500, detail="AI service is temporarily unavailable. Please try again.")
+    latest_user_msg = _last_user_message(messages)
+    if not latest_user_msg:
+        raise HTTPException(status_code=400, detail="No user message found.")
 
-    return StudyBuddyResponse(
+    # --- Step 1: classify intent ---
+    try:
+        intent_result = _agent.decide_intent_and_reply(latest_user_msg)
+    except Exception as exc:
+        logger.error("Intent classification error for user %s: %s", body.user_id, exc)
+        intent_result = {"intent": "chat"}
+
+    # --- Step 2a: create_quiz path ---
+    if intent_result.get("intent") == "create_quiz":
+        topic_id: str = intent_result.get("topic_id", "ubahan")
+        num_questions: int = int(intent_result.get("num_questions", 5))
+
+        try:
+            quiz = create_personalized_quiz(
+                user_id=body.user_id,
+                topic_id=topic_id,
+                num_questions=num_questions,
+            )
+        except Exception as exc:
+            logger.error("Quiz creation failed for user %s: %s", body.user_id, exc)
+            # Fall through to normal chat reply on failure
+            return _chat_reply(body.user_id, messages)
+
+        topic_name = TOPIC_NAMES.get(topic_id, topic_id)
+        reply_text = (
+            f"I've created a personalised **{topic_name}** quiz with "
+            f"{quiz.question_count} question{'s' if quiz.question_count != 1 else ''} "
+            f"just for you. Opening it now! 🚀"
+        )
+        logger.info(
+            "StudyBuddy [%s]: created quiz %s (%s, %d Qs)",
+            body.user_id, quiz.id, topic_id, quiz.question_count,
+        )
+        return ChatResponse(
+            reply=reply_text,
+            action=CreateQuizAction(quiz_id=quiz.id, topic_id=topic_id),
+        )
+
+    # --- Step 2b: normal chat path ---
+    return _chat_reply(body.user_id, messages)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _chat_reply(user_id: str, messages: list[ChatMessage]) -> ChatResponse:
+    """Run the full StudyBuddy conversation and wrap in ChatResponse."""
+    try:
+        result = _agent.chat(user_id=user_id, messages=messages)
+    except RuntimeError as exc:
+        logger.error("StudyBuddy config error for user %s: %s", user_id, exc)
+        raise HTTPException(
+            status_code=500,
+            detail="AI service is not configured correctly. Contact support.",
+        )
+    except Exception as exc:
+        logger.error("StudyBuddy Gemini failure for user %s: %s", user_id, exc)
+        raise HTTPException(
+            status_code=500,
+            detail="AI service is temporarily unavailable. Please try again.",
+        )
+
+    return ChatResponse(
         reply=result["reply"],
+        action=NoAction(),
         meta={"out_of_scope": result["out_of_scope"]},
     )
+
+
+def _last_user_message(messages: list[ChatMessage]) -> str:
+    for msg in reversed(messages):
+        if msg["role"] == "user":
+            return msg["content"]
+    return ""

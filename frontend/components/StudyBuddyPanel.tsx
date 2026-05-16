@@ -1,27 +1,36 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import MathText from "@/components/MathText";
-import { chatWithStudyBuddy, ChatMessage } from "@/lib/api";
+import { postStudyBuddyMessage, ChatMessage } from "@/lib/api";
+import { useState } from "react";
 
 interface Props {
   userId: string;
-  questionContext?: string; // injected from the current question text
+  questionContext?: string;
   onClose: () => void;
 }
 
 export default function StudyBuddyPanel({ userId, questionContext, onClose }: Props) {
+  const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
-        "Hi! I'm StudyBuddy 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**. Ask me anything about this question or these topics!",
+        "Hi! I'm StudyBuddy 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**.\n\nAsk me anything — or say *\"Give me a personalised Ubahan quiz\"* to get a custom set! 🚀",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Lock body scroll while drawer is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -39,7 +48,6 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
 
     const userMsg: ChatMessage = { role: "user", content: text };
 
-    // Build history to send: if first real user message, prepend question context
     let historyToSend: ChatMessage[];
     const isFirstUserMessage = !messages.some((m) => m.role === "user");
     if (isFirstUserMessage && questionContext) {
@@ -56,14 +64,28 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
 
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    // Reset textarea height
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
     setLoading(true);
 
     try {
-      const res = await chatWithStudyBuddy(userId, historyToSend);
+      const res = await postStudyBuddyMessage(userId, historyToSend);
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: res.reply },
       ]);
+
+      // Agent action: navigate to the newly-created quiz page
+      if (res.action?.type === "create_quiz") {
+        const { quiz_id } = res.action;
+        setTimeout(() => {
+          onClose();
+          router.push(`/quiz/${quiz_id}`);
+        }, 1200);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -78,14 +100,12 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    // Send on Enter (not Shift+Enter)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   }
 
-  // Auto-grow textarea
   function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value);
     e.target.style.height = "auto";
@@ -93,76 +113,85 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
   }
 
   return (
-    <div className="sb-panel card page-enter">
-      {/* Header */}
-      <div className="sb-header">
-        <div className="sb-header-left">
-          <span className="sb-avatar">🤖</span>
-          <div>
-            <div className="sb-title">StudyBuddy</div>
-            <div className="sb-subtitle">Ubahan · Matriks · Insurans</div>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="sb-close"
-          onClick={onClose}
-          aria-label="Close StudyBuddy"
-        >
-          ✕
-        </button>
-      </div>
+    <>
+      {/* Backdrop — tap to close */}
+      <div className="sb-backdrop" onClick={onClose} aria-hidden="true" />
 
-      {/* Message list */}
-      <div className="sb-messages">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`sb-bubble ${msg.role === "user" ? "sb-bubble-user" : "sb-bubble-bot"}`}
+      {/* Drawer */}
+      <div className="sb-panel" role="dialog" aria-label="StudyBuddy chat">
+        {/* Drag handle */}
+        <div className="sb-drag-handle" />
+
+        {/* Header */}
+        <div className="sb-header">
+          <div className="sb-header-left">
+            <span className="sb-avatar">🤖</span>
+            <div>
+              <div className="sb-title">StudyBuddy</div>
+              <div className="sb-subtitle">Ubahan · Matriks · Insurans</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="sb-close"
+            onClick={onClose}
+            aria-label="Close StudyBuddy"
           >
-            {msg.role === "user" ? (
-              <span className="sb-bubble-text">{msg.content}</span>
-            ) : (
-              <MathText className="sb-md">{msg.content}</MathText>
-            )}
-          </div>
-        ))}
+            ✕
+          </button>
+        </div>
 
-        {loading && (
-          <div className="sb-bubble sb-bubble-bot">
-            <span className="sb-typing">
-              <span />
-              <span />
-              <span />
-            </span>
-          </div>
-        )}
+        {/* Message list */}
+        <div className="sb-messages">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`sb-bubble ${msg.role === "user" ? "sb-bubble-user" : "sb-bubble-bot"}`}
+            >
+              {msg.role === "user" ? (
+                <span className="sb-bubble-text">{msg.content}</span>
+              ) : (
+                <MathText className="sb-md">{msg.content}</MathText>
+              )}
+            </div>
+          ))}
 
-        <div ref={bottomRef} />
+          {loading && (
+            <div className="sb-bubble sb-bubble-bot">
+              <span className="sb-typing">
+                <span />
+                <span />
+                <span />
+              </span>
+            </div>
+          )}
+
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div className="sb-input-row">
+          <textarea
+            ref={inputRef}
+            className="sb-input"
+            rows={1}
+            placeholder="Ask about Ubahan, Matriks, or Insurans…"
+            value={input}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+            disabled={loading}
+          />
+          <button
+            type="button"
+            className="sb-send"
+            onClick={handleSend}
+            disabled={!input.trim() || loading}
+            aria-label="Send"
+          >
+            ↑
+          </button>
+        </div>
       </div>
-
-      {/* Input */}
-      <div className="sb-input-row">
-        <textarea
-          ref={inputRef}
-          className="sb-input"
-          rows={1}
-          placeholder="Ask about Ubahan, Matriks, or Insurans…"
-          value={input}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-        />
-        <button
-          type="button"
-          className="sb-send"
-          onClick={handleSend}
-          disabled={!input.trim() || loading}
-          aria-label="Send"
-        >
-          ↑
-        </button>
-      </div>
-    </div>
+    </>
   );
 }

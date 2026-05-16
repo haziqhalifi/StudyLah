@@ -16,7 +16,7 @@ export type ExplanationStyle =
   | "formula_first"
   | "shortcut_tips";
 export type Level = "beginner" | "developing" | "proficient" | "advanced";
-export type ReviewReason = "low_accuracy" | "not_seen_recently";
+export type ReviewReason = "low_accuracy" | "not_seen_recently" | "weak_topic";
 
 export interface Question {
   id: string;
@@ -59,6 +59,14 @@ export interface ReviewItem {
 export interface SuggestedTopic {
   topic_id: string;
   reason: ReviewReason;
+}
+
+// Extended suggestion type used by the progress/review pages
+export interface TopicSuggestion {
+  topicId: string;
+  topicName: string;
+  reason: string;
+  priority: "high" | "medium" | "low";
 }
 
 // ---------------------------------------------------------------------------
@@ -220,7 +228,7 @@ export async function getPapers(): Promise<PapersResponse> {
 }
 
 // ---------------------------------------------------------------------------
-// StudyBuddy chat (Gemini-powered tutor)
+// StudyBuddy chat (Gemini-powered agentic tutor)
 // ---------------------------------------------------------------------------
 
 export type ChatRole = "user" | "assistant" | "system";
@@ -230,14 +238,91 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface StudyBuddyResponse {
+// Agent action emitted alongside every chat reply
+export type AgentAction =
+  | { type: "none" }
+  | { type: "create_quiz"; quiz_id: string; topic_id: "ubahan" | "matriks" | "insurans" };
+
+// Full response from the agentic chat endpoint
+export interface ChatResponse {
   reply: string;
-  meta: { out_of_scope: boolean };
+  action: AgentAction;
+  meta?: { out_of_scope?: boolean };
 }
 
+/** Send the full conversation history and receive an agentic reply. */
+export async function postStudyBuddyMessage(
+  userId: string,
+  messages: ChatMessage[],
+): Promise<ChatResponse> {
+  return post("/api/assistant/study-buddy", { user_id: userId, messages });
+}
+
+/** Legacy alias — kept for backwards compatibility with existing usages. */
 export async function chatWithStudyBuddy(
   userId: string,
   messages: ChatMessage[],
-): Promise<StudyBuddyResponse> {
-  return post("/api/assistant/study-buddy", { user_id: userId, messages });
+): Promise<ChatResponse> {
+  return postStudyBuddyMessage(userId, messages);
+}
+
+// ---------------------------------------------------------------------------
+// Camel-case aliases for the Review flow (matches the feature spec)
+// ---------------------------------------------------------------------------
+
+/** Alias for getReview — returns review items and suggested topics. */
+export async function fetchReview(userId: string): Promise<ReviewResponse> {
+  return getReview(userId);
+}
+// submitReviewAnswer is already exported at line ~214 — use it directly.
+
+// ---------------------------------------------------------------------------
+// Topic progress (used by /progress page)
+// ---------------------------------------------------------------------------
+
+export type TopicLevel = "weak" | "okay" | "strong";
+
+export interface TopicProgress {
+  topicId: string;
+  topicName: string;
+  accuracy: number; // 0–1
+  level: TopicLevel;
+}
+
+// ---------------------------------------------------------------------------
+// Personalised quiz
+// ---------------------------------------------------------------------------
+
+export interface QuizDetail {
+  quiz_id: string;
+  user_id: string;
+  topic_id: string;
+  title: string;
+  created_at: string; // ISO datetime
+  questions: Question[];
+}
+
+export interface CreateQuizResponse {
+  quiz_id: string;
+  topic_id: string;
+  title: string;
+  question_count: number;
+}
+
+/** Fetch a previously-created personalised quiz by ID. */
+export async function fetchQuiz(quizId: string): Promise<QuizDetail> {
+  return get(`/api/quizzes/${quizId}`);
+}
+
+/** Create a new personalised quiz for a topic. */
+export async function createPersonalisedQuiz(
+  userId: string,
+  topicId: "ubahan" | "matriks" | "insurans",
+  numQuestions = 5,
+): Promise<CreateQuizResponse> {
+  return post("/api/quizzes/personalized", {
+    user_id: userId,
+    topic_id: topicId,
+    num_questions: numQuestions,
+  });
 }

@@ -345,7 +345,7 @@ export default function LearnPage() {
         />
       )}
 
-      {/* StudyBuddy chat panel — slides in above the sticky bar */}
+      {/* Full-screen drawer — rendered outside QuizSheet scroll area via portal-like placement */}
       {showBuddy && userId && (
         <StudyBuddyPanel
           userId={userId}
@@ -354,15 +354,17 @@ export default function LearnPage() {
         />
       )}
 
-      {/* Floating StudyBuddy button */}
-      <button
-        type="button"
-        className={`sb-fab ${showBuddy ? "sb-fab-active" : ""}`}
-        onClick={() => setShowBuddy((v) => !v)}
-        aria-label="Ask StudyBuddy"
-      >
-        {showBuddy ? "✕" : "🤖"}
-      </button>
+      {/* FAB — hidden while drawer is open (drawer has its own close button) */}
+      {!showBuddy && (
+        <button
+          type="button"
+          className="sb-fab"
+          onClick={() => setShowBuddy(true)}
+          aria-label="Ask StudyBuddy"
+        >
+          🤖
+        </button>
+      )}
     </QuizSheet>
   );
 }
