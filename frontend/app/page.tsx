@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 const student = {
   name: "Amir",
@@ -45,6 +46,21 @@ export default function Home() {
 
 function HomeDashboard() {
   const [activeCategory, setActiveCategory] = useState("Lessons");
+  const router = useRouter();
+
+  useEffect(() => {
+    try {
+      const uid = sessionStorage.getItem("userId");
+      const shown = localStorage.getItem("onboardingDiagnosticShown");
+      if (uid && !shown) {
+        // Mark as shown so we only display once during onboarding
+        localStorage.setItem("onboardingDiagnosticShown", "1");
+        router.push("/diagnostic");
+      }
+    } catch {
+      // ignore storage errors in restricted environments
+    }
+  }, [router]);
 
   return (
     <section
