@@ -2,105 +2,104 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAssessment, TopicStats } from "@/lib/api";
-import ProgressSummary from "@/components/ProgressSummary";
+import { AssessmentCard, QuestionCard } from "@/components/MvpCards";
+import {
+  assessmentQuestions,
+  buildDiagnosticResult,
+  getStoredAnswers,
+  type DiagnosticResult,
+} from "@/lib/mvpData";
 
 export default function AssessmentPage() {
   const router = useRouter();
-  const [topics, setTopics] = useState<TopicStats[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState<DiagnosticResult | null>(null);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const userId = sessionStorage.getItem("userId");
-    if (!userId) { router.push("/"); return; }
+    const raw = sessionStorage.getItem("diagnosticResult");
+    if (raw) {
+      setResult(JSON.parse(raw) as DiagnosticResult);
+      return;
+    }
 
-    getAssessment(userId)
-      .then((res) => setTopics(res.topics))
-      .catch(() => setError("Failed to load assessment data."))
-      .finally(() => setLoading(false));
+    const name = sessionStorage.getItem("userName");
+    const diagnosticAnswers = getStoredAnswers();
+    if (!name || Object.keys(diagnosticAnswers).length === 0) {
+      router.push("/");
+      return;
+    }
+
+    const builtResult = buildDiagnosticResult(name, diagnosticAnswers);
+    sessionStorage.setItem("diagnosticResult", JSON.stringify(builtResult));
+    setResult(builtResult);
   }, [router]);
 
-  const userName = typeof window !== "undefined" ? sessionStorage.getItem("userName") : "";
+  const score = assessmentQuestions.filter(
+    (question) => answers[question.id] === question.correctOptionIndex
+  ).length;
 
-  if (loading) return <p style={{ color: "#888" }}>Loading assessment…</p>;
+  function submitAssessment() {
+    const answeredAll = assessmentQuestions.every((question) => answers[question.id] !== undefined);
+    if (!answeredAll) {
+      setError("Complete every assessment question before submitting.");
+      return;
+    }
+    setSubmitted(true);
+    setError("");
+  }
+
+  if (!result) return null;
 
   return (
-    <div>
-      <h1 style={{ fontSize: "1.6rem", fontWeight: 800, marginBottom: "0.4rem" }}>
-        Your Progress{userName ? `, ${userName}` : ""}
-      </h1>
-      <p style={{ color: "#666", marginBottom: "2rem" }}>
-        Here&apos;s a snapshot of how you&apos;re doing. The AI engine uses this to personalise your next questions.
-      </p>
+    <div className="pageStack">
+      <section className="pageHero compactHero">
+        <span className="eyebrow">Assessment</span>
+        <h1>Short mastery check</h1>
+        <p>Use this quiz to check whether your revision and practice are turning into accuracy.</p>
+      </section>
 
-      {error && <p style={{ color: "#dc2626" }}>{error}</p>}
-
-      {topics.length === 0 ? (
-        <div
-          style={{
-            background: "white",
-            borderRadius: 16,
-            padding: "2rem",
-            textAlign: "center",
-            color: "#888",
-          }}
-        >
-          No data yet. Complete the diagnostic to get started!
-          <br />
-          <button
-            onClick={() => router.push("/diagnostic")}
-            style={{
-              marginTop: "1rem",
-              background: "#6c47ff",
-              color: "white",
-              border: "none",
-              borderRadius: 10,
-              padding: "0.75rem 1.5rem",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            Start Diagnostic
-          </button>
-        </div>
-      ) : (
-        <ProgressSummary topics={topics} />
+      {submitted && (
+        <AssessmentCard
+          score={score}
+          total={assessmentQuestions.length}
+          recommendedTopics={result.recommendedTopics}
+        />
       )}
 
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "2rem" }}>
-        <button
-          onClick={() => router.push("/learn")}
-          style={{
-            flex: 1,
-            background: "#6c47ff",
-            color: "white",
-            border: "none",
-            borderRadius: 12,
-            padding: "1rem",
-            fontSize: "1rem",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          Continue Learning →
-        </button>
-        <button
-          onClick={() => router.push("/review")}
-          style={{
-            background: "white",
-            color: "#6c47ff",
-            border: "2px solid #6c47ff",
-            borderRadius: 12,
-            padding: "1rem 1.5rem",
-            fontSize: "1rem",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          Review Weak Topics
-        </button>
+      <div className="questionStack">
+        {assessmentQuestions.map((question, index) => (
+          <QuestionCard
+            key={question.id}
+            question={question}
+            questionNumber={index + 1}
+            selectedOptionIndex={answers[question.id] ?? null}
+            onSelectOption={(optionIndex) => {
+              setAnswers((current) => ({ ...current, [question.id]: optionIndex }));
+              setError("");
+            }}
+            showFeedback={submitted}
+          />
+        ))}
       </div>
+
+      {error && <p className="formError">{error}</p>}
+
+      {!submitted ? (
+        <button className="primaryButton fullWidth" onClick={submitAssessment} type="button">
+          Submit Assessment
+        </button>
+      ) : (
+        <div className="buttonRow">
+          <button className="secondaryButton" onClick={() => router.push("/practice")} type="button">
+            More Practice
+          </button>
+          <button className="primaryButton" onClick={() => router.push("/journey")} type="button">
+            Back to Journey
+          </button>
+        </div>
+      )}
     </div>
   );
 }

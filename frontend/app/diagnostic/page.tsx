@@ -1,128 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { startDiagnostic, submitDiagnostic, Question, DiagnosticAnswer } from "@/lib/api";
-import QuestionCard from "@/components/QuestionCard";
+import { ProgressIndicator, QuestionCard } from "@/components/MvpCards";
+import { diagnosticQuestions } from "@/lib/mvpData";
 
 export default function DiagnosticPage() {
   const router = useRouter();
-  const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [studentName, setStudentName] = useState("");
 
   useEffect(() => {
-    const userId = sessionStorage.getItem("userId");
-    if (!userId) { router.push("/"); return; }
-
-    startDiagnostic(userId, "quadratic_equations")
-      .then((res) => setQuestions(res.questions))
-      .catch(() => setError("Failed to load diagnostic questions."))
-      .finally(() => setLoading(false));
+    const name = sessionStorage.getItem("userName");
+    if (!name) {
+      router.push("/");
+      return;
+    }
+    setStudentName(name);
   }, [router]);
 
-  function selectOption(questionId: string, index: number) {
-    setAnswers((prev) => ({ ...prev, [questionId]: index }));
+  const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
+
+  function selectOption(questionId: string, optionIndex: number) {
+    setError("");
+    setAnswers((current) => ({ ...current, [questionId]: optionIndex }));
   }
 
-  async function handleSubmit() {
-    const userId = sessionStorage.getItem("userId");
-    if (!userId) return;
-
-    const answeredAll = questions.every((q) => answers[q.id] !== undefined);
+  function submitDiagnostic() {
+    const answeredAll = diagnosticQuestions.every((question) => answers[question.id] !== undefined);
     if (!answeredAll) {
-      setError("Please answer all questions before submitting.");
+      setError("Answer all 5 questions before submitting your diagnostic.");
       return;
     }
 
-    setSubmitting(true);
-    setError("");
-    try {
-      const payload: DiagnosticAnswer[] = questions.map((q) => ({
-        question_id: q.id,
-        selected_option_index: answers[q.id],
-      }));
-
-      const result = await submitDiagnostic(userId, payload);
-      // Pass first question to learn page via sessionStorage
-      sessionStorage.setItem("currentQuestion", JSON.stringify(result.next_question));
-      sessionStorage.setItem("skillProfile", JSON.stringify(result.skill_profile));
-      router.push("/learn");
-    } catch {
-      setError("Submission failed. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    sessionStorage.setItem("diagnosticAnswers", JSON.stringify(answers));
+    router.push("/analysis");
   }
 
-  if (loading) return <PageShell><p style={{ color: "#888" }}>Loading diagnostic…</p></PageShell>;
-
-  const answeredCount = Object.keys(answers).length;
-  const progress = questions.length > 0 ? (answeredCount / questions.length) * 100 : 0;
-
   return (
-    <PageShell>
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.6rem", fontWeight: 800 }}>Diagnostic Assessment</h1>
-        <p style={{ color: "#666", marginTop: "0.4rem" }}>
-          Answer these questions so we can personalise your learning path. No pressure — just do your best!
-        </p>
-        <div style={{ marginTop: "1rem", background: "#e5e5e5", borderRadius: 99, height: 8 }}>
-          <div
-            style={{
-              width: `${progress}%`,
-              background: "#6c47ff",
-              height: "100%",
-              borderRadius: 99,
-              transition: "width 0.3s",
-            }}
-          />
-        </div>
-        <p style={{ fontSize: "0.8rem", color: "#888", marginTop: "0.4rem" }}>
-          {answeredCount} / {questions.length} answered
-        </p>
-      </div>
+    <div className="pageStack">
+      <section className="pageHero compactHero">
+        <span className="eyebrow">SPM Mathematics Diagnostic</span>
+        <h1>{studentName ? `${studentName}, let's find your Maths profile` : "Diagnostic Questions"}</h1>
+        <p>Five quick questions across Algebra, Quadratic Functions, Trigonometry, Probability, and Statistics.</p>
+      </section>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-        {questions.map((q, i) => (
+      <ProgressIndicator current={answeredCount} total={diagnosticQuestions.length} />
+
+      <div className="questionStack">
+        {diagnosticQuestions.map((question, index) => (
           <QuestionCard
-            key={q.id}
-            question={q}
-            questionNumber={i + 1}
-            selectedOptionIndex={answers[q.id] ?? null}
-            onSelectOption={(idx) => selectOption(q.id, idx)}
+            key={question.id}
+            question={question}
+            questionNumber={index + 1}
+            selectedOptionIndex={answers[question.id] ?? null}
+            onSelectOption={(optionIndex) => selectOption(question.id, optionIndex)}
           />
         ))}
       </div>
 
-      {error && (
-        <p style={{ color: "#dc2626", marginTop: "1rem", fontWeight: 600 }}>{error}</p>
-      )}
+      {error && <p className="formError">{error}</p>}
 
       <button
-        onClick={handleSubmit}
-        disabled={submitting || answeredCount < questions.length}
-        style={{
-          marginTop: "2rem",
-          width: "100%",
-          background: submitting || answeredCount < questions.length ? "#c4b5fd" : "#6c47ff",
-          color: "white",
-          border: "none",
-          borderRadius: 12,
-          padding: "1rem",
-          fontSize: "1rem",
-          fontWeight: 700,
-          cursor: submitting || answeredCount < questions.length ? "not-allowed" : "pointer",
-        }}
+        className="primaryButton fullWidth"
+        disabled={answeredCount < diagnosticQuestions.length}
+        onClick={submitDiagnostic}
+        type="button"
       >
-        {submitting ? "Analysing your answers…" : "Submit & Start Learning →"}
+        Submit Diagnostic
       </button>
-    </PageShell>
+    </div>
   );
-}
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>;
 }

@@ -2,29 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createUser } from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  async function handleStart() {
+  function handleStart() {
     if (!name.trim()) return;
     setLoading(true);
-    setError("");
-    try {
-      const userId = name.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now();
-      await createUser(userId, name.trim());
-      sessionStorage.setItem("userId", userId);
-      sessionStorage.setItem("userName", name.trim());
-      router.push("/diagnostic");
-    } catch (e) {
-      setError("Could not connect to server. Make sure the backend is running.");
-    } finally {
-      setLoading(false);
-    }
+    const userId = name.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now();
+    sessionStorage.setItem("userId", userId);
+    sessionStorage.setItem("userName", name.trim());
+    sessionStorage.removeItem("diagnosticAnswers");
+    sessionStorage.removeItem("diagnosticResult");
+    router.push("/diagnostic");
   }
 
   return (
@@ -69,9 +61,9 @@ export default function Home() {
         <input
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleStart()}
-          placeholder="e.g. Aisha, Ravi, Jun Wei…"
+          onChange={(event) => setName(event.target.value)}
+          onKeyDown={(event) => event.key === "Enter" && handleStart()}
+          placeholder="e.g. Aisha, Ravi, Jun Wei..."
           style={{
             width: "100%",
             padding: "0.75rem 1rem",
@@ -83,7 +75,6 @@ export default function Home() {
             boxSizing: "border-box",
           }}
         />
-        {error && <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{error}</p>}
         <button
           onClick={handleStart}
           disabled={loading || !name.trim()}
@@ -99,7 +90,7 @@ export default function Home() {
             cursor: loading || !name.trim() ? "not-allowed" : "pointer",
           }}
         >
-          {loading ? "Starting…" : "Start Diagnostic →"}
+          {loading ? "Starting..." : "Start Diagnostic ->"}
         </button>
       </div>
 
@@ -113,10 +104,10 @@ export default function Home() {
         }}
       >
         {[
-          { icon: "🧠", label: "AI-adaptive questions" },
-          { icon: "💡", label: "Personalised explanations" },
-          { icon: "🔄", label: "Spaced repetition" },
-          { icon: "📊", label: "Live progress tracking" },
+          { icon: "AI", label: "AI-adaptive questions" },
+          { icon: "Tip", label: "Personalised explanations" },
+          { icon: "Loop", label: "Spaced repetition" },
+          { icon: "Data", label: "Live progress tracking" },
         ].map(({ icon, label }) => (
           <div
             key={label}
@@ -130,7 +121,7 @@ export default function Home() {
               boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}
           >
-            {icon} {label}
+            <strong style={{ color: "#6c47ff", marginRight: 6 }}>{icon}</strong> {label}
           </div>
         ))}
       </div>

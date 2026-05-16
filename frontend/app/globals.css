@@ -4,13 +4,531 @@
 
 :root {
   --brand: #6c47ff;
+  --brand-dark: #4c1d95;
   --brand-light: #ede9ff;
-  --correct: #16a34a;
-  --wrong: #dc2626;
+  --ink: #172033;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --surface: #ffffff;
+  --soft: #f8f7ff;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --red: #dc2626;
+  --red-soft: #fee2e2;
+  --amber: #d97706;
+  --amber-soft: #fef3c7;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  font-family: "Inter", system-ui, sans-serif;
-  background: #f8f7ff;
-  color: #1a1a2e;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--soft);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.topNav {
+  align-items: center;
+  background: var(--brand);
+  color: white;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+}
+
+.brandMark {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.navLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.navLinks a {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.appShell {
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 2rem 1rem 4rem;
+}
+
+.pageStack,
+.questionStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pageHero {
+  background: linear-gradient(135deg, #ffffff 0%, #f2efff 100%);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 2rem;
+}
+
+.compactHero {
+  padding: 1.5rem;
+}
+
+.pageHero h1 {
+  font-size: clamp(1.7rem, 4vw, 2.55rem);
+  line-height: 1.1;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.pageHero p,
+.sectionHeader p,
+.mutedText {
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--brand);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.progressBlock,
+.contentCard,
+.questionCard,
+.metricCard,
+.journeyCard,
+.recommendedCard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(40, 35, 85, 0.07);
+}
+
+.progressBlock {
+  padding: 1rem;
+}
+
+.progressLabel,
+.cardHeader,
+.sectionHeader {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.progressLabel {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.65rem;
+}
+
+.progressTrack {
+  background: #e9e6f7;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progressFill {
+  background: linear-gradient(90deg, var(--brand), #14b8a6);
+  border-radius: inherit;
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.questionCard,
+.contentCard {
+  padding: 1.35rem;
+}
+
+.cardHeader h2,
+.sectionHeader h2,
+.journeyCard h2,
+.recommendedCard h3 {
+  margin: 0;
+}
+
+.topicBadge,
+.statusPill {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.32rem 0.75rem;
+  white-space: nowrap;
+}
+
+.topicBadge {
+  background: var(--brand-light);
+  color: var(--brand-dark);
+}
+
+.statusPill.strong {
+  background: var(--green-soft);
+  color: #166534;
+}
+
+.statusPill.weak {
+  background: var(--amber-soft);
+  color: #92400e;
+}
+
+.questionText {
+  font-size: 1.12rem;
+  line-height: 1.5;
+  margin: 1rem 0;
+}
+
+.optionList {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.answerOption,
+.optionButton {
+  align-items: center;
+  background: white;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  text-align: left;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.answerOption:disabled,
+.optionButton:disabled {
+  cursor: default;
+}
+
+.answerOption:hover:not(:disabled),
+.optionButton:hover:not(:disabled),
+.answerSelected,
+.optionSelected {
+  background: var(--brand-light);
+  border-color: var(--brand);
+}
+
+.answerCorrect,
+.optionCorrect {
+  background: var(--green-soft);
+  border-color: var(--green);
+}
+
+.answerWrong,
+.optionWrong {
+  background: var(--red-soft);
+  border-color: var(--red);
+}
+
+.answerLetter {
+  align-items: center;
+  background: #eef2ff;
+  border-radius: 999px;
+  color: var(--brand-dark);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-weight: 800;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.feedbackBox {
+  border-radius: 12px;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+}
+
+.feedbackBox p {
+  line-height: 1.55;
+  margin: 0.25rem 0 0;
+}
+
+.feedbackBox.good {
+  background: var(--green-soft);
+  color: #14532d;
+}
+
+.feedbackBox.needsWork {
+  background: var(--red-soft);
+  color: #7f1d1d;
+}
+
+.primaryButton,
+.secondaryButton {
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 48px;
+  padding: 0.9rem 1.25rem;
+}
+
+.primaryButton {
+  background: var(--brand);
+  color: white;
+}
+
+.primaryButton:disabled {
+  background: #c4b5fd;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: white;
+  border: 2px solid var(--brand);
+  color: var(--brand-dark);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.formError {
+  color: var(--red);
+  font-weight: 700;
+  margin: 0;
+}
+
+.loaderPanel {
+  align-items: center;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 4rem auto 0;
+  max-width: 620px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.loaderPulse {
+  align-items: center;
+  animation: pulse 1.2s infinite ease-in-out;
+  background: var(--brand);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  font-weight: 900;
+  height: 72px;
+  justify-content: center;
+  width: 72px;
+}
+
+.loaderPanel h1,
+.loaderPanel p {
+  margin: 0;
+}
+
+.loaderPanel p {
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.analysisSteps,
+.topicChipList,
+.answerBreakdown,
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.analysisSteps span,
+.topicChip,
+.breakdownItem {
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  padding: 0.45rem 0.8rem;
+}
+
+.analysisSteps span,
+.topicChip {
+  background: var(--brand-light);
+  color: var(--brand-dark);
+}
+
+.summaryGrid,
+.twoColumn,
+.cardGrid,
+.journeyGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.summaryGrid {
+  grid-template-columns: 1.5fr 1fr 1fr;
+}
+
+.twoColumn,
+.journeyGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cardGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.metricCard {
+  padding: 1.25rem;
+}
+
+.metricCard span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.metricCard strong {
+  font-size: 2rem;
+}
+
+.primaryMetric {
+  background: var(--brand);
+  color: white;
+}
+
+.primaryMetric span {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.breakdownItem.correct {
+  background: var(--green-soft);
+  color: #166534;
+}
+
+.breakdownItem.wrong {
+  background: var(--red-soft);
+  color: #991b1b;
+}
+
+.pageSection {
+  display: grid;
+  gap: 1rem;
+}
+
+.recommendedCard,
+.journeyCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.15rem;
+}
+
+.recommendedCard p,
+.journeyCard p {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.journeyNumber {
+  color: var(--brand);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.textLink {
+  color: var(--brand);
+  font-weight: 800;
+  margin-top: auto;
+}
+
+.formulaBox,
+.exampleQuestion,
+.largeScore {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.largeScore {
+  color: var(--brand);
+  font-size: 2.5rem;
+}
+
+.buttonRow {
+  align-items: center;
+}
+
+.buttonRow .primaryButton,
+.buttonRow .secondaryButton {
+  flex: 1;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(108, 71, 255, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 18px rgba(108, 71, 255, 0);
+    transform: scale(1.04);
+  }
+}
+
+@media (max-width: 760px) {
+  .topNav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .appShell {
+    padding: 1rem 0.85rem 3rem;
+  }
+
+  .summaryGrid,
+  .twoColumn,
+  .cardGrid,
+  .journeyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pageHero,
+  .contentCard,
+  .questionCard {
+    padding: 1rem;
+  }
+
+  .cardHeader,
+  .sectionHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
 }
