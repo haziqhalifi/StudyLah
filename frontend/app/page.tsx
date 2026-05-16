@@ -27,12 +27,14 @@ const cards = [
   },
   {
     title: "Games",
-    description: "Practice your skills through quick challenges and interactive quizzes.",
+    description:
+      "Practice your skills through quick challenges and interactive quizzes.",
     tone: "game",
   },
   {
     title: "Learning Path",
-    description: "Follow your AI-recommended journey from lesson to practice and mastery.",
+    description:
+      "Follow your AI-recommended journey from lesson to practice and mastery.",
     tone: "path",
   },
 ] as const;
@@ -45,7 +47,10 @@ function HomeDashboard() {
   const [activeCategory, setActiveCategory] = useState("Lessons");
 
   return (
-    <section className="home-dashboard-shell page-enter" aria-label="Student home dashboard">
+    <section
+      className="home-dashboard-shell page-enter"
+      aria-label="Student home dashboard"
+    >
       <StudentHeader />
       <LevelProgressCard />
       <CategoryShortcut
@@ -80,9 +85,16 @@ function StudentHeader() {
       </div>
 
       <div className="student-header-actions">
-        <button className="notification-button" type="button" aria-label="Open notifications">
+        <button
+          className="notification-button"
+          type="button"
+          aria-label="Open notifications"
+        >
           <BellIcon />
-          <span className="notification-dot" aria-label="Unread notifications" />
+          <span
+            className="notification-dot"
+            aria-label="Unread notifications"
+          />
         </button>
         <div className="student-avatar" aria-label={`${student.name} avatar`}>
           A
@@ -94,7 +106,10 @@ function StudentHeader() {
 
 function LevelProgressCard() {
   return (
-    <section className="level-card" aria-label={`Level ${student.level} progress`}>
+    <section
+      className="level-card"
+      aria-label={`Level ${student.level} progress`}
+    >
       <div className="level-card-content">
         <p className="level-eyebrow">Level {student.level}</p>
         <h2>This is your first step to greatness!</h2>
@@ -159,7 +174,9 @@ function LearningFeatureCard({
   return (
     <article className={`learning-feature-card learning-feature-${tone}`}>
       <div>
-        <p className="learning-feature-kicker">{tone === "path" ? "Journey" : title}</p>
+        <p className="learning-feature-kicker">
+          {tone === "path" ? "Journey" : title}
+        </p>
         <h2>{title}</h2>
         <p>{description}</p>
       </div>
@@ -167,7 +184,7 @@ function LearningFeatureCard({
         type="button"
         className="feature-arrow-button"
         aria-label={`Open ${title}`}
-        onClick={() => console.log(`Opening ${title}`)}
+        onClick={() => (window.location.href = "/materials")}
       >
         <ArrowIcon />
       </button>
@@ -200,7 +217,10 @@ function FeatureVisual({ tone }: { tone: "lesson" | "game" | "path" }) {
 
 function AIAssistantCard() {
   return (
-    <section className="ai-assistant-card" aria-label="AI learning assistant recommendation">
+    <section
+      className="ai-assistant-card"
+      aria-label="AI learning assistant recommendation"
+    >
       <div className="ai-assistant-avatar" aria-hidden="true">
         AI
       </div>

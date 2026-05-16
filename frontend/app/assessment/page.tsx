@@ -7,16 +7,19 @@ import ProgressSummary from "@/components/ProgressSummary";
 
 export default function AssessmentPage() {
   const router = useRouter();
-  const [topics, setTopics]   = useState<TopicStats[]>([]);
+  const [topics, setTopics] = useState<TopicStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState("");
-  const [name, setName]       = useState("");
+  const [error, setError] = useState("");
+  const [name, setName] = useState("");
 
   useEffect(() => {
     const userId = sessionStorage.getItem("userId");
-    const n      = sessionStorage.getItem("userName") ?? "";
+    const n = sessionStorage.getItem("userName") ?? "";
     setName(n);
-    if (!userId) { router.push("/"); return; }
+    if (!userId) {
+      router.push("/");
+      return;
+    }
 
     getAssessment(userId)
       .then((res) => setTopics(res.topics))
@@ -42,7 +45,9 @@ export default function AssessmentPage() {
       {topics.length === 0 ? (
         <div className="card assessment-empty page-enter">
           <p className="assessment-empty-title">No data yet</p>
-          <p className="assessment-empty-sub">Complete the diagnostic to get started!</p>
+          <p className="assessment-empty-sub">
+            Complete the diagnostic to get started!
+          </p>
           <button
             type="button"
             className="btn-primary"
@@ -56,10 +61,18 @@ export default function AssessmentPage() {
       )}
 
       <div className="assessment-actions">
-        <button type="button" className="btn-primary" onClick={() => router.push("/learn")}>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => router.push("/materials")}
+        >
           Continue Learning →
         </button>
-        <button type="button" className="btn-ghost diag-skip-btn" onClick={() => router.push("/review")}>
+        <button
+          type="button"
+          className="btn-ghost diag-skip-btn"
+          onClick={() => router.push("/review")}
+        >
           Review ↺
         </button>
       </div>

@@ -172,7 +172,7 @@ export default function ReviewPage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => router.push("/learn")}
+            onClick={() => router.push("/materials")}
           >
             Go Learn →
           </button>
@@ -195,14 +195,14 @@ export default function ReviewPage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => router.push("/learn")}
+            onClick={() => router.push("/materials")}
           >
             Continue Learning →
           </button>
           <button
             type="button"
             className="btn-ghost diag-skip-btn"
-            onClick={() => router.push("/assessment")}
+            onClick={() => router.push("/assessment")}}
           >
             Progress ▤
           </button>

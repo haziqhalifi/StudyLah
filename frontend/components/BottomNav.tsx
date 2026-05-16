@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 
 const NAV_ITEMS = [
   { href: "/", icon: HomeIcon, label: "Home" },
-  { href: "/learn", icon: BookIcon, label: "Lessons" },
+  { href: "/materials", icon: BookIcon, label: "Lessons" },
   { href: "/diagnostic", icon: PathIcon, label: "Journey" },
   { href: "/assessment", icon: ProgressIcon, label: "Progress" },
   { href: "/review", icon: SettingsIcon, label: "Settings" },
