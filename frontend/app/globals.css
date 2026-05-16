@@ -4501,6 +4501,32 @@ button.map-node:hover {
   border-color: #7f65ff;
 }
 
+.ai-topic-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ai-topic-tab {
+  border: 1.5px solid rgba(127, 101, 255, 0.25);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: transparent;
+  color: #7f65ff;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.ai-topic-tab.active,
+.ai-topic-tab:hover {
+  background: #7f65ff;
+  color: #fff;
+  border-color: #7f65ff;
+}
+
 /* Recent session card */
 .recent-session-card {
   display: flex;

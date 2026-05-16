@@ -358,17 +358,13 @@ export default function ReviewPage() {
 
       {/* ── Question ── */}
       <div className="diag-questions review-questions-gap">
-        {/* TODO: correctOptionIndex is hardcoded to 0 here — it should be
-          result.correct_option_index from the submit response. The backend
-          ReviewSubmitResponse does not currently return the correct index;
-          add it to ReviewSubmitResponse and wire it through. */}
-      <QuestionCard
+        <QuestionCard
           question={item.question}
           selectedOptionIndex={selected}
           onSelectOption={result ? undefined : setSelected}
           showResult={result !== null}
           isCorrect={result?.is_correct}
-          correctOptionIndex={result ? 0 : undefined}
+          correctOptionIndex={result ? result.correct_option_index : undefined}
           isReview
         />
       </div>
@@ -408,7 +404,7 @@ export default function ReviewPage() {
                 ? {
                     selectedOptionIndex: selected ?? 0,
                     isCorrect: result.is_correct,
-                    correctOptionIndex: 0,
+                    correctOptionIndex: result.correct_option_index,
                   }
                 : undefined,
               pageContext: "review",

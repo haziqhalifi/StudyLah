@@ -120,6 +120,7 @@ export interface ReviewResponse {
 
 export interface ReviewSubmitResponse {
   is_correct: boolean;
+  correct_option_index: number;
   explanation: Explanation;
   next_review_at: string; // ISO datetime (backward compat)
   review_state: ReviewState;

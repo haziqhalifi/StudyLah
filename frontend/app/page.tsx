@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { postStudyBuddyMessage } from "@/lib/api";
-import type { ChatMessage } from "@/lib/api";
+import { postStudyBuddyMessage, getAssessment, getPapers } from "@/lib/api";
+import type { ChatMessage, TopicStats, Paper } from "@/lib/api";
 
 const student = {
   name: "Amir",
@@ -18,7 +18,12 @@ const student = {
 const quickActions = [
   { label: "Ambil Kuiz", icon: QuizIcon, href: "/exams", color: "#7f65ff" },
   { label: "Bahan", icon: BookIcon, href: "/materials", color: "#ff8dc0" },
-  { label: "Kemajuan", icon: ProgressIcon, href: "/progress", color: "#5bd4bc" },
+  {
+    label: "Kemajuan",
+    icon: ProgressIcon,
+    href: "/progress",
+    color: "#5bd4bc",
+  },
 ] as const;
 
 export default function Home() {
@@ -148,13 +153,38 @@ function QuickActionsRow() {
   );
 }
 
-const CHAT_CHIPS = [
-  "Terangkan fungsi kuadratik",
-  "Beri contoh soalan",
-  "Semak kelemahan saya",
+const TOPICS = {
+  ubahan: {
+    label: "Ubahan",
+    subtopics: ["Ubahan Langsung", "Ubahan Songsang", "Ubahan Bergabung", "Ubahan Separa"],
+  },
+  matriks: {
+    label: "Matriks",
+    subtopics: ["Operasi Matriks", "Penentu Matriks", "Matriks Songsang"],
+  },
+  insurans: {
+    label: "Insurans",
+    subtopics: ["Konsep Insurans", "Premium & Polisi", "Tuntutan Insurans"],
+  },
+} as const;
+
+type TopicKey = keyof typeof TOPICS;
+
+const CHAT_CHIPS: { label: string; message: string; topic: TopicKey }[] = [
+  { label: "Ubahan Langsung", message: "Terangkan ubahan langsung dengan contoh", topic: "ubahan" },
+  { label: "Matriks Songsang", message: "Macam mana nak cari matriks songsang 2×2?", topic: "matriks" },
+  { label: "Kiraan Premium", message: "Terangkan cara kira premium insurans", topic: "insurans" },
 ];
 
 function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
+  const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
+  const topic = TOPICS[selectedTopic];
+
+  const topicChips = topic.subtopics.map((sub) => ({
+    label: sub,
+    message: `Terangkan ${sub} dengan contoh soalan SPM`,
+  }));
+
   return (
     <section className="ai-chat-card" aria-label="AI tutor chat">
       <button
@@ -163,22 +193,45 @@ function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
         onClick={() => onOpen()}
         aria-label="Buka chat tutor AI"
       >
-        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+        <div className="ai-chat-avatar" aria-hidden="true">
+          AI
+        </div>
         <div className="ai-chat-header-text">
           <h2>Tanya Tutor AI</h2>
-          <p className="ai-chat-subtitle">Topik lemah anda: Fungsi Kuadratik</p>
+          <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
         </div>
-        <span className="ai-chat-open-hint" aria-hidden="true"><ArrowIcon /></span>
+        <span className="ai-chat-open-hint" aria-hidden="true">
+          <ArrowIcon />
+        </span>
       </button>
-      <div className="ai-chat-suggestions">
-        {CHAT_CHIPS.map((s) => (
+
+      <div className="ai-topic-tabs" role="tablist" aria-label="Pilih topik">
+        {(Object.keys(TOPICS) as TopicKey[]).map((key) => (
           <button
-            key={s}
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={selectedTopic === key ? "true" : "false"}
+            className={`ai-topic-tab${selectedTopic === key ? " active" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTopic(key);
+            }}
+          >
+            {TOPICS[key].label}
+          </button>
+        ))}
+      </div>
+
+      <div className="ai-chat-suggestions">
+        {topicChips.map((chip) => (
+          <button
+            key={chip.label}
             type="button"
             className="ai-chat-chip"
-            onClick={() => onOpen(s)}
+            onClick={() => onOpen(chip.message)}
           >
-            {s}
+            {chip.label}
           </button>
         ))}
       </div>
@@ -224,15 +277,23 @@ function ChatDrawer({
     const trimmed = text.trim();
     if (!trimmed || loading) return;
     setInput("");
-    const next: ChatMessage[] = [...messages, { role: "user", content: trimmed }];
+    const next: ChatMessage[] = [
+      ...messages,
+      { role: "user", content: trimmed },
+    ];
     setMessages(next);
     setLoading(true);
     try {
-      const userId = (typeof window !== "undefined" && sessionStorage.getItem("userId")) || "guest";
+      const userId =
+        (typeof window !== "undefined" && sessionStorage.getItem("userId")) ||
+        "guest";
       const res = await postStudyBuddyMessage(userId, next);
       setMessages([...next, { role: "assistant", content: res.reply }]);
     } catch {
-      setMessages([...next, { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." }]);
+      setMessages([
+        ...next,
+        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -260,7 +321,9 @@ function ChatDrawer({
       >
         <div className="chat-drawer-handle" aria-hidden="true" />
         <header className="chat-drawer-header">
-          <div className="chat-drawer-avatar" aria-hidden="true">AI</div>
+          <div className="chat-drawer-avatar" aria-hidden="true">
+            AI
+          </div>
           <div>
             <h2>Tutor AI</h2>
             <p>StudyBuddy — sedia membantu</p>
@@ -280,14 +343,14 @@ function ChatDrawer({
             <div className="chat-drawer-empty">
               <p>Tanya apa sahaja tentang pelajaran anda!</p>
               <div className="ai-chat-suggestions">
-                {CHAT_CHIPS.map((s) => (
+                {CHAT_CHIPS.map((chip) => (
                   <button
-                    key={s}
+                    key={chip.label}
                     type="button"
                     className="ai-chat-chip"
-                    onClick={() => sendMessage(s)}
+                    onClick={() => sendMessage(chip.message)}
                   >
-                    {s}
+                    {chip.label}
                   </button>
                 ))}
               </div>
@@ -303,7 +366,9 @@ function ChatDrawer({
           ))}
           {loading && (
             <div className="chat-bubble chat-bubble-ai chat-bubble-typing">
-              <span /><span /><span />
+              <span />
+              <span />
+              <span />
             </div>
           )}
           <div ref={bottomRef} />
@@ -337,7 +402,10 @@ function ChatDrawer({
 function RecentSessionCard() {
   const router = useRouter();
   return (
-    <section className="recent-session-card" aria-label="Continue recent session">
+    <section
+      className="recent-session-card"
+      aria-label="Continue recent session"
+    >
       <div className="recent-session-info">
         <p className="recent-session-label">Sambung semula</p>
         <h3>Kuiz Matematik</h3>

@@ -82,6 +82,7 @@ class ReviewSubmitRequest(BaseModel):
 
 class ReviewSubmitResponse(BaseModel):
     is_correct: bool
+    correct_option_index: int
     explanation: Explanation
     next_review_at: datetime        # kept for backward compat with existing frontend
     review_state: ReviewStateOut    # richer SR info for the upgraded UI
@@ -303,6 +304,7 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
 
     return ReviewSubmitResponse(
         is_correct=is_correct,
+        correct_option_index=question.correct_option_index,
         explanation=explanation,
         next_review_at=next_review_at,
         review_state=ReviewStateOut(
