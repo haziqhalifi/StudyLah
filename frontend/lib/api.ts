@@ -177,3 +177,26 @@ export async function getReview(userId: string): Promise<ReviewResponse> {
 export async function getPapers(): Promise<PapersResponse> {
   return get("/api/session/papers");
 }
+
+// ---------------------------------------------------------------------------
+// StudyBuddy chat (Gemini-powered tutor)
+// ---------------------------------------------------------------------------
+
+export type ChatRole = "user" | "assistant" | "system";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+export interface StudyBuddyResponse {
+  reply: string;
+  meta: { out_of_scope: boolean };
+}
+
+export async function chatWithStudyBuddy(
+  userId: string,
+  messages: ChatMessage[]
+): Promise<StudyBuddyResponse> {
+  return post("/api/assistant/study-buddy", { user_id: userId, messages });
+}
