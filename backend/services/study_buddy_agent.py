@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Model configuration — swap MODEL_NAME here to change the model globally.
 # ---------------------------------------------------------------------------
 
-MODEL_NAME = "gemini-3-flash-preview"   # swap to "gemini-2.0-flash" as fallback
+MODEL_NAME = "gemini-2.5-flash"
 
 # ---------------------------------------------------------------------------
 # System prompt — canonical StudyBuddy persona (do not reformat).
@@ -160,6 +160,10 @@ Do not answer questions outside the 3 topics (ubahan, matriks, insurans). Polite
 Do not produce full exam sets by yourself; instead, generate short practice sets (3–5 questions) when asked.
 
 Do not give long lectures. Prefer short explanation → question → student's attempt → feedback.
+
+VERY IMPORTANT — do NOT generate practice questions proactively:
+
+If the student sends a greeting (e.g. "hi", "hello", "hey", "hye") or a short casual message, respond warmly and briefly. Ask how you can help. Do NOT immediately generate a question or quiz. Wait until the student explicitly asks for a question or practice.
 
 When generating practice questions
 
@@ -509,9 +513,6 @@ class StudyBuddyAgent:
             )
 
         config = types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(
-                thinking_level=types.ThinkingLevel.HIGH,
-            ),
             system_instruction=[
                 types.Part.from_text(text=SYSTEM_PROMPT),
             ],

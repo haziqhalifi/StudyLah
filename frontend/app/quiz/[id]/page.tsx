@@ -12,7 +12,10 @@ import {
   submitQuiz,
 } from "@/lib/api";
 
-const TOPIC_META: Record<QuizDetail["topicId"], { label: string; chip: string; emoji: string }> = {
+const TOPIC_META: Record<
+  QuizDetail["topicId"],
+  { label: string; chip: string; emoji: string }
+> = {
   ubahan: { label: "Ubahan", chip: "chip chip-brand", emoji: "📐" },
   matriks: { label: "Matriks", chip: "chip chip-warn", emoji: "🔢" },
   insurans: { label: "Insurans", chip: "chip chip-correct", emoji: "🛡️" },
@@ -33,7 +36,7 @@ type QuizState = {
 export default function QuizPage() {
   const router = useRouter();
   const params = useParams<{ id?: string | string[] }>();
-  const quizId = Array.isArray(params?.id) ? params.id[0] : params?.id ?? "";
+  const quizId = Array.isArray(params?.id) ? params.id[0] : (params?.id ?? "");
 
   const [state, setState] = useState<QuizState>({
     userId: "",
@@ -55,11 +58,20 @@ export default function QuizPage() {
     }
 
     if (!quizId) {
-      setState((prev) => ({ ...prev, loading: false, error: "Missing quiz ID." }));
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: "Missing quiz ID.",
+      }));
       return;
     }
 
-    setState((prev) => ({ ...prev, userId: storedUserId, loading: true, error: null }));
+    setState((prev) => ({
+      ...prev,
+      userId: storedUserId,
+      loading: true,
+      error: null,
+    }));
 
     fetchQuizDetail(quizId)
       .then((quiz) => {
@@ -89,12 +101,16 @@ export default function QuizPage() {
     () => Object.keys(state.answers).length,
     [state.answers],
   );
-  const allAnswered = questions.length > 0 && questions.every((question) => state.answers[question.id] !== undefined);
+  const allAnswered =
+    questions.length > 0 &&
+    questions.every((question) => state.answers[question.id] !== undefined);
 
   const scoreMessage = useMemo(() => {
     if (!state.result) return "";
-    if (state.result.percentage >= 80) return "Amazing! You're getting really strong at this.";
-    if (state.result.percentage >= 50) return "Good effort! Let's review the ones you missed.";
+    if (state.result.percentage >= 80)
+      return "Amazing! You're getting really strong at this.";
+    if (state.result.percentage >= 50)
+      return "Good effort! Let's review the ones you missed.";
     return "No worries, let's go through this together.";
   }, [state.result]);
 
@@ -143,7 +159,10 @@ export default function QuizPage() {
   if (state.error && !state.quiz) {
     return (
       <div className="min-h-screen bg-[#f6f7fb] pb-24">
-        <BuddyHeader title="Quiz time" subtitle="Let's build your personalised practice set." />
+        <BuddyHeader
+          title="Quiz time"
+          subtitle="Let's build your personalised practice set."
+        />
         <BuddyBubble emoji="😕">{state.error}</BuddyBubble>
         <div className="max-w-md mx-auto px-4 mt-4">
           <button
@@ -166,7 +185,15 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-[#f6f7fb] pb-24">
         <BuddyHeader title="Quiz complete" subtitle={state.quiz.title} />
-        <BuddyBubble emoji={state.result.percentage >= 80 ? "🎉" : state.result.percentage >= 50 ? "💪" : "📘"}>
+        <BuddyBubble
+          emoji={
+            state.result.percentage >= 80
+              ? "🎉"
+              : state.result.percentage >= 50
+                ? "💪"
+                : "📘"
+          }
+        >
           {scoreMessage}
         </BuddyBubble>
 
@@ -190,23 +217,38 @@ export default function QuizPage() {
           {questions.map((question, index) => {
             const item = state.result?.results[index];
             if (!item) return null;
-            const correctAnswer = question.options[item.correctOptionIndex] ?? "";
+            const correctAnswer =
+              question.options[item.correctOptionIndex] ?? "";
             return (
-              <div key={question.id} className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4">
+              <div
+                key={question.id}
+                className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4"
+              >
                 <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="text-sm font-medium text-slate-500">Q{index + 1}</div>
-                  <div className={`text-xs px-2 py-1 rounded-full ${item.isCorrect ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                  <div className="text-sm font-medium text-slate-500">
+                    Q{index + 1}
+                  </div>
+                  <div
+                    className={`text-xs px-2 py-1 rounded-full ${item.isCorrect ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
+                  >
                     {item.isCorrect ? "✓ Correct" : "✗ Missed"}
                   </div>
                 </div>
-                <h3 className="text-base font-medium text-slate-900">{question.text}</h3>
+                <h3 className="text-base font-medium text-slate-900">
+                  {question.text}
+                </h3>
                 <div className="mt-3 text-sm text-slate-600">
-                  Correct answer: <span className="font-semibold text-slate-900">{correctAnswer}</span>
+                  Correct answer:{" "}
+                  <span className="font-semibold text-slate-900">
+                    {correctAnswer}
+                  </span>
                 </div>
                 <div className="mt-2 text-xs uppercase tracking-wide text-slate-400">
                   {item.explanation.style.replaceAll("_", " ")}
                 </div>
-                <p className="mt-2 text-sm text-slate-700 leading-6">{item.explanation.text}</p>
+                <p className="mt-2 text-sm text-slate-700 leading-6">
+                  {item.explanation.text}
+                </p>
               </div>
             );
           })}
@@ -234,12 +276,18 @@ export default function QuizPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] pb-28">
-      <BuddyHeader title={state.quiz.title} subtitle="Personalised quiz practice" />
+      <BuddyHeader
+        title={state.quiz.title}
+        subtitle="Personalised quiz practice"
+      />
 
       <BuddyBubble emoji={topicMeta.emoji}>
         <div>
           <div>{topicMeta.label} quiz is ready.</div>
-          <div className="mt-1">Question {state.currentIndex + 1} of {questions.length}. Answer all questions before submitting.</div>
+          <div className="mt-1">
+            Question {state.currentIndex + 1} of {questions.length}. Answer all
+            questions before submitting.
+          </div>
         </div>
       </BuddyBubble>
 
@@ -247,12 +295,16 @@ export default function QuizPage() {
         <div className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4">
           <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
             <span className={topicMeta.chip}>{topicMeta.label}</span>
-            <span>Q{state.currentIndex + 1} of {questions.length}</span>
+            <span>
+              Q{state.currentIndex + 1} of {questions.length}
+            </span>
           </div>
           <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
               className="h-full rounded-full bg-[#1f5eff] transition-all"
-              style={{ width: `${Math.max(8, (answeredCount / questions.length) * 100)}%` }}
+              style={{
+                width: `${Math.max(8, (answeredCount / questions.length) * 100)}%`,
+              }}
             />
           </div>
 
@@ -269,7 +321,10 @@ export default function QuizPage() {
                 onClick={() =>
                   setState((prev) => ({
                     ...prev,
-                    answers: { ...prev.answers, [currentQuestion.id]: optionIndex },
+                    answers: {
+                      ...prev.answers,
+                      [currentQuestion.id]: optionIndex,
+                    },
                   }))
                 }
               />
@@ -279,7 +334,10 @@ export default function QuizPage() {
           {currentQuestion.tags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               {currentQuestion.tags.map((tag) => (
-                <span key={tag} className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">
+                <span
+                  key={tag}
+                  className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600"
+                >
                   {tag}
                 </span>
               ))}
@@ -295,7 +353,12 @@ export default function QuizPage() {
           <button
             type="button"
             className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium disabled:opacity-40"
-            onClick={() => setState((prev) => ({ ...prev, currentIndex: Math.max(0, prev.currentIndex - 1) }))}
+            onClick={() =>
+              setState((prev) => ({
+                ...prev,
+                currentIndex: Math.max(0, prev.currentIndex - 1),
+              }))
+            }
             disabled={state.currentIndex === 0}
           >
             Previous
@@ -303,7 +366,15 @@ export default function QuizPage() {
           <button
             type="button"
             className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium disabled:opacity-40"
-            onClick={() => setState((prev) => ({ ...prev, currentIndex: Math.min(questions.length - 1, prev.currentIndex + 1) }))}
+            onClick={() =>
+              setState((prev) => ({
+                ...prev,
+                currentIndex: Math.min(
+                  questions.length - 1,
+                  prev.currentIndex + 1,
+                ),
+              }))
+            }
             disabled={state.currentIndex >= questions.length - 1}
           >
             Next
@@ -330,11 +401,17 @@ export default function QuizPage() {
 function LoadingState() {
   return (
     <div className="min-h-screen bg-[#f6f7fb] pb-24">
-      <BuddyHeader title="Loading quiz" subtitle="Building your personalised set…" />
+      <BuddyHeader
+        title="Loading quiz"
+        subtitle="Building your personalised set…"
+      />
       <BuddyBubble>Hang tight — I’m preparing your questions.</BuddyBubble>
       <div className="max-w-md mx-auto px-4 mt-4 space-y-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4 animate-pulse">
+          <div
+            key={index}
+            className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4 animate-pulse"
+          >
             <div className="h-4 w-24 bg-slate-100 rounded-full" />
             <div className="mt-4 h-6 w-4/5 bg-slate-100 rounded-full" />
             <div className="mt-4 space-y-2">

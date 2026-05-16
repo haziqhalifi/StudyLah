@@ -13,13 +13,17 @@ interface Props {
   onClose: () => void;
 }
 
-export default function StudyBuddyPanel({ userId, questionContext, onClose }: Props) {
+export default function StudyBuddyPanel({
+  userId,
+  questionContext,
+  onClose,
+}: Props) {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
-        "Hi! I'm StudyBuddy 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**.\n\nAsk me anything — or say *\"Give me a personalised Ubahan quiz\"* to get a custom set! 🚀",
+        'Hi! I\'m StudyBuddy 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**.\n\nAsk me anything — or say *"Give me a personalised Ubahan quiz"* to get a custom set! 🚀',
     },
   ]);
   const [input, setInput] = useState("");
@@ -36,7 +40,9 @@ export default function StudyBuddyPanel({ userId, questionContext, onClose }: Pr
   // Lock body scroll while drawer is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   // Auto-scroll to latest message
