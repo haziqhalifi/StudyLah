@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createUser } from "@/lib/api";
 import LearningJourneySection from "@/components/LearningJourneySection";
+import CoachPanel from "@/components/CoachPanel";
 
 export default function Home() {
   const router = useRouter();
@@ -94,6 +95,11 @@ export default function Home() {
 
 function Dashboard({ name, onReset }: { name: string; onReset: () => void }) {
   const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserId(sessionStorage.getItem("userId"));
+  }, []);
 
   const actions = [
     {
@@ -165,6 +171,12 @@ function Dashboard({ name, onReset }: { name: string; onReset: () => void }) {
           )
         )}
       </div>
+
+      {userId && (
+        <div className="mt-6">
+          <CoachPanel userId={userId} />
+        </div>
+      )}
 
       <p className="home-section-title">Quick links</p>
       <div className="home-quicklinks">
