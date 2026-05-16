@@ -66,6 +66,8 @@ export default function ExamsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  // Set of paper IDs that have been completed (all questions answered)
+  const [completedPaperIds, setCompletedPaperIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -82,8 +84,14 @@ export default function ExamsPage() {
     return trial.length > 0 ? trial : math;
   }, [papers]);
 
-  async function handlePickPaper(paper: Paper) {
-    if (loadingPaperId !== null) return;
+  function isPaperUnlocked(index: number): boolean {
+    if (index === 0) return true;
+    const prevPaper = trialPapers[index - 1];
+    return prevPaper ? completedPaperIds.has(prevPaper.id) : false;
+  }
+
+  async function handlePickPaper(paper: Paper, index: number) {
+    if (loadingPaperId !== null || !isPaperUnlocked(index)) return;
     setLoadingPaperId(paper.id);
     setError("");
     try {
@@ -105,8 +113,11 @@ export default function ExamsPage() {
     setAnswers((prev) => ({ ...prev, [questionId]: idx }));
   }
 
-
   function handleCloseQuiz() {
+    // Mark paper as completed if all questions were answered
+    if (selectedPaper && questions.length > 0 && Object.keys(answers).length === questions.length) {
+      setCompletedPaperIds((prev) => new Set([...prev, selectedPaper.id]));
+    }
     setStage("pick");
     setQuestions([]);
     setCurrent(0);
@@ -152,27 +163,30 @@ export default function ExamsPage() {
         <div className="home-learning-stack">
           {trialPapers.map((paper, index) => {
             const isLoading = loadingPaperId === paper.id;
+            const unlocked = isPaperUnlocked(index);
+            const completed = completedPaperIds.has(paper.id);
             const tone = index % 3 === 0 ? "lesson" : index % 3 === 1 ? "game" : "path";
+            const statusLabel = isLoading ? "Loading questions…" : !unlocked ? "Complete the previous paper to unlock" : completed ? "Completed — tap to retry" : "Tap to start";
             return (
               <button
                 key={paper.id}
                 type="button"
-                className={`learning-feature-card learning-feature-${tone}${isLoading ? " study-select-card-active" : ""}`}
-                onClick={() => handlePickPaper(paper)}
-                disabled={loadingPaperId !== null}
+                className={`learning-feature-card learning-feature-${tone}${isLoading ? " study-select-card-active" : ""}${!unlocked ? " exams-paper-locked" : ""}`}
+                onClick={() => handlePickPaper(paper, index)}
+                disabled={loadingPaperId !== null || !unlocked}
               >
                 <div>
                   <p className="learning-feature-kicker">{paper.year} · {paper.paper_type}</p>
                   <h2>{paper.state ?? "SPM"}</h2>
                   <p>{paper.paper_name}</p>
-                  <p className="study-select-subtitle">
-                    {isLoading ? "Loading questions…" : "Tap to start"}
-                  </p>
+                  <p className="study-select-subtitle">{statusLabel}</p>
                 </div>
                 <div className="feature-visual" aria-hidden="true">
                   <div className="feature-blob feature-blob-large" />
                   <div className="feature-blob feature-blob-small" />
-                  <div className="feature-mini-card">{isLoading ? "…" : "Q"}</div>
+                  <div className="feature-mini-card">
+                    {isLoading ? "…" : !unlocked ? "🔒" : completed ? "✓" : "Q"}
+                  </div>
                 </div>
               </button>
             );
