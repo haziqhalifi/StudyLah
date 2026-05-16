@@ -129,8 +129,9 @@ def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
         raise HTTPException(status_code=400, detail="No user message found.")
 
     # --- Step 1: classify intent ---
+    context_topic: str | None = (body.learning_context or {}).get("topicId")
     try:
-        intent_result = _agent.decide_intent_and_reply(latest_user_msg)
+        intent_result = _agent.decide_intent_and_reply(latest_user_msg, context_topic=context_topic)
     except Exception as exc:
         logger.error("Intent classification error for user %s: %s", body.user_id, exc)
         intent_result = {"intent": "chat"}

@@ -54,11 +54,14 @@ export function getContextualQuickActions(
   topicId: string,
   questionText: string,
 ): QuickAction[] {
-  // topicId and questionText are available for future prompt customisation.
-  // Currently the messages are intentionally generic so the backend context
-  // injection (LearningContext) does the personalisation work.
-  void topicId;
   void questionText;
+
+  const topicLabel =
+    topicId === "matriks"
+      ? "Matriks"
+      : topicId === "insurans"
+        ? "Insurans"
+        : "Ubahan";
 
   return [
     {
@@ -74,10 +77,10 @@ export function getContextualQuickActions(
       actionType: "explain_question",
     },
     {
-      label: "Similar Question",
-      emoji: "🔁",
-      message: "Generate a similar question to this one so I can practise",
-      actionType: "similar_question",
+      label: "Practice Quiz",
+      emoji: "🎯",
+      message: `Create a personalised ${topicLabel} quiz for me`,
+      actionType: "generate_quiz",
     },
     {
       label: "Teach Me This",
@@ -85,8 +88,5 @@ export function getContextualQuickActions(
       message: "Teach me the concept behind this question",
       actionType: "teach_concept",
     },
-    // TODO: add context-aware chips:
-    //   { label: "Why Wrong?", emoji: "❌", message: "Why was my last answer wrong?", actionType: "explain_question" },
-    //   { label: "Easier Version", emoji: "⬇️", message: "Give me an easier version of this question", actionType: "similar_question" },
   ];
 }

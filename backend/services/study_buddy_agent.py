@@ -365,9 +365,13 @@ _TOPIC_KEYWORDS: Dict[str, list[str]] = {
 }
 
 
-def _classify_intent(message: str) -> Dict[str, Any]:
+def _classify_intent(message: str, context_topic: Optional[str] = None) -> Dict[str, Any]:
     """
     Keyword-based intent classifier — no API call, no latency.
+
+    context_topic: topicId from the frontend LearningContext (e.g. "ubahan").
+    Used as a fallback when the user asks for a quiz without naming the topic
+    (e.g. "create more questions", "bagi soalan lagi").
 
     Returns {"intent": "create_quiz", "topic_id": ..., "num_questions": 5}
     or      {"intent": "chat"}.
@@ -378,15 +382,19 @@ def _classify_intent(message: str) -> Dict[str, Any]:
     if not is_quiz_request:
         return {"intent": "chat"}
 
-    # Detect which topic was mentioned
+    # Detect which topic was mentioned in the message itself
     detected_topic: Optional[str] = None
     for topic_id, keywords in _TOPIC_KEYWORDS.items():
         if any(kw in lower for kw in keywords):
             detected_topic = topic_id
             break
 
+    # Fall back to the current page topic from learning context
     if not detected_topic:
-        return {"intent": "chat"}
+        if context_topic and context_topic in _TOPIC_KEYWORDS:
+            detected_topic = context_topic
+        else:
+            return {"intent": "chat"}
 
     # Try to parse an explicit number (e.g. "5 questions", "10 soalan")
     num_match = re.search(r"\b(\d+)\s*(?:soalan|questions?|qs?)\b", lower)
@@ -531,17 +539,22 @@ class StudyBuddyAgent:
 
         return "".join(reply_parts)
 
-    def decide_intent_and_reply(self, user_message: str) -> Dict[str, Any]:
+    def decide_intent_and_reply(
+        self, user_message: str, context_topic: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Classify the user's message as quiz-creation or normal chat using
         keyword matching (fast, no extra API call).
+
+        context_topic: topicId from LearningContext — used as fallback when
+        the user asks for more questions without naming the topic explicitly.
 
         Returns one of:
             {"intent": "chat"}
             {"intent": "create_quiz", "topic_id": "ubahan"|"matriks"|"insurans",
                                       "num_questions": 5}
         """
-        return _classify_intent(user_message)
+        return _classify_intent(user_message, context_topic=context_topic)
 
     @staticmethod
     def _last_user_message(messages: list[ChatMessage]) -> str:
