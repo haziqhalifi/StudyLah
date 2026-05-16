@@ -2,9 +2,10 @@
 AI Engine – the brain of StudyLah.
 
 All adaptive logic lives here. Rule-based stubs are in place now;
-every # TODO: Claude marks a spot where we'll drop in an Anthropic API call.
+every # TODO: Claude marks a spot where an Anthropic API call will later plug in.
 
 Integration pattern (for when Claude is wired in):
+
     import anthropic
     client = anthropic.Anthropic()   # reads ANTHROPIC_API_KEY from env
     response = client.messages.create(
@@ -12,74 +13,139 @@ Integration pattern (for when Claude is wired in):
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
     )
+    result = response.content[0].text  # parse as JSON
+
+No external services or LLM calls are made by this file.
 """
 
 from __future__ import annotations
 
 import random
 from datetime import datetime, timedelta
-from typing import List, Literal
+from typing import Dict, List, Literal, Optional
 
-from schemas.question import Attempt, Question, QuestionPublic, SkillProfile, TopicStats
-from schemas.session import DiagnosticAnswer, Explanation, ReviewItem, SuggestedTopic
-import db
+from pydantic import BaseModel
+
+# ---------------------------------------------------------------------------
+# Data models
+# ---------------------------------------------------------------------------
+
+class Question(BaseModel):
+    id: str
+    topic_id: str
+    text: str
+    options: List[str]
+    correct_option_index: int
+    difficulty: Literal["easy", "medium", "hard"]
+    tags: List[str]
+
+
+class Attempt(BaseModel):
+    user_id: str
+    question_id: str
+    selected_option_index: int
+    is_correct: bool
+    timestamp: datetime
+    topic_id: Optional[str] = None  # convenience field; may be populated by caller
+
+
+class SkillStats(BaseModel):
+    topic_id: str
+    correct_count: int = 0
+    attempt_count: int = 0
+    accuracy: float = 0.0
+    estimated_level: Literal["weak", "okay", "strong"] = "weak"
+
+    @classmethod
+    def _compute_level(cls, accuracy: float) -> Literal["weak", "okay", "strong"]:
+        if accuracy > 0.70:
+            return "strong"
+        if accuracy >= 0.40:
+            return "okay"
+        return "weak"
+
+    def update(self, is_correct: bool) -> None:
+        self.attempt_count += 1
+        if is_correct:
+            self.correct_count += 1
+        self.accuracy = self.correct_count / self.attempt_count
+        self.estimated_level = self._compute_level(self.accuracy)
+
+
+# SkillProfile is a plain mapping so callers can access it as a dict.
+# Type alias for clarity.
+SkillProfile = Dict[str, SkillStats]
+
+
+class Explanation(BaseModel):
+    text: str
+    style: Literal["step_by_step", "analogy", "formula_first", "shortcut_tips"]
+
+
+class ReviewItem(BaseModel):
+    question: Question
+    reason: Literal["low_accuracy", "not_seen_recently", "weak_topic"]
+
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-SPACED_REPETITION_WINDOW_MINUTES = 10  # revisit if not seen in last N minutes
-LOW_ACCURACY_THRESHOLD = 0.50           # below this → low accuracy flag
-RECENT_WRONG_STREAK = 2                 # consecutive wrong answers → step_by_step
+_ACCURACY_WEAK    = 0.40
+_ACCURACY_OKAY    = 0.70
+_RECENT_WINDOW    = 2    # number of last attempts to check for difficulty adjustment
+_REVIEW_TOP_N     = 5    # max items returned by select_review_questions
+_STALE_MINUTES    = 60   # a question is "not seen recently" after this many minutes
 
 
 # ---------------------------------------------------------------------------
-# 1. Analyse diagnostic results → SkillProfile
+# 1. Analyse diagnostic → SkillProfile
 # ---------------------------------------------------------------------------
 
 def analyze_diagnostic(
-    user_id: str,
-    answers: List[DiagnosticAnswer],
+    questions: List[Question],
+    attempts: List[Attempt],
 ) -> SkillProfile:
     """
-    Scores diagnostic answers, builds initial SkillProfile.
+    Build an initial SkillProfile from a completed diagnostic session.
 
-    # TODO: Call Claude here to infer deeper misconceptions from the answer
-    # pattern (e.g. consistently picking the wrong sign → sign confusion bias).
-    # Prompt idea: "Given these diagnostic MCQ responses, identify the student's
-    # likely misconceptions about quadratic equations and return a JSON summary."
+    Inputs:
+        questions: The full list of Question objects shown in the diagnostic.
+        attempts:  One Attempt per question, in any order.
+
+    Outputs:
+        SkillProfile mapping topic_id → SkillStats.
+
+    Current heuristic:
+        Groups attempts by the topic_id of their corresponding question,
+        tallies correct/total, sets estimated_level via fixed accuracy thresholds:
+            > 0.70  → "strong"
+            0.40–0.70 → "okay"
+            < 0.40  → "weak"
+
+    Claude integration point:
+        # TODO: Call Claude here to infer deeper misconceptions from patterns.
+        # e.g., "Student consistently picks the wrong sign in the discriminant →
+        # sign-confusion bias in b²-4ac". Return a richer SkillProfile with an
+        # optional 'misconceptions' list per topic.
+        # Prompt sketch:
+        #   f"Here are the diagnostic questions: {[q.model_dump() for q in questions]}
+        #     Here are the student's answers: {[a.model_dump() for a in attempts]}
+        #     Identify specific misconceptions per topic. Return JSON:
+        #     {{'topic_id': [{{'misconception': str, 'evidence': str}}]}}"
     """
-    profile = db.get_or_create_profile(user_id)
-    correct = 0
-    total = len(answers)
+    question_map: Dict[str, Question] = {q.id: q for q in questions}
+    profile: SkillProfile = {}
 
-    for ans in answers:
-        question = db.get_question_by_id(ans.question_id)
-        if question is None:
+    for attempt in attempts:
+        q = question_map.get(attempt.question_id)
+        if q is None:
             continue
-        is_correct = question.correct_option_index == ans.selected_option_index
-        if is_correct:
-            correct += 1
-        attempt = Attempt(
-            user_id=user_id,
-            question_id=ans.question_id,
-            selected_option_index=ans.selected_option_index,
-            is_correct=is_correct,
-            timestamp=datetime.utcnow(),
-        )
-        db.record_attempt(attempt)
+        tid = q.topic_id
+        if tid not in profile:
+            profile[tid] = SkillStats(topic_id=tid)
+        profile[tid].update(attempt.is_correct)
 
-    accuracy = correct / total if total > 0 else 0.0
-    topic_id = db.get_question_by_id(answers[0].question_id).topic_id if answers else "quadratic_equations"
-
-    profile.topics[topic_id] = TopicStats(
-        topic_id=topic_id,
-        accuracy=accuracy,
-        attempts=total,
-        correct=correct,
-        level=TopicStats.compute_level(accuracy),
-    )
-    db.user_profiles[user_id] = profile
     return profile
 
 
@@ -89,51 +155,96 @@ def analyze_diagnostic(
 
 def choose_next_question(
     skill_profile: SkillProfile,
-    history: List[Attempt],
-    topic_id: str = "quadratic_equations",
-) -> QuestionPublic:
+    all_questions: List[Question],
+    recent_attempts: List[Attempt],
+) -> Question:
     """
-    Picks the next question based on current skill level and history.
+    Select the single best next question for the student to answer.
 
-    Rule-based strategy:
-      - Filter out recently answered questions (avoid immediate repeats).
-      - Target difficulty matching current level.
-      - Prioritise tags the student has struggled with.
+    Inputs:
+        skill_profile:   Current SkillProfile for the user.
+        all_questions:   Full question bank to select from.
+        recent_attempts: All of the user's attempts so far (newest last).
 
-    # TODO: Call Claude here to select or generate the ideal next question.
-    # Prompt idea: "The student's skill profile is {profile}. Their last 5
-    # attempts were {history}. Choose the single best next question from this
-    # bank {question_bank} and explain why. Return JSON: {id, reason}."
+    Outputs:
+        The chosen Question object.
+
+    Current heuristic:
+        1. Target topic: prefer topics with lowest accuracy (most "weak" first,
+           then "okay", then "strong"). Ties broken by fewest attempt_count.
+        2. Target difficulty: examine the last _RECENT_WINDOW attempts on that
+           topic; if all correct → step up; if all wrong → step down; else keep.
+        3. Exclude recently seen questions (last 10 attempt IDs).
+        4. Filter bank by (topic, difficulty), fall back gracefully if empty.
+        5. Choose uniformly at random from candidates.
+
+    Claude integration point:
+        # TODO: Call Claude here to rank all candidate questions by expected
+        # learning gain given the full skill profile and attempt history.
+        # Prompt sketch:
+        #   f"Skill profile: {skill_profile}
+        #     Recent attempts: {[a.model_dump() for a in recent_attempts[-10:]]}
+        #     Question bank: {[q.model_dump() for q in all_questions]}
+        #     Return the id of the single best next question and a one-line reason.
+        #     JSON: {{'id': str, 'reason': str}}"
     """
-    answered_ids = {a.question_id for a in history[-10:]}  # recent window
-    topic_stats = skill_profile.topics.get(topic_id)
-    accuracy = topic_stats.accuracy if topic_stats else 0.0
+    _DIFFICULTY_ORDER: List[Literal["easy", "medium", "hard"]] = ["easy", "medium", "hard"]
 
-    target_difficulty: Literal["easy", "medium", "hard"]
-    if accuracy >= 0.75:
-        target_difficulty = "hard"
-    elif accuracy >= 0.45:
-        target_difficulty = "medium"
+    # --- 1. Pick target topic ---
+    level_priority = {"weak": 0, "okay": 1, "strong": 2}
+    sorted_topics = sorted(
+        skill_profile.items(),
+        key=lambda kv: (level_priority[kv[1].estimated_level], kv[1].attempt_count),
+    )
+    target_topic = sorted_topics[0][0] if sorted_topics else None
+
+    # --- 2. Determine difficulty based on recent topic performance ---
+    recently_seen_ids = {a.question_id for a in recent_attempts[-10:]}
+
+    if target_topic:
+        topic_attempts = [a for a in recent_attempts if a.topic_id == target_topic or _topic_of(a, all_questions) == target_topic]
+        last_n = topic_attempts[-_RECENT_WINDOW:] if len(topic_attempts) >= _RECENT_WINDOW else topic_attempts
+        current_level = skill_profile[target_topic].estimated_level
+        base_difficulty: Literal["easy", "medium", "hard"] = (
+            "easy" if current_level == "weak" else ("medium" if current_level == "okay" else "hard")
+        )
+        if len(last_n) == _RECENT_WINDOW and all(a.is_correct for a in last_n):
+            idx = min(_DIFFICULTY_ORDER.index(base_difficulty) + 1, 2)
+            target_difficulty = _DIFFICULTY_ORDER[idx]
+        elif len(last_n) == _RECENT_WINDOW and all(not a.is_correct for a in last_n):
+            idx = max(_DIFFICULTY_ORDER.index(base_difficulty) - 1, 0)
+            target_difficulty = _DIFFICULTY_ORDER[idx]
+        else:
+            target_difficulty = base_difficulty
     else:
+        target_topic = all_questions[0].topic_id if all_questions else ""
         target_difficulty = "easy"
 
+    # --- 3 & 4. Filter candidates ---
     candidates = [
-        q for q in db.QUESTION_BANK
-        if q.topic_id == topic_id
-        and q.id not in answered_ids
+        q for q in all_questions
+        if q.topic_id == target_topic
+        and q.id not in recently_seen_ids
         and q.difficulty == target_difficulty
     ]
-
-    # fallback: any unseen question in topic
     if not candidates:
-        candidates = [q for q in db.QUESTION_BANK if q.topic_id == topic_id and q.id not in answered_ids]
-
-    # last resort: any question in topic
+        candidates = [q for q in all_questions if q.topic_id == target_topic and q.id not in recently_seen_ids]
     if not candidates:
-        candidates = [q for q in db.QUESTION_BANK if q.topic_id == topic_id]
+        candidates = [q for q in all_questions if q.topic_id == target_topic]
+    if not candidates:
+        candidates = list(all_questions)
 
-    chosen = random.choice(candidates)
-    return chosen.to_public()
+    return random.choice(candidates)
+
+
+def _topic_of(attempt: Attempt, questions: List[Question]) -> Optional[str]:
+    """Resolve topic_id for an attempt from the question bank (fallback helper)."""
+    if attempt.topic_id:
+        return attempt.topic_id
+    for q in questions:
+        if q.id == attempt.question_id:
+            return q.topic_id
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -142,71 +253,85 @@ def choose_next_question(
 
 def generate_explanation(
     question: Question,
-    user_answer_index: int,
+    attempt: Attempt,
     skill_profile: SkillProfile,
-    history: List[Attempt],
 ) -> Explanation:
     """
-    Returns a tailored explanation after each answer.
+    Return a tailored explanation after the student answers a question.
 
-    Style selection rules:
-      - Recent wrong streak ≥ RECENT_WRONG_STREAK → "step_by_step"
-      - Student is advanced but got this wrong → "shortcut_tips"
-      - Question tagged with real-world context → "analogy"
-      - Default for strong students → "formula_first"
+    Inputs:
+        question:      The Question that was just answered.
+        attempt:       The student's Attempt for that question.
+        skill_profile: Current SkillProfile for the user.
 
-    # TODO: Replace the text below with a Claude call.
-    # Prompt idea: "The student answered {question.text} with option
-    # '{question.options[user_answer_index]}' which is {'correct' if correct else 'wrong'}.
-    # Their explanation style preference is '{style}'. Write a concise, encouraging
-    # explanation in that style. Return JSON: {text, style}."
+    Outputs:
+        An Explanation with a style tag and placeholder text.
+
+    Current heuristic (style selection):
+        - accuracy < 0.40 (low)  → "step_by_step"
+        - 0.40 ≤ accuracy < 0.70 → "formula_first"
+        - accuracy ≥ 0.70 but wrong this time → "shortcut_tips"
+        - question has 'word_problem' tag → "analogy" (overrides default)
+
+    Claude integration point:
+        # TODO: Call Claude here to generate a high-quality, personalised
+        # explanation in the selected style using the full question context.
+        # Prompt sketch:
+        #   f"Question: {question.text}
+        #     Options: {question.options}
+        #     Correct answer: {question.options[question.correct_option_index]}
+        #     Student chose: {question.options[attempt.selected_option_index]}
+        #     Explanation style: {style}
+        #     Write an encouraging, concise explanation in the '{style}' style.
+        #     Return JSON: {{'text': str, 'style': str}}"
     """
-    topic_id = question.topic_id
-    topic_stats = skill_profile.topics.get(topic_id)
-    level = topic_stats.level if topic_stats else "beginner"
+    tid = question.topic_id
+    stats = skill_profile.get(tid)
+    accuracy = stats.accuracy if stats else 0.0
+    is_correct = attempt.is_correct
+    correct_text = question.options[question.correct_option_index]
+    chosen_text  = question.options[attempt.selected_option_index]
 
-    recent = history[-RECENT_WRONG_STREAK:] if len(history) >= RECENT_WRONG_STREAK else history
-    recent_all_wrong = len(recent) == RECENT_WRONG_STREAK and all(not a.is_correct for a in recent)
-
-    is_correct = question.correct_option_index == user_answer_index
-
-    # Determine style
-    if recent_all_wrong:
-        style: Literal["step_by_step", "analogy", "formula_first", "shortcut_tips"] = "step_by_step"
-    elif level in ("advanced", "proficient") and not is_correct:
-        style = "shortcut_tips"
-    elif "word_problem" in question.tags:
-        style = "analogy"
-    else:
+    # Style selection
+    if "word_problem" in question.tags:
+        style: Literal["step_by_step", "analogy", "formula_first", "shortcut_tips"] = "analogy"
+    elif accuracy < _ACCURACY_WEAK:
+        style = "step_by_step"
+    elif accuracy < _ACCURACY_OKAY:
         style = "formula_first"
+    else:
+        style = "shortcut_tips" if not is_correct else "formula_first"
 
-    # Stub explanations – Claude will replace these with dynamic, personalised text
-    # TODO: Call Claude to generate explanation text in the chosen style.
-    correct_option_text = question.options[question.correct_option_index]
-    user_option_text = question.options[user_answer_index]
+    verdict = "Correct!" if is_correct else f"Not quite — the answer is \"{correct_text}\" (you chose \"{chosen_text}\")."
 
-    stub_texts = {
+    # TODO: Call Claude here to generate the explanation text in `style`.
+    stub_texts: Dict[str, str] = {
         "step_by_step": (
-            f"Let's work through this step-by-step.\n"
-            f"The question asks: '{question.text}'\n"
-            f"{'Great job! ' if is_correct else f'You chose \"{user_option_text}\", but the answer is \"{correct_option_text}\". '}"
-            f"Step 1: Identify the form. Step 2: Apply the method. Step 3: Verify your answer. "
-            f"Practice this approach and it will become second nature!"
+            f"{verdict}\n"
+            f"Let's work through '{question.text}' step by step.\n"
+            f"Step 1 – Identify the form of the problem.\n"
+            f"Step 2 – Choose the appropriate method.\n"
+            f"Step 3 – Apply it carefully and check each line.\n"
+            f"Step 4 – Verify: substitute your answer back in.\n"
+            f"Repeat this process until it feels automatic."
         ),
         "analogy": (
-            f"Think of it like this: solving quadratics is like finding where a parabola crosses the x-axis. "
-            f"{'You nailed it! ' if is_correct else f'The correct answer is \"{correct_option_text}\". '}"
-            f"Imagine throwing a ball – it goes up and comes back down, crossing the ground at the roots."
+            f"{verdict}\n"
+            f"Think of '{question.text}' like this: a quadratic describes a parabola. "
+            f"The roots are where it touches the ground — imagine a ball thrown upward. "
+            f"Visualising the shape often makes the algebra click."
         ),
         "formula_first": (
-            f"Key formula: x = (-b ± √(b²-4ac)) / 2a. "
-            f"{'Correct! ' if is_correct else f'Answer: \"{correct_option_text}\". '}"
-            f"Plug in a, b, c from the equation directly. This method always works for any quadratic."
+            f"{verdict}\n"
+            f"Key formula: x = (−b ± √(b²−4ac)) / 2a.\n"
+            f"For '{question.text}', identify a, b, c, then substitute directly. "
+            f"This method is reliable for every quadratic, no exceptions."
         ),
         "shortcut_tips": (
-            f"Quick tip: {'Well done! ' if is_correct else f'Answer is \"{correct_option_text}\". '}"
-            f"For this type, look for patterns first – can you factorise quickly? "
-            f"If discriminant (b²-4ac) < 0, stop: no real roots. Save the formula for harder cases."
+            f"{verdict}\n"
+            f"Quick tip for '{question.text}': check for factorisable patterns first "
+            f"(difference of squares, simple trinomials). If b²−4ac < 0 you can stop — "
+            f"no real roots exist. Reserve the full formula for cases that resist factoring."
         ),
     }
 
@@ -219,45 +344,87 @@ def generate_explanation(
 
 def generate_personalized_question(
     skill_profile: SkillProfile,
-    history: List[Attempt],
-    topic_id: str = "quadratic_equations",
-) -> QuestionPublic:
+    base_questions: List[Question],
+    recent_attempts: List[Attempt],
+) -> Question:
     """
-    Returns a personalised or varied question for the student's skill gap.
+    Return a personalised question that targets the student's weakest skill gap.
 
-    Currently: picks from the bank targeting weak tags.
+    Inputs:
+        skill_profile:   Current SkillProfile for the user.
+        base_questions:  Full question bank.
+        recent_attempts: All of the user's attempts (newest last).
 
-    # TODO: Call Claude here to generate a brand-new MCQ with varied numbers/
-    # wording that targets the student's specific gap.
-    # Prompt idea: "Generate an MCQ about {weak_tags} at {difficulty} level for
-    # a student who keeps making {error_pattern} errors. Return JSON matching
-    # this schema: {QuestionPublic schema}."
+    Outputs:
+        A Question (possibly with a "(practice variation)" suffix on its text)
+        chosen to address the most pressing gap.
+
+    Current heuristic:
+        1. Identify the weakest topic (lowest accuracy with at least 1 attempt).
+        2. Collect tags from recently-wrong questions to find the specific weak tag.
+        3. Filter bank to (weak topic × matching difficulty × matching weak tag).
+        4. Fall back to (weak topic × difficulty) then (weak topic) if needed.
+        5. Append "(practice variation)" to signal it was adaptively chosen.
+
+    Claude integration point:
+        # TODO: Call Claude here to generate a brand-new MCQ (stem + 4 options +
+        # correct index) that specifically targets the identified skill gap,
+        # varying the numbers/wording so it's not just a copy from the bank.
+        # Prompt sketch:
+        #   f"The student is weak on topic '{weak_topic}', specifically tags
+        #     {list(weak_tags)}. Their accuracy is {accuracy:.0%}.
+        #     Generate a fresh MCQ at '{difficulty}' difficulty.
+        #     Return JSON: {{'id': 'generated', 'topic_id': ..., 'text': ...,
+        #     'options': [...], 'correct_option_index': int,
+        #     'difficulty': ..., 'tags': [...]}}"
     """
-    wrong_question_ids = {a.question_id for a in history if not a.is_correct}
+    # --- Find weakest topic ---
+    if skill_profile:
+        weak_topic_id, weak_stats = min(
+            ((tid, s) for tid, s in skill_profile.items() if s.attempt_count > 0),
+            key=lambda kv: kv[1].accuracy,
+            default=(None, None),
+        )
+    else:
+        weak_topic_id, weak_stats = None, None
+
+    if weak_topic_id is None:
+        return random.choice(base_questions)
+
+    accuracy = weak_stats.accuracy  # type: ignore[union-attr]
+    difficulty: Literal["easy", "medium", "hard"] = (
+        "easy" if accuracy < _ACCURACY_WEAK else ("medium" if accuracy < _ACCURACY_OKAY else "hard")
+    )
+
+    # --- Collect tags from wrong recent answers ---
+    wrong_ids = {a.question_id for a in recent_attempts if not a.is_correct}
     weak_tags: set[str] = set()
-    for q_id in wrong_question_ids:
-        q = db.get_question_by_id(q_id)
-        if q:
+    for q in base_questions:
+        if q.id in wrong_ids and q.topic_id == weak_topic_id:
             weak_tags.update(q.tags)
 
-    topic_stats = skill_profile.topics.get(topic_id)
-    accuracy = topic_stats.accuracy if topic_stats else 0.0
-    difficulty = "easy" if accuracy < 0.45 else ("medium" if accuracy < 0.75 else "hard")
-
+    # --- Filter candidates ---
     candidates = [
-        q for q in db.QUESTION_BANK
-        if q.topic_id == topic_id
+        q for q in base_questions
+        if q.topic_id == weak_topic_id
         and q.difficulty == difficulty
-        and bool(set(q.tags) & weak_tags)
+        and (weak_tags & set(q.tags))
     ]
-
     if not candidates:
-        candidates = [q for q in db.QUESTION_BANK if q.topic_id == topic_id and q.difficulty == difficulty]
-
+        candidates = [q for q in base_questions if q.topic_id == weak_topic_id and q.difficulty == difficulty]
     if not candidates:
-        candidates = db.QUESTION_BANK
+        candidates = [q for q in base_questions if q.topic_id == weak_topic_id]
+    if not candidates:
+        candidates = list(base_questions)
 
-    return random.choice(candidates).to_public()
+    chosen = random.choice(candidates)
+
+    # TODO: Call Claude here to generate a brand-new MCQ targeting the gap.
+    # For now we signal adaptive selection with a text suffix.
+    personalised = chosen.model_copy(
+        update={"text": chosen.text + " (practice variation)"}
+    )
+    return personalised
 
 
 # ---------------------------------------------------------------------------
@@ -266,85 +433,97 @@ def generate_personalized_question(
 
 def select_review_questions(
     skill_profile: SkillProfile,
-    history: List[Attempt],
-    topic_id: str = "quadratic_equations",
-    max_questions: int = 3,
-) -> tuple[List[ReviewItem], List[SuggestedTopic]]:
+    all_questions: List[Question],
+    attempts: List[Attempt],
+    now: datetime,
+    max_items: int = _REVIEW_TOP_N,
+) -> List[ReviewItem]:
     """
-    Picks questions for the spaced repetition review session.
+    Choose the highest-priority questions for a spaced-repetition review session.
 
-    Heuristics:
-      - Questions answered incorrectly more than once.
-      - Questions not seen in the last SPACED_REPETITION_WINDOW_MINUTES.
+    Inputs:
+        skill_profile: Current SkillProfile for the user.
+        all_questions: Full question bank.
+        attempts:      All of the user's attempts (newest last).
+        now:           Current datetime (injected for testability).
+        max_items:     Maximum number of ReviewItem objects to return.
 
-    # TODO: Call Claude to intelligently rank questions by forgetting curve and
-    # student-specific error patterns, and suggest a learning path.
-    # Prompt idea: "Given this attempt history {history} and skill profile
-    # {profile}, rank the top 3 questions to review today for maximum retention.
-    # Return JSON list with question_id and reason."
+    Outputs:
+        A list of ReviewItem objects, sorted by review priority (highest first),
+        capped at max_items.
+
+    Current heuristic (forgetting-curve proxy):
+        For each question q, compute a priority score:
+            score = wrong_ratio(q) * 2.0
+                  + staleness_hours(q) / 24.0
+                  + (1.0 if q belongs to a "weak" topic else 0.0)
+
+        where:
+            wrong_ratio(q)    = wrong_attempts / total_attempts (0 if never seen)
+            staleness_hours(q) = hours since last attempt (_STALE_MINUTES/60 min floor)
+
+        Assign reason:
+            "low_accuracy"      if wrong_ratio > 0.5
+            "not_seen_recently" if staleness > _STALE_MINUTES and low wrong_ratio
+            "weak_topic"        if topic is "weak" in skill_profile
+
+    Claude integration point:
+        # TODO: Call Claude here to model a more nuanced forgetting curve,
+        # incorporating Ebbinghaus decay, item difficulty, and student-specific
+        # error patterns to prioritise review items.
+        # Prompt sketch:
+        #   f"Skill profile: {skill_profile}
+        #     Attempt history: {[a.model_dump() for a in attempts]}
+        #     Today's date: {now.isoformat()}
+        #     Question bank: {[q.model_dump() for q in all_questions]}
+        #     Return the top {max_items} questions to review, with reasons.
+        #     JSON: [{{'id': str, 'reason': str}}, ...]"
     """
-    now = datetime.utcnow()
-    cutoff = now - timedelta(minutes=SPACED_REPETITION_WINDOW_MINUTES)
+    stale_threshold = timedelta(minutes=_STALE_MINUTES)
 
-    # Count wrong attempts per question
-    wrong_counts: dict[str, int] = {}
-    last_seen: dict[str, datetime] = {}
-    for attempt in history:
-        if not attempt.is_correct:
-            wrong_counts[attempt.question_id] = wrong_counts.get(attempt.question_id, 0) + 1
-        last_seen[attempt.question_id] = max(
-            last_seen.get(attempt.question_id, datetime.min), attempt.timestamp
-        )
+    # Build per-question stats
+    wrong_counts:  Dict[str, int]      = {}
+    total_counts:  Dict[str, int]      = {}
+    last_seen:     Dict[str, datetime] = {}
 
-    review_items: List[ReviewItem] = []
-    seen_ids: set[str] = set()
+    for a in attempts:
+        qid = a.question_id
+        total_counts[qid] = total_counts.get(qid, 0) + 1
+        if not a.is_correct:
+            wrong_counts[qid] = wrong_counts.get(qid, 0) + 1
+        ts = a.timestamp
+        if qid not in last_seen or ts > last_seen[qid]:
+            last_seen[qid] = ts
 
-    # Priority 1: frequently wrong
-    for q_id, count in sorted(wrong_counts.items(), key=lambda x: -x[1]):
-        if len(review_items) >= max_questions:
-            break
-        q = db.get_question_by_id(q_id)
-        if q and q.topic_id == topic_id and q_id not in seen_ids:
-            review_items.append(ReviewItem(question=q.to_public(), reason="low_accuracy"))
-            seen_ids.add(q_id)
+    topic_level: Dict[str, str] = {tid: s.estimated_level for tid, s in skill_profile.items()}
 
-    # Priority 2: not seen recently
-    for q in db.QUESTION_BANK:
-        if len(review_items) >= max_questions:
-            break
-        if q.topic_id == topic_id and q.id not in seen_ids:
-            last = last_seen.get(q.id, datetime.min)
-            if last < cutoff:
-                review_items.append(ReviewItem(question=q.to_public(), reason="not_seen_recently"))
-                seen_ids.add(q.id)
+    scored: List[tuple[float, Question, str]] = []
+    for q in all_questions:
+        total   = total_counts.get(q.id, 0)
+        wrong   = wrong_counts.get(q.id, 0)
+        last    = last_seen.get(q.id)
+        level   = topic_level.get(q.topic_id, "weak")
 
-    # Suggested topics
-    suggested: List[SuggestedTopic] = []
-    for tid, stats in skill_profile.topics.items():
-        if stats.accuracy < LOW_ACCURACY_THRESHOLD and stats.attempts > 0:
-            suggested.append(SuggestedTopic(topic_id=tid, reason="low_accuracy"))
+        wrong_ratio    = wrong / total if total > 0 else 0.0
+        stale_hours    = (now - last).total_seconds() / 3600 if last else float(_STALE_MINUTES) / 60
+        is_weak_topic  = level == "weak"
 
-    return review_items, suggested
+        score = wrong_ratio * 2.0 + stale_hours / 24.0 + (1.0 if is_weak_topic else 0.0)
 
+        # Assign human-readable reason
+        if wrong_ratio > 0.5:
+            reason: Literal["low_accuracy", "not_seen_recently", "weak_topic"] = "low_accuracy"
+        elif last is None or (now - last) > stale_threshold:
+            reason = "not_seen_recently"
+        else:
+            reason = "weak_topic"
 
-# ---------------------------------------------------------------------------
-# 6. Update skill profile after a single answer
-# ---------------------------------------------------------------------------
+        scored.append((score, q, reason))
 
-def update_skill_profile(
-    profile: SkillProfile,
-    topic_id: str,
-    is_correct: bool,
-) -> SkillProfile:
-    stats = profile.topics.get(
-        topic_id,
-        TopicStats(topic_id=topic_id, accuracy=0.0, attempts=0, correct=0),
-    )
-    stats.attempts += 1
-    if is_correct:
-        stats.correct += 1
-    stats.accuracy = stats.correct / stats.attempts if stats.attempts > 0 else 0.0
-    stats.level = TopicStats.compute_level(stats.accuracy)
-    profile.topics[topic_id] = stats
-    db.user_profiles[profile.user_id] = profile
-    return profile
+    scored.sort(key=lambda t: t[0], reverse=True)
+
+    # TODO: Call Claude here to rerank using a richer retention model.
+    return [
+        ReviewItem(question=q, reason=r)  # type: ignore[arg-type]
+        for _, q, r in scored[:max_items]
+    ]
