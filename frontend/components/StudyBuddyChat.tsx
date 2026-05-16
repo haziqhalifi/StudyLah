@@ -27,7 +27,7 @@ interface StudyBuddyChatProps {
 // Extends ChatMessage with optional flags:
 //   isCoach  — style as AI Coach bubble
 //   action   — attach an agent action to a bot bubble (e.g. create_flashcards)
-type DisplayMessage = ChatMessage & { isCoach?: boolean; action?: AgentAction };
+type DisplayMessage = ChatMessage & { isCoach?: boolean; action?: AgentAction; pickFlashcardTopic?: boolean };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -136,6 +136,7 @@ export default function StudyBuddyChat({
           role: "assistant",
           content: res.reply,
           action: res.action?.type !== "none" ? res.action : undefined,
+          pickFlashcardTopic: res.meta?.pick_flashcard_topic === true,
         },
       ]);
       setChipsVisible(true);
@@ -290,7 +291,12 @@ export default function StudyBuddyChat({
         {/* Message list */}
         <div className="sb-messages">
           {messages.map((msg, i) => (
-            <div key={i}>
+            <div
+              key={i}
+              className={
+                msg.role === "user" ? "sb-msg-group sb-msg-group--user" : "sb-msg-group"
+              }
+            >
               <div
                 className={`sb-bubble ${
                   msg.role === "user"
@@ -310,27 +316,44 @@ export default function StudyBuddyChat({
                 )}
               </div>
 
-              {/* Flashcard ready card — rendered below the bot bubble */}
+              {/* Flashcard ready card — shown beneath the bot reply bubble */}
               {msg.action?.type === "create_flashcards" && (
-                <div className="ml-2 mt-1">
-                  <FlashcardReadyCard
-                    setId={msg.action.flashcard_set_id}
-                    title={msg.action.flashcard_title}
-                    topicId={msg.action.topic_id}
-                    numCards={msg.action.num_cards}
-                  />
+                <FlashcardReadyCard
+                  setId={msg.action.flashcard_set_id}
+                  title={msg.action.flashcard_title}
+                  topicId={msg.action.topic_id}
+                  numCards={msg.action.num_cards}
+                />
+              )}
+
+              {/* Inline topic picker — shown when bot asks which topic for flashcards */}
+              {msg.pickFlashcardTopic && !loading && (
+                <div className="sb-topic-picker">
+                  {(["ubahan", "matriks", "insurans"] as const).map((tid) => (
+                    <button
+                      key={tid}
+                      type="button"
+                      className={`sb-topic-btn sb-topic-btn--${tid}`}
+                      onClick={() => sendMessage(`Create 8 flashcards for ${tid}`)}
+                      disabled={loading}
+                    >
+                      🃏 {tid.charAt(0).toUpperCase() + tid.slice(1)}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           ))}
 
           {loading && (
-            <div className="sb-bubble sb-bubble-bot">
-              <span className="sb-typing">
-                <span />
-                <span />
-                <span />
-              </span>
+            <div className="sb-msg-group">
+              <div className="sb-bubble sb-bubble-bot">
+                <span className="sb-typing">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </div>
             </div>
           )}
 

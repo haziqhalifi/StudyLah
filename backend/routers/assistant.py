@@ -157,10 +157,6 @@ class ChatResponse(BaseModel):
 # Flashcard intent detection (keyword-based, no extra API call)
 # ---------------------------------------------------------------------------
 
-_FLASHCARD_TRIGGERS = [
-    "flashcard", "flashcards", "flash card", "flash cards",
-    "kad imbas", "kad kilat",
-]
 
 _TOPIC_KEYWORDS_FC: dict[str, list[str]] = {
     "ubahan":   ["ubahan", "variation", "direct variation", "inverse variation",
@@ -178,7 +174,15 @@ _TOPIC_NAMES_FC = {
 
 def _detect_flashcard_intent(message: str, context_topic: str | None = None) -> dict | None:
     lower = message.lower()
-    if not any(t in lower for t in _FLASHCARD_TRIGGERS):
+    # Match single keywords OR Malay verb + "flashcard/kad" combos
+    _FLASHCARD_VERB_PAIRS = ["bina", "buat", "cipta", "create", "make", "generate", "give me", "buatkan", "binakan"]
+    _FLASHCARD_NOUNS = ["flashcard", "flashcards", "flash card", "flash cards", "kad imbas", "kad kilat"]
+    has_noun = any(t in lower for t in _FLASHCARD_NOUNS)
+    has_verb_noun = any(
+        (v in lower and any(n in lower for n in ["flashcard", "flash card", "kad"]))
+        for v in _FLASHCARD_VERB_PAIRS
+    )
+    if not has_noun and not has_verb_noun:
         return None
 
     detected: str | None = None
@@ -190,7 +194,8 @@ def _detect_flashcard_intent(message: str, context_topic: str | None = None) -> 
         if context_topic and context_topic in _TOPIC_KEYWORDS_FC:
             detected = context_topic
         else:
-            return None
+            # Flashcard intent confirmed but no topic — caller will prompt user to pick
+            return {"topic_id": None, "num_cards": 8, "subtopic_hint": None}
 
     num_match = re.search(r"\b(\d+)\s*(?:flashcards?|cards?|kad)\b", lower)
     num_cards = int(num_match.group(1)) if num_match else 8
@@ -235,6 +240,13 @@ def study_buddy_chat(body: StudyBuddyRequest) -> ChatResponse:
 
     # --- Step 1: flashcard intent (checked before quiz intent) ---
     fc_intent = _detect_flashcard_intent(latest_user_msg, context_topic=context_topic)
+    if fc_intent and fc_intent["topic_id"] is None:
+        # Detected flashcard intent but no topic — ask user to pick
+        return ChatResponse(
+            reply="Sure! Which topic would you like flashcards for? 👇",
+            action=NoAction(),
+            meta={"pick_flashcard_topic": True},
+        )
     if fc_intent:
         topic_id: str = fc_intent["topic_id"]
         num_cards: int = fc_intent["num_cards"]

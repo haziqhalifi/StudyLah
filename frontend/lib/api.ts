@@ -313,7 +313,7 @@ export type AgentAction =
 export interface ChatResponse {
   reply: string;
   action: AgentAction;
-  meta?: { out_of_scope?: boolean };
+  meta?: { out_of_scope?: boolean; pick_flashcard_topic?: boolean };
 }
 
 /** Send the full conversation history and receive an agentic reply. */
