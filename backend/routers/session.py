@@ -469,10 +469,10 @@ def get_review(user_id: str) -> ReviewResponse:
     )
 
     # Map reviewer's ReviewItemOut → schemas ReviewItem
-    # reason is now a 3-value literal — pass through as-is
+    # Convert ReviewQuestionOut to QuestionPublic (same fields, different model)
     review_questions = [
         ReviewItem(
-            question=item.question,  # type: ignore[arg-type]
+            question=QuestionPublic(**item.question.model_dump()),
             reason=item.reason,
         )
         for item in due

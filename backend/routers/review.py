@@ -11,12 +11,15 @@ GET  /api/recommendations/study_plan  – topic study plan with Claude summary
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import List, Literal, Optional
 
 import anthropic
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from backend import db
 from backend.schemas.question import Attempt, TopicStats
@@ -102,10 +105,6 @@ def _build_ai_skill_profile(user_id: str) -> ai_engine.SkillProfile:
     return ai_engine.analyze_diagnostic(db.get_all_questions(), attempts)
 
 
-def _all_topic_ids() -> List[str]:
-    return list({q.topic_id for q in db.get_all_questions()})
-
-
 def _reason_and_overdue(state: ReviewState, now: datetime) -> tuple[str, bool]:
     """Derive a human-readable reason label and overdue flag from a ReviewState."""
     if state.last_review_at is None:
@@ -168,21 +167,32 @@ def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
     the "all caught up" state instead of an empty list.
     """
     all_questions = db.get_all_questions()
+    # Build a lookup map so we never make N individual Supabase round-trips later
+    question_map = {q.id: q for q in all_questions}
+
     attempts = db.get_user_attempts(user_id)
     ai_profile = ai_engine.analyze_diagnostic(all_questions, attempts)
     now = datetime.now(timezone.utc)
 
-    due_states = _engine.get_due_reviews(
-        user_id=user_id,
-        now=now,
-        all_questions=all_questions,
-        attempts=attempts,
-        max_items=limit,
-    )
+    try:
+        due_states = _engine.get_due_reviews(
+            user_id=user_id,
+            now=now,
+            all_questions=all_questions,
+            attempts=attempts,
+            max_items=limit,
+        )
+    except Exception:
+        logger.exception("get_due_reviews failed for user %s", user_id)
+        due_states = []
 
     review_items: List[ReviewItemOut] = []
     for state in due_states:
-        q = db.get_question_by_id(state.question_id)
+        # O(1) lookup from the map we already fetched; no extra Supabase calls
+        q = question_map.get(state.question_id)
+        if q is None:
+            # Fallback for IDs not in the current page (e.g. old seed questions)
+            q = db.get_question_by_id(state.question_id)
         if q is None:
             continue
         reason, is_overdue = _reason_and_overdue(state, now)
@@ -203,13 +213,19 @@ def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
             )
         )
 
-    topic_ids = _all_topic_ids()
-    suggested_topics = get_topic_suggestions(
-        skill_profile=ai_profile,
-        all_topics=topic_ids,
-        now=now,
-        user_id=user_id,
-    )
+    # Derive topic IDs from questions we already have — no extra Supabase call
+    topic_ids = list({q.topic_id for q in all_questions})
+    try:
+        suggested_topics = get_topic_suggestions(
+            skill_profile=ai_profile,
+            all_topics=topic_ids,
+            now=now,
+            user_id=user_id,
+        )
+    except Exception:
+        # studylah_review_schedule may not exist yet in this environment
+        logger.warning("get_topic_suggestions failed for user %s", user_id, exc_info=True)
+        suggested_topics = []
 
     return ReviewResponse(
         review_items=review_items,
@@ -311,7 +327,7 @@ def get_spaced_rep_summary(user_id: str) -> SpacedRepSummaryResponse:
     until the perfect review moment."
     """
     now = datetime.now(timezone.utc)
-    topic_ids = _all_topic_ids()
+    topic_ids = list({q.topic_id for q in db.get_all_questions()})
     summaries = _engine.get_topic_summary(
         user_id=user_id, now=now, all_topic_ids=topic_ids
     )
@@ -327,7 +343,7 @@ def get_study_plan(user_id: str) -> StudyPlanResponse:
     """Topic-level study plan with a Claude-generated personalised summary."""
     ai_profile = _build_ai_skill_profile(user_id)
     now = datetime.now(timezone.utc)
-    topic_ids = _all_topic_ids()
+    topic_ids = list({q.topic_id for q in db.get_all_questions()})
 
     suggested_topics = get_topic_suggestions(
         skill_profile=ai_profile,
