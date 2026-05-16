@@ -142,14 +142,13 @@ export default function ReviewPage() {
     return (
       <div className="review-done page-enter">
         <div className="review-done-emoji">😬</div>
-        <p className="review-done-sub" style={{ marginBottom: "1.5rem" }}>
+        <p className="review-done-sub review-done-sub-spaced">
           I couldn&apos;t load your review questions right now. Give it another
           shot!
         </p>
         <button
           type="button"
-          className="btn-primary"
-          style={{ maxWidth: 240, margin: "0 auto" }}
+          className="btn-primary review-done-button"
           onClick={() => userId && loadReview(userId)}
         >
           Try again
@@ -202,7 +201,7 @@ export default function ReviewPage() {
           <button
             type="button"
             className="btn-ghost diag-skip-btn"
-            onClick={() => router.push("/assessment")}}
+            onClick={() => router.push("/assessment")}
           >
             Progress ▤
           </button>
@@ -237,7 +236,7 @@ export default function ReviewPage() {
       </button>
     </div>
   ) : (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+    <div className="review-next-stack">
       <button type="button" className="btn-primary" onClick={handleNext}>
         {idx + 1 < items.length ? "Next review question →" : "Finish Review →"}
       </button>
@@ -271,13 +270,13 @@ export default function ReviewPage() {
           {idx + 1} / {items.length}
         </span>
       </div>
-      <div className="progress-track review-progress-track">
-        <div
-          className="progress-fill"
-          style={{
-            width: `${Math.round(((idx + 1) / items.length) * 100)}%`,
-          }}
-        />
+      <div className="review-progress-track review-progress-dots" aria-hidden="true">
+        {items.map((_, progressIndex) => (
+          <span
+            key={progressIndex}
+            className={`review-progress-dot ${progressIndex <= idx ? "active" : ""}`}
+          />
+        ))}
       </div>
 
       {/* ── Buddy bubble ── */}

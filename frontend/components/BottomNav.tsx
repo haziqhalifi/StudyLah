@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: "/", icon: HomeIcon, label: "Home" },
   { href: "/materials", icon: BookIcon, label: "Lessons" },
   { href: "/exams", icon: PathIcon, label: "Exams" },
-  { href: "/assessment", icon: ProgressIcon, label: "Progress" },
+  { href: "/progress", icon: ProgressIcon, label: "Progress" },
   { href: "/review", icon: SettingsIcon, label: "Settings" },
 ];
 
