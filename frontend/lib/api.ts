@@ -26,6 +26,7 @@ export interface Question {
 export interface Explanation {
   text: string;
   style: ExplanationStyle;
+  steps?: string[];
 }
 
 export interface TopicStats {

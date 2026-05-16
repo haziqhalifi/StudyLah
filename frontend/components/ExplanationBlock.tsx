@@ -17,6 +17,7 @@ const STYLE_META: Record<ExplanationStyle, { label: string; icon: string; cls: s
 
 export default function ExplanationBlock({ explanation, isCorrect }: Props) {
   const meta = STYLE_META[explanation.style] ?? STYLE_META.step_by_step;
+  const hasSteps = explanation.style === "step_by_step" && explanation.steps && explanation.steps.length > 0;
 
   return (
     <div className={`expblock card page-enter ${meta.cls}`}>
@@ -35,6 +36,17 @@ export default function ExplanationBlock({ explanation, isCorrect }: Props) {
         </span>
 
         <MathText className="expblock-text">{explanation.text}</MathText>
+
+        {hasSteps && (
+          <ol className="expblock-steps">
+            {explanation.steps!.map((step, i) => (
+              <li key={i} className="expblock-step-item">
+                <span className="expblock-step-number">{i + 1}</span>
+                <MathText className="expblock-step-text">{step}</MathText>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
     </div>
   );

@@ -1,9 +1,13 @@
 """
 AI engine layer for StudyLah adaptive education platform.
 
-All adaptive logic lives here. Rule-based heuristics run first; Claude is
-called for richer inference and generation, with the heuristic result as a
-safe fallback whenever the API is unavailable or returns unparseable output.
+Routing:
+  ADAPTIVE_ENGINE=rule_based  →  deterministic heuristics only (default)
+  ADAPTIVE_ENGINE=gemini      →  GeminiAdaptiveEngine with rule-based fallback
+
+Each public function (analyze_diagnostic, choose_next_question, …) checks
+settings.adaptive_engine and delegates to the Gemini engine when enabled.
+If Gemini raises for any reason the rule-based result is used instead.
 
 Claude integration uses the Anthropic SDK:
 
@@ -24,11 +28,15 @@ import logging
 import os
 import random
 from datetime import datetime
-from typing import Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional
+
+if TYPE_CHECKING:
+    from backend.services.adaptive_engine_gemini import GeminiAdaptiveEngine
 
 import anthropic
 from pydantic import BaseModel, computed_field
 
+from backend.config.settings import settings
 from backend.schemas.question import Question, Attempt
 
 logger = logging.getLogger(__name__)
@@ -46,6 +54,34 @@ def _client() -> anthropic.Anthropic:
     if _anthropic_client is None:
         _anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
     return _anthropic_client
+
+
+# ---------------------------------------------------------------------------
+# Gemini adaptive engine (lazy singleton)
+# ---------------------------------------------------------------------------
+
+_gemini_engine: Optional[GeminiAdaptiveEngine] = None
+
+
+def get_gemini_engine():
+    """Return (and lazily create) the GeminiAdaptiveEngine singleton.
+
+    Import is deferred so the module loads even if google-genai is absent.
+    """
+    global _gemini_engine
+    if _gemini_engine is None:
+        from backend.services.adaptive_engine_gemini import GeminiAdaptiveEngine
+        _gemini_engine = GeminiAdaptiveEngine(
+            api_key=settings.gemini_api_key,          # type: ignore[arg-type]
+            model_name=settings.gemini_model_name,    # swap model here or in .env
+            temperature=settings.gemini_temperature,  # lower = stricter JSON
+        )
+    return _gemini_engine
+
+
+def _gemini_enabled() -> bool:
+    """True only when explicitly opted-in AND the API key is present."""
+    return settings.adaptive_engine == "gemini" and bool(settings.gemini_api_key)
 
 
 def _call_claude(prompt: str, max_tokens: int = 1024) -> Optional[str]:
@@ -110,6 +146,7 @@ SkillProfile = Dict[str, SkillStats]
 class Explanation(BaseModel):
     text: str
     style: Literal["step_by_step", "analogy", "formula_first", "shortcut_tips"]
+    steps: Optional[List[str]] = None  # populated for step_by_step style
 
 
 class ReviewItem(BaseModel):
@@ -188,31 +225,11 @@ def _question_difficulty(
 # 1. analyze_diagnostic
 # ---------------------------------------------------------------------------
 
-def analyze_diagnostic(
+def _analyze_diagnostic_rule_based(
     questions: List[Question],
     attempts: List[Attempt],
 ) -> SkillProfile:
-    """Build a SkillProfile from diagnostic session attempts.
-
-    Args:
-        questions: All questions that were part of the diagnostic.
-        attempts: The student's attempts on those questions.
-
-    Returns:
-        A SkillProfile (topic_id → SkillStats) populated for every topic
-        with at least one attempt. Accuracy thresholds:
-            < 0.40  → "weak"
-            0.40–0.70 → "okay"
-            > 0.70  → "strong"
-
-        When Claude is available, each SkillStats entry is enriched with a
-        ``misconceptions`` list of inferred error patterns (e.g.
-        "confuses discriminant calculation with root substitution").
-
-    Heuristic:
-        Groups attempts by topic_id via question metadata, tallies
-        correct/total per topic, and derives estimated_level.
-    """
+    """Rule-based fallback: tally accuracy per topic, enrich via Claude."""
     question_map: Dict[str, Question] = {q.id: q for q in questions}
     profile: SkillProfile = {}
 
@@ -262,6 +279,32 @@ If a topic has no wrong answers, return an empty list for it. Return only the JS
                         profile[tid].misconceptions = [str(l) for l in labels]
             except (json.JSONDecodeError, TypeError, ValueError) as exc:
                 logger.warning("Could not parse misconception response: %s", exc)
+
+    return profile
+
+
+def analyze_diagnostic(
+    questions: List[Question],
+    attempts: List[Attempt],
+) -> SkillProfile:
+    """Build a SkillProfile from diagnostic session attempts.
+
+    Routes to Gemini when ADAPTIVE_ENGINE=gemini, otherwise uses rule-based
+    heuristics (with Claude misconception enrichment as a secondary call).
+    Falls back to rule-based on any Gemini error.
+    """
+    # ── Rule-based first pass (always needed to compute accuracy/level) ────
+    profile = _analyze_diagnostic_rule_based(questions, attempts)
+
+    # ── Gemini: overwrite misconceptions with richer analysis ──────────────
+    if _gemini_enabled():
+        try:
+            misconception_map = get_gemini_engine().analyze_diagnostic_gemini(questions, attempts)
+            for tid, labels in misconception_map.items():
+                if tid in profile:
+                    profile[tid].misconceptions = labels
+        except Exception as exc:
+            logger.exception("Gemini analyze_diagnostic failed, using rule-based misconceptions", exc_info=exc)
 
     return profile
 
@@ -435,22 +478,14 @@ def generate_explanation(
     attempt: Attempt,
     skill_profile: SkillProfile,
 ) -> Explanation:
-    """Generate a personalised explanation for a student's attempt.
-
-    Args:
-        question: The question that was attempted.
-        attempt: The student's attempt record (includes is_correct, selected index).
-        skill_profile: Current skill snapshot used to look up topic accuracy.
-
-    Returns:
-        An Explanation with a style tag and personalised text from Claude,
-        falling back to a template string if Claude is unavailable.
+    """Generate a personalised step-by-step explanation via Gemini.
 
     Heuristic (style selection from topic accuracy):
         accuracy < 0.40               → "step_by_step"
         0.40 ≤ accuracy < 0.70        → "formula_first"
         accuracy ≥ 0.70 + wrong answer → "shortcut_tips"
         accuracy ≥ 0.70 + correct      → "analogy"
+    Falls back to a template string if Gemini is unavailable.
     """
     accuracy = get_topic_accuracy(skill_profile, question.topic_id)
 
@@ -463,41 +498,88 @@ def generate_explanation(
     else:
         style = "analogy"
 
-    stats = skill_profile.get(question.topic_id)
-    topic_stats_summary = {
-        "accuracy": round(accuracy, 2),
-        "attempts": stats.attempt_count if stats else 0,
-        "level": stats.estimated_level if stats else "weak",
-        "misconceptions": stats.misconceptions if stats else [],
-    }
-
-    style_descriptions = {
-        "step_by_step": "a clear step-by-step walkthrough of the solution",
-        "formula_first": "lead with the key formula, then show how to apply it",
-        "shortcut_tips": "a quick practical tip that helps avoid the mistake the student made",
-        "analogy": "a memorable real-world analogy that makes the concept click",
-    }
-
     selected_text = (
         question.options[attempt.selected_option_index]
         if 0 <= attempt.selected_option_index < len(question.options)
         else "unknown"
     )
     correct_text = question.options[question.correct_option_index]
+    result_word = "CORRECT ✓" if attempt.is_correct else "WRONG ✗"
 
-    prompt = f"""You are a friendly, expert tutor explaining a question to a student.
+    style_instruction = {
+        "step_by_step": (
+            "Write a numbered step-by-step solution. "
+            "Start each step on its own line as **Step N:** followed by the working. "
+            "Show every calculation clearly."
+        ),
+        "formula_first": (
+            "Start with a **Formula:** line showing the key formula. "
+            "Then substitute values and simplify step by step."
+        ),
+        "shortcut_tips": (
+            "Start with a **Tip:** line giving the key insight the student missed. "
+            "Then show the correct working briefly."
+        ),
+        "analogy": (
+            "Open with a one-sentence real-world analogy in **bold**. "
+            "Then connect it to the solution steps."
+        ),
+    }[style]
 
-Question: {question.text}
+    wrong_guidance = (
+        f'\nThe student chose **"{selected_text}"** which is wrong. '
+        "Gently explain why before showing the correct working."
+        if not attempt.is_correct else ""
+    )
+
+    system = (
+        "You are a friendly SPM Mathematics tutor. "
+        "Write clear, encouraging explanations using markdown. "
+        "Use **bold** for key terms and formulas. "
+        "Use LaTeX with $...$ for inline math and $$...$$ for display math. "
+        "Keep the total response under 200 words."
+    )
+
+    user = f"""Question: {question.text}
 Options: {json.dumps(question.options)}
-Student selected: "{selected_text}" (option {attempt.selected_option_index}) — {"CORRECT" if attempt.is_correct else "WRONG"}
-Correct answer: "{correct_text}" (option {question.correct_option_index})
+Correct answer: "{correct_text}"
+Student's answer: "{selected_text}" — {result_word}
+{wrong_guidance}
 
-Student topic stats: {json.dumps(topic_stats_summary)}
+{style_instruction}"""
 
-Write {style_descriptions[style]}. Be concise (2-4 sentences), warm, and encouraging. If the student was wrong, reference their specific wrong choice and explain why the correct answer is right. Do not use bullet points or headers — write in plain prose."""
+    explanation_text = _EXPLANATION_TEMPLATES[style]  # default fallback
+    try:
+        from google import genai as _genai
+        from google.genai import types as _types
+        from dotenv import load_dotenv
+        from pathlib import Path
+        load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-    raw = _call_claude(prompt, max_tokens=300)
-    explanation_text = raw.strip() if raw else _EXPLANATION_TEMPLATES[style]
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY not set")
+
+        _gclient = _genai.Client(api_key=api_key)
+        config = _types.GenerateContentConfig(
+            thinking_config=_types.ThinkingConfig(thinking_level=_types.ThinkingLevel.HIGH),
+            system_instruction=[_types.Part.from_text(text=system)],
+        )
+        response = _gclient.models.generate_content(
+            model="gemini-3-flash-preview",   # swap model here if needed
+            contents=[
+                _types.Content(
+                    role="user",
+                    parts=[_types.Part.from_text(text=user)],
+                )
+            ],
+            config=config,
+        )
+        text = (response.text or "").strip()
+        if text:
+            explanation_text = text
+    except Exception as exc:
+        logger.warning("Gemini explanation failed, using template: %s", exc)
 
     return Explanation(text=explanation_text, style=style)
 
