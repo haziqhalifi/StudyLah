@@ -67,6 +67,12 @@ export default function LearnPage() {
   const [prevDiff, setPrevDiff] = useState<string | null>(null);
   const [diffShift, setDiffShift] = useState<"up" | "down" | null>(null);
   const [showBuddy, setShowBuddy] = useState(false);
+  const [recentAttempts, setRecentAttempts] = useState<
+    Array<{ questionId: string; isCorrect: boolean; topicId: string }>
+  >([]);
+  // correctOptionIndex is tracked separately because SubmitAnswerResponse
+  // doesn't return it; we infer it from the answer when correct, else -1.
+  const [correctOptionIndex, setCorrectOptionIndex] = useState<number>(-1);
 
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
@@ -133,6 +139,16 @@ export default function LearnPage() {
       setCount((c) => c + 1);
       if (res.is_correct) setCorrect((c) => c + 1);
 
+      // Track attempt for learning context sent to StudyBuddy.
+      // correctOptionIndex: if answer was correct we know it; otherwise -1
+      // (the API doesn't return it, so StudyBuddy will infer from question text).
+      const inferredCorrect = res.is_correct ? selected : -1;
+      setCorrectOptionIndex(inferredCorrect);
+      setRecentAttempts((prev) => [
+        ...prev.slice(-9),
+        { questionId: question.id, isCorrect: res.is_correct, topicId: question.topic_id },
+      ]);
+
       const nextDiff = res.next_question?.difficulty;
       if (prevDiff && nextDiff && nextDiff !== prevDiff) {
         const RANK: Record<string, number> = { easy: 0, medium: 1, hard: 2 };
@@ -155,6 +171,7 @@ export default function LearnPage() {
     setQuestion(next);
     setSelected(null);
     setResult(null);
+    setCorrectOptionIndex(-1);
   }
 
   async function handleGenerateExplanation() {
@@ -371,9 +388,10 @@ export default function LearnPage() {
                 ? {
                     selectedOptionIndex: selected ?? 0,
                     isCorrect: result.is_correct,
-                    correctOptionIndex: 0,
+                    correctOptionIndex,
                   }
                 : undefined,
+              recentAttempts,
               pageContext: "learn",
             } satisfies LearningContext
           }

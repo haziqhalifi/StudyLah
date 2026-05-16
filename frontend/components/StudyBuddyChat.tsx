@@ -6,10 +6,7 @@ import QuickActionChips from "@/components/QuickActionChips";
 import QuizDrawer from "@/components/QuizDrawer";
 import { postStudyBuddyMessage, ChatMessage } from "@/lib/api";
 import { LearningContext, QuickAction } from "@/lib/types";
-import {
-  DEFAULT_QUICK_ACTIONS,
-  getContextualQuickActions,
-} from "@/lib/quickActions";
+import { getChipsForContext } from "@/lib/quickActions";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -68,14 +65,9 @@ export default function StudyBuddyChat({
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Decide which chip set to display
-  const hasContext = !!(learningContext?.currentQuestion);
-  const chips: QuickAction[] = hasContext
-    ? getContextualQuickActions(
-        learningContext!.topicId,
-        learningContext!.currentQuestion!.text,
-      )
-    : DEFAULT_QUICK_ACTIONS;
+  // Chip set adapts to: no context → defaults, question+no attempt → hints,
+  // wrong answer → explain-first, correct answer → momentum chips.
+  const chips: QuickAction[] = getChipsForContext(learningContext);
 
   // Lock body scroll while open
   useEffect(() => {
