@@ -42,6 +42,13 @@ class FlashcardSet(BaseModel):
 # In-memory stores  (TODO: replace with Supabase persistence)
 # ---------------------------------------------------------------------------
 
+# TODO: FlashcardSets and Flashcards are stored in-memory only — all data is lost
+# on every server restart. Replace these dicts with Supabase upsert/select calls
+# in FlashcardService.create_set() / get_set() / list_sets_for_user().
+# Suggested table schema:
+#   flashcard_sets (id, user_id, topic_id, subtopic, title, description, created_at)
+#   flashcards     (id, set_id, question, answer, topic_id, subtopic, created_at)
+
 # set_id -> FlashcardSet
 FLASHCARD_SETS: dict[str, FlashcardSet] = {}
 

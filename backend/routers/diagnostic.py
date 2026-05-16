@@ -218,6 +218,8 @@ def get_diagnostic_result(userId: str = Query(..., description="User ID")) -> Di
 
 @router.get("/report")
 def get_diagnostic_report(userId: str = Query(..., description="User ID")):
+    # TODO: implement detailed analytics — per-question breakdown, time trends,
+    # misconception heatmap. Currently returns a stub "coming_soon" placeholder.
     """Stub endpoint for future detailed analytics."""
     return {
         "userId": userId,

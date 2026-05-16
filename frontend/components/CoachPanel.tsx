@@ -128,7 +128,9 @@ function SuggestionCard({
         const topicId = action.topicId as "ubahan" | "matriks" | "insurans";
         const length = (action.length as number | undefined) ?? 5;
         const result = await createPersonalizedQuiz(userId, topicId, length);
-        router.push(`/quiz?quizId=${result.quizId}`);
+        // TODO: quiz route is /quiz/[id] not /quiz?quizId=... — this will 404.
+      // Change to: router.push(`/quiz/${result.quizId}`)
+      router.push(`/quiz?quizId=${result.quizId}`);
       } catch {
         // silent — user can retry
       } finally {

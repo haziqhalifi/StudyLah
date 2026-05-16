@@ -358,7 +358,11 @@ export default function ReviewPage() {
 
       {/* ── Question ── */}
       <div className="diag-questions review-questions-gap">
-        <QuestionCard
+        {/* TODO: correctOptionIndex is hardcoded to 0 here — it should be
+          result.correct_option_index from the submit response. The backend
+          ReviewSubmitResponse does not currently return the correct index;
+          add it to ReviewSubmitResponse and wire it through. */}
+      <QuestionCard
           question={item.question}
           selectedOptionIndex={selected}
           onSelectOption={result ? undefined : setSelected}
