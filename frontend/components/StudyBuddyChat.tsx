@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import MathText from "@/components/MathText";
 import QuickActionChips from "@/components/QuickActionChips";
+import QuizDrawer from "@/components/QuizDrawer";
 import { postStudyBuddyMessage, ChatMessage } from "@/lib/api";
 import { LearningContext, QuickAction } from "@/lib/types";
 import {
@@ -56,13 +56,12 @@ export default function StudyBuddyChat({
   isOpen,
   onClose,
 }: StudyBuddyChatProps) {
-  const router = useRouter();
-
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     { role: "assistant", content: buildWelcomeMessage(learningContext) },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   // "expanded" = chips visible above input; "collapsed" = chips hidden
   const [chipsVisible, setChipsVisible] = useState(true);
 
@@ -145,11 +144,7 @@ export default function StudyBuddyChat({
       setChipsVisible(true);
 
       if (res.action?.type === "create_quiz") {
-        const { quiz_id } = res.action;
-        setTimeout(() => {
-          onClose();
-          router.push(`/quiz/${quiz_id}`);
-        }, 1200);
+        setTimeout(() => setActiveQuizId(res.action.type === "create_quiz" ? res.action.quiz_id : null), 800);
       }
     } catch {
       setMessages((prev) => [
@@ -191,6 +186,17 @@ export default function StudyBuddyChat({
   // ---------------------------------------------------------------------------
 
   const userHasSentMessage = messages.some((m) => m.role === "user");
+
+  // Quiz drawer rendered on top of the chat — closing it returns to the chat
+  if (activeQuizId) {
+    return (
+      <QuizDrawer
+        quizId={activeQuizId}
+        userId={userId}
+        onClose={() => setActiveQuizId(null)}
+      />
+    );
+  }
 
   return (
     <>
