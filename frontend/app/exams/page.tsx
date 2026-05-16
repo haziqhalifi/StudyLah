@@ -370,15 +370,16 @@ export default function ExamsPage() {
       >
         →
       </button>
-      <button
-        type="button"
-        className="qs-nav-submit"
-        onClick={handleSubmit}
-        disabled={answered === 0}
-        aria-label="Submit exam"
-      >
-        Submit ({answered}/{questions.length})
-      </button>
+      {answered === questions.length && (
+        <button
+          type="button"
+          className="qs-nav-submit"
+          onClick={handleSubmit}
+          aria-label="Submit exam"
+        >
+          Submit
+        </button>
+      )}
     </div>
   );
 
