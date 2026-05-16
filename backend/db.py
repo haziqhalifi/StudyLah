@@ -68,31 +68,14 @@ def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
     return [_row_to_question(r) for r in response.data]
 
 
-def get_questions_from_trial_papers(subject: str, limit: int = 200) -> List[Question]:
-    """Fetch questions from all trial papers for the given subject."""
-    papers_resp = (
-        supabase.table("papers")
-        .select("id")
-        .ilike("subject", subject)
-        .ilike("paper_type", "trial")
-        .execute()
-    )
-    paper_ids = [row["id"] for row in (papers_resp.data or [])]
-    if not paper_ids:
-        # Fall back to any paper for this subject
-        papers_resp = (
-            supabase.table("papers")
-            .select("id")
-            .ilike("subject", subject)
-            .execute()
-        )
-        paper_ids = [row["id"] for row in (papers_resp.data or [])]
-    if not paper_ids:
-        return []
+_DIAGNOSTIC_CHAPTER_IDS = [87, 88, 89]  # Ubahan, Matriks, Matematik Pengguna: Insurans (Form 5)
+
+def get_questions_from_trial_papers(limit: int = 200) -> List[Question]:
+    """Fetch diagnostic questions from the first 3 Form 5 Matematik chapters."""
     response = (
         supabase.table("questions")
-        .select("id, question, options, correct_index, difficulty, topic, subject")
-        .in_("paper_id", paper_ids)
+        .select("id, question, options, correct_index, difficulty, topic, subject, chapter_id")
+        .in_("chapter_id", _DIAGNOSTIC_CHAPTER_IDS)
         .not_.is_("question", "null")
         .limit(limit)
         .execute()

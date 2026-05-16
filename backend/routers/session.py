@@ -68,13 +68,13 @@ _DIAGNOSTIC_COUNT   = 5
 _DIAGNOSTIC_WEIGHTS = {"easy": 3, "medium": 2, "hard": 1}
 
 
-def select_diagnostic_questions(topic_id: str) -> List[Question]:
+def select_diagnostic_questions() -> List[Question]:
     """Return a small, mixed-difficulty set for the diagnostic.
 
     Prefers easy/medium questions; hard ones are weighted lower so beginners
     are not immediately overwhelmed.
     """
-    pool = db.get_questions_from_trial_papers(topic_id)
+    pool = db.get_questions_from_trial_papers()
     if not pool:
         return []
 
@@ -176,7 +176,7 @@ def start_diagnostic(req: StartDiagnosticRequest) -> StartDiagnosticResponse:
     - Strips correct_option_index before responding (uses QuestionPublic).
     - No attempts are saved here; that happens in submit_diagnostic.
     """
-    questions = select_diagnostic_questions(req.topic_id)
+    questions = select_diagnostic_questions()
     if not questions:
         raise HTTPException(
             status_code=404,
