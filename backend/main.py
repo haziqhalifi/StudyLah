@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Support running from the project root (`uvicorn backend.main:app`) or
 # from inside the `backend` folder (`cd backend && uvicorn main:app`).
 try:
-    from backend.routers import session, users, assistant
+    from backend.routers import session, users, assistant, quizzes
 except ModuleNotFoundError:
     # If running from inside the `backend` folder (cwd=backend), Python's
     # import paths won't include the project root, so absolute imports like
@@ -15,7 +15,7 @@ except ModuleNotFoundError:
 
     project_root = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(project_root))
-    from backend.routers import session, users, assistant
+    from backend.routers import session, users, assistant, quizzes
 
 app = FastAPI(title="StudyLah API", version="1.0.0")
 
@@ -42,6 +42,7 @@ app.add_middleware(
 app.include_router(session.router)
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(assistant.router)
+app.include_router(quizzes.router)
 
 
 @app.get("/")

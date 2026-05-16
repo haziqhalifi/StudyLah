@@ -228,7 +228,7 @@ export async function getPapers(): Promise<PapersResponse> {
 }
 
 // ---------------------------------------------------------------------------
-// StudyBuddy chat (Gemini-powered tutor)
+// StudyBuddy chat (Gemini-powered agentic tutor)
 // ---------------------------------------------------------------------------
 
 export type ChatRole = "user" | "assistant" | "system";
@@ -238,16 +238,32 @@ export interface ChatMessage {
   content: string;
 }
 
-export interface StudyBuddyResponse {
+// Agent action emitted alongside every chat reply
+export type AgentAction =
+  | { type: "none" }
+  | { type: "create_quiz"; quiz_id: string; topic_id: "ubahan" | "matriks" | "insurans" };
+
+// Full response from the agentic chat endpoint
+export interface ChatResponse {
   reply: string;
-  meta: { out_of_scope: boolean };
+  action: AgentAction;
+  meta?: { out_of_scope?: boolean };
 }
 
+/** Send the full conversation history and receive an agentic reply. */
+export async function postStudyBuddyMessage(
+  userId: string,
+  messages: ChatMessage[],
+): Promise<ChatResponse> {
+  return post("/api/assistant/study-buddy", { user_id: userId, messages });
+}
+
+/** Legacy alias — kept for backwards compatibility with existing usages. */
 export async function chatWithStudyBuddy(
   userId: string,
   messages: ChatMessage[],
-): Promise<StudyBuddyResponse> {
-  return post("/api/assistant/study-buddy", { user_id: userId, messages });
+): Promise<ChatResponse> {
+  return postStudyBuddyMessage(userId, messages);
 }
 
 // ---------------------------------------------------------------------------
@@ -271,4 +287,42 @@ export interface TopicProgress {
   topicName: string;
   accuracy: number; // 0–1
   level: TopicLevel;
+}
+
+// ---------------------------------------------------------------------------
+// Personalised quiz
+// ---------------------------------------------------------------------------
+
+export interface QuizDetail {
+  quiz_id: string;
+  user_id: string;
+  topic_id: string;
+  title: string;
+  created_at: string; // ISO datetime
+  questions: Question[];
+}
+
+export interface CreateQuizResponse {
+  quiz_id: string;
+  topic_id: string;
+  title: string;
+  question_count: number;
+}
+
+/** Fetch a previously-created personalised quiz by ID. */
+export async function fetchQuiz(quizId: string): Promise<QuizDetail> {
+  return get(`/api/quizzes/${quizId}`);
+}
+
+/** Create a new personalised quiz for a topic. */
+export async function createPersonalisedQuiz(
+  userId: string,
+  topicId: "ubahan" | "matriks" | "insurans",
+  numQuestions = 5,
+): Promise<CreateQuizResponse> {
+  return post("/api/quizzes/personalized", {
+    user_id: userId,
+    topic_id: topicId,
+    num_questions: numQuestions,
+  });
 }

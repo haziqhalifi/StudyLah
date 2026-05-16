@@ -30,10 +30,24 @@ def _row_to_question(row: dict) -> Question:
 
 
 def get_question_by_id(question_id: str) -> Optional[Question]:
+    # Seed/quiz questions have UUID string IDs — check those first
+    try:
+        from backend.data.seed_questions import get_seed_questions
+        for q in get_seed_questions():
+            if q.id == question_id:
+                return q
+    except Exception:
+        pass
+
+    # Fall back to Supabase (integer row IDs)
+    try:
+        int_id = int(question_id)
+    except (ValueError, TypeError):
+        return None
     response = (
         supabase.table("questions")
         .select("id, question, options, correct_index, difficulty, topic, subject")
-        .eq("id", int(question_id))
+        .eq("id", int_id)
         .maybe_single()
         .execute()
     )
@@ -44,16 +58,40 @@ def get_question_by_id(question_id: str) -> Optional[Question]:
 def get_questions_by_ids(ids: List[str]) -> List[Question]:
     if not ids:
         return []
-    int_ids = [int(i) for i in ids]
-    response = (
-        supabase.table("questions")
-        .select("id, question, options, correct_index, difficulty, topic, subject")
-        .in_("id", int_ids)
-        .execute()
-    )
-    order = {str(qid): i for i, qid in enumerate(ids)}
-    rows = sorted(response.data, key=lambda r: order.get(str(r["id"]), len(ids)))
-    return [_row_to_question(r) for r in rows]
+
+    # Separate UUID (seed) IDs from integer (Supabase) IDs
+    uuid_ids: List[str] = []
+    int_ids: List[int] = []
+    for i in ids:
+        try:
+            int_ids.append(int(i))
+        except (ValueError, TypeError):
+            uuid_ids.append(i)
+
+    results: List[Question] = []
+
+    if uuid_ids:
+        try:
+            from backend.data.seed_questions import get_seed_questions
+            seed_map = {q.id: q for q in get_seed_questions()}
+            for uid in uuid_ids:
+                if uid in seed_map:
+                    results.append(seed_map[uid])
+        except Exception:
+            pass
+
+    if int_ids:
+        response = (
+            supabase.table("questions")
+            .select("id, question, options, correct_index, difficulty, topic, subject")
+            .in_("id", int_ids)
+            .execute()
+        )
+        results.extend(_row_to_question(r) for r in response.data)
+
+    order = {qid: i for i, qid in enumerate(ids)}
+    results.sort(key=lambda q: order.get(q.id, len(ids)))
+    return results
 
 
 def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
