@@ -59,6 +59,13 @@ function _topicLabel(topicId: string): string {
   return "Ubahan";
 }
 
+const COACH_CHIP: QuickAction = {
+  label: "Ask AI Coach",
+  emoji: "🧑‍🏫",
+  message: "Based on my recent performance, what should I focus on next?",
+  actionType: "ask_coach",
+};
+
 /** Chips when the student answered WRONG — prioritise understanding over practice. */
 function getWrongAnswerActions(topicId: string): QuickAction[] {
   return [
@@ -86,6 +93,7 @@ function getWrongAnswerActions(topicId: string): QuickAction[] {
       message: `Give me a similar ${_topicLabel(topicId)} question to practise`,
       actionType: "similar_question",
     },
+    COACH_CHIP,
   ];
 }
 
@@ -117,6 +125,7 @@ function getCorrectAnswerActions(topicId: string): QuickAction[] {
       message: "Teach me the concept behind this question",
       actionType: "teach_concept",
     },
+    COACH_CHIP,
   ];
 }
 
@@ -151,6 +160,7 @@ export function getContextualQuickActions(
       message: "Teach me the concept behind this question",
       actionType: "teach_concept",
     },
+    COACH_CHIP,
   ];
 }
 

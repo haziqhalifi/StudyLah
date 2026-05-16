@@ -178,20 +178,24 @@ function SuggestionCard({
 
 export default function CoachPanel({ userId }: CoachPanelProps) {
   const [data, setData] = useState<CoachSummaryResponse | null>(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
     fetchCoachSummary(userId)
       .then(setData)
-      .catch(() => setError(true));
+      .catch((err) => {
+        console.error("[CoachPanel] fetchCoachSummary failed:", err);
+        setError(err instanceof Error ? err.message : "Failed to load");
+      });
   }, [userId]);
 
   // Error state
   if (error) {
     return (
       <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
-        Could not load your coaching summary. Please try again later.
+        <p className="font-semibold">Could not load AI Coach</p>
+        <p className="mt-1 text-xs opacity-75">{error}</p>
       </div>
     );
   }
