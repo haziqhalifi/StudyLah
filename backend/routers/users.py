@@ -14,6 +14,7 @@ _users: dict[str, str] = {}  # user_id → name
 def create_user(req: CreateUserRequest):
     """Creates or retrieves a user and initialises their skill profile."""
     _users[req.user_id] = req.name
+    db.ensure_user(req.user_id, req.name)
     db.get_or_create_profile(req.user_id)
     return UserResponse(user_id=req.user_id, name=req.name)
 

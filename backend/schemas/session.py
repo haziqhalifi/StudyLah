@@ -56,6 +56,9 @@ class SubmitAnswerResponse(BaseModel):
     explanation: Explanation
     next_question: QuestionPublic
     skill_summary: Optional[TopicStats] = None
+    # True when next_question is a spaced-repetition review item, not a fresh question.
+    # Frontend can display "Let's revisit something you struggled with earlier."
+    is_review: bool = False
 
 
 # ---------------------------------------------------------------------------

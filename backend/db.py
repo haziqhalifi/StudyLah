@@ -1,14 +1,18 @@
 """
-In-memory data store. Replace with SQLite/Postgres for production.
-All question bank entries live here so the AI engine can query them.
+Database layer backed by Supabase (Postgres).
+
+Public API is unchanged from the original in-memory version so routers need
+no edits. The question bank stays in-memory since it's static seed data.
 """
 
 from datetime import datetime
 from typing import Dict, List
-from schemas.question import Question, Attempt, SkillProfile, TopicStats
+
+from schemas.question import Attempt, Question, SkillProfile, TopicStats
+from supabase_client import supabase
 
 # ---------------------------------------------------------------------------
-# Question bank – one topic (quadratic equations) to start
+# Question bank – static, kept in memory
 # ---------------------------------------------------------------------------
 QUESTION_BANK: List[Question] = [
     Question(
@@ -113,43 +117,106 @@ QUESTION_BANK: List[Question] = [
     ),
 ]
 
-DIAGNOSTIC_QUESTION_IDS = ["q1", "q2", "q3", "q6", "q8"]  # 5 diagnostic questions
+DIAGNOSTIC_QUESTION_IDS = ["q1", "q2", "q3", "q6", "q8"]
 
-# ---------------------------------------------------------------------------
-# Runtime stores (keyed by user_id)
-# ---------------------------------------------------------------------------
-user_profiles: Dict[str, SkillProfile] = {}
-user_attempts: Dict[str, List[Attempt]] = {}
+_question_map: Dict[str, Question] = {q.id: q for q in QUESTION_BANK}
 
 
 def get_question_by_id(question_id: str) -> Question | None:
-    return next((q for q in QUESTION_BANK if q.id == question_id), None)
+    return _question_map.get(question_id)
 
 
 def get_questions_by_ids(ids: List[str]) -> List[Question]:
-    id_set = set(ids)
-    return [q for q in QUESTION_BANK if q.id in id_set]
+    return [_question_map[i] for i in ids if i in _question_map]
 
 
-def get_or_create_profile(user_id: str) -> SkillProfile:
-    if user_id not in user_profiles:
-        user_profiles[user_id] = SkillProfile(
-            user_id=user_id,
-            topics={
-                "quadratic_equations": TopicStats(
-                    topic_id="quadratic_equations",
-                    accuracy=0.0,
-                    attempts=0,
-                    correct=0,
-                )
-            },
-        )
-    return user_profiles[user_id]
+# ---------------------------------------------------------------------------
+# Users
+# ---------------------------------------------------------------------------
 
+def ensure_user(user_id: str, name: str = "") -> None:
+    supabase.table("studylah_users").upsert(
+        {"id": user_id, "name": name}, on_conflict="id"
+    ).execute()
+
+
+# ---------------------------------------------------------------------------
+# Attempts
+# ---------------------------------------------------------------------------
 
 def record_attempt(attempt: Attempt) -> None:
-    user_attempts.setdefault(attempt.user_id, []).append(attempt)
+    supabase.table("studylah_attempts").insert({
+        "id": attempt.id,
+        "user_id": attempt.user_id,
+        "question_id": attempt.question_id,
+        "selected_option_index": attempt.selected_option_index,
+        "is_correct": attempt.is_correct,
+        "timestamp": attempt.timestamp.isoformat(),
+    }).execute()
 
 
 def get_user_attempts(user_id: str) -> List[Attempt]:
-    return user_attempts.get(user_id, [])
+    response = (
+        supabase.table("studylah_attempts")
+        .select("*")
+        .eq("user_id", user_id)
+        .order("timestamp")
+        .execute()
+    )
+    return [
+        Attempt(
+            id=row["id"],
+            user_id=row["user_id"],
+            question_id=row["question_id"],
+            selected_option_index=row["selected_option_index"],
+            is_correct=row["is_correct"],
+            timestamp=row["timestamp"],
+        )
+        for row in response.data
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Skill profiles
+# ---------------------------------------------------------------------------
+
+def get_or_create_profile(user_id: str) -> SkillProfile:
+    response = (
+        supabase.table("studylah_skill_profiles")
+        .select("*")
+        .eq("user_id", user_id)
+        .maybe_single()
+        .execute()
+    )
+    if response.data:
+        topics = {
+            tid: TopicStats(**stats)
+            for tid, stats in response.data["topics"].items()
+        }
+        return SkillProfile(user_id=user_id, topics=topics)
+
+    # Create a blank profile row so future upserts work
+    supabase.table("studylah_skill_profiles").insert(
+        {"user_id": user_id, "topics": {}}
+    ).execute()
+    return SkillProfile(
+        user_id=user_id,
+        topics={
+            "quadratic_equations": TopicStats(
+                topic_id="quadratic_equations",
+                accuracy=0.0,
+                attempts=0,
+                correct=0,
+            )
+        },
+    )
+
+
+def save_profile(profile: SkillProfile) -> None:
+    topics_json = {
+        tid: stats.model_dump() for tid, stats in profile.topics.items()
+    }
+    supabase.table("studylah_skill_profiles").upsert(
+        {"user_id": profile.user_id, "topics": topics_json, "updated_at": datetime.utcnow().isoformat()},
+        on_conflict="user_id",
+    ).execute()
