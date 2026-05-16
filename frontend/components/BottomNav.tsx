@@ -11,12 +11,8 @@ const NAV_ITEMS = [
   { href: "/review",     icon: "↺",  label: "Review"     },
 ];
 
-const HIDDEN_PATHS = ["/diagnostic", "/learn", "/review"];
-
 export default function BottomNav() {
   const pathname = usePathname();
-
-  if (HIDDEN_PATHS.includes(pathname)) return null;
 
   return (
     <nav className="bottom-nav">

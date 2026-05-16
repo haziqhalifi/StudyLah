@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
-import MainWrapper from "@/components/MainWrapper";
 
 export const metadata: Metadata = {
   title: "StudyLah – AI-Powered Learning",
@@ -20,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="app-shell">
-          <MainWrapper>{children}</MainWrapper>
+          <main className="app-main">{children}</main>
         </div>
         <BottomNav />
       </body>

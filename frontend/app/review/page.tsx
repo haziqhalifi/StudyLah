@@ -11,6 +11,7 @@ import {
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
+import QuizSheet from "@/components/QuizSheet";
 
 const REASON_LABEL: Record<string, string> = {
   low_accuracy: "Low accuracy — let's fix this",
@@ -119,9 +120,23 @@ export default function ReviewPage() {
       </div>
     );
 
+  const bar = !result ? (
+    <button
+      type="button"
+      className="btn-primary"
+      onClick={handleSubmit}
+      disabled={selected === null || submitting}
+    >
+      {submitting ? "Checking…" : "Submit Answer"}
+    </button>
+  ) : (
+    <button type="button" className="btn-primary" onClick={handleNext}>
+      {idx + 1 < items.length ? "Next Review →" : "Finish Review →"}
+    </button>
+  );
+
   return (
-    <div>
-      {/* Review mode banner */}
+    <QuizSheet open bar={bar} onClose={() => router.push("/")}>
       <div className="ai-cue ai-cue-review review-banner">
         <div className="review-banner-reason">
           {REASON_LABEL[item.reason] ?? item.reason}
@@ -130,7 +145,6 @@ export default function ReviewPage() {
         <p className="review-banner-sub">AI is focusing on your weak spots.</p>
       </div>
 
-      {/* Progress */}
       <div className="review-progress-row">
         <span className="review-progress-label">Spaced repetition</span>
         <span className="review-progress-frac">
@@ -167,24 +181,7 @@ export default function ReviewPage() {
           isCorrect={result.is_correct}
         />
       )}
-
-      <div className="sticky-bar">
-        {!result ? (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={handleSubmit}
-            disabled={selected === null || submitting}
-          >
-            {submitting ? "Checking…" : "Submit Answer"}
-          </button>
-        ) : (
-          <button type="button" className="btn-primary" onClick={handleNext}>
-            {idx + 1 < items.length ? "Next Review →" : "Finish Review →"}
-          </button>
-        )}
-      </div>
-    </div>
+    </QuizSheet>
   );
 }
 

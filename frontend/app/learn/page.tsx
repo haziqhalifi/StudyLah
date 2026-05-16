@@ -14,6 +14,7 @@ import {
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
+import QuizSheet from "@/components/QuizSheet";
 
 type View = "topics" | "practice";
 
@@ -205,21 +206,32 @@ export default function LearnPage() {
   const showReview = count > 0 && count % 5 === 0 && !result;
   const isReview = question.tags?.includes("review") ?? false;
 
-  return (
-    <div>
-      {/* Back to topics */}
+  const bar = !result ? (
+    <button
+      type="button"
+      className="btn-primary"
+      onClick={handleSubmit}
+      disabled={selected === null || submitting}
+    >
+      {submitting ? "Checking…" : "Submit Answer"}
+    </button>
+  ) : (
+    <div className="learn-actions">
+      <button type="button" className="btn-primary" onClick={handleNext}>
+        Next Question →
+      </button>
       <button
         type="button"
-        className="btn-ghost btn-ghost-sm learn-back-btn"
-        onClick={() => {
-          setView("topics");
-          setResult(null);
-          setSelected(null);
-        }}
+        className="btn-ghost diag-skip-btn"
+        onClick={() => router.push("/assessment")}
       >
-        ← Topics
+        Progress ▤
       </button>
+    </div>
+  );
 
+  return (
+    <QuizSheet open={view === "practice"} bar={bar} onClose={() => { setView("topics"); setResult(null); setSelected(null); }}>
       <div className="learn-stats">
         <div className="learn-stat">
           <div className="learn-stat-label">Done</div>
@@ -231,9 +243,7 @@ export default function LearnPage() {
         </div>
         <div className="learn-stat">
           <div className="learn-stat-label">Accuracy</div>
-          <div
-            className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}
-          >
+          <div className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}>
             {count > 0 ? `${accuracy}%` : "—"}
           </div>
         </div>
@@ -289,32 +299,6 @@ export default function LearnPage() {
           isCorrect={result.is_correct}
         />
       )}
-
-      <div className="sticky-bar">
-        {!result ? (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={handleSubmit}
-            disabled={selected === null || submitting}
-          >
-            {submitting ? "Checking…" : "Submit Answer"}
-          </button>
-        ) : (
-          <div className="learn-actions">
-            <button type="button" className="btn-primary" onClick={handleNext}>
-              Next Question →
-            </button>
-            <button
-              type="button"
-              className="btn-ghost diag-skip-btn"
-              onClick={() => router.push("/assessment")}
-            >
-              Progress ▤
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    </QuizSheet>
   );
 }

@@ -9,6 +9,7 @@ import {
   DiagnosticAnswer,
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
+import QuizSheet from "@/components/QuizSheet";
 
 type Step = "pick" | "quiz";
 
@@ -130,9 +131,59 @@ export default function DiagnosticPage() {
   const isLast = current === questions.length - 1;
   const allAnswered = answered === questions.length;
 
+  const bar = isLast ? (
+    <button
+      type="button"
+      className="btn-primary"
+      onClick={handleSubmit}
+      disabled={submitting}
+    >
+      {submitting
+        ? "Analysing your answers…"
+        : allAnswered
+          ? "Submit & Start Learning →"
+          : `Submit (${answered}/${questions.length} answered)`}
+    </button>
+  ) : (
+    <div className="learn-actions">
+      <button
+        type="button"
+        className="btn-ghost diag-skip-btn"
+        onClick={() => setCurrent((c) => c + 1)}
+      >
+        Skip
+      </button>
+      <button
+        type="button"
+        className="btn-primary"
+        onClick={() => setCurrent((c) => c + 1)}
+        disabled={answers[q?.id] === undefined}
+      >
+        Next →
+      </button>
+    </div>
+  );
+
+  function handleClose() {
+    setStep("pick");
+    setQuestions([]);
+    setCurrent(0);
+    setAnswers({});
+    setError("");
+  }
+
   return (
-    <div>
+    <QuizSheet open={step === "quiz"} bar={bar} onClose={handleClose}>
       <div className="diag-step-indicator">
+        <button
+          type="button"
+          className="quiz-sheet-back"
+          onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+          disabled={current === 0}
+          aria-label="Previous question"
+        >
+          ←
+        </button>
         {questions.map((_, i) => (
           <button
             type="button"
@@ -176,41 +227,6 @@ export default function DiagnosticPage() {
       )}
 
       {error && <p className="diag-error">{error}</p>}
-
-      <div className="sticky-bar">
-        {isLast ? (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting
-              ? "Analysing your answers…"
-              : allAnswered
-                ? "Submit & Start Learning →"
-                : `Submit (${answered}/${questions.length} answered)`}
-          </button>
-        ) : (
-          <div className="learn-actions">
-            <button
-              type="button"
-              className="btn-ghost diag-skip-btn"
-              onClick={() => setCurrent((c) => c + 1)}
-            >
-              Skip
-            </button>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => setCurrent((c) => c + 1)}
-              disabled={answers[q?.id] === undefined}
-            >
-              Next →
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    </QuizSheet>
   );
 }

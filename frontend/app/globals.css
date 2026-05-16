@@ -407,9 +407,6 @@ h1, h2, h3 {
   overflow-y: auto;
 }
 
-.app-main--fullscreen {
-  padding-bottom: 5rem;
-}
 
 /* ── ExplanationBlock ─────────────────────────────────────────── */
 .expblock {
@@ -812,13 +809,74 @@ h1, h2, h3 {
   margin-top: 1rem;
 }
 
-.app-main--fullscreen .sticky-bar {
+/* ── Quiz sheet overlay ───────────────────────────────────────── */
+.quiz-sheet {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
+  z-index: 100;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
   max-width: 480px;
   margin: 0 auto;
+  animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.quiz-sheet-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem 0;
+}
+
+.quiz-sheet-close {
+  margin-left: auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.quiz-sheet-close:hover { background: var(--border); color: var(--ink); }
+
+.quiz-sheet-back {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.quiz-sheet-back:disabled { opacity: 0.3; cursor: default; }
+.quiz-sheet-back:not(:disabled):hover { background: var(--border); }
+
+.quiz-sheet-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1rem 1rem;
+}
+
+.quiz-sheet-bar {
+  flex-shrink: 0;
   padding: 0.75rem 1rem;
   background: var(--surface);
   border-top: 1px solid var(--border);
