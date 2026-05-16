@@ -26,6 +26,8 @@ from backend.schemas.session import (
     Explanation,
     ReviewItem,
     ReviewResponse,
+    ReviewSubmitRequest,
+    ReviewSubmitResponse,
     StartDiagnosticRequest,
     StartDiagnosticResponse,
     SubmitAnswerRequest,
@@ -456,10 +458,11 @@ def get_review(user_id: str) -> ReviewResponse:
     )
 
     # Map reviewer's ReviewItemOut → schemas ReviewItem
+    # reason is now a 3-value literal — pass through as-is
     review_questions = [
         ReviewItem(
             question=item.question,  # type: ignore[arg-type]
-            reason=item.reason if item.reason in ("low_accuracy", "not_seen_recently") else "low_accuracy",
+            reason=item.reason,
         )
         for item in due
     ]
@@ -472,11 +475,42 @@ def get_review(user_id: str) -> ReviewResponse:
     )
 
     suggested_topics = [
-        SuggestedTopic(
-            topic_id=s.topic_id,
-            reason=s.reason if s.reason in ("low_accuracy", "not_seen_recently") else "low_accuracy",
-        )
+        SuggestedTopic(topic_id=s.topic_id, reason=s.reason)
         for s in topic_suggestions_raw
     ]
 
     return ReviewResponse(review_questions=review_questions, suggested_topics=suggested_topics)
+
+
+# ---------------------------------------------------------------------------
+# Endpoint: POST /api/session/review/submit
+# ---------------------------------------------------------------------------
+
+@router.post("/review/submit", response_model=ReviewSubmitResponse)
+def submit_review_answer(body: ReviewSubmitRequest) -> ReviewSubmitResponse:
+    """
+    Score a review answer, update the spaced-repetition schedule,
+    and return correctness + explanation + next review time.
+    """
+    from datetime import timezone
+
+    question = db.get_question_by_id(body.question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    is_correct = question.correct_option_index == body.selected_option_index
+
+    now = datetime.now(timezone.utc)
+    schedule_entry = review_scheduler.mark_reviewed(
+        user_id=body.user_id,
+        question_id=body.question_id,
+        topic_id=question.topic_id,
+        is_correct=is_correct,
+        now=now,
+    )
+
+    return ReviewSubmitResponse(
+        is_correct=is_correct,
+        explanation=None,  # client calls /generate_explanation separately if desired
+        next_review_at=schedule_entry.next_review_at.isoformat(),
+    )
