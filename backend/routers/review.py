@@ -6,26 +6,22 @@ Endpoints
 GET  /api/review/session/review         – return due review questions + topic suggestions
 POST /api/review/session/review/submit  – score a review answer, advance schedule
 GET  /api/recommendations/study_plan    – topic-level study plan suggestion
-
-All AI calls are rule-based stubs; every integration point is marked
-# TODO: Call Claude here with a concise prompt sketch.
-
-# TODO: Replace in-memory store with database queries for production.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import List, Optional
+from datetime import datetime, timezone
+from typing import List
 
+import anthropic
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-import db
-from schemas.question import Attempt, TopicStats
-from schemas.session import Explanation
-from services import ai_engine, review_scheduler
-from services.review_scheduler import (
+from backend import db
+from backend.schemas.question import Attempt, TopicStats
+from backend.schemas.session import Explanation
+from backend.services import ai_engine, review_scheduler
+from backend.services.review_scheduler import (
     ReviewItemOut,
     ReviewResponse,
     ReviewScheduleEntry,
@@ -36,6 +32,8 @@ from services.review_scheduler import (
 )
 
 router = APIRouter(tags=["review"])
+
+_claude = anthropic.Anthropic()
 
 
 # ---------------------------------------------------------------------------
@@ -64,14 +62,43 @@ class StudyPlanResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 def _build_ai_skill_profile(user_id: str) -> ai_engine.SkillProfile:
-    """Reconstruct the ai_engine skill profile from the user's full attempt history."""
     attempts = db.get_user_attempts(user_id)
     return ai_engine.analyze_diagnostic(db.QUESTION_BANK, attempts)
 
 
 def _all_topic_ids() -> List[str]:
-    """Return the distinct set of topic_ids present in the question bank."""
     return list({q.topic_id for q in db.QUESTION_BANK})
+
+
+def _claude_study_summary(
+    suggested_topics: List[TopicSuggestion],
+    ai_profile: ai_engine.SkillProfile,
+    overdue_count: int,
+) -> str:
+    topic_lines = "\n".join(
+        f"- {t.topic_name} (priority: {t.priority}, reason: {t.reason})"
+        for t in suggested_topics
+    )
+    accuracy_lines = "\n".join(
+        f"- {tid}: {stats.correct_count}/{stats.attempt_count} correct"
+        f" ({int(stats.correct_count / stats.attempt_count * 100) if stats.attempt_count else 0}%)"
+        for tid, stats in ai_profile.items()
+    )
+    prompt = (
+        "You are a warm, encouraging study coach for a student using a spaced-repetition learning app.\n\n"
+        f"Suggested topics (ordered by priority):\n{topic_lines}\n\n"
+        f"Student accuracy per topic:\n{accuracy_lines}\n\n"
+        f"Overdue reviews: {overdue_count}\n\n"
+        "Write a personalised 2-3 sentence study plan summary. Be specific — mention the top priority topic "
+        "by name and the overdue count if > 0. End with a short word of encouragement. "
+        "Do not use bullet points or headers, just plain sentences."
+    )
+    response = _claude.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=200,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.content[0].text.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -80,28 +107,10 @@ def _all_topic_ids() -> List[str]:
 
 @router.get("/api/review/session/review", response_model=ReviewResponse)
 def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
-    """Return due review questions and topic study suggestions for a user.
-
-    Args:
-        user_id: The student's identifier (query param).
-        limit: Maximum number of review questions to return (default 5).
-
-    Returns:
-        ReviewResponse with:
-          - review_items: questions due now, each with a reason tag.
-          - suggested_topics: topics ranked by priority.
-
-    Behaviour:
-        Loads the user's attempts and skill profile from the in-memory store,
-        calls review_scheduler.get_due_reviews and get_topic_suggestions,
-        and returns the combined result.
-        If no reviews are due, review_items will be empty.
-
-    # TODO: Replace in-memory store with database queries for production.
-    """
+    """Return due review questions and topic study suggestions for a user."""
     attempts = db.get_user_attempts(user_id)
     ai_profile = _build_ai_skill_profile(user_id)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     review_items = get_due_reviews(
         user_id=user_id,
@@ -117,6 +126,7 @@ def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
         skill_profile=ai_profile,
         all_topics=topic_ids,
         now=now,
+        user_id=user_id,
     )
 
     return ReviewResponse(
@@ -131,30 +141,7 @@ def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
 
 @router.post("/api/review/session/review/submit", response_model=ReviewSubmitResponse)
 def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
-    """Score a review answer, update the skill profile, and advance the schedule.
-
-    Args:
-        req.user_id: The student's identifier.
-        req.question_id: The question that was reviewed.
-        req.selected_option_index: The student's chosen option (0-indexed).
-
-    Returns:
-        ReviewSubmitResponse with:
-          - is_correct: bool
-          - explanation: Explanation (rule-based style selection from ai_engine)
-          - next_review_at: datetime when this question is next due
-
-    Behaviour:
-        1. Look up the question; 404 if not found.
-        2. Evaluate correctness against correct_option_index.
-        3. Persist an Attempt via db.record_attempt.
-        4. Rebuild skill profile and persist updated TopicStats.
-        5. Generate a rule-based explanation via ai_engine.generate_explanation.
-        6. Call review_scheduler.mark_reviewed to advance the SM-2 schedule.
-        7. Return the response.
-
-    # TODO: Replace in-memory store with database queries for production.
-    """
+    """Score a review answer, update the skill profile, and advance the schedule."""
     question = db.get_question_by_id(req.question_id)
     if question is None:
         raise HTTPException(
@@ -163,7 +150,7 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
         )
 
     is_correct = question.correct_option_index == req.selected_option_index
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     attempt = Attempt(
         user_id=req.user_id,
@@ -183,11 +170,14 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
     for tid, stats in ai_profile.items():
         db_profile.topics[tid] = TopicStats(
             topic_id=tid,
-            accuracy=stats.accuracy,
+            accuracy=stats.correct_count / stats.attempt_count if stats.attempt_count else 0.0,
             attempts=stats.attempt_count,
             correct=stats.correct_count,
-            level=TopicStats.compute_level(stats.accuracy),
+            level=TopicStats.compute_level(
+                stats.correct_count / stats.attempt_count if stats.attempt_count else 0.0
+            ),
         )
+    db.save_profile(db_profile)
 
     # Rule-based explanation – style chosen from topic accuracy.
     engine_expl = ai_engine.generate_explanation(question, attempt, ai_profile)
@@ -215,41 +205,18 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
 
 @router.get("/api/recommendations/study_plan", response_model=StudyPlanResponse)
 def get_study_plan(user_id: str) -> StudyPlanResponse:
-    """Return a topic-level study plan with a plain-text summary for the user.
-
-    Args:
-        user_id: The student's identifier (query param).
-
-    Returns:
-        StudyPlanResponse with:
-          - suggested_topics: list of TopicSuggestion sorted by priority.
-          - summary: a placeholder summary string.
-
-    Behaviour:
-        Loads the skill profile, calls get_topic_suggestions, counts overdue
-        reviews, and assembles a rule-based summary string.
-
-    # TODO: Call Claude here to generate a warm, encouraging, 2-3 sentence
-    #       study plan summary personalised to the student's current skill
-    #       profile and review backlog.
-    #       Prompt: ordered suggested_topics list, skill_profile snapshot
-    #               (accuracy per topic), overdue_count, student's display name.
-    #       Claude returns: 2-3 sentences, e.g.
-    #           "Focus on Quadratic Equations today — you scored 30% last time
-    #            and have 3 overdue reviews waiting. After that, a quick look at
-    #            Indices before you sleep will keep it fresh. You're doing great!"
-    """
+    """Return a topic-level study plan with a Claude-generated summary for the user."""
     ai_profile = _build_ai_skill_profile(user_id)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     topic_ids = _all_topic_ids()
 
     suggested_topics = get_topic_suggestions(
         skill_profile=ai_profile,
         all_topics=topic_ids,
         now=now,
+        user_id=user_id,
     )
 
-    # Count overdue reviews across all questions for this user.
     overdue_count = len(
         get_due_reviews(
             user_id=user_id,
@@ -261,23 +228,25 @@ def get_study_plan(user_id: str) -> StudyPlanResponse:
         )
     )
 
-    # Build a simple rule-based summary.
-    high_priority = [t for t in suggested_topics if t.priority == "high"]
-    if high_priority:
-        weakest = high_priority[0].topic_name
-        summary = (
-            f"Focus on {weakest} today. "
-            f"You have {overdue_count} overdue review(s) waiting."
-        )
-    elif overdue_count > 0:
-        summary = (
-            f"You have {overdue_count} overdue review(s). "
-            "Complete them to keep your knowledge fresh!"
-        )
+    if not ai_profile:
+        summary = "Start your first session so I can build your study plan!"
     else:
-        summary = "Great work — no overdue reviews. Keep up the momentum!"
-
-    # TODO: Replace summary above with a Claude-generated personalised message.
+        try:
+            summary = _claude_study_summary(suggested_topics, ai_profile, overdue_count)
+        except Exception:
+            high_priority = [t for t in suggested_topics if t.priority == "high"]
+            if high_priority:
+                summary = (
+                    f"Focus on {high_priority[0].topic_name} today. "
+                    f"You have {overdue_count} overdue review(s) waiting."
+                )
+            elif overdue_count > 0:
+                summary = (
+                    f"You have {overdue_count} overdue review(s). "
+                    "Complete them to keep your knowledge fresh!"
+                )
+            else:
+                summary = "Great work — no overdue reviews. Keep up the momentum!"
 
     return StudyPlanResponse(
         suggested_topics=suggested_topics,

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import session, users
+from backend.routers import session, users
 
 app = FastAPI(title="StudyLah API", version="1.0.0")
 

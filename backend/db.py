@@ -8,8 +8,8 @@ no edits. The question bank stays in-memory since it's static seed data.
 from datetime import datetime
 from typing import Dict, List
 
-from schemas.question import Attempt, Question, SkillProfile, TopicStats
-from supabase_client import supabase
+from backend.schemas.question import Attempt, Question, SkillProfile, TopicStats
+from backend.supabase_client import supabase
 
 # ---------------------------------------------------------------------------
 # Question bank – static, kept in memory

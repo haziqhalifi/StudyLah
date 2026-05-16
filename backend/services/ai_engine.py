@@ -26,28 +26,7 @@ from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
-
-# ---------------------------------------------------------------------------
-# Data models (Phase 1 domain models reproduced here for self-containment)
-# ---------------------------------------------------------------------------
-
-class Question(BaseModel):
-    id: str
-    topic_id: str
-    text: str
-    options: List[str]
-    correct_option_index: int
-    difficulty: Literal["easy", "medium", "hard"]
-    tags: List[str] = []
-
-
-class Attempt(BaseModel):
-    user_id: str
-    question_id: str
-    selected_option_index: int
-    is_correct: bool
-    timestamp: datetime
-    topic_id: Optional[str] = None  # convenience field; may be populated by caller
+from backend.schemas.question import Question, Attempt
 
 
 class SkillStats(BaseModel):

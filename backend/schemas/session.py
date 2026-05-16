@@ -4,7 +4,7 @@ from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel
 
-from schemas.question import QuestionPublic, SkillProfile, TopicStats
+from backend.schemas.question import QuestionPublic, SkillProfile, TopicStats
 
 
 # ---------------------------------------------------------------------------

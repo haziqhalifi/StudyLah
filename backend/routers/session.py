@@ -20,9 +20,9 @@ from typing import Dict, List, Literal, Optional
 
 from fastapi import APIRouter, HTTPException
 
-import db
-from schemas.question import Attempt, Question, QuestionPublic, SkillProfile, TopicStats
-from schemas.session import (
+from backend import db
+from backend.schemas.question import Attempt, Question, QuestionPublic, SkillProfile, TopicStats
+from backend.schemas.session import (
     AssessmentResponse,
     DiagnosticAnswer,
     Explanation,
@@ -36,8 +36,8 @@ from schemas.session import (
     SubmitDiagnosticResponse,
     SuggestedTopic,
 )
-from services import ai_engine, review_scheduler
-from services.ai_engine import SkillStats
+from backend.services import ai_engine, review_scheduler
+from backend.services.ai_engine import SkillStats
 
 router = APIRouter(prefix="/api/session", tags=["session"])
 
