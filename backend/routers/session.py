@@ -40,8 +40,6 @@ from backend.services.ai_engine import SkillStats
 router = APIRouter(prefix="/api/session", tags=["session"])
 
 
-QUESTIONS_DB: List[Question] = db.QUESTION_BANK
-
 # How often (every N answers) to inject a spaced-repetition review question.
 _REVIEW_INJECTION_INTERVAL = 4
 
@@ -51,7 +49,7 @@ _REVIEW_INJECTION_INTERVAL = 4
 # ---------------------------------------------------------------------------
 
 def get_questions_by_topic(topic_id: str) -> List[Question]:
-    return [q for q in QUESTIONS_DB if q.topic_id == topic_id]
+    return db.get_all_questions(topic_id=topic_id)
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +133,7 @@ def choose_next_question_for_user(
     ai_profile: ai_engine.SkillProfile,
 ) -> Question:
     attempts = get_user_attempts(user_id)
-    return ai_engine.choose_next_question(ai_profile, QUESTIONS_DB, attempts)
+    return ai_engine.choose_next_question(ai_profile, db.get_all_questions(), attempts)
 
 
 # ---------------------------------------------------------------------------
@@ -195,7 +193,7 @@ def submit_diagnostic(req: SubmitDiagnosticRequest) -> SubmitDiagnosticResponse:
     if not req.answers:
         raise HTTPException(status_code=400, detail="No answers provided.")
 
-    question_map: Dict[str, Question] = {q.id: q for q in QUESTIONS_DB}
+    question_map: Dict[str, Question] = {q.id: q for q in db.get_all_questions()}
     diagnostic_questions: List[Question] = []
     new_attempts: List[Attempt] = []
 
@@ -280,7 +278,7 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
     db.record_attempt(attempt)
 
     all_attempts = get_user_attempts(req.user_id)
-    ai_profile = ai_engine.analyze_diagnostic(QUESTIONS_DB, all_attempts)
+    ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
 
     # Persist updated stats back into the db-layer profile
     db_profile = db.get_or_create_profile(req.user_id)
@@ -303,7 +301,7 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
     if answer_count % _REVIEW_INJECTION_INTERVAL == 0:
         # Convert schemas.question types to ai_engine types for the scheduler.
         engine_questions = [
-            ai_engine.Question(**q.model_dump()) for q in QUESTIONS_DB
+            ai_engine.Question(**q.model_dump()) for q in db.get_all_questions()
         ]
         engine_attempts = [
             ai_engine.Attempt(**a.model_dump()) for a in all_attempts
@@ -357,7 +355,7 @@ def get_assessment(user_id: str) -> AssessmentResponse:
     all_attempts = get_user_attempts(user_id)
 
     if all_attempts:
-        ai_profile = ai_engine.analyze_diagnostic(QUESTIONS_DB, all_attempts)
+        ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
         # Keep db-layer profile in sync
         db_profile = db.get_or_create_profile(user_id)
         for tid, stats in ai_profile.items():
@@ -394,7 +392,7 @@ def get_review(user_id: str) -> ReviewResponse:
     if not all_attempts:
         return ReviewResponse(review_questions=[], suggested_topics=[])
 
-    engine_questions = [ai_engine.Question(**q.model_dump()) for q in QUESTIONS_DB]
+    engine_questions = [ai_engine.Question(**q.model_dump()) for q in db.get_all_questions()]
     engine_attempts = [ai_engine.Attempt(**a.model_dump()) for a in all_attempts]
     ai_profile = ai_engine.analyze_diagnostic(engine_questions, engine_attempts)
 

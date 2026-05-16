@@ -2,132 +2,70 @@
 Database layer backed by Supabase (Postgres).
 
 Public API is unchanged from the original in-memory version so routers need
-no edits. The question bank stays in-memory since it's static seed data.
+no edits. Questions are fetched from the studylah_questions table.
 """
 
 from datetime import datetime
-from typing import Dict, List
+from typing import List, Optional
 
 from backend.schemas.question import Attempt, Question, SkillProfile, TopicStats
 from backend.supabase_client import supabase
 
 # ---------------------------------------------------------------------------
-# Question bank – static, kept in memory
+# Questions – fetched from the shared `questions` table
+# Column mapping: id→id, question→text, correct_index→correct_option_index,
+#                 topic→topic_id, subject→subject, difficulty→difficulty
 # ---------------------------------------------------------------------------
-QUESTION_BANK: List[Question] = [
-    Question(
-        id="q1",
-        topic_id="quadratic_equations",
-        text="Solve: x² - 5x + 6 = 0. What are the roots?",
-        options=["x = 2, x = 3", "x = -2, x = -3", "x = 1, x = 6", "x = -1, x = -6"],
-        correct_option_index=0,
-        difficulty="easy",
-        tags=["quadratic_roots", "factoring"],
-    ),
-    Question(
-        id="q2",
-        topic_id="quadratic_equations",
-        text="Which of the following is the quadratic formula?",
-        options=[
-            "x = (-b ± √(b²-4ac)) / 2a",
-            "x = (-b ± √(b²+4ac)) / 2a",
-            "x = (b ± √(b²-4ac)) / 2a",
-            "x = (-b ± √(4ac-b²)) / 2a",
-        ],
-        correct_option_index=0,
-        difficulty="easy",
-        tags=["quadratic_formula"],
-    ),
-    Question(
-        id="q3",
-        topic_id="quadratic_equations",
-        text="The discriminant of x² + 4x + 5 = 0 is:",
-        options=["-4", "4", "36", "-36"],
-        correct_option_index=0,
-        difficulty="medium",
-        tags=["discriminant"],
-    ),
-    Question(
-        id="q4",
-        topic_id="quadratic_equations",
-        text="Solve by completing the square: x² + 6x - 7 = 0",
-        options=["x = 1, x = -7", "x = -1, x = 7", "x = 3, x = -7", "x = 7, x = 1"],
-        correct_option_index=0,
-        difficulty="medium",
-        tags=["completing_the_square", "quadratic_roots"],
-    ),
-    Question(
-        id="q5",
-        topic_id="quadratic_equations",
-        text="A ball is thrown upward with height h = -5t² + 20t. When does it hit the ground?",
-        options=["t = 4 seconds", "t = 2 seconds", "t = 5 seconds", "t = 10 seconds"],
-        correct_option_index=0,
-        difficulty="hard",
-        tags=["word_problem", "quadratic_roots"],
-    ),
-    Question(
-        id="q6",
-        topic_id="quadratic_equations",
-        text="For x² - 4 = 0, which method is fastest?",
-        options=[
-            "Difference of squares: (x-2)(x+2)=0",
-            "Quadratic formula",
-            "Completing the square",
-            "Graphing",
-        ],
-        correct_option_index=0,
-        difficulty="medium",
-        tags=["factoring", "shortcut"],
-    ),
-    Question(
-        id="q7",
-        topic_id="quadratic_equations",
-        text="The sum of the roots of 2x² - 8x + 6 = 0 is:",
-        options=["4", "-4", "3", "6"],
-        correct_option_index=0,
-        difficulty="hard",
-        tags=["vieta_formulas", "quadratic_roots"],
-    ),
-    Question(
-        id="q8",
-        topic_id="quadratic_equations",
-        text="How many real roots does x² + x + 1 = 0 have?",
-        options=["0", "1", "2", "Cannot determine"],
-        correct_option_index=0,
-        difficulty="medium",
-        tags=["discriminant"],
-    ),
-    Question(
-        id="q9",
-        topic_id="quadratic_equations",
-        text="Factorise: 3x² + 7x + 2",
-        options=["(3x + 1)(x + 2)", "(3x - 1)(x - 2)", "(x + 1)(3x - 2)", "(x - 1)(3x + 2)"],
-        correct_option_index=0,
-        difficulty="hard",
-        tags=["factoring"],
-    ),
-    Question(
-        id="q10",
-        topic_id="quadratic_equations",
-        text="What is the vertex form of y = x² - 4x + 3?",
-        options=["y = (x-2)² - 1", "y = (x+2)² - 1", "y = (x-2)² + 1", "y = (x+2)² + 3"],
-        correct_option_index=0,
-        difficulty="hard",
-        tags=["vertex_form", "completing_the_square"],
-    ),
-]
 
-DIAGNOSTIC_QUESTION_IDS = ["q1", "q2", "q3", "q6", "q8"]
-
-_question_map: Dict[str, Question] = {q.id: q for q in QUESTION_BANK}
+def _row_to_question(row: dict) -> Question:
+    return Question(
+        id=str(row["id"]),
+        topic_id=row.get("topic") or row.get("subject") or "general",
+        text=row["question"],
+        options=row["options"] if isinstance(row["options"], list) else list(row["options"]),
+        correct_option_index=row["correct_index"],
+        difficulty=row.get("difficulty") or "medium",
+        tags=[],
+    )
 
 
-def get_question_by_id(question_id: str) -> Question | None:
-    return _question_map.get(question_id)
+def get_question_by_id(question_id: str) -> Optional[Question]:
+    response = (
+        supabase.table("questions")
+        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .eq("id", int(question_id))
+        .maybe_single()
+        .execute()
+    )
+    data = response.data if response else None
+    return _row_to_question(data) if data else None
 
 
 def get_questions_by_ids(ids: List[str]) -> List[Question]:
-    return [_question_map[i] for i in ids if i in _question_map]
+    if not ids:
+        return []
+    int_ids = [int(i) for i in ids]
+    response = (
+        supabase.table("questions")
+        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .in_("id", int_ids)
+        .execute()
+    )
+    order = {str(qid): i for i, qid in enumerate(ids)}
+    rows = sorted(response.data, key=lambda r: order.get(str(r["id"]), len(ids)))
+    return [_row_to_question(r) for r in rows]
+
+
+def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Question]:
+    query = (
+        supabase.table("questions")
+        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .limit(limit)
+    )
+    if topic_id:
+        query = query.eq("topic", topic_id)
+    response = query.execute()
+    return [_row_to_question(r) for r in response.data]
 
 
 # ---------------------------------------------------------------------------

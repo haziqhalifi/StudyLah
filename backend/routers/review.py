@@ -63,11 +63,11 @@ class StudyPlanResponse(BaseModel):
 
 def _build_ai_skill_profile(user_id: str) -> ai_engine.SkillProfile:
     attempts = db.get_user_attempts(user_id)
-    return ai_engine.analyze_diagnostic(db.QUESTION_BANK, attempts)
+    return ai_engine.analyze_diagnostic(db.get_all_questions(), attempts)
 
 
 def _all_topic_ids() -> List[str]:
-    return list({q.topic_id for q in db.QUESTION_BANK})
+    return list({q.topic_id for q in db.get_all_questions()})
 
 
 def _claude_study_summary(
@@ -114,7 +114,7 @@ def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
 
     review_items = get_due_reviews(
         user_id=user_id,
-        all_questions=db.QUESTION_BANK,
+        all_questions=db.get_all_questions(),
         attempts=attempts,
         skill_profile=ai_profile,
         now=now,
@@ -163,7 +163,7 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
 
     # Rebuild AI profile from full attempt history (includes the new attempt).
     all_attempts = db.get_user_attempts(req.user_id)
-    ai_profile = ai_engine.analyze_diagnostic(db.QUESTION_BANK, all_attempts)
+    ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
 
     # Persist updated stats back into the db-layer profile.
     db_profile = db.get_or_create_profile(req.user_id)
@@ -220,7 +220,7 @@ def get_study_plan(user_id: str) -> StudyPlanResponse:
     overdue_count = len(
         get_due_reviews(
             user_id=user_id,
-            all_questions=db.QUESTION_BANK,
+            all_questions=db.get_all_questions(),
             attempts=db.get_user_attempts(user_id),
             skill_profile=ai_profile,
             now=now,
