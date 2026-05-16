@@ -42,6 +42,15 @@ class Settings(BaseSettings):
     gemini_timeout_seconds: int = 15                 # per-request timeout
 
     # -----------------------------------------------------------------------
+    # KSSM RAG — controls where explanation text comes from.
+    #   "gemini"  — free-form Gemini (default, no syllabus grounding)
+    #   "kssm"    — KSSM-grounded via KssmAnswerEngine (RAG pipeline)
+    # Used by ai_engine.generate_explanation to optionally route through KSSM.
+    # Set EXPLANATIONS_SOURCE=kssm in backend/.env to enable grounded explanations.
+    # -----------------------------------------------------------------------
+    explanations_source: str = "gemini"
+
+    # -----------------------------------------------------------------------
     # Anthropic (kept for backwards compatibility with existing ai_engine)
     # -----------------------------------------------------------------------
     anthropic_api_key: Optional[str] = None

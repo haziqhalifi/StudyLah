@@ -1,17 +1,18 @@
 """
-Review router – Phase 4 spaced-repetition and scheduling.
+Review router – Growtrics-inspired spaced repetition (Phase 5).
 
 Endpoints
 ---------
-GET  /api/review/session/review         – return due review questions + topic suggestions
-POST /api/review/session/review/submit  – score a review answer, advance schedule
-GET  /api/recommendations/study_plan    – topic-level study plan suggestion
+GET  /api/session/review              – due review questions with SR state info
+POST /api/session/review/submit       – score answer, advance SR schedule
+GET  /api/spaced-rep/summary          – topic-level SR health (dashboard widget)
+GET  /api/recommendations/study_plan  – topic study plan with Claude summary
 """
 
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Literal, Optional
 
 import anthropic
 from fastapi import APIRouter, HTTPException
@@ -20,25 +21,55 @@ from pydantic import BaseModel
 from backend import db
 from backend.schemas.question import Attempt, TopicStats
 from backend.schemas.session import Explanation
-from backend.services import ai_engine, review_scheduler
+from backend.services import ai_engine
 from backend.services.review_scheduler import (
-    ReviewItemOut,
-    ReviewResponse,
-    ReviewScheduleEntry,
     TopicSuggestion,
-    get_due_reviews,
     get_topic_suggestions,
-    mark_reviewed,
+)
+from backend.services.spaced_rep_engine import (
+    ReviewState,
+    TopicSummary,
+    get_engine,
 )
 
 router = APIRouter(tags=["review"])
 
 _claude = anthropic.Anthropic()
+_engine = get_engine()
 
 
 # ---------------------------------------------------------------------------
-# Request / response schemas (review-specific)
+# Response models
 # ---------------------------------------------------------------------------
+
+class ReviewQuestionOut(BaseModel):
+    id: str
+    topic_id: str
+    text: str
+    options: List[str]
+    difficulty: Literal["easy", "medium", "hard"]
+    tags: List[str]
+
+
+class ReviewStateOut(BaseModel):
+    status: Literal["learning", "reviewing", "mastered"]
+    next_review_at: Optional[datetime]
+    interval_days: float
+
+
+class ReviewItemOut(BaseModel):
+    question: ReviewQuestionOut
+    reason: str          # "new" | "due_for_review" | "overdue" | "learning" | "low_accuracy" | ...
+    status: Literal["learning", "reviewing", "mastered"]
+    next_review_at: Optional[datetime] = None
+    is_overdue: bool = False
+
+
+class ReviewResponse(BaseModel):
+    review_items: List[ReviewItemOut]
+    suggested_topics: List[TopicSuggestion]
+    caught_up: bool = False
+
 
 class ReviewSubmitRequest(BaseModel):
     user_id: str
@@ -49,7 +80,12 @@ class ReviewSubmitRequest(BaseModel):
 class ReviewSubmitResponse(BaseModel):
     is_correct: bool
     explanation: Explanation
-    next_review_at: datetime
+    next_review_at: datetime        # kept for backward compat with existing frontend
+    review_state: ReviewStateOut    # richer SR info for the upgraded UI
+
+
+class SpacedRepSummaryResponse(BaseModel):
+    topics: List[TopicSummary]
 
 
 class StudyPlanResponse(BaseModel):
@@ -68,6 +104,18 @@ def _build_ai_skill_profile(user_id: str) -> ai_engine.SkillProfile:
 
 def _all_topic_ids() -> List[str]:
     return list({q.topic_id for q in db.get_all_questions()})
+
+
+def _reason_and_overdue(state: ReviewState, now: datetime) -> tuple[str, bool]:
+    """Derive a human-readable reason label and overdue flag from a ReviewState."""
+    if state.last_review_at is None:
+        return "new", False
+    if state.next_review_at is not None and state.next_review_at < now:
+        overdue_hours = (now - state.next_review_at).total_seconds() / 3600
+        return ("overdue", True) if overdue_hours > 24 else ("due_for_review", False)
+    if state.status == "learning":
+        return "learning", False
+    return "due_for_review", False
 
 
 def _claude_study_summary(
@@ -102,24 +150,58 @@ def _claude_study_summary(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/review/session/review
+# GET /api/session/review
 # ---------------------------------------------------------------------------
 
-@router.get("/api/review/session/review", response_model=ReviewResponse)
+@router.get("/api/session/review", response_model=ReviewResponse)
 def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
-    """Return due review questions and topic study suggestions for a user."""
+    """
+    Return due review questions for a user, driven by the spaced-rep schedule.
+
+    Questions are selected in priority order:
+      1. "learning" items due now (recently failed, short interval)
+      2. "reviewing" items due now (progressing, medium interval)
+      3. "mastered" items due now (held back until the optimal moment)
+      4. Supplement with unseen questions if the schedule has fewer than `limit`
+
+    When no items are due, returns caught_up=True so the frontend can show
+    the "all caught up" state instead of an empty list.
+    """
+    all_questions = db.get_all_questions()
     attempts = db.get_user_attempts(user_id)
-    ai_profile = _build_ai_skill_profile(user_id)
+    ai_profile = ai_engine.analyze_diagnostic(all_questions, attempts)
     now = datetime.now(timezone.utc)
 
-    review_items = get_due_reviews(
+    due_states = _engine.get_due_reviews(
         user_id=user_id,
-        all_questions=db.get_all_questions(),
-        attempts=attempts,
-        skill_profile=ai_profile,
         now=now,
-        limit=limit,
+        all_questions=all_questions,
+        attempts=attempts,
+        max_items=limit,
     )
+
+    review_items: List[ReviewItemOut] = []
+    for state in due_states:
+        q = db.get_question_by_id(state.question_id)
+        if q is None:
+            continue
+        reason, is_overdue = _reason_and_overdue(state, now)
+        review_items.append(
+            ReviewItemOut(
+                question=ReviewQuestionOut(
+                    id=q.id,
+                    topic_id=q.topic_id,
+                    text=q.text,
+                    options=q.options,
+                    difficulty=q.difficulty,
+                    tags=q.tags,
+                ),
+                reason=reason,
+                status=state.status,
+                next_review_at=state.next_review_at,
+                is_overdue=is_overdue,
+            )
+        )
 
     topic_ids = _all_topic_ids()
     suggested_topics = get_topic_suggestions(
@@ -132,16 +214,23 @@ def get_review(user_id: str, limit: int = 5) -> ReviewResponse:
     return ReviewResponse(
         review_items=review_items,
         suggested_topics=suggested_topics,
+        caught_up=len(review_items) == 0,
     )
 
 
 # ---------------------------------------------------------------------------
-# POST /api/review/session/review/submit
+# POST /api/session/review/submit
 # ---------------------------------------------------------------------------
 
-@router.post("/api/review/session/review/submit", response_model=ReviewSubmitResponse)
+@router.post("/api/session/review/submit", response_model=ReviewSubmitResponse)
 def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
-    """Score a review answer, update the skill profile, and advance the schedule."""
+    """
+    Score a review answer, update the SR schedule, and return the next window.
+
+    The spaced-rep engine decides the next interval:
+      - Correct → longer interval, higher ease factor, status may → mastered
+      - Wrong   → 0.5-day interval, lower ease factor, status → learning
+    """
     question = db.get_question_by_id(req.question_id)
     if question is None:
         raise HTTPException(
@@ -152,6 +241,7 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
     is_correct = question.correct_option_index == req.selected_option_index
     now = datetime.now(timezone.utc)
 
+    # Record attempt
     attempt = Attempt(
         user_id=req.user_id,
         question_id=req.question_id,
@@ -161,11 +251,9 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
     )
     db.record_attempt(attempt)
 
-    # Rebuild AI profile from full attempt history (includes the new attempt).
+    # Rebuild and persist skill profile
     all_attempts = db.get_user_attempts(req.user_id)
     ai_profile = ai_engine.analyze_diagnostic(db.get_all_questions(), all_attempts)
-
-    # Persist updated stats back into the db-layer profile.
     db_profile = db.get_or_create_profile(req.user_id)
     for tid, stats in ai_profile.items():
         db_profile.topics[tid] = TopicStats(
@@ -179,24 +267,55 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
         )
     db.save_profile(db_profile)
 
-    # Rule-based explanation – style chosen from topic accuracy.
+    # Generate explanation
     engine_expl = ai_engine.generate_explanation(question, attempt, ai_profile)
     explanation = Explanation(text=engine_expl.text, style=engine_expl.style)
 
-    # Advance the spaced-repetition schedule.
-    schedule_entry: ReviewScheduleEntry = mark_reviewed(
+    # Advance spaced-repetition schedule
+    existing_state = _engine.get_state(req.user_id, req.question_id)
+    updated_state = _engine.update_review_state(
+        state=existing_state,
+        is_correct=is_correct,
+        now=now,
         user_id=req.user_id,
         question_id=req.question_id,
         topic_id=question.topic_id,
-        is_correct=is_correct,
-        now=now,
     )
+
+    # next_review_at is always set by update_review_state; fall back to now defensively
+    next_review_at = updated_state.next_review_at or now
 
     return ReviewSubmitResponse(
         is_correct=is_correct,
         explanation=explanation,
-        next_review_at=schedule_entry.next_review_at,
+        next_review_at=next_review_at,
+        review_state=ReviewStateOut(
+            status=updated_state.status,
+            next_review_at=updated_state.next_review_at,
+            interval_days=updated_state.interval_days,
+        ),
     )
+
+
+# ---------------------------------------------------------------------------
+# GET /api/spaced-rep/summary
+# ---------------------------------------------------------------------------
+
+@router.get("/api/spaced-rep/summary", response_model=SpacedRepSummaryResponse)
+def get_spaced_rep_summary(user_id: str) -> SpacedRepSummaryResponse:
+    """
+    Topic-level SR health snapshot for the dashboard widget.
+
+    Returns per-topic due/overdue counts and next scheduled review time.
+    Use this to mirror the Growtrics narrative: "mastered topics held back
+    until the perfect review moment."
+    """
+    now = datetime.now(timezone.utc)
+    topic_ids = _all_topic_ids()
+    summaries = _engine.get_topic_summary(
+        user_id=user_id, now=now, all_topic_ids=topic_ids
+    )
+    return SpacedRepSummaryResponse(topics=summaries)
 
 
 # ---------------------------------------------------------------------------
@@ -205,7 +324,7 @@ def submit_review(req: ReviewSubmitRequest) -> ReviewSubmitResponse:
 
 @router.get("/api/recommendations/study_plan", response_model=StudyPlanResponse)
 def get_study_plan(user_id: str) -> StudyPlanResponse:
-    """Return a topic-level study plan with a Claude-generated summary for the user."""
+    """Topic-level study plan with a Claude-generated personalised summary."""
     ai_profile = _build_ai_skill_profile(user_id)
     now = datetime.now(timezone.utc)
     topic_ids = _all_topic_ids()
@@ -218,14 +337,7 @@ def get_study_plan(user_id: str) -> StudyPlanResponse:
     )
 
     overdue_count = len(
-        get_due_reviews(
-            user_id=user_id,
-            all_questions=db.get_all_questions(),
-            attempts=db.get_user_attempts(user_id),
-            skill_profile=ai_profile,
-            now=now,
-            limit=50,
-        )
+        _engine.get_due_reviews(user_id=user_id, now=now, max_items=50)
     )
 
     if not ai_profile:
@@ -248,7 +360,4 @@ def get_study_plan(user_id: str) -> StudyPlanResponse:
             else:
                 summary = "Great work — no overdue reviews. Keep up the momentum!"
 
-    return StudyPlanResponse(
-        suggested_topics=suggested_topics,
-        summary=summary,
-    )
+    return StudyPlanResponse(suggested_topics=suggested_topics, summary=summary)

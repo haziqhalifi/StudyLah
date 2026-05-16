@@ -1,0 +1,932 @@
+[
+  {
+    "id": "ubahan-001",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nBAB\n1 Ubahan\nApakah yang akan anda pelajari?\n• Ubahan Langsung\n• Ubahan Songsang\n• Ubahan Bergabung\nMaslahat Bab Ini\nKonsep ubahan banyak digunakan dalam kehidupan seharian kita dan meluas dalam\nbidang sains dan matematik. Misalnya, mencari jarak yang dilalui dengan laju dalam masa\ntertentu, mengkaji hubungan antara kedalaman laut dengan tekanan air dan lain-lain.\nTahukah Anda?\nSimbol ∝ diperkenalkan oleh William Emerson (1701-1782),\nseorang ahli matematik Inggeris, pada tahun 1768 dalam\nkaryanya The Doctrine of Fluxions.\nUntuk maklumat lanjut:\nbit.do/TahukahAndaBab1\nGERBANG ISTILAH\npemalar constant\npemboleh ubah variable\nubahan bergabung combined variation\nubahan langsung direct variation\nubahan songsang inverse variation\nubahan tercantum joint variation",
+    "tokens": 106
+  },
+  {
+    "id": "ubahan-002",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "Ubahan\nD\nalam kajian saintifik, juruelektrik menjalankan eksperimen untuk mengkaji\nhubungan antara dua atau lebih pemboleh ubah. Sebagai contoh, dalam suatu\neksperimen mengenai arus elektrik, jika nilai voltan meningkat, maka nilai arus\nyang mengalir melalui litar juga meningkat dan sebaliknya. Berbeza pula, jika\nnilai rintangan berkurang, maka nilai arus bertambah dan sebaliknya. Tahukah\nanda bagaimana hubungan antara arus (I), voltan (V) dengan rintangan (R) berkait\nantara satu sama lain?\n11\nKKPPMM\n1\nBAB\n1.1 Ubahan Langsung\nApakah maksud ubahan langsung?\nMenerangkan maksud\nubahan langsung.\n5 cawan beras untuk\n10 hidangan. 10 cawan\nberas untuk 20 hidangan.\nSeorang tukang masak perlu menentukan bahan yang digunakan mengikut bilangan hidangan.\nJika bahan yang digunakan bertambah, maka bilangan hidangan turut bertambah. Sebaliknya,\njika bahan yang digunakan berkurang, maka bilangan hidangan turut berkurang.\nDalam kehidupan seharian, kita sering berdepan dengan situasi yang melibatkan\nhubungan perubahan kuantiti. Contohnya, jarak perjalanan dengan tambang teksi, jumlah\nfaedah yang diperoleh mengikut tempoh dengan kadar faedah tertentu.\nMobiLisasi Minda 1\nIndividu\nTujuan: Menerangkan maksud ubahan langsung.\nLangkah:\n1. Dengan melayari laman sesawang Bank Negara Malaysia, dapatkan kadar\npertukaran mata wang Ringgit Malaysia (RM) kepada Dolar Singapura ($), Baht\nThailand (B| ) dan Yen Jepun (¥) yang terbaharu.\n2. Dengan menggunakan kadar pertukaran tersebut, hitung nilai mata wang Ringgit\nMalaysia kepada Dolar Singapura, Baht Thailand dan Yen Jepun yang berikut.\nRinggit Malaysia (RM) 10 20 30 40 50\nDolar Singapura ($)\nBaht Thailand (B| )\nYen Jepun (¥)\n2\nKPM",
+    "tokens": 239
+  },
+  {
+    "id": "ubahan-003",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nPerbincangan:\n1. Nyatakan perubahan\n(a) pada Dolar Singapura, Baht Thailand dan Yen Jepun apabila Ringgit Malaysia\nbertambah,\n(b) pada Dolar Singapura, Baht Thailand dan Yen Jepun apabila Ringgit Malaysia\ndibahagi dengan empat,\n(c) pada Dolar Singapura, Baht Thailand dan Yen Jepun apabila Ringgit Malaysia\nbertambah dua kali ganda,\n(d) pada Dolar Singapura, Baht Thailand dan Yen Jepun apabila Ringgit Malaysia\nberkurang 50%.\n2. Apakah hubungan antara nilai Ringgit Malaysia dengan nilai Dolar Singapura, Baht\nThailand dan Yen Jepun?\nHasil daripada Mobilisasi Minda 1, didapati bahawa perubahan dalam jumlah Ringgit Malaysia,\nRM yang ditukar menyebabkan perubahan yang sepadan dalam jumlah Dolar Singapura, $,\nBaht Thailand, B| , dan Yen Jepun, ¥. Nilai RM bertambah apabila nilai $, B| dan ¥ bertambah,\ndan nilai RM berkurang apabila nilai $, B| dan ¥ berkurang.\nHubungan ini dinamakan ubahan langsung. Secara umumnya,\nUbahan langsung menerangkan perkaitan antara dua pemboleh ubah, dengan keadaan\napabila satu pemboleh ubah y bertambah maka pemboleh ubah x juga bertambah pada\nkadar yang sama dan sebaliknya. Hubungan ini juga ditulis sebagai y berubah secara\nlangsung dengan x.\nContoh 1\nJumlah gaji seorang pekerja sambilan sebagai jurujual berubah secara langsung dengan bilangan\njam dia bekerja. Nyatakan perubahan pada\n(a) jumlah gaji jika bilangan jam bertambah dua kali ganda,\n(b) jumlah gaji jika bilangan jam berkurang sebanyak 40%,\n(c) bilangan jam bekerja jika jumlah gaji yang diterima adalah separuh daripada gaji asal.\nPenyelesaian:\n(a) Jumlah gaji bertambah dua kali ganda.\n(b) Jumlah gaji berkurang sebanyak 40%.\n(c) Bilangan jam bekerja adalah separuh daripada bilangan jam asal bekerja.\nLatih Kendiri 1.1a\n1. Nilai rintangan bagi seutas dawai berubah secara langsung dengan nilai suhunya. Nyatakan\nperubahan pada\n(a) nilai rintangan jika nilai suhunya bertambah 10%,\n(b) nilai rintangan jika nilai suhunya berkurang separuh daripada suhu asal,\n1\n(c) nilai suhu jika nilai rintangan berkurang daripada nilai rintangan asal.\n4\n3\nKPM",
+    "tokens": 312
+  },
+  {
+    "id": "ubahan-004",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\n2. Puan Wardina ingin membeli kacang hijau yang dijual pada harga RMx sekilogram.\nNyatakan harga kacang hijau jika Puan Wardina membeli\n(a) 500 g kacang hijau,\n(b) 2 kg kacang hijau.\n3. Jadual di bawah menunjukkan hubungan antara masa dengan bilangan botol jem yang\ndihasilkan di sebuah kilang.\nMasa (minit) 5 10 15 20 25\nBilangan botol 10 20 30 40 50\nNyatakan perubahan pada bilangan botol jem yang dihasilkan apabila\n(a) masa bertambah sebanyak dua kali ganda lebih lama,\n(b) masa dikurangkan separuh.\nApakah hubungan antara dua pemboleh ubah bagi suatu\nubahan langsung?\nMenentukan hubungan\nMobiLisasi Minda 2\nBerkumpulan antara dua pemboleh\nubah bagi suatu ubahan\nTujuan: Menentukan hubungan antara dua pemboleh ubah\nlangsung.\nbagi suatu ubahan langsung.\nLangkah:\n1. Bahagikan murid kepada 6 kumpulan.\n2. Setiap kumpulan memilih satu jenis kadar daripada senarai di bawah.\n(a) Kadar tambang teksi mengikut jarak\n(b) Kadar tempat letak kereta mengikut jam\n(c) Kadar denyutan jantung mengikut minit\n(d) Kadar tol mengikut jarak\n(e) Kadar muat turun data (Mbps)\n(f) Kadar faedah mudah simpanan setahun\n3. Dengan melayari Internet, dapatkan maklumat bagi kadar yang dipilih dan lengkapkan\njadual seperti di bawah.\nMisalnya, kadar tambang teksi ialah RM1.20 per km.\nJarak yang dilalui, x (km) 2 4 6 8 10\nTambang, y (RM)\ny\nx\n4. Lukis graf y melawan x dengan skala yang sesuai berdasarkan jadual yang diperoleh.\n5. Jawab soalan dalam Perbincangan.\n6. Bentangkan hasil dapatan kumpulan anda kepada kelas.\n4\nKPM",
+    "tokens": 243
+  },
+  {
+    "id": "ubahan-005",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nPerbincangan:\ny\n1. Berdasarkan nilai , apakah kesimpulan yang boleh dibuat?\nx\n2. Nyatakan bentuk graf yang terhasil.\n3. Apakah hubungan antara pemboleh ubah y dengan pemboleh ubah x?\nHasil daripada Mobilisasi Minda 2, didapati bahawa bagi\nsuatu ubahan langsung,\ny Graf y melawan x ialah\n(a) nilai ialah pemalar, y\nx graf dengan pemboleh\nubah y mewakili paksi\n(b) graf y melawan x ialah satu garis lurus\nmencancang dan\nyang melalui asalan,\npemboleh ubah x\n(c) pemboleh ubah y berubah secara x mewakili paksi mengufuk.\nO\nlangsung dengan pemboleh ubah x.\nDalam ubahan langsung, kuantiti y dikatakan berubah secara BBuulleettiinn II llmmiiaahh\ny\nlangsung dengan x jika dan hanya jika ialah satu pemalar,\nx Pemalar ialah nilai\ndikenali sebagai pemalar perkadaran, k. sesuatu kuantiti yang\ntetap atau tidak berubah.\nPerkaitan antara nilai k Perkaitan antara nilai k\ndengan konsep perkadaran: dengan kecerunan garis lurus\nyang melalui asalan:\ny y y y y\n1 2 3 4 y\nKecerunan,\nx x x x x y y\n1 2 3 4 m = 1 1 Adakah semua nilai\nx kecerunan mewakili nilai\ny y y y 1\nk = 1 = 2 = 3 = 4 = k x perkadaran, k? Bincangkan.\nx x x x O x\n1 2 3 4 1\nPerkaitan ini hanya benar jika\ngaris lurus melalui asalan.\nHubungan ubahan\nApabila y berubah secara langsung dengan x, maka hubungan\nlangsung yang ditulis\nini ditulis sebagai y ∝ x. Daripada hubungan ini, nilai pemalar sebagai ‘y berubah secara\nperkadaran k dapat ditentukan, iaitu langsung dengan x’ juga\ny boleh ditulis sebagai ‘x\n.\nk =\nx dan y adalah berkadaran\nlangsung’.\nBagi suatu ubahan langsung, y berubah secara langsung\ndengan x boleh ditulis sebagai\ny ∝ x (hubungan ubahan)\ny = kx (bentuk persamaan)\nSimbol ∝ merujuk kepada\n‘adalah berkadaran\ndengan keadaan k ialah pemalar.\ndengan’.\n5\nKPM",
+    "tokens": 315
+  },
+  {
+    "id": "ubahan-006",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nMobiLisasi Minda 3\nBerkumpulan\nTujuan: Menentukan hubungan antara pemboleh ubah y dengan x 2 bagi suatu ubahan\nlangsung.\nLangkah:\n1. Diberi satu bulatan dengan jejari, x cm, dan luas, y cm2.\n22\n2. Dalam kumpulan, secara bergilir-gilir, lengkapkan jadual di bawah. (Guna π = )\n7\nJejari, x (cm) 3.5 7.0 10.5 14.0 17.5\nLuas bulatan, y (cm2)\nKuasa dua jejari, x 2 (cm2)\nKuasa tiga jejari, x 3 (cm3)\ny\nx 2\ny\nx 3\n3. Lukis graf y melawan x 2 dan graf y melawan x 3, dengan menggunakan nilai\npenghampiran.\nPerbincangan:\ny y\n1. Bandingkan nilai-nilai bagi dan . Apakah kesimpulan yang boleh dibuat?\nx 2 x 3\n2. Graf yang manakah ialah graf garis lurus yang melalui asalan?\n3. Apakah hubungan antara pemboleh ubah y dengan pemboleh ubah x 2?\nHasil daripada Mobilisasi Minda 3, didapati bahawa bagi suatu ubahan langsung,\ny y y\n(a) nilai ialah pemalar. Oleh itu, k = ,\nx 2 x 2\n(b) graf y melawan x 2 ialah satu garis lurus yang melalui asalan,\n(c) pemboleh ubah y berubah secara langsung dengan pemboleh ubah x 2. x2\nO\nSecara umumnya,\nBagi suatu ubahan langsung, y berubah secara langsung\ndengan x n, boleh ditulis sebagai Dalam Mobilisasi Minda 3,\napakah perkaitan antara\ndengan keadaan y\ny ∝ x n (hubungan ubahan) nilai π dengan x 2 ?\n1 1\nn = 1, 2, 3, , dan\ny = k x n (bentuk persamaan) 2 3\nk ialah pemalar.\nGraf y melawan x n ialah satu garis lurus yang melalui asalan y ∝ x adalah benar jika\ndan hanya jika n = 1.\ndengan k ialah kecerunan garis lurus.\n6\nKPM",
+    "tokens": 281
+  },
+  {
+    "id": "ubahan-007",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nContoh 2\nSebuah kereta mainan bergerak daripada keadaan pegun. Jarak\nyang dilalui oleh kereta mainan itu, y, berubah dengan masa, t,\nseperti yang ditunjukkan dalam jadual di bawah.\nApabila y = 3x2, y tidak\nMasa, t (s) 2 4 6 8 10 12 berubah secara langsung\ndengan x. Bincangkan.\nJarak, y (cm) 14 28 42 56 70 84\nTentukan sama ada y berubah secara langsung dengan t atau t 2. Seterusnya, tuliskan\nhubungan tersebut dalam bentuk ubahan.\nPenyelesaian:\nt 2 4 6 8 10 12\ny 14 28 42 56 70 84\ny 14 28 42 56 70 84\n= 7 = 7 = 7 = 7 = 7 = 7\nt 2 4 6 8 10 12\ny 14 28 42 56 70 84\n= 3.50 = 1.75 = 1.17 = 0.88 = 0.70 = 0.58\nt 2 22 42 62 82 102 122\ny\ny berubah secara langsung dengan t kerana nilai ialah pemalar. Maka, y ∝ t.\nt\ny\ny tidak berubah secara langsung dengan t 2 kerana nilai bukan pemalar.\nt 2\nContoh 3\n(a) Dengan melukis graf y melawan x, (b) Dengan melukis graf y melawan x 2,\ntentukan sama ada y berubah secara tentukan sama ada y berubah secara\nlangsung dengan x atau tidak. langsung dengan x 2 atau tidak.\nx 0.4 0.8 1.2 x 2 3 4 5\ny 1.5 2.0 2.5 y 8 18 32 50\nPenyelesaian:\n(a) y (b) y\nx2 y\n2.5 50\n4 8\n2.0 40\n1.5 Garis lurus 30 9 18\n1.0 tidak melalui 20 16 32\nasalan.\n0.5 10 25 50\nx x2\nO 0.2 0.4 0.6 0.8 1.0 1.2 O 5 10 15 20 25\nGaris lurus melalui asalan.\nMaka, y tidak berubah secara\nlangsung dengan x. Maka, y berubah secara langsung\ndengan x 2.\n7\nKPM",
+    "tokens": 306
+  },
+  {
+    "id": "ubahan-008",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nContoh 4\nDiberi m = 0.8 apabila n = 0.125. Ungkapkan m dalam sebutan\nn jika Dalam graf Contoh 3(a),\n(a) m berubah secara langsung dengan n, mengapakah y tidak berubah\nsecara langsung dengan x?\n(b) m berubah secara langsung dengan punca kuasa tiga n.\nPenyelesaian:\n(a) m ∝ n Tuliskan hubungan (b) m ∝ 3 n\ndalam bentuk\nm = kn persamaan. m = k 3 n (i) y berubah secara\nlangsung dengan x,\n0.8 = k (0.125) Gantikan nilai m 0 .8 = k (3 0.125) y ∝ x\n0.8 dan nilai n ke dalam 0.8 (ii) y berubah secara\nk = persamaan untuk k = langsung dengan\n0.125 mendapatkan nilai k. 3 0.125 kuasa dua x,\n= 6.4 y ∝ x2\n= 1.6\n(iii) y berubah secara\nMaka, m = 6.4n Maka, m = 1.6 3 n langsung dengan\nkuasa tiga x,\ny ∝ x3\nContoh 5\n(iv) y berubah secara\nlangsung dengan\nPemanjangan spring, x cm, berubah secara langsung dengan\npunca kuasa dua x,\njisim pemberat, w g, yang ditanggungnya. Diberi bahawa y ∝ x\npemanjangan spring ialah 3 cm apabila diletakkan pemberat (v) y berubah secara\nsebanyak 200 g. Ungkapkan x dalam sebutan w. langsung dengan\npunca kuasa tiga x,\nPenyelesaian: y ∝ 3x\nx ∝ w\nx = kw Tuliskan hubungan dalam bentuk persamaan.\n3 = k (200)\nk = 3 Gantikan nilai x dan nilai w ke dalam\n200 persamaan untuk mendapatkan nilai k.\nRobert Hooke (1635-1703),\n= 0.015\nseorang saintis British telah\nMaka, x = 0.015w memperkenalkan Hukum\nHooke pada tahun 1676\nyang menyatakan bahawa\nContoh 6 pemanjangan suatu\nbahan kenyal adalah\nDiberi y berubah secara langsung dengan x. Jika y = 0.14 berkadar langsung dengan\napabila x = 0.2, hitung nilai daya regangan yang\nbertindak, selagi tidak\n(a) y apabila x = 5, (b) x apabila y = 0.875 .\nmelepasi had kenyal.\nPenyelesaian:\ny ∝ x (a) Apabila x = 5, (b) Apabila y = 0.875,\ny = kx y = 0.7(5) 0.875 = 0.7x\n0.14 = k (0.2) = 3.5 0.875\nx =\n0.14 0.7\nk =\n0.2 = 1.25\n= 0.7\nMaka, y = 0.7x\n8\nKPM",
+    "tokens": 361
+  },
+  {
+    "id": "ubahan-009",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nContoh 7\nLuas, L cm2, satu semi bulatan berubah secara langsung 2.8 cm d cm\ndengan kuasa dua diameternya, d cm. Diberi luas semi\n3.08 cm2\nbulatan itu ialah 3.08 cm2 apabila diameternya ialah 19.25 cm2\n2.8 cm. Hitung nilai d apabila L = 19.25 .\nPenyelesaian:\nL ∝ d 2\nLangkah Alternatif:\nL = kd 2\n3.08 = k (2.8) 2 Menggunakan konsep perkadaran:\nDiberi L = 3.08, d = 2.8 dan L = 19.25\n3.08\nk = 1 1 2\n(2.8) 2 L L\n1 = 2\n11 (d ) 2 (d ) 2\n= 1 2\n28\n3.08 19.25\n=\nMaka, L = 11 d 2 2.8 2 (d ) 2\n28 2\n19.25 × 2.82\n(d ) 2 =\nApabila L = 19.25, 2 3.08\n11\n19.25 = d 2 d =  49\n28 2\n19.25 × 28 = 7 cm\nd 2 =\n11\nd =  49\n= 7 cm\nContoh 8\nTempoh ayunan, A saat, bagi satu bandul ringkas berubah secara langsung dengan punca\nkuasa dua panjang benang, p cm. Diberi bahawa satu bandul ringkas dengan panjang\nbenangnya ialah 9 cm mempunyai tempoh ayunan sebanyak 1.2 saat. Hitung tempoh ayunan\ndalam saat, jika panjang benang ialah 25 cm.\nPenyelesaian:\nA ∝  p\nLangkah Alternatif:\nA = k p\nMenggunakan konsep perkadaran:\n1.2 = k 9 Diberi A = 1.2, p = 9 dan p = 25\n1 1 2\n1.2 A A\nk =\n1 2\n\n9\n\np\n=\n\np\n1 2\n= 0.4\n1.2 A\n2\nMaka, A = 0.4 p\n\n9 =\n\n25\nApabila p = 25, 1.2 ×  25\nA =\nA = 0.4 25 2  9\n= 2 saat\n= 2 saat\n9\nKPM",
+    "tokens": 299
+  },
+  {
+    "id": "ubahan-010",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nLatih Kendiri 1.1b\n1. Jadual berikut menunjukkan nilai-nilai bagi dua pemboleh ubah, x dan y.\n(a) Tentukan sama ada y berubah (b) Tentukan sama ada y berubah\nsecara langsung dengan x atau secara langsung dengan x atau\nx3. Kemudian, tuliskan hubungan  x. Kemudian, tuliskan hubungan\ntersebut dalam bentuk ubahan. tersebut dalam bentuk ubahan.\nx 1 2 3 4 5 x 4 9 25 36 49\ny 2.5 5 7.5 10 12.5 y 0.6 0.9 1.5 1.8 2.1\n2. Spring digantung dengan beban. Jadual\nJisim beban, x (g) 5 10 15 25 30\ndi sebelah menunjukkan jisim beban, x g\ndengan pemanjangan spring, p cm. Dengan Pemanjangan spring,\n1 2 3 5 6\nmelukis graf p melawan x, tentukan sama p (cm)\nada p berubah secara langsung dengan x\natau tidak.\n3. Diberi p = 32 apabila q = 4. Ungkapkan p dalam sebutan q jika\n(a) p berubah secara langsung dengan q3,\n(b) p berubah secara langsung dengan punca kuasa dua q.\n4. Gaji, RMx, yang diperoleh seorang pekerja berubah secara langsung dengan jumlah masa\nbekerja, t jam. Diberi bahawa seorang pekerja telah menerima gaji sebanyak RM112\nselepas bekerja selama 14 jam. Tuliskan persamaan yang menghubungkan x dengan t.\n5. Diberi y = 1.8 apabila x = 0.6, hitung nilai y apabila x = 5 jika\n(a) y ∝ x,\n(b) y ∝ x 2.\n1\n—\n6. Diberi s berubah secara langsung dengan t3. Jika s = 1.2 apabila t = 27, hitung nilai\n(a) s apabila t = 64,\n(b) t apabila s = 0.28.\n7. Bilangan patah perkataan yang ditaip, a, oleh Saiful berubah secara langsung dengan\nmasa menaip, t minit. Jika Saiful menaip 270 patah perkataan dalam masa 6 minit,\nhitung masa yang digunakan olehnya untuk menaip 675 patah perkataan.\n8. Sebuah objek jatuh dari ketinggian, h m, berubah secara langsung dengan kuasa dua\nmasanya, t s di planet Q. Diberi bahawa objek itu jatuh dari ketinggian 5 m dalam masa\n2 s, hitung masa yang diambil dalam saat, oleh objek itu jatuh pada ketinggian 45 m di\nplanet itu.\n9. Diberi isi padu cat, x liter, berubah secara langsung dengan luas dinding, d m2. Jika 3 liter\ncat boleh mengecat 36 m2 dinding,\n(a) ungkapkan persamaan dalam sebutan x dan d,\n(b) hitung isi padu cat dalam liter, yang diperlukan untuk mengecat dinding dengan\ntinggi 9 m dan lebar 5 m.\n10\nKPM",
+    "tokens": 401
+  },
+  {
+    "id": "ubahan-011",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nApakah hubungan antara tiga atau lebih pemboleh ubah bagi suatu ubahan tercantum?\nFaedah mudah,\nI = Prt Apakah hubungan\ndengan keadaan pemboleh ubah I Menentukan hubungan\nP = prinsipal antara tiga atau lebih\ndengan pemboleh\nr = kadar ubah P, r dan t ? pemboleh ubah bagi\nfaedah suatu ubahan tercantum.\nt = masa\nSemasa di Tingkatan 3, anda telah mempelajari pengiraan faedah mudah, I yang melibatkan\npemboleh ubah P, r dan t. Situasi di atas merujuk kepada satu daripada contoh hubungan\nbagi ubahan tercantum. Ubahan tercantum ialah ubahan langsung dengan keadaan satu\npemboleh ubah berubah sebagai hasil darab dua atau lebih pemboleh ubah yang lain.\nMobiLisasi Minda 4\nIndividu\nTujuan: Menentukan hubungan antara tiga pemboleh ubah bagi suatu ubahan tercantum.\nLangkah:\n1. Rajah di sebelah menunjukkan satu segi empat tepat dengan z cm\npanjang, x cm, dan lebar, z cm. Diberi luas segi empat tepat\nitu ialah y cm2. Lengkapkan jadual di bawah. x cm\n(A) Jika z ialah pemalar (C) Jika x, z dan y ialah pemboleh ubah\nPanjang, x (cm) 2 3 4 5 Panjang, x (cm) 2 3 4 5\nLebar, z (cm) 6 6 6 6 Lebar, z (cm) 8 6 3 2\nLuas, y (cm2) Luas, y (cm2)\ny\n(B) Jika x ialah pemalar\nxz\nPanjang, x (cm) 2 2 2 2\nLebar, z (cm) 6 5 4 3\nLuas, y (cm2)\nPerbincangan:\n1. Apakah hubungan antara y dengan x jika z ialah pemalar?\n2. Apakah hubungan antara y dengan z jika x ialah pemalar?\n3. Apakah hubungan antara y, x dan z jika ketiga-tiganya ialah pemboleh ubah?\nHasil daripada Mobilisasi Minda 4, didapati bahawa y berubah secara langsung dengan x,\ndan y berubah secara langsung dengan z. Maka, y berubah secara tercantum dengan x dan\nz, iaitu y ∝ xz.\n11\nKPM",
+    "tokens": 304
+  },
+  {
+    "id": "ubahan-012",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nSecara umumnya,\nBagi suatu ubahan tercantum, y berubah secara tercantum y ∝ xz ialah cantuman\ndengan x m dan z n boleh ditulis sebagai dua hubungan y ∝ x dan\ny ∝ z.\ndengan keadaan\ny ∝ x m z n (hubungan ubahan) 1 1\nm = 1, 2, 3, , ,\n2 3\ny = k x m z n (bentuk persamaan) 1 1\nn = 1, 2, 3, , dan\n2 3 Bincangkan hubungan\nk ialah pemalar. bagi persamaan faedah\nmudah, I = Prt.\nContoh 9\nTuliskan hubungan dengan menggunakan simbol ∝ dan y ∝ xz boleh dibaca\nsebagai\npersamaan bagi setiap yang berikut.\n(a) p berubah secara langsung dengan q dan  r . • y berubah secara\nlangsung dengan x dan z\n(b) y berubah secara langsung dengan kuasa dua w dan kuasa • y berubah secara\ntiga x. tercantum dengan x\n(c) Isi padu prisma, V berubah secara langsung dengan luas dan z\n• y berkadaran secara\nkeratan rentas, A dan tingginya, h.\ntercantum terhadap x\n(d) Jisim, w bagi sebatang besi berbentuk silinder berubah\ndan z\nsecara langsung dengan panjang, p dan kuasa dua diameter\ntapaknya, d.\nPenyelesaian:\n(a) p ∝ q r p ∝ q dan p ∝ r (c) V ∝ Ah V ∝ A dan V ∝ h\np = kq r V = k Ah\n(b) y ∝ w 2x 3 y ∝ w2 dan y ∝ x3 (d) w ∝ pd 2 w ∝ p dan w ∝ d 2\ny = k w 2x 3 w = k pd 2\nContoh 10\nDiberi bahawa x ∝ y 2z, ungkapkan x dalam sebutan y dan z jika x = 6 apabila y = 3 dan z = 5.\nPenyelesaian:\nx ∝ y 2 z\nx = k y2 z Tuliskan hubungan dalam bentuk persamaan.\n6 = k (3)2 (5)\nGantikan nilai-nilai x, y dan z ke dalam persamaan untuk mendapatkan nilai k.\n6\nk =\n(3)2 (5)\n2\n=\n15\n2\nMaka, x = y 2 z\n15\n12\nKPM",
+    "tokens": 343
+  },
+  {
+    "id": "ubahan-013",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nContoh 11\nBBuulleettiinn II llmmiiaahh\nTenaga keupayaan graviti, E Joule, bagi suatu objek berubah\n(i) Tenaga keupayaan\nsecara langsung dengan jisimnya, m kg, pecutan graviti,\ngraviti ialah tenaga\ng m s–2 dan kedudukannya pada ketinggian, h m. Diberi bahawa yang tersimpan di\nE = 197 Joule apabila m = 4 kg, g = 9.81 m s–2 dan h = 5 m, dalam sebuah objek\ntuliskan satu persamaan yang menghubungkan E, m, g dan h. disebabkan oleh\nkedudukannya.\nPenyelesaian: (ii) Pecutan graviti, g,\nE ∝ mgh ialah suatu pemalar.\nE = kmgh Tuliskan hubungan dalam bentuk persamaan. Tenaga disimpan\ndisebabkan oleh\n197 = k (4)(9.81)(5) Gantikan nilai-nilai E, m, g dan h ke dalam tarikan graviti Bumi\n197 persamaan untuk mendapatkan nilai k. terhadap objek. Nilai\nk = g berbeza di setiap\n(4)(9.81)(5)\njasad cakerawala.\n= 1 Misalnya, nilai g di\nBumi ialah 9.81 m s–2\nMaka, E = mgh\ndan di bulan ialah\n1.62 m s–2.\nContoh 12\nTiga kuantiti, S, T dan U\nS 6 x 50\nLangkah Alternatif:\nberubah seperti yang\nditunjukkan dalam jadual di T 0.8 1.2 40 Menggunakan konsep perkadaran:\nsebelah. Diberi bahawa S Diberi S = 6, T = 0.8, U = 27\nU 27 125 y 1 1 1\nberubah secara langsung dan S = x, T = 1.2, U = 125\n2 2 2\ndengan T dan punca kuasa tiga S S\nU. Hitung nilai x dan nilai y. 1 = 2\nT 3 U T 3 U\nPenyelesaian: 1 1 2 2\n6 x\nS ∝ T 3 U (0.8)(3 27 ) = (1.2)(3 125 )\nS = kT 3 U\n(6)(1.2)(3 125 )\nx =\nS = 6 apabila T = 0.8 dan U = 27, (0.8)(3 27 )\n6 = k(0.8)( 3 27 )\n= 15\n6\nk =\n(0.8)(3 27 )\nDiberi S = 6, T = 0.8, U = 27\n1 1 1\n= 2.5\ndan S = 50, T = 40, U = y\nMaka, S = 2.5T 3 U 2 2 2\nS S\nApabila T = 1.2 dan U = 125, 1 = 2\nT 3 U T 3 U\nx = 2.5(1.2)(3125 ) 1 1 2 2\n6 50\n= 15 =\n(0.8)(3 27 ) (40)(3 y )\nApabila S = 50 dan T = 40,\n50 = 2.5(40)(3 y ) 3 y = (50)(0.8)(3 27 )\n(40)(6)\n3 y = 50 = 0.5\n(2.5)(40)\n= 0.5 y = 0.53\ny = 0.53 = 0.125\n= 0.125\n13\nKPM",
+    "tokens": 420
+  },
+  {
+    "id": "ubahan-014",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nLatih Kendiri 1.1c\n1. Tuliskan hubungan dengan menggunakan simbol ∝ bagi setiap yang berikut.\n(a) s berubah secara langsung dengan t dan u.\n(b) v berubah secara langsung dengan w2 dan x.\n(c) a berubah secara langsung dengan kuasa tiga b dan punca kuasa dua c.\n(d) Luas permukaan melengkung, L cm2, sebuah silinder berubah secara langsung\ndengan jejari tapaknya, j cm dan tingginya, h cm.\n2. Hitung pemalar, k bagi setiap yang berikut.\n1\n—\n(a) p berubah secara langsung dengan q3 dan r3. Diberi p = 5.184 apabila q = 1.2 dan\nr = 216.\n1 1\n(b) p berubah secara langsung dengan q, r dan kuasa dua s. Diberi p = apabila q = ,\n3 5\n3 1\nr = dan s = .\n2 3\n3. Diberi y = 6 apabila x = 0.64 dan z = 5, ungkapkan y dalam sebutan x dan z jika\n(a) y berubah secara langsung dengan  x dan z,\n(b) y berubah secara langsung dengan x dan kuasa dua z.\n4. Harga bagi sebatang rod besi, RMx, berubah secara langsung dengan panjang, p cm\ndan kuasa dua jejari, j cm. Jika sebatang rod besi dengan panjang 150 cm dan jejari\n3 cm dijual pada harga RM27, tuliskan satu persamaan yang menghubungkan x dengan\np dan j.\n5. Diberi G berubah secara langsung dengan H dan punca kuasa dua M. Jika G = 42\napabila H = 7 dan M = 16, hitung\n(a) nilai G apabila H = 4 dan M = 81,\n(b) nilai M apabila G = 18 dan H = 20.\n6. Jadual di bawah menunjukkan perubahan tiga kuantiti. Diberi P berubah secara langsung\ndengan kuasa tiga Q, dan R. Hitung nilai x dan nilai y.\nP 86.4 x 1.215\nQ 1.2 2 y\nR 10 0.4 9\n7. Tenaga kinetik, E Joule, sebuah objek berubah secara langsung dengan jisim, w kg dan\nkuasa dua laju, v m s–1, objek itu. Diberi bahawa tenaga kinetik sebuah objek dengan\njisim 3 kg bergerak dengan kelajuan 12 m s–1 ialah 216 Joule. Hitung laju dalam m s–1,\nobjek itu jika jisim dan tenaga kinetik masing-masing ialah 5 kg dan 640 Joule.\n8. Isi padu sebuah kon, V cm3, berubah secara langsung dengan tinggi, h cm, dan kuasa\ndua jejari tapaknya, j cm. Sebuah kon dengan tinggi 21 cm dan jejari 6 cm mempunyai\nisi padu 792 cm3. Hitung isi padu dalam cm3, kon dengan tinggi 14 cm dan jejari\n15 cm.\n14\nKPM",
+    "tokens": 418
+  },
+  {
+    "id": "ubahan-015",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nBagaimanakah menyelesaikan masalah yang melibatkan\nubahan langsung?\nMenyelesaikan masalah\nContoh 13 yang melibatkan ubahan\nlangsung.\nHukum Charles menyatakan bahawa bagi satu jisim gas yang\ntetap, isi padu, V cm3, gas itu berkadar langsung dengan suhu\nmutlaknya, T Kelvin, jika tekanan gas itu adalah tetap. Diberi\nbahawa sebuah bekas mengandungi 30 cm3 gas pada suhu 30°C.\n(a) Ungkapkan V dalam sebutan T.\nHubungan antara isi padu\n(b) Hitung isi padu dalam cm3, gas itu jika suhu berubah\ndengan suhu suatu jisim\nkepada –11°C. gas yang tetap pada\n[Rumus penukaran suhu dalam darjah Celsius kepada Kelvin: tekanan yang tetap telah\ndikaji pertama kali\nx°C = (273 + x) K]\noleh Jacques Charles.\nPenyelesaian:\nMemahami masalah Merancang strategi\n(a) Tuliskan ubahan langsung dalam bentuk\nV ∝ T\npersamaan.\nV = 30 apabila T = (273 + x) K (b) Gantikan nilai T ke dalam persamaan dan\nkemudian, hitung isi padu gas itu.\nMembuat kesimpulan Melaksanakan strategi\n10 (a) V ∝ T 10\n(a) V = T (b) V = T\n101 V = kT 101\nV = k (273 + x) 10\n(b) V = 25.94 cm3 V = (273 – 11)\n30 = k (273 + 30) 101\nk = 30 = 25.94 cm3\n303\n10\n=\n101\n10\nV = T\n101\nContoh 14\nPuan Soon menyimpan wangnya dalam akaun simpanan. Diberi bahawa faedah, I yang\nditerima berubah secara langsung dengan jumlah prinsipal, p dan tempoh dalam tahun, t\nwang yang disimpan. Puan Soon menerima faedah sebanyak RM200 apabila dia menyimpan\nRM4 000 selama dua tahun.\n(a) Hitung tempoh simpanan yang diperlukan supaya Puan Soon dapat menerima faedah\nRM650 dengan prinsipal RM5 200.\n(b) Puan Soon ingin mendapatkan jumlah faedah yang sama tetapi mengurangkan tempoh\nsimpanan di (a). Adakah dia perlu menambahkan atau mengurangkan nilai prinsipalnya?\nJelaskan jawapan anda.\n15\nKPM",
+    "tokens": 305
+  },
+  {
+    "id": "ubahan-016",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nPenyelesaian:\nMemahami masalah Merancang strategi\n(a) Tulis ubahan langsung dalam bentuk persamaan dan\nI ∝ pt\nhitung nilai t apabila I = 650 dan p = 5 200.\nI = 200 apabila p = 4 000\n(b) Memahami perubahan bagi setiap pemboleh ubah\ndan t = 2\ndalam persamaan.\nMembuat kesimpulan Melaksanakan strategi\n(a) 5 tahun. (a) I = kpt (b) Untuk mengekalkan\n(b) Prinsipal perlu 200 = k(4 000)(2) nilai I dalam\nditambahkan untuk 200 persamaan I = 0.025pt,\nk =\nmendapat jumlah (4 000)(2) • apabila p berkurang,\nfaedah yang sama = 0.025 t bertambah\njika tempoh simpanan\n\\ I = 0.025pt • apabila p bertambah,\ndikurangkan. Hal ini\nt berkurang\nkerana jumlah faedah Apabila I = 650 dan\nberkadar langsung p = 5 200,\ndengan hasil darab 650 = (0.025)(5 200)t\nprinsipal dan tempoh. 650\nt =\n(0.025)(5 200)\n= 5 tahun\nLatih Kendiri 1.1d\n1. Lee mengisi air ke dalam sebuah tangki dengan menggunakan hos getah pada pukul\n8:00 pagi. Pada pukul 11:00 pagi, Lee mendapati bahawa tangki itu telah diisi dengan\n48% air.\n(a) Tuliskan satu persamaan yang menghubungkan isi padu air, V, yang diisi ke dalam\ntangki dengan masa yang diambil, t.\n(b) Pada pukul berapakah tangki itu akan diisi penuh dengan air?\n2. Aminah ingin menggunting beberapa bentuk segi tiga daripada sekeping kad. Diberi luas\nsegi tiga yang digunting, L cm2, berubah secara langsung dengan tapak, x cm, dan tinggi,\ny cm. Pada mulanya, dia menggunting satu segi tiga dengan L = 14, x = 7 dan y = 4.\n(a) Tuliskan hubungan antara L dengan x dan y.\n(b) Aminah merancang untuk menggunting segi tiga kedua dengan nilai tapak\nbertambah 20% dan nilai tinggi berkurang 10%. Berapakah peratusan perubahan\nuntuk luas segi tiga kedua ini?\n3. Sebuah kedai piza menjual tiga saiz piza dengan\nharga berbeza seperti yang ditunjukkan dalam rajah\n1155 ccmm 2233 ccmm 3300 ccmm\ndi sebelah. Adakah harga piza, RMp, berubah secara\nlangsung dengan luas permukaan, A cm2, piza itu? Jika\nRRMM1122\ntidak, saiz piza yang manakah lebih berbaloi dengan\nRRMM2255\nRRMM3355\nharganya?\n16\nKPM",
+    "tokens": 348
+  },
+  {
+    "id": "ubahan-017",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\n1.2 Ubahan Songsang\nApakah maksud ubahan songsang?\nSemasa berada di atas jongkang-jongket, seseorang yang\nlebih berat akan berada di bawah manakala seseorang yang\nMenerangkan maksud\nlebih ringan akan berada di atas. Tahukah anda bagaimana\nubahan songsang.\nmenyeimbangkan jongkang-jongket tersebut?\nBagi menyeimbangkan sebuah jongkang-jongket,\nw kg\nseseorang yang lebih berat perlu duduk lebih dekat 35 kg\ndengan fulkrum jongkang-jongket tersebut, atau\nseseorang yang lebih ringan perlu duduk lebih jauh\nFulkrum\ndari fulkrum. Perhatikan rajah di sebelah. Hubungan\n1.1 m d m\nantara jisim pemain, w, dengan jarak antara pemain dan\nfulkrum, d, dikatakan berubah secara songsang. Apabila\nw bertambah, d berkurang dan sebaliknya.\nMobiLisasi Minda 5\nIndividu\nTujuan: Menerangkan maksud ubahan songsang.\nLangkah:\n1. Fahami situasi berikut dan kemudian jawab soalan dalam Perbincangan.\nDewan sebuah sekolah mempunyai beberapa buah pintu. Jadual di bawah\nmenunjukkan hubungan antara bilangan pintu yang dibuka, x, dengan masa yang\ndiambil, y, bagi sekumpulan murid untuk keluar dari dewan.\nBilangan pintu yang dibuka, x 2 3 4 5 6\nMasa yang diambil, y (minit) 24 16 12 9.6 8\nPerbincangan:\n1. Jika bilangan pintu yang dibuka semakin bertambah, adakah masa yang diambil\noleh murid untuk keluar semakin bertambah atau berkurang?\n2. Jika bilangan pintu yang dibuka semakin berkurang, adakah masa yang diambil\noleh murid untuk keluar semakin bertambah atau berkurang?\n3. Apakah hubungan antara bilangan pintu yang dibuka dengan masa yang diambil\noleh murid untuk keluar dari dewan?\nHasil daripada Mobilisasi Minda 5, didapati bahawa apabila bilangan pintu yang dibuka\nsemakin bertambah, masa yang diambil oleh murid untuk keluar dari dewan semakin\nberkurang. Begitu juga, apabila bilangan pintu yang dibuka semakin berkurang, masa\nyang diambil oleh murid untuk keluar semakin bertambah. Perubahan yang berlaku pada\nbilangan pintu yang dibuka menghasilkan implikasi yang bertentangan dengan masa yang\ndiambil oleh murid untuk keluar dari dewan.\n17\nKPM",
+    "tokens": 303
+  },
+  {
+    "id": "ubahan-018",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nHubungan ini dinamakan ubahan songsang. Secara umumnya,\nDalam ubahan songsang, pemboleh ubah y bertambah apabila pemboleh ubah x\nberkurang pada kadar yang sama dan sebaliknya. Hubungan ini juga ditulis sebagai y\nberubah secara songsang dengan x.\nContoh 15\nChia Ming mengambil bahagian dalam satu larian maraton dengan jarak 42 km. Jadual di bawah\nmenunjukkan hubungan antara masa yang diambil oleh Chia Ming dengan laju puratanya.\nMasa, t (jam) 4 5 6 7 8\nLaju purata, v (km/j) 10.50 8.40 7.00 6.00 5.25\nNyatakan perubahan pada laju purata jika masa yang diambil\n(a) bertambah dua kali ganda,\n(b) berkurang 1.5 kali ganda.\nPenyelesaian:\n(a) (b)\nt v t v\n4 10.50 6 7.00\n× 2 ÷ 2 ÷ 1.5 × 1.5\n8 5.25 4 10.50\nApabila masa bertambah dua kali ganda, Apabila masa berkurang 1.5 kali ganda,\nmaka laju purata berkurang dua kali maka laju purata bertambah 1.5 kali\nganda. ganda.\nLatih Kendiri 1.2a\n1. Jadual di sebelah menunjukkan hubungan\nBilangan pekerja Bilangan hari\nantara bilangan pekerja dengan bilangan hari\n2 12\nyang diperlukan untuk memasang jubin di\nsebuah rumah. Nyatakan perubahan pada 4 6\nbilangan hari jika bilangan pekerja\n6 4\n(a) didarabkan dengan dua,\n8 3\n(b) berkurang separuh.\n2. Cikgu Farid mempunyai sejumlah wang untuk membeli hadiah untuk pemenang kuiz\nMatematik. Jika harga sebuah hadiah ialah RM10, maka Cikgu Farid boleh membeli\n10 buah hadiah. Nyatakan hubungan bilangan hadiah yang boleh dibeli jika harga sebuah\nhadiah\n(a) bertambah dua kali ganda,\n(b) berkurang 50%.\n18\nKPM",
+    "tokens": 250
+  },
+  {
+    "id": "ubahan-019",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nApakah hubungan antara dua pemboleh ubah bagi suatu\nubahan songsang?\nMenentukan hubungan\nMobiLisasi Minda 6 Berkumpulan antara dua pemboleh\nubah bagi suatu ubahan\nTujuan: Menentukan hubungan antara dua pemboleh ubah bagi\nsongsang.\nsuatu ubahan songsang.\nLangkah:\nSekeping kadbod mempunyai luas 1.44 m2. Kadbod itu akan digunting kepada y keping\nkad segi empat sama yang kecil dengan luas setiap kad kecil itu ialah x m2.\n1. Buka lembaran aktiviti dengan mengimbas kod QR.\nImbas kod QR atau\nlayari bit.do/LKBab1\n2. Masukkan nilai luas kad kecil, x = 0.04 dalam cell untuk mendapatkan\nlembaran aktiviti.\nberwarna dan tekan ‘Enter’. Ulangi langkah yang sama\nuntuk nilai x bersamaan 0.09, 0.16 dan 0.36. Perhatikan\n1\nnilai-nilai y, xy dan bagi setiap nilai x.\nx\n1\n3. Lukis graf y melawan x dan graf y melawan mengikut skala yang sesuai\nx\nberdasarkan nilai yang diperoleh.\nPerbincangan:\n1. Bandingkan nilai xy. Apakah kesimpulan yang boleh dibuat tentang nilai xy?\n2. Apakah bentuk kedua-dua graf yang diperoleh?\n3. Apakah hubungan antara y dengan x?\nHasil daripada Mobilisasi Minda 6, didapati bahawa bagi suatu ubahan songsang,\n(a) nilai xy ialah pemalar. Oleh itu, k = xy,\ny y\n(b) graf y melawan x ialah hiperbola dan graf\n1\ny melawan ialah satu garis lurus yang\nx\nbermula daripada asalan, 1\nO x O x\n(c) y berubah secara songsang dengan x.\nApabila pemboleh ubah y berubah secara songsang dengan pemboleh ubah x, nilai xy ialah\nsatu pemalar yang diwakili dengan k.\n19\nKPM",
+    "tokens": 250
+  },
+  {
+    "id": "ubahan-020",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nPerkaitan antara nilai k Perkaitan antara nilai k\ndengan konsep perkadaran: dengan kecerunan garis lurus\ny y y y y yang bermula daripada asalan Hubungan ubahan\n1 2 3 4 1 songsang yang ditulis\nx x x x x bagi graf y melawan x : sebagai ‘y berubah secara\n1 2 3 4\nKecerunan, y songsang dengan x’ juga\ny boleh ditulis sebagai\nk = x y = x y = x y = x y m = 1 y\n1 1 2 2 3 3 4 4 1 1 ‘x dan y berkadaran\nx songsang’.\n1 1\n= x y x\n1 1 O 1\n= k x\n1\nPerkaitan ini hanya benar jika\ngaris lurus bermula daripada\nasalan.\nMaka, kita boleh menghubungkan dua pemboleh ubah x dan y dalam bentuk persamaan, iaitu\nxy = k\nk\ny = .\nx\nBagi suatu ubahan songsang, y berubah secara\na\nsongsang dengan x boleh ditulis sebagai y = , x ≠ 0 ialah fungsi\nx\n1 y salingan dengan graf\ny ∝ (hubungan ubahan)\nx berbentuk hiperbola.\nk y\ny = (bentuk persamaan) x\nx O\ndengan keadaan k ialah pemalar. y\nx\n(a) Graf y melawan x ialah hiperbola. O\n1\n(b) Graf y melawan ialah graf garis lurus 1\nx x\nO\nyang bermula daripada asalan (x ≠ 0).\nMobiLisasi Minda 7\nBerkumpulan\nTujuan: Menentukan hubungan antara pemboleh ubah y dengan x 2 bagi suatu ubahan\nsongsang.\nLangkah:\n1. Diberi isi padu sebuah kuboid dengan tapak segi empat sama ialah 180 cm3. Jadual\ndi bawah menunjukkan hubungan antara panjang sisi tapak dengan tinggi kuboid.\nLengkapkan jadual di bawah.\nPanjang sisi tapak, x (cm) 2 3 4 5 6\nTinggi, y (cm)\ny cm\nxy\nx 2 y\n1\nx cm\nx 2\nx cm\n20\nKPM",
+    "tokens": 300
+  },
+  {
+    "id": "ubahan-021",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\n1\n2. Lukis graf y melawan x dan graf y melawan mengikut skala yang sesuai berdasarkan\nx 2\njadual.\nPerbincangan:\n1. Bandingkan nilai-nilai xy dan x 2 y. Apakah kesimpulan yang boleh dibuat?\n2. Graf yang manakah ialah graf garis lurus yang bermula daripada asalan?\n3. Apakah hubungan antara y dengan x 2?\nHasil daripada Mobilisasi Minda 7, didapati bahawa bagi suatu ubahan songsang,\n(a) nilai x 2 y ialah pemalar. Oleh itu, k = x 2 y, y\n1\n(b) graf y melawan ialah satu garis lurus yang bermula daripada asalan,\nx 2\n1\n(c) y berubah secara songsang dengan x 2.\nO x2\nSecara umumnya,\nBagi suatu ubahan songsang, y berubah secara songsang\ndengan x n boleh ditulis sebagai\n1\nApabila y = , y tidak\nx 2\n1 dengan keadaan berubah secara langsung\ny ∝ (hubungan ubahan)\nx n 1 1 dengan x. Bincangkan.\nn = 1, 2, 3, , dan\n2 3\nk\ny = (bentuk persamaan)\nx n k ialah pemalar.\n1\nGraf y melawan ialah satu garis lurus yang bermula\nx n 1\ny ∝ adalah benar jika\nx\ndaripada asalan (x ≠ 0) dengan k ialah kecerunan garis lurus.\ndan hanya jika n = 1.\nContoh 16\nDiberi masa, t, yang diperlukan untuk menyiapkan kerja pemasangan perabot berubah secara\nsongsang dengan bilangan pekerja, x. Jadual di bawah menunjukkan hubungan antara x\ndengan t.\nBilangan pekerja, x 2 3 4 5 6\nMasa diperlukan, t (minit) 180 120 90 72 60\nDengan mengira nilai xt dan x 2 t, tentukan sama ada t berubah secara songsang dengan x atau\nx 2. Kemudian, tuliskan hubungan tersebut dengan menggunakan simbol ∝.\n21\nKPM",
+    "tokens": 282
+  },
+  {
+    "id": "ubahan-022",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nPenyelesaian:\nx 2 3 4 5 6\nt 180 120 90 72 60\nxt 2(180) = 360 3(120) = 360 4(90) = 360 5(72) = 360 6(60) = 360\nx 2 t 22 (180) = 720 32 (120) = 1080 42 (90) = 1440 52 (72) = 1800 62 (60) = 2160\nNilai xt ialah pemalar, manakala nilai x 2 t bukan pemalar. Maka, t berubah secara songsang\n1\ndengan x, iaitu t ∝ .\nx\nContoh 17\nx 2 4 5 10\nDua kuantiti, x dan y, berubah mengikut jadual di\ny 8 4 3.2 1.6\nsebelah. Menggunakan skala yang sesuai, lukis graf\n1\ny melawan dan tunjukkan bahawa y berubah secara y\nx\nsongsang dengan x. 10\n8\nPenyelesaian:\n6\n1\n0.5 0.25 0.2 0.1 4\nx\n2\ny 8 4 3.2 1.6 1\nO x\n0.10.20.30.40.5\n1\nGraf y melawan menunjukkan satu garis lurus yang\nx\nbermula daripada asalan. Maka, y berubah secara songsang\ndengan x.\n(i) y berubah secara\nsongsang dengan x,\nContoh 18 1\ny ∝\nx\nDiberi x = 0.25 apabila y = 3. Ungkapkan y dalam sebutan x jika (ii) y berubah secara\n(a) y berubah secara songsang dengan x, songsang dengan\nkuasa dua x,\n(b) y berubah secara songsang dengan punca kuasa dua x.\n1\ny ∝\nx 2\nPenyelesaian:\n(iii) y berubah secara\n1 1\n(a) y ∝ (b) y ∝ songsang dengan\nx\n\nx\nkuasa tiga x,\nTuliskan hubungan 1\ny = k dalam bentuk persamaan. y = k y ∝ x 3\nx  x (iv) y berubah secara\nsongsang dengan\nk Gantikan nilai y k\n3 = 0.25 dan nilai x ke 3 =  0.25 punca kuasa 1 dua x,\ndalam persamaan y ∝ x\nk = 3(0.25) untuk mendapatkan k = 3( 0.25 )\n(v) y berubah secara\n= 0.75 nilai k.\n= 1.5 songsang dengan\nMaka, y = 0.75 1.5 punca kuasa tiga x,\nx Maka, y = 1\n\nx y ∝\n3x\n22\nKPM",
+    "tokens": 334
+  },
+  {
+    "id": "ubahan-023",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nContoh 19\nTarikan graviti, F, berubah secara songsang dengan kuasa dua\njarak di antara dua buah objek, d. Diberi tarikan graviti di\nantara dua buah objek ialah 15 N apabila jarak di antaranya Sir Isaac Newton\nialah 1.2 cm. Tuliskan satu ungkapan F dalam sebutan d. (1642-1727), seorang ahli\nfizik Inggeris yang terkenal\nPenyelesaian: telah menerbitkan Hukum\n1 Graviti Newton dalam\nF ∝ bukunya Philosophiae\nd 2\nNaturalis Principia\nTuliskan hubungan antara F dengan\nk Mathematica pada\nF = d dalam bentuk persamaan.\nd 2 tahun 1687.\nk\n15 = Gantikan nilai F dan nilai d ke dalam\n(1.2) 2\npersamaan untuk mendapatkan nilai k.\nk = 15(1.2) 2\n= 21.6\n21.6\nMaka, F =\nd 2\nContoh 20\nDiberi p berubah secara songsang dengan q. Jika p = 2\nLangkah Alternatif:\napabila q = 7, hitung nilai p apabila q = 1.6 .\nMenggunakan konsep perkadaran:\nPenyelesaian:\nDiberi p = 2, q = 7, q = 1.6\n1 1 2\n1 14\np ∝ q Maka, p = q p q = p q\n1 1 2 2\n2 × 7 = p ×1.6\nk\np = Apabila q = 1.6, 2\nq\n2 × 7\n14 p =\n2 = k p = 1.6 2 1.6\n7\n= 8.75 = 8.75\nk = 2(7)\n= 14\nLatih Kendiri 1.2b\n1. Jadual berikut menunjukkan nilai-nilai bagi dua pemboleh ubah, x dan y.\n(a) Tentukan sama ada y berubah secara (b) Tentukan sama ada y berubah secara\nsongsang dengan x. Jika ya, tuliskan songsang dengan x2. Jika ya, tuliskan\nhubungan dalam bentuk ubahan. hubungan dalam bentuk ubahan.\n1 1\nx 1 1 2 2 3 x 1 2 3 4 5\n2 2\ny 6 4 3 2 1 y 3.6 0.9 0.4 0.225 0.144\n23\nKPM",
+    "tokens": 302
+  },
+  {
+    "id": "ubahan-024",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\n2. Jadual di bawah menunjukkan nilai arus, I (Ampere, A) yang mengalir melalui litar, dengan\nnilai rintangannya, R (Ohm, Ω).\nRintangan, R (W) 42 35 30 21 15\nArus, I (A) 5 6 7 10 14\n1\nDengan melukis graf I melawan menggunakan skala yang sesuai, tentukan sama ada\nR\nI berubah secara songsang dengan R.\n3. Diberi bahawa g = 0.15 apabila h = 8. Ungkapkan g dalam sebutan h jika\n(a) g berubah secara songsang dengan h,\n(b) g berubah secara songsang dengan h2,\n(c) g berubah secara songsang dengan punca kuasa tiga h.\n4. Diberi y = 0.5 apabila x = 16, hitung nilai y apabila x = 0.04 jika\n1 1\n(a) y ∝ (b) y ∝\nx x 3\n1 1\n(c) y ∝ (d) y ∝\n— 1 3 x\nx2\n5. Hitung nilai s dan nilai t bagi setiap hubungan berikut.\n(a) y berubah secara songsang dengan x. (b) y berubah secara songsang dengan\npunca kuasa dua x.\nx 3 s 5\nx 9 s 0.04\ny 2 1.5 t 4\ny 8 2.4 t\n6. Sebuah syarikat mencetak sejumlah buku setiap hari. Jadual di bawah menunjukkan\nbilangan buah mesin, M yang beroperasi dan masa yang diperlukan, T untuk mencetak\nbuku-buku tersebut. Diberi T berubah secara songsang dengan M.\nM 6 8 q\nT 10 p 4\n(a) Ungkapkan T dalam sebutan M.\n(b) Tentukan nilai p dan nilai q.\n7. Tempoh ayunan, T, bagi suatu bandul ringkas berubah secara songsang dengan punca\nkuasa dua pecutan graviti, g. Dalam satu ekpserimen, tempoh ayunan ialah 1.01 saat\napabila pecutan graviti sebanyak 9.85 m s–2. Ungkapkan T dalam sebutan g.\n24\nKPM",
+    "tokens": 279
+  },
+  {
+    "id": "ubahan-025",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nBagaimanakah menyelesaikan masalah yang melibatkan\nubahan songsang?\nMenyelesaikan masalah\nContoh 21\nyang melibatkan ubahan\nsongsang.\nBerdasarkan Hukum Boyle, tekanan gas, p, bagi satu jisim gas\nberkadar songsang dengan isi padu gas, V, jika suhu\ngas itu adalah tetap. Rajah di sebelah menunjukkan gas\nterperangkap di dalam sebuah silinder. Apabila isi padu\np kPa\ndi dalam silinder itu ialah 80 cm3, maka tekanan gas\nmenjadi 190.25 kPa. Hitung isi padu gas dalam cm3,\nV cm3\napabila tekanan gas di dalam silinder itu ialah 121.76 kPa.\nPenyelesaian:\nMemahami masalah Merancang strategi\n• p berkadaran songsang dengan V Tentukan hubungan antara p dengan V dalam\n• Apabila V = 80 cm3, bentuk persamaan. Kemudian, hitung nilai V\np = 190.25 kPa apabila p = 121.76 kPa.\nMembuat kesimpulan Melaksanakan strategi\nApabila 1 15 220\np ∝ Maka, p =\nV V\np = 121.76 kPa,\nk\nV = 125 cm3 p = Apabila p = 121.76,\nV\n15 220\nApabila V = 80, p = 190.25, 121.76 =\nV\nk\n190.25 =\n80 15 220\nV =\n121.76\nk = 190.25 × 80\n= 125 cm3\n= 15 220\nLatih Kendiri 1.2c\n1. Jadual di sebelah menunjukkan rintangan Rintangan, R (Ω) 1 4 9 16\nbagi seutas dawai yang berubah dengan\nJejari keratan\n1.2 0.6 0.4 0.3\nkeratan rentas jejari.\nrentas, j (mm)\n(a) Tentukan sama ada rintangan, R, bagi\ndawai ini berubah secara songsang dengan j 2.\n(b) Hitung jejari dawai dalam mm, jika rintangannya ialah 25 Ω.\n2. Bilangan kubus, b, yang dihasilkan daripada sejumlah kuantiti logam yang tetap berubah\nsecara songsang dengan kuasa tiga sisinya, p cm. Jika b = 16 apabila p = 1.5, hitung\nnilai p apabila b = 250.\n3. Bilangan ayunan, A bagi satu bandul ringkas berubah secara songsang dengan punca\nkuasa dua panjang bandul, p cm dalam suatu tempoh yang tetap. Diberi bahawa bilangan\nayunan ialah 9 apabila panjang bandul ialah 36 cm, hitung panjang bandul ringkas jika\nbilangan ayunan ialah 15.\n25\nKPM",
+    "tokens": 334
+  },
+  {
+    "id": "ubahan-026",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\n1.3 Ubahan Bergabung\nApakah hubungan antara tiga atau lebih pemboleh ubah\nbagi suatu ubahan bergabung?\nMenentukan hubungan\nantara tiga atau lebih\npemboleh ubah bagi\nsuatu ubahan bergabung.\nCikgu, apakah\nmaksud ubahan\nbergabung? Ubahan bergabung\nmelibatkan gabungan\nubahan langsung atau\nubahan tercantum, dan\nubahan songsang.\nMobiLisasi Minda 8\nBerkumpulan\nTujuan: Menentukan hubungan antara tiga pemboleh ubah bagi suatu ubahan bergabung\nyang melibatkan ubahan langsung dan ubahan songsang.\nLangkah:\n1. Anda telah mengetahui bahawa rumus bagi isi padu sebuah\ny cm\nsilinder ialah hasil darab luas tapak dan tingginya. Jika x, y\ndan z masing-masing mewakili isi padu, tinggi dan luas tapak z cm2\nsilinder, lengkapkan jadual di bawah.\n(A) Jika z adalah tetap (C) Jika x, y dan z ialah pemboleh ubah\nIsi padu, x (cm3 ) 100 200 300 400 Isi padu, x (cm3) 80 180 320 500\nTinggi, y (cm) Tinggi, y (cm)\nLuas tapak, z (cm2) 50 50 50 50 Luas tapak, z\n20 30 40 50\nx (cm2)\ny yz\nx\n(B) Jika x adalah tetap\nIsi padu, x (cm3 ) 120 120 120 120\nTinggi, y (cm)\nLuas tapak, z (cm2) 40 60 80 100\nyz\nPerbincangan:\nx\n1. Apakah nilai ? Seterusnya, nyatakan hubungan antara y dengan x jika z ialah pemalar.\ny\n2. Apakah nilai yz? Seterusnya, nyatakan hubungan antara y dengan z jika x ialah pemalar.\nyz\n3. Apakah nilai ? Seterusnya, nyatakan hubungan antara y, x dan z jika ketiga-tiganya\nx\nialah pemboleh ubah.\n26\nKPM",
+    "tokens": 246
+  },
+  {
+    "id": "ubahan-027",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nHasil daripada Mobilisasi Minda 8, didapati bahawa, y berubah secara langsung dengan x,\ndan y berubah secara songsang dengan z. Maka, y adalah berubah secara langsung dengan\nx\nx dan secara songsang dengan z, iaitu y ∝ .\nz\nSecara umumnya,\nBagi suatu ubahan bergabung, y berubah secara langsung dengan x m dan secara\nsongsang dengan z n, boleh ditulis sebagai\ny ∝ x m (hubungan ubahan) dengan keadaan\nz n\n1 1 1 1\nm = 1, 2, 3, , , n = 1, 2, 3, , dan\n2 3 2 3\nk x m\ny = (bentuk persamaan) k ialah pemalar.\nz n\nContoh 22\nDiberi bahawa y berubah secara langsung dengan kuasa dua x\ndan secara songsang dengan punca kuasa dua z. Jika y = 8 (i) y berubah secara\napabila x = 4 dan z = 36, ungkapkan y dalam sebutan x dan z. langsung dengan w\ndan kuasa tiga x,\nPenyelesaian: dan secara songsang\ndengan punca kuasa\nx 2\ny ∝ tiga z,\n z wx 3\ny ∝\n3z\nk x 2\ny =\n\nz T\nda\nu\nl\nl\na\nis\nm\nk a\nb\nn\ne n\nh\nt\nu\nu\nb\nk\nu n\np\ng\ne\na\nrs\nn\na m\nan\na\nt\na\na\nn\nra\n.\ny, x dan z (ii) y berubah secara\nlangsung dengan\nk (4) 2 hasil darab w 2 dan x,\n8 =\n\n36 G\npe\na\nr\nn\ns\nt\na\ni\nm\nka\na\nn\na n\nn i\nu\nla\nn\ni\nt\n-\nu\nn\nk\ni la\nm\ni\ne\ny\nn\n,\nd\nx\na p\nd\na\na\nt\nn\nk a\nz\nn\nk\nn\ne\ni la\nd\ni\na l\nk\na\n.\nm d\nd\na\ne\nn\nn g\ns\na\ne\nn\nc a\nz\nr\n3\na\n,\nsongsang\n8 36 w 2x\nk = y ∝\n42 z 3\n= 3\n3x 2\nMaka, y =\n\nz\nContoh 23\nJadual di bawah menunjukkan hubungan antara P, Q dan R. Diberi P berubah secara\nlangsung dengan kuasa tiga Q dan secara songsang dengan R. Hitung nilai x dan nilai y.\nP 4 3.6 0.081\nQ 2 6 y\nR 0.6 x 2.7\n27\nKPM",
+    "tokens": 393
+  },
+  {
+    "id": "ubahan-028",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nPenyelesaian:\nQ 3 Apabila P = 3.6, Q = 6 Apabila P = 0.081, Q = y\nP ∝\nR dan R = x, dan R = 2.7,\nkQ 3\nP = 3Q 3 3Q 3\nR P = P =\n10R 10R\nk (2)3\n4 = 3(6) 3 3(y) 3\n0.6 3.6 = 0.081 =\n10x 10(2.7)\n4(0.6) 3\nk = = 3(6) 3\n23 10 x = 0.081(10)(2.7)\n10(3.6) y = 3\n3Q 3 3\nMaka, P = = 18\n10R = 0.9\nLatih Kendiri 1.3a\n1. Tuliskan setiap ubahan bergabung berikut dalam bentuk ubahan dan bentuk persamaan.\n(a) w berubah secara langsung dengan punca kuasa tiga v dan secara songsang dengan\nkuasa dua x.\n(b) F berubah secara langsung dengan G dan H 3, dan secara songsang dengan  t .\n(c) Pecutan bagi sebuah objek, A berubah secara langsung dengan jarak yang dilalui, j,\ndan secara songsang dengan kuasa dua masa yang diambil, t, oleh objek itu.\n2. Masa yang digunakan, t jam, untuk menyusun kerusi di dewan berubah secara langsung\ndengan bilangan kerusi, c buah, dan secara songsang dengan bilangan pekerja yang\nterlibat, p orang. Diberi bahawa 5 orang pekerja menggunakan masa 2 jam untuk\nmenyusun 1 000 buah kerusi. Ungkapkan t dalam sebutan c dan p.\n3. Diberi M berubah secara langsung dengan kuasa dua N dan secara songsang dengan P.\nJika M = 4.8 apabila N = 6 dan P = 1.5, hitung\n(a) nilai P apabila M = 0.8 dan N = 2.4,\n(b) nilai N apabila M = 19 dan P = 3.8.\n4. Jadual di sebelah menunjukkan perubahan tiga kuantiti, T,\nT 5 a 0.256\ne dan f. Diberi T berubah secara songsang dengan punca\ne 1.44 36 b\nkuasa dua e dan kuasa tiga f. Hitung nilai a dan nilai b.\nf 2 0.4 5\nBagaimanakah menyelesaikan masalah yang melibatkan\nubahan bergabung?\nContoh 24 Menyelesaikan masalah\nyang melibatkan ubahan\nTekanan, p N m–2, pada roda kereta sorong berubah secara\nbergabung.\nlangsung dengan jisim kereta sorong, m kg, dan secara songsang\ndengan luas permukaan sentuhan roda dengan tanah, l m2. Diberi\nbahawa tekanan roda ialah 45 000 N m–2 apabila jisim kereta\nsorong ialah 90 kg dan luas permukaan sentuhan roda dengan\ntanah ialah 0.02 m2.\n(a) Hitung nilai p apabila m = 120 dan l = 0.5.\n(b) Apakah yang boleh dilakukan supaya tekanan pada roda\nberkurangan jika jisim kereta sorong adalah tetap?\n28\nKPM",
+    "tokens": 408
+  },
+  {
+    "id": "ubahan-029",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nPenyelesaian:\nMemahami masalah Merancang strategi\n(a) Tentukan hubungan antara p dengan m dan l\n• p berubah secara langsung dengan\ndalam bentuk persamaan. Kemudian,\nm dan secara songsang dengan l\ngantikan nilai m = 120 dan l = 0.5 ke dalam\n• Apabila m = 90 dan l = 0.02,\npersamaan untuk menghitung nilai p.\np = 45 000\n(b) Memahami perubahan bagi setiap pemboleh\nubah dalam persamaan.\nMembuat kesimpulan Melaksanakan strategi\n(a) p = 2 400 N m–2 m Apabila m = 120, l = 0.5,\n(a) p ∝\n(b) Gunakan roda yang l (10)(120)\np =\nlebih lebar kerana km 0.5\np =\ntekanan pada l = 2 400 N m–2\nroda berkurangan k(90) (b) Jika nilai m adalah\n45 000 =\napabila luas 0.02\ntetap,\npermukaan (0.02)(45 000) • p berkurang, apabila\nk =\nsentuhan roda 90 l bertambah\nbertambah dengan = 10\n• p bertambah, apabila\nkeadaan jisim 10m\nMaka, p = l berkurang\nadalah tetap. l\nLatih Kendiri 1.3b\n1. Encik Kamal ingin memasang jubin berbentuk segi empat tepat di bilik tidurnya.\nBilangan jubin yang diperlukan, J, berubah secara songsang dengan panjang, p m dan\nlebar, l m, jubin yang digunakan. Encik Kamal memerlukan 120 keping jubin jika jubin\nberukuran panjang 0.4 m dan lebar 0.5 m digunakan.\n(a) Hitung bilangan jubin yang diperlukan jika panjang ialah 0.2 m dan lebar ialah 0.3 m.\n(b) Jika luas jubin bertambah, apakah perubahan yang akan berlaku pada bilangan jubin\nyang diperlukan?\n2. Purata bilangan panggilan telefon harian, C, di antara dua buah bandar berubah secara\nlangsung dengan populasi kedua-dua buah bandar, P dan P , dan secara songsang\n1 2\ndengan kuasa dua jarak, j, di antara dua buah bandar tersebut. Jarak di antara bandar A\ndengan bandar B ialah 210 km. Purata bilangan panggilan telefon harian di antara dua\nbuah bandar itu ialah 15 750 dan populasi bandar A dan bandar B masing-masing ialah\n105 000 penduduk dan 220 500 penduduk. Dengan memberikan jawapan kepada nombor\nbulat terhampir, hitung\n(a) jarak di antara bandar P dengan bandar Q jika populasi masing-masing ialah\n83 400 penduduk dan 62 000 penduduk dan purata bilangan panggilan telefon\nharian ialah 19 151,\n(b) populasi penduduk bandar J jika populasi penduduk bandar K ialah 1 100 000\npenduduk dengan jarak di antara dua bandar tersebut ialah 351 km. Purata bilangan\npanggilan telefon harian di antara bandar J dengan bandar K ialah 18 857.\n29\nKPM",
+    "tokens": 409
+  },
+  {
+    "id": "ubahan-030",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nArena Rumusan\nUBAHAN\nUbahan Langsung Ubahan Songsang\ny berubah secara langsung dengan x n, y berubah secara songsang dengan x n,\n1 1 1 1\nbagi n = 1, 2, 3, , bagi n = 1, 2, 3, ,\n2 3 2 3\n• y ∝ x n 1\n• y ∝\nx n\n• y = k x n dengan keadaan k ialah\ny k\npemalar dan k = • y = dengan keadaan k ialah\nx n x n\npemalar dan k = yx n\n• Graf y melawan x n ialah satu garis\nlurus yang melalui asalan 1\n• Graf y melawan ialah satu garis\ny x n\nlurus yang bermula daripada asalan\n(x ≠ 0)\nxn y\nO y\n1\nUbahan Tercantum O xn O xn\nSatu ubahan langsung dengan keadaan satu\npemboleh ubah berubah sebagai hasil darab y berubah secara songsang\ndua atau lebih pemboleh ubah yang lain. dengan x n\n• y berubah secara tercantum dengan x m\n1 1\ndan z n, bagi m = 1, 2, 3, , dan\n2 3\n1 1\nn = 1, 2, 3, ,\n2 3\n• y ∝ x m z n\n• y = k x m z n dengan keadaan k ialah\ny\npemalar dan k =\nx m z n\nUbahan Bergabung\nMelibatkan gabungan ubahan langsung atau ubahan tercantum, dan ubahan songsang.\n1 1 1 1 1 1\n• Bagi p = 1, 2, 3, , , q = 1, 2, 3, , dan r = 1, 2, 3, ,\n2 3 2 3 2 3\nx p w px q\n(i) y ∝ (ii) y ∝\nz q z r\nk x p kw px q\ny = y =\nz q zr\ndengan keadaan k ialah pemalar.\n30\nKPM",
+    "tokens": 300
+  },
+  {
+    "id": "ubahan-031",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\nPada akhir bab ini, saya dapat\nmenerangkan maksud ubahan langsung.\nmenentukan hubungan antara dua pemboleh ubah bagi suatu ubahan langsung.\nmenentukan hubungan antara tiga atau lebih pemboleh ubah bagi suatu ubahan\ntercantum.\nmenyelesaikan masalah yang melibatkan ubahan langsung.\nmenerangkan maksud ubahan songsang.\nmenentukan hubungan antara dua pemboleh ubah bagi suatu ubahan songsang.\nmenyelesaikan masalah yang melibatkan ubahan songsang.\nmenentukan hubungan antara tiga atau lebih pemboleh ubah bagi suatu ubahan\nbergabung.\nmenyelesaikan masalah yang melibatkan ubahan bergabung.\nPPPRRROOOJJJEEEKKK MMMIIINNNIII\nBahan: Lampu suluh, kertas A4, tali ukur\nLangkah:\n1. Lakukan projek ini secara berkumpulan. Tampal kertas A4 dan letakkan lampu\nsuluh tegak menghala ke kertas seperti yang ditunjukkan dalam rajah di bawah.\nLakukan dalam kelas yang gelap.\nd cm\nj cm\nLampu suluh\nKertas A4\n2. Dengan jarak lampu suluh dari kertas A4, j, yang berbeza seperti 10 cm, 20 cm,\n30 cm, ... , rekod diameter imej cahaya lampu, d, yang terhasil pada kertas\ntersebut. Bina satu jadual untuk merekod data anda.\n3. Wakilkan data yang diperoleh menggunakan graf garis yang sesuai.\n4. Tulis satu rumus yang menunjukkan hubungan antara d dengan j. Kemudian,\nnyatakan satu kesimpulan tentang diameter imej cahaya lampu yang terhasil\ndengan jarak lampu suluh dari kertas.\n5. Bagaimanakah kajian ini boleh diaplikasikan dalam kehidupan seharian anda?\n31\nKPM",
+    "tokens": 216
+  },
+  {
+    "id": "ubahan-032",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "Bab",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "1\nBAB\nImbas kod QR atau layari\nbit.do/Kuiz01 untuk kuiz interaktif\nFAHAM\n1. Tulis hubungan ubahan bagi setiap yang berikut.\n(a) w berkadaran langsung dengan kuasa tiga x.\n(b) a berubah secara langsung dengan b dan secara songsang dengan kuasa tiga c.\n(c) p berubah secara langsung dengan q dan punca kuasa dua r.\n(d) Jarak yang dilalui, s m oleh sebuah basikal berubah secara langsung dengan\npecutannya, a m s–2 dan kuasa dua masa yang diambil, t s.\n1 y\n2. Rajah di sebelah menunjukkan graf y melawan . Tuliskan hubungan\n3 x\nantara y dengan 3 x menggunakan simbol ∝.\n1\nO\n3x\n3. Tuliskan hubungan ubahan berikut dalam bentuk ayat.\n1 3 q pq 2\n(a) y ∝ xz (b) e ∝ (c) p ∝ (d) n ∝\nf r  r\n4. Nyatakan sama ada setiap yang berikut mempunyai hubungan y berubah secara langsung\ndengan x atau tidak.\nx\n(a) x – y = 0 (b) y + 3 = x (c) xy = 10 (d) = 0.5\ny\nMASTERI\n5. Hitung pemalar, k bagi setiap yang berikut.\n(a) L berubah secara langsung dengan kuasa tiga m. L = 16.384 apabila m = 3.2 .\n(b) h berubah secara langsung dengan a dan kuasa dua b. h = 96 apabila a = 18 dan\nb = 4 .\n(c) P berubah secara langsung dengan q 2 dan r, dan secara songsang dengan 3 s .\nP = 17.01 apabila q = 4.5, r = 9 dan s = 3 375 .\n6. Diberi m berubah secara songsang dengan n dan p. Jika m = 6 apabila n = 0.4 dan\np = 5, tuliskan satu persamaan yang menghubungkan m, n dan p.\n7. Diberi f ∝ g 2h dan f = 24 apabila g = 4 dan h = 5. Hitung nilai g apabila f = 5.88 dan\nh = 10 .\n8. Jadual di sebelah menunjukkan perubahan tiga kuantiti. Diberi\ny 4 m 51\ny berubah secara langsung dengan x dan secara songsang\nx 0.3 6 1.7\ndengan punca kuasa dua z. Hitung nilai m dan nilai n.\nz 3.24 225 n\nCABAR\n9. P berubah secara songsang dengan Q dan Q = 3R – 2. Diberi P = 0.02 apabila R = 4.\n(a) Ungkapkan P dalam sebutan Q.\n(b) Hitung nilai R apabila P = 5 .\n32\nKPM",
+    "tokens": 396
+  },
+  {
+    "id": "ubahan-033",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "ubahan",
+    "chapter": "BAB 1 Ubahan",
+    "source": "KSSM Ubahan (Variation), hlm. 1",
+    "content": "BAB 1 Ubahan\n1\nBAB\n10. Arus elektrik, I (Ampere) berubah secara langsung dengan kuasa, P (Watt) dan secara\nsongsang dengan voltan, V (Volt) bagi suatu peralatan elektrik. Diberi bahawa sebuah\npengering rambut dengan kuasa 550 W dan voltan 240 V menggunakan arus elektrik\n2.2 A. Hitung arus elektrik yang digunakan oleh sebuah kipas dengan kuasa 75 W dan\nvoltan 240 V.\n11. Luas permukaan melengkung, L cm2, sebuah kon berubah secara\nlangsung dengan jejari tapaknya, j cm, dan tinggi condong, s cm.\ns cm\nDiberi L = 88 cm2 apabila j = 3.5 cm dan s = 8 cm.\n(a) Hitung nilai L apabila j = 5 cm dan s = 9.8 cm.\n(b) Apakah perubahan pada luas permukaan melengkung jika\nj cm\ntinggi condongnya berkurang dan jejari tapak adalah tetap?\n12. Diberi Y berubah secara langsung dengan X dan secara songsang dengan W. Jika Y = 0.9\napabila X = 18 dan W = 5, hitung\n(a) nilai W apabila Y = 20 dan X = 6,\n(b) peratusan ubahan bagi Y apabila X bertambah sebanyak 10% dan W berkurang\nsebanyak 20%.\n13. Kelajuan, S, sebuah basikal berubah secara langsung\ndengan bilangan putaran pedal basikal per minit, P,\nGear depan\ndan bilangan gigi gear depan, d, dan secara songsang\ndengan bilangan gigi gear belakang, b. Santhami\nmenunggang sebuah basikal pada kelajuan 26.4 km\nper jam. Putaran pedal basikalnya ialah 75 putaran\nper minit dengan bilangan gigi gear depan ialah 40\ndan gear belakang ialah 20. Huraikan perubahan laju\nbasikal Santhami jika dia meningkatkan putaran pedal Gear belakang Pedal\nbasikalnya kepada 90 putaran per minit.\nTTTTeeeerrrrooookkkkaaaaiiii MMMMaaaatttteeeemmmmaaaattttiiiikkkk\nKonsep ubahan banyak digunakan dalam bidang sains. Antaranya adalah seperti berikut:\nHukum Kegravitian\nHukum Pembiasan\nHukum Ohm Hukum Boyle Semesta Newton\nsin i\nV = IR = pemalar PV = pemalar mm\nsin r F = G 1 2\nd 2\nSecara berkumpulan, cari maklumat di Internet berkaitan kuantiti yang diwakili\npemboleh ubah bagi rumus di atas dan bagaimana hukum-hukum tersebut\nmenggunakan konsep ubahan. Tuliskan penggunaan rumus tersebut secara ringkas.\nKemudian, lakukan kajian dengan lebih lanjut tentang aplikasi konsep ubahan dalam\nbidang kewangan, alam sekitar, dan sains sosial secara ringkas. Bentangkan hasil\ndapatan kumpulan anda untuk berkongsi maklumat antara kumpulan lain.\n33\nKPM",
+    "tokens": 371
+  },
+  {
+    "id": "matriks-001",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB\n2 Matriks\nApakah yang akan anda pelajari?\n• Matriks\n• Operasi Asas Matriks\nMaslahat Bab Ini\nMatriks digunakan dalam bidang matematik untuk mewakili dan menyelesaikan masalah\ndalam algebra, statistik dan geometri. Dalam kehidupan harian, seorang pengurus belian\nboleh mencatat jumlah inventori dalam perniagaan.\nTahukah Anda?\nArthur Cayley (1821-1895) seorang ahli matematik Inggeris yang\nmembangunkan teori matriks dari aspek algebra dalam karyanya\nA Memoir on the Theory of Matrices. Cayley mencipta matriks\nsemasa membuat kajian tentang teori transformasi. Dua orang ahli\nmatematik Amerika Syarikat, Benjamin Peirce (1809-1880) dan\nCharles S. Peirce (1839-1914) turut bersama-sama Cayley dalam\npembangunan matriks algebra.\nUntuk maklumat lanjut:\nbit.do/TahukahAndaBab2\nGERBANG ISTILAH\nmatriks matrix\nmatriks baris row matrix\nmatriks identiti identity matrix\nmatriks lajur column matrix\nmatriks segi empat sama square matrix\nmatriks segi empat tepat rectangular matrix\nmatriks sifar zero matrix\nmatriks songsang inverse matrix\npendaraban skalar scalar multiplication\npenentu determinant\nperingkat order\nunsur element\n3344\nKKPPMM",
+    "tokens": 151
+  },
+  {
+    "id": "matriks-002",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nMatriks\nM\nengikut Laporan Digital 2018, jumlah pengguna Internet mencatatkan 25.08\njuta orang iaitu 79% penduduk di Malaysia. Masyarakat kini lebih cenderung\nmenjalani urusan seharian seperti membeli-belah, membuat bayaran perkhidmatan\ndan sebagainya melalui Internet. Pelbagai data telah dihasilkan dalam proses ini\ndan menyokong pertumbuhan Data Raya (Big Data).\nData Raya merujuk kepada data yang bersaiz sangat besar, kompleks dan\nsukar diproses dengan pengurusan pangkalan data biasa. Koleksi data ini dapat\nmembantu pihak pengurusan pelbagai bidang untuk membuat keputusan yang lebih\nbijak. Dalam bidang perniagaan, data raya dianalisis untuk mengurangkan kos dan\nmasa, membangunkan produk baharu serta menyusun langkah-langkah perniagaan\nyang strategik. Proses menganalisis data ini banyak melibatkan matriks.\n3355\nKKPPMM",
+    "tokens": 112
+  },
+  {
+    "id": "matriks-003",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\n2.1 Matriks\nBagaimanakah mewakilkan maklumat situasi sebenar\ndalam bentuk matriks?\nKedai Elektrik Sinar Jaya mencatatkan jualan tiga jenis kipas Mewakilkan maklumat\nsituasi sebenar dalam angin dengan menggunakan hamparan elektronik. Rajah di bawah\nbentuk matriks.\nmenunjukkan jualan kipas angin di kedai dan dalam talian bagi\nbulan Mac hingga Mei. Bagaimanakah data ini boleh disusun?\nData bulan Mac yang diwakilkan dalam bentuk jadual boleh juga diwakilkan dalam bentuk\nmatriks seperti yang ditunjukkan di bawah.\nKipas Angin\n16 18 11\n3 4\nbaris\nBerdiri Siling Dinding 5 10 4\nDi kedai 16 18 11\nlajur\nDalam talian 5 10 4\nBentuk jadual Bentuk matriks\nMatriks ialah nombor-nombor yang disusun dalam baris\ndan lajur untuk membentuk satu tatasusun segi empat tepat\natau segi empat sama.\nMatriks lazimnya diwakili dengan\nhuruf besar dan ditulis dalam\ntanda kurung [ ] atau ( ).\nSalina\nJames Joseph Sylvester\n(1814-1897) merupakan\nahli matematik yang\npertama kali menggunakan\nistilah matriks pada\ntahun 1850.\n36\nKPM",
+    "tokens": 158
+  },
+  {
+    "id": "matriks-004",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nContoh 1\nWakilkan maklumat berikut dalam bentuk matriks.\n(a) Jadual di bawah menunjukkan keperluan kalori harian bagi perempuan mengikut kategori.\nKanak-kanak Remaja Dewasa Warga Emas\nKeperluan kalori\n1 700 2 100 2 000 1 800\nharian (kcal)\n(b) Jadual di bawah menunjukkan pungutan pingat oleh kontinjen\nMalaysia untuk tiga acara dalam Temasya Sukan SEA ke-29. BBuulleettiinn II llmmiiaahh\nEmas Perak Gangsa Kalori ialah ukuran nilai\ntenaga dalam makanan.\nAcara Terjun 13 5 1\nKandungan kalori suatu\nmakanan bergantung\nPencak Silat 10 2 4\npada kandungan\nOlahraga 8 8 9 karbohidrat, protein dan\nlemak di dalamnya.\n(c) Dalam Ujian 1, Samad telah mendapat 76 markah untuk Misalnya, 1 g protein\nbersamaan 4 kcal.\nBahasa Melayu, 82 markah untuk Matematik dan 72\nmarkah untuk Sejarah. Hamid pula telah mendapat 80\nmarkah untuk Bahasa Melayu, 88 markah untuk Matematik\ndan 70 markah untuk Sejarah.\nPenyelesaian:\n1700\n2100\n(a) baris 1 [1700 2100 2000 1800] atau\n2000\nDalam Temasya Sukan\nIni matriks baris. Matriks baris 1800 SEA ke-29 yang\nmempunyai hanya satu baris. diadakan di Kuala\nlajur 1 Lumpur pada tahun\n2017, kontinjen Malaysia\nIni matriks lajur. Matriks lajur mempunyai hanya satu lajur. berjaya menjadi juara\nkeseluruhan dengan\npencapaian 145 pingat\nbaris 1\n3\n13 5 1\n4 3\n13 10 8\n4\nemas.\n(b) baris 2 10 2 4 atau 5 2 8\nbaris 3 8 8 9 1 4 9\nlajur 1lajur 2lajur 3\nAdakah [6] merupakan\nIni matriks segi empat sama. Matriks segi empat sama mempunyai matriks segi empat sama?\nbilangan baris dan bilangan lajur yang sama. Jelaskan jawapan anda.\nbaris 1 76 80\n(c) baris 2 3 82 88 4 atau b a ris 1 3 76 82 72 4 Ini matriks segi empat tepat.\nbaris 2 80 88 70 Matriks segi empat tepat\nbaris 3 72 70 mempunyai bilangan baris dan\nbilangan lajur yang berbeza.\nlajur 1 lajur 2 lajur 3\nlajur 1 lajur 2\n37\nKPM",
+    "tokens": 323
+  },
+  {
+    "id": "matriks-005",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nLatih Kendiri 2.1a\n1. Suatu pameran teknologi mudah alih generasi kelima (5G) telah\ndikunjungi oleh 857 orang remaja, 3 180 orang dewasa dan 211\norang warga emas. Wakilkan maklumat tersebut dalam bentuk\nmatriks.\n2. Jadual di sebelah menunjukkan purata\nIsnin Selasa Rabu\nbacaan Indeks Pencemaran Udara (IPU)\nPutrajaya 53 52 50\ndi Putrajaya, Jerantut dan Sandakan\nselama tiga hari. Wakilkan maklumat Jerantut 20 21 20\ntersebut dalam bentuk matriks.\nSandakan 47 48 46\n3. Jadual di bawah menunjukkan purata bilangan buku yang dibaca oleh murid dalam\nProgram Nilam di SMK Setia bagi tahun 2019.\nTingkatan 3 Tingkatan 4 Tingkatan 5\nBahasa Melayu 20 18 15\nBahasa Inggeris 12 10 11\nWakilkan maklumat di atas dalam bentuk matriks.\nBagaimanakah menentukan peringkat matriks dan\nseterusnya mengenal pasti unsur tertentu dalam matriks?\nMenentukan peringkat\nPeringkat matriks boleh ditentukan dengan menulis bilangan\nmatriks dan seterusnya\nbaris dan bilangan lajur matriks itu. Misalnya, mengenal pasti unsur\ntertentu dalam suatu\nbaris 1 3 16 18 11 4 Matriks ini mempunyai 2 matriks.\nbaris 2 5 10 4 baris dan 3 lajur. Jadi, ini\n2 × 3\nialah matriks peringkat 2 × 3\nlajur 1 lajur 2 lajur 3 dan dibaca sebagai “matriks\n2 dengan 3”.\nMatriks dengan m baris dan n lajur mempunyai peringkat m × n dan dibaca sebagai\n“matriks m dengan n”.\nSetiap nombor dalam matriks dikenali sebagai unsur matriks itu. Misalnya, unsur pada\n16 18 11\nbaris ke-2 dan lajur ke-3 bagi matriks 3 4 ialah 4.\n5 10 4\n16 18 11\nHuruf besar digunakan untuk mewakili suatu matriks, misalnya A = 3 4, dan\n5 10 4\nunsur pada baris ke-2 dan lajur ke-3 boleh diwakili dengan a , misalnya a = 4.\n23 23\n38\nKPM",
+    "tokens": 288
+  },
+  {
+    "id": "matriks-006",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nSecara umumnya, unsur pada baris ke-i dan lajur ke-j dalam\nBBuulleettiinn II llmmiiaahh\nmatriks A boleh diwakili oleh\na\na dibaca sebagai “a dua\nij sa 21 tu”\nbaris ke-i lajur ke-j\na a … a\n11 12 1n BBuulleettiinn II llmmiiaahh\na a … a\nmaka, A = 21 22 2n Matriks baris mempunyai\n  … \nperingkat 1 × n manakala\na a … a\nmatriks lajur mempunyai\nm1 m2 mn\nperingkat m × 1.\nContoh 2\n1 5 –2 0\nDiberi tiga matriks, P = [3 –7 9], Q = 3 4 4 dan R = 3 7 2 8 . Tentukan\n5 – 4 11 6 1\n(a) peringkat setiap matriks itu,\n9 3 –1 5\n(b) unsur\n(i) baris pertama dan lajur ke-3 matriks P, p ,\n13\n(ii) baris ke-2 dan lajur pertama matriks Q, q ,\n21\n(iii) baris ke-3 dan lajur ke-4 matriks R, r .\n34\nPenyelesaian: baris 1 → [ 3 –7 9 ]\n↑ ↑ ↑\n(a) Peringkat matriks P ialah 1 × 3.\nlajur 1 lajur 2 lajur 3\nPeringkat matriks Q ialah 2 × 1. Matriks ini mempunyai 1 baris dan 3 lajur.\nPeringkat matriks R ialah 4 × 4.\n(b) (i) p bagi matriks P ialah 9.\n13\n(ii) q bagi matriks Q ialah 5.\n21\n(iii) r bagi matriks R ialah 1.\n34\nContoh 3\n–2 5\n3 4\nDiberi matriks D = 0 4 , tentukan\n1 9\n(a) peringkat matriks, (b) unsur d , d dan d .\nCuthbert Edmund Cullis\n11 21 32\n(1875-1954) ialah seorang\nPenyelesaian:\nahli matematik Inggeris\n(a) 3 × 2 yang memperkenalkan\nkurungan untuk matriks\n(b) d = –2 d ialah unsur pada baris pertama dan lajur pertama. pada tahun 1913. Cullis\n11 11\nmenggunakan tatatanda\nd = 0 d ialah unsur pada baris ke-2 dan lajur pertama.\n21 21 A = [a ] untuk mewakili\nij\nunsur pada baris\nd = 9 d ialah unsur pada baris ke-3 dan lajur ke-2.\n32 32 ke-i dan lajur ke-j\ndalam matriks.\n39\nKPM",
+    "tokens": 350
+  },
+  {
+    "id": "matriks-007",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nLatih Kendiri 2.1b\n1. Tentukan peringkat bagi matriks-matriks berikut.\n4 –1 7\n6 3 4 12 9 1\n(a) [15 –8] (b) 3 4 (c) 8 0 2 (d) 3 4\n9 5 10 7\n5 11 3\n2. Untuk setiap matriks berikut, tentukan\n(i) peringkat matriks,\n(ii) unsur pada baris ke-2 dan lajur ke-2,\n(iii) unsur pada baris ke-3 dan lajur pertama.\n1 5 2 –3 5\n3 4 3 4\n(a) – 6 0 (b) –1 16 0\n9 12 9 1 8\n–8 14 2\n3. Diberi matriks F = 3 4 , tentukan peringkat matriks F. Kemudian, kenal pasti\n7 3 –5\nunsur f , f dan f .\n13 22 11\n1 –16\n4. Diberi matriks B = 3 4 , hitung nilai b + b .\n20 4 12 21\nBagaimanakah menentukan sama ada dua matriks\nadalah sama?\nMenentukan sama ada\ndua matriks adalah sama.\nPerhatikan dua matriks di bawah.\nApakah syarat supaya\nmatriks M sama\ndengan matriks N?\nDidapati matriks M dan matriks N mempunyai peringkat yang sama iaitu 2 × 2 dan jika\nsetiap unsur sepadannya adalah sama, iaitu a = 1, b = 2, c = 3 dan d = 4, maka matriks M\ndan matriks N adalah sama dan boleh ditulis sebagai M = N.\nM = N jika dan hanya jika kedua-dua matriks mempunyai peringkat yang sama dan\nsetiap unsur sepadannya sama.\n40\nKPM",
+    "tokens": 237
+  },
+  {
+    "id": "matriks-008",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nContoh 4\nTentukan sama ada setiap pasangan matriks berikut adalah sama. Berikan sebab anda.\n2 11 2 11 3\n(a) A = 3 4 dan B = 3 4 (b) C = [3 9] dan D = 3 4\n1 3 1 3 9\n1\n0.5 –2 –2\n8 3 8 –7 3 4 2\n(c) E = 3 4 dan F = 3 4 (d) G = 6 0.8 dan H = 4\n–7 0 3 0 6\n–1 12 5\nPenyelesaian: –1 12\n(a) A = B kerana kedua-dua matriks mempunyai peringkat yang sama dan setiap unsur\nsepadannya sama.\n(b) C ≠ D kerana kedua-dua matriks tidak mempunyai peringkat yang sama. Peringkat C\nialah 1 × 2 manakala peringkat D ialah 2 × 1.\n(c) E ≠ F kerana unsur sepadannya tidak sama.\n(d) G = H kerana kedua-dua matriks mempunyai peringkat yang sama dan setiap unsur\nsepadannya sama.\nContoh 5\nx 7 5 y + 1\nDiberi bahawa matriks P = 3 4 dan matriks Q = 3 4 . Tentukan nilai x,\n0 5 – 3z 0 2z\nnilai y dan nilai z jika P = Q.\nPenyelesaian:\nP = Q, maka semua unsur sepadan adalah sama.\nx = 5 , 7 = y + 1 , 5 – 3z = 2z\ny = 7 – 1 5 = 5z\ny = 6 z = 1\nLatih Kendiri 2.1c\n1. Tentukan sama ada setiap pasangan matriks berikut adalah sama.\n1\n6\n(a) 3 4 4 dan 3 4 4 (b) 3 0.1 6 4 dan 10\n3 3 –1 1.5 3\n–1\n2\n12 0 9 0 8\n(c) 3 4 dan [12 –7] (d) 3 4 dan 3 4\n–7 8 1 9 1\n2. Diberi P = Q, hitung nilai x, nilai y dan nilai z.\n6 0 x 0\n3 4 3 4\n(a) P = 3 y dan Q = 3 2\n2z – 3 –5 –2 –5\n10 –1 5x –1\n(b) P = 3 4 dan Q = 3 4\n6y + 5 3z + 4 2y – 9 – 4x\n41\nKPM",
+    "tokens": 358
+  },
+  {
+    "id": "matriks-009",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\n2.2 Operasi Asas Matriks\nBagaimanakah menambah dan menolak matriks?\nMenambah dan menolak\nBagaimanakah data ini\nmatriks. ditambah atau ditolak?\nPerhatikan hamparan elektronik di atas yang menunjukkan jualan kipas angin di Kedai Elektrik\nSinar Jaya. Jualan kipas angin bulan Mac, April dan Mei masing-masing boleh diwakili oleh\n16 18 11 20 15 9 15 21 10\nmatriks P = 3 4, matriks Q = 3 4 dan matriks R = 3 4 .\n5 10 4 7 12 5 10 24 10\nJumlah jualan bulan Mac dan April boleh diperoleh dengan menambah matriks P dan matriks\nQ, iaitu\n16 18 11 20 15 9 36 33 20\n3 4 + 3 4 = 3 4 .\n5 10 4 7 12 5 12 22 9\nPerbezaan jualan antara bulan April dengan Mei juga boleh ditentukan dengan membuat\npenolakan matriks R dan matriks Q, iaitu\n15 21 10 20 15 9 –5 6 1\n3 4 – 3 4 = 3 4 .\n10 24 10 7 12 5 3 12 5\nPenambahan dan penolakan matriks hanya boleh dilaksanakan pada matriks yang\nsama peringkat.\nUnsur yang sepadan ditambah atau ditolak untuk mendapat satu matriks\ntunggal yang sama peringkat.\na a b b\nBagi matriks A = 3 11 12 4 dan matriks B = 3 11 12 4 ,\na a b b\n21 22 21 22\na + b a + b a – b a – b\nA + B = 3 11 11 12 12 4 dan A – B = 3 11 11 12 12 4 .\na + b a + b a – b a – b\n21 21 22 22 21 21 22 22\n42\nKPM",
+    "tokens": 283
+  },
+  {
+    "id": "matriks-010",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nContoh 6\nTentukan sama ada penambahan dan penolakan boleh dilaksanakan pada pasangan matriks\nberikut. Berikan sebab anda.\n2 –5 3 9 6\n(a) A = 3 4 dan B = 3 4 (b) C = [1 12] dan D = [0 – 4]\n8 11 7 4 –1\n15 – 4 2 –5 10 8 7\n(c) E = 3 4 dan F = 3 4 (d) G = 3 4 dan H = 3 4\n–1 0 13 0 –3 16 1\nPenyelesaian:\n(a) Tidak boleh kerana peringkat matriks A dan B adalah tidak sama.\n(b) Boleh kerana peringkat matriks C dan D adalah sama.\n(c) Boleh kerana peringkat matriks E dan F adalah sama.\n(d) Tidak boleh kerana peringkat matriks G dan H adalah tidak sama.\nContoh 7 5\n–2 6\n6\n10 –8 4 14 –2 1\nDiberi matriks C = 3 4, matriks D = 3 4 , matriks P = 7.4 –13 5\n6 –11 7 –3 5 9\n1\n1 9\n1 4\n18 –7\n3\ndan matriks Q = . Hitung\n2.5 –8 3\n12 0 0.4\n(a) C + D (b) P – Q\nPenyelesaian:\n10 –8 4 14 –2 1\n(a) C + D = 3 4 + 3 4\n6 –11 7 –3 5 9\n= 3 10 + 14 –8 + (–2) 4 + 1 4 Menambah unsur\n6 + (–3) –11 + 5 7 + 9 yang sepadan\n24 –10 5\n= 3 4\n3 – 6 16\ni – Teknologi\n5 1\n–2 6 18 –7\n6 3\n(b) P – Q = 7.4 –13 5 – 2.5 –8 3\nKalkulator saintifik\nboleh digunakan untuk\n1\n1 9 12 0 0.4 membuat penambahan\n4 dan penolakan matriks.\n5 1 Imbas kod QR atau layari\n–2 – 18 – 6 – (–7)\n6 3 bit.do/Video201 untuk\nMenolak\n= 7.4 – 2.5 –13 – (–8) 5 – 3 unsur yang melihat video yang\nberkaitan.\n1 sepadan\n1 – 12 9 – 0 – 0.4\n4\n1\n–20 13\n2\n=\n4.9 –5 2\n–11 9 –0.15\n43\nKPM",
+    "tokens": 354
+  },
+  {
+    "id": "matriks-011",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nContoh 8\n2x – 1 –3 x 2\nDiberi matriks D = 3 4 , matriks E = 3 4 dan\n–12 5 + y 7 y BBuulleettiinn II llmmiiaahh\n8 –1\nD + E = 3 4 , hitung nilai x dan nilai y. Matriks yang diungkapkan\n–5 13\ndalam bentuk persamaan\ndikenali sebagai\nPenyelesaian:\n8 –1 persamaan matriks.\nD + E = 3 4\n–5 13 Misalnya, A + B = C.\n2x – 1 –3 x 2 8 –1\n3 4 + 3 4 = 3 4\n–12 5 + y 7 y –5 13\n2x – 1 + x –3 + 2 8 –1\n3 4 = 3 4\n–12 + 7 5 + y + y –5 13\n3x – 1 –1 8 –1\n3 4 = 3 4 Matriks sama\n–5 5 + 2y –5 13\nBandingkan unsur-unsur\n3x – 1 = 8 dan 5 + 2y = 13\nyang sepadan\n3x = 9 2y = 8\nx = 3 y = 4\nMaka, x = 3 dan y = 4\nContoh 9 Semak\nJawapan\n16 7 –2\nDiberi F + 3\n–3\n4 – 3\n10\n4 = 3\n3\n4 , hitung matriks F.\nGantikan matriks F =\n3–114\n16\nke dalam persamaan.\nPenyelesaian:\n3–114\n+\n3164\n–\n374\nF + 3 16 4 – 3 7 4 = 3 –2 4 16 –3 10\n–3 10 3 = 3 –11 + 16 – 7 4\n16 + (–3) – 10\n–2 16 7\nF = 3 4 – 3 4 + 3 4\n=\n3–24\n3 –3 10\n3\n–11\n= 3 4\n16\nContoh 10\nSains Matematik Ekonomi\nJadual di sebelah menunjukkan\nStok awal 326 335 82\ncatatan stok buku teks Tingkatan\n4 bagi mata pelajaran Sains, Buku baharu\n56 47 15\nMatematik dan Ekonomi di SMK diterima\nTaman Suria. Hitung stok akhir bagi\nBuku hilang\nsetiap jenis buku teks tersebut. 32 26 11\ndan rosak\nPenyelesaian:\nStok akhir = Stok awal + Buku baharu diterima – Buku hilang dan rosak\n= [326 335 82] + [56 47 15] – [32 26 11]\n= [350 356 86]\nMaka, stok akhir buku teks Sains, Matematik dan Ekonomi masing-masing ialah 350, 356 dan 86.\n44\nKPM",
+    "tokens": 376
+  },
+  {
+    "id": "matriks-012",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nLatih Kendiri 2.2a\n1. Tentukan sama ada penambahan dan penolakan boleh dilaksanakan pada setiap pasangan\nmatriks berikut.\n4 –16 7\n–5 9 3 7 13 –1 11 3 4\n(a) 3 4 dan 3 4 (b) 3 4 dan 1 5 0\n1 0 6 1 –2 8 4\n3 2 8\n10\n(c) 3 4 dan [12 –7] (d) [2 –9] dan [1 6]\n–3\n12 1 8 –2 6 3\n2. Diberi matriks P = 3 4 , Q = 3 4 dan R = 3 4 , hitung\n–3 4 0 5 7 –1\n(a) P – Q + R (b) P + Q – R\n3. Selesaikan setiap yang berikut.\n12 10 1 1 –1 9 18 –3 11 5\n(a) 3 4 + 3 4 (b) 3 4 – 3 4\n– 4 0 –7 2 8 3 –7 15 –1 2\n–1 4 19 2 8 14 6\n(c) 3 4 + 3 4 – 3 4 (d) 3 4 + 3 4\n6 9 –3 1 5 –1 15\n3a + 2 4 15\n4. Diberi 3 4 + 3 4 = 3 4 , hitung nilai a dan nilai b.\n9 – b 2b –8\n4x + 1 –5 x 6 10 –11\n5. Diberi matriks S = 3 4 , T = 3 4 dan S – T = 3 4 , hitung nilai x,\n6 – y x 7 3y –2 z\nnilai y dan nilai z.\n3 – 4 –7 2 11 – 4\n3 4 3 4 3 4\n6. Diberi 1 0 + 9 6 – V = –1 5 , hitung matriks V.\n– 6 7 10 8 6 9\n7. Encik Gopal mempunyai dua buah kedai, A dan B. Jadual di bawah menunjukkan\npendapatan dan perbelanjaan jualan makanan dan minuman bagi kedua-dua buah\nkedainya pada bulan Jun.\nPendapatan Perbelanjaan\nMakanan Minuman Makanan Minuman\nKedai A RM2 650 RM1 890 Kedai A RM930 RM850\nKedai B RM1 560 RM910 Kedai B RM540 RM260\nHitung jumlah keuntungan yang diperoleh Encik Gopal dari setiap kedainya pada bulan\nJun. Tunjukkan pengiraan anda dalam bentuk matriks.\n[Diberi bahawa keuntungan = pendapatan – perbelanjaan]\n45\nKPM",
+    "tokens": 370
+  },
+  {
+    "id": "matriks-013",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nBagaimanakah mendarab matriks dengan suatu nombor?\nBagaimana jika 5 darab\nMendarab matriks dengan\nmatriks A?\nsuatu nombor.\n5 × A = A + A + A + A + A?\nPendaraban matriks dengan suatu nombor ialah satu proses penambahan berulang. Jika\nmatriks A didarabkan dengan suatu nombor n, maka matriks A boleh ditambah dengan\nmatriks A yang sama berulang sebanyak n kali, iaitu\nnA = A + A + … + A .\nn kali\nRumus ini bermakna setiap unsur dalam matriks A ditambah dengan unsur yang sama\nberulang sebanyak n kali. Jadi, untuk mendarab suatu matriks dengan suatu nombor, darabkan\nsetiap unsur dalam matriks itu dengan nombor tersebut.\nDiberi matriks A = 3 a b 4 dan n ialah suatu nombor. BBuulleettiinn II llmmiiaahh\nc d\nApabila suatu matriks\na b na nb didarab dengan suatu\nMaka nA = n3 4 = 3 4 .\nc d nc nd nombor nyata, nombor\nnyata itu dinamakan\nn dikenali sebagai skalar. skalar.\nPendaraban matriks dengan suatu nombor dikenali sebagai pendaraban skalar.\nContoh 11\n–5 4\nDiberi D = 3 4 , hitung\n2 1\n1\n(a) 3D (b) – D\n2\nPenyelesaian:\n(a) 3D = 33 –5 4 4 (b) – 1 D = – 1 3 –5 4 4\n2 1 2 2 2 1\n= 3 3(–5) 3(4) 4 Darabkan semua 1– 1 2(–5) 1– 1 2(4)\n3(2) 3(1) unsur dengan 3 2 2\n=\n= 3 –15 12 4 1– 1 2 2(2) 1– 1 2 2(1)\n6 3\n5\n–2\n2\n=\n1\n–1 –\n2\n46\nKPM",
+    "tokens": 263
+  },
+  {
+    "id": "matriks-014",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nMobiLisasi Minda 1 Berkumpulan\nTujuan: Meneroka hukum operasi aritmetik dalam penambahan dan penolakan matriks.\nLangkah:\n1. Bahagikan kelas kepada kumpulan 4 orang murid.\n2. Tentukan hasil penambahan dan penolakan dalam Lembaran Aktiviti di bawah.\nLembaran Aktiviti:\n2 7 – 4 3 9 2 0 0\nA = 3 4 , B = 3 4 , C = 3 4 , O = 3 4\n6 11 5 8 10 –1 0 0\n(a) Hukum Kalis Tukar Tertib (b) Hukum Kalis Agihan\nA + B B + A h(A + B) hA + hB\nA – B B – A h(A – B) hA – hB\n(c) Hukum Kalis Sekutuan (d) Penambahan dan\nPenolakan Matriks Sifar\n(A + B) + C A + (B + C)\nA + O A – O\n(A – B) – C A – (B – C)\nPerbincangan:\nBerdasarkan hasil dalam setiap jadual di atas, apakah kesimpulan yang diperoleh? Apakah\nkaitan antara proses penambahan dan penolakan matriks dengan hukum operasi aritmetik?\nHasil daripada Mobilisasi Minda 1, didapati bahawa;\n(a) A + B = B + A. Penambahan matriks mematuhi Hukum Kalis Tukar Tertib.\nA – B ≠ B – A. Penolakan matriks tidak mematuhi Hukum Kalis Tukar Tertib.\n(b) h(A + B) = hA + hB, h(A - B) = hA - hB.\nPenambahan dan penolakan matriks mematuhi Hukum Kalis Agihan.\n(c) (A + B) + C = A + (B + C). Penambahan matriks mematuhi Hukum Kalis Sekutuan.\n(A – B) – C ≠ A – (B – C). Penolakan matriks tidak mematuhi Hukum Kalis Sekutuan.\n(d) Matriks dengan semua unsurnya adalah sifar dinamakan\nBBuulleettiinn II llmmiiaahh\n0 0\nmatriks sifar, misalnya 3 4 . Penambahan dan\n0 0 Contoh matriks sifar:\nO = [0 0]\npenolakan matriks A dengan matriks sifar, O ialah: 1 × 2\nA + O = A dan A – O = A O =\n30 0 04\n2 × 3 0 0 0\n47\nKPM",
+    "tokens": 331
+  },
+  {
+    "id": "matriks-015",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nContoh 12\n7 9 2 –3\n3 4 3 4\nDiberi P = –3 8 dan Q = 1 5 , hitung 3(P - Q).\nTunjukkan\n6 12 0 4 3P - 3Q = 3(P - Q)\nPenyelesaian:\n7 9 2 –3\n3(P – Q) = 3 3 –3 8 4 – 3 1 5 4 Buat penolakan i – Teknologi\ndalam kurungan\n6 12 0 4\nKalkulator saintifik boleh\n5 12\n3 4 digunakan untuk membuat\n= 3 – 4 3 Darabkan semua pendaraban skalar. Imbas\nunsur dengan 3\n6 8 kod QR atau layari\nbit.do/Video202 untuk\n15 36 melihat video yang\n3 4\n= –12 9 berkaitan.\n18 24\nContoh 13\n1 4 x 5\n(a) Diberi 3 4 – 3 4 = 3 4 , hitung nilai x dan nilai y.\n2 12 –3 y\n9 0 –3 4\n(b) Diberi 4R + 3 4 = 3 4 , hitung matriks R.\n2 –3 10 1\nPenyelesaian:\n(a) 1 3 4 4 – 3 x 4 = 3 5 4 (b) 4R + 3 9 0 4 = 3 –3 4 4\n2 12 –3 y 2 –3 10 1\n3 2 4 – 3 x 4 = 3 5 4 4R = 3 –3 4 4 – 3 9 0 4\n6 –3 y 10 1 2 –3\n3 2 – x 4 = 3 5 4 4R = 3 –12 4 4\n6 – (–3) y 8 4 4R = A\nA\nBandingkan unsur-unsur sepadan. R = 1 3 –12 4 4 R = 4\n2 - x = 5 , 6 – (–3) = y 4 8 4\n1\n= A\nx = –3 y = 9 4\n–3 1\n= 3 4\n2 1\nContoh 14\nPurata bilangan kenderaan di suatu kawasan parkir untuk setiap hari bagi 5 hari bekerja diwakili\ndengan Jadual X. Jadual Y pula mewakili purata bilangan kenderaan pada hujung minggu.\nKereta Motosikal Kereta Motosikal\nBerbumbung 42 8 Berbumbung 25 5\nTidak berbumbung 20 11 Tidak berbumbung 12 3\nJadual X Jadual Y\nHitung bilangan kenderaan yang parkir di kawasan tersebut dalam seminggu.\n48\nKPM",
+    "tokens": 357
+  },
+  {
+    "id": "matriks-016",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nPenyelesaian:\n42 8 25 5\n5X + 2Y = 5 3 4 + 2 3 4 5 hari bekerja + 2 hari pada hujung minggu\n20 11 12 3\n210 40 50 10\n= 3 4 + 3 4\n100 55 24 6\n260 50\n= 3 4\n124 61\nLatih Kendiri 2.2b\n1. Tentukan hasil darab bagi setiap matriks berikut.\n12 –20\n–7 1 3 4\n(a) 33 4 (b) 0.6[11 5] (c) – 6 16\n2 4\n9 1\n100\n0.4 8 10 –1 11 1 3 4\n(d) –2 3 4 (e) 1.2 3 4 (f) – –90\n–9 2.5 3 7 –5 20\n–20\n2. Selesaikan setiap operasi yang berikut.\n1 2 7 5 10 2\n3 4 3 4 1 3 4 –1 8 1\n(a) 5 3 –1 + 6 1 – 9 – 4 (b) 6 3 4 – 0.5 3 4 – 2 3 4\n2 4 14 –3\n0 – 4 –1 8 – 6 14\n1 10 –25 1 15 20\n(c) 7[3 –2 1] – [21 6 –9] (d) 0.2 3 4 + 3 4\n3 – 6 8 5 –5 2.5\n9 6 –7 22 –1 10\n3. Diberi matriks E = 3 4 , matriks F = 3 4 dan matriks G = 3 4 ,\n2 11 3 4 –8 5\ntunjukkan (E + F ) + G = E + (F + G ).\n1\n3 4 4 0\n4. Diberi matriks P = 2 , matriks Q = 3 4 dan matriks O = 3 4, hitung P – 1.4Q + O.\n–5 0\n– 0.7\n2 3 – 4 9 3 a 5\n5. Diberi 4 3 4 – 3 4 = 3 4 , hitung nilai a, nilai b dan nilai c.\n–5 b c 0.1 5 –35 1.5\n6. Diberi [–10 9] - 2X + 5[2 1] = [3 8] , hitung matriks X.\n7. Kedai kasut Encik Jamal menjual kasut dewasa dan kasut kanak-kanak. Jadual 1\nmenunjukkan stok setiap jenis kasut pada awal minggu tertentu manakala Jadual 2\nmenunjukkan jualan setiap jenis kasut pada minggu tersebut.\nPerempuan Lelaki Perempuan Lelaki\nDewasa 85 70 Dewasa 33 24\nKanak-kanak 110 98 Kanak-kanak 42 40\nJadual 1 Jadual 2\nHitung inventori akhir setiap jenis kasut pada hujung minggu tersebut. Tunjukkan\npengiraan anda dalam bentuk matriks.\n49\nKPM",
+    "tokens": 399
+  },
+  {
+    "id": "matriks-017",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nBagaimanakah mendarab dua matriks?\nBerdasarkan situasi sebelum ini, jualan kipas angin pada bulan\nMac boleh diwakili dengan matriks seperti berikut:\nBerdiri Siling Dinding Mendarab dua matriks.\nP = 3 16 18 11 4 Di kedai\n5 10 4 Dalam talian\nKatakan komisen untuk jualan setiap unit kipas berdiri, siling dan dinding ialah RM25,\nRM30 dan RM20. Bagaimanakah anda menghitung jumlah komisen yang diperoleh daripada\njualan di kedai dan dalam talian?\nJumlah komisen yang diperoleh daripada Jumlah komisen yang diperoleh daripada\njualan di kedai jualan dalam talian\n= (16 × RM25) + (18 × RM30) + (11 × RM20) = (5 × RM25) + (10 × RM30) + (4 × RM20)\n= RM1 160 = RM505\nJumlah komisen yang diperoleh boleh dikira dalam bentuk matriks. Jika komisen jualan setiap\n25\n3 4\nunit kipas diwakili dalam bentuk matriks lajur, iaitu K = 30 , maka jumlah komisen yang\n20\ndiperoleh daripada jualan di kedai dan dalam talian boleh ditulis dalam bentuk matriks seperti\nyang berikut.\n25\n16 18 11 3 4\nPK = 3 4 30\n5 10 4\n2 × 3 20 3 × 1 Andaikan K sebagai\n16(25) + 18(30) + 11(20) matriks baris. Lakukan\n= 3 4 pendaraban matriks PK.\n5(25) + 10(30) + 4(20)\nAdakah pendaraban boleh\n1160 dilakukan?\n= 3 4\n505\n2 × 1\n1160\nPK dikenali sebagai pendaraban matriks P dengan matriks K dan 3 4 ialah hasil darab\n505\ndua matriks itu.\nSecara umumnya, untuk mendarab dua matriks, A dan B, bilangan lajur matriks A mesti\nsama dengan bilangan baris matriks B. Bilangan baris matriks A dan bilangan lajur matriks B\nmenjadi peringkat bagi hasil darab dua matriks itu, AB.\nA B = AB\nPeringkat: m × n n × p m × p\nBilangan Bilangan\n=\nlajur A baris B\nPeringkat AB ialah m × p\nJika matriks A mempunyai peringkat m × n dan matriks B mempunyai peringkat n × p,\nmaka pendaraban AB boleh dilakukan dan peringkat AB ialah m × p.\n50\nKPM",
+    "tokens": 336
+  },
+  {
+    "id": "matriks-018",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nContoh 15\n8 1 2\nDiberi matriks C = 3 4 dan matriks D = 3 4 . Tentukan sama ada pendaraban CD dan\n3 –2 5\nDC boleh dilakukan atau tidak. Jika boleh, nyatakan peringkat hasil darab matriks itu.\nPenyelesaian:\nPeringkat matriks C = 2 × 1, peringkat matriks D = 2 × 2.\nC D D C\n2 × 1 2 × 2 2 × 2 2 × 1\nTidak Sama\nsama\nPeringkat DC\nPendaraban CD tidak boleh dilakukan kerana Pendaraban DC boleh dilakukan kerana\nbilangan lajur matriks C tidak sama dengan bilangan lajur matriks D sama dengan\nbilangan baris matriks D. bilangan baris matriks C.\nPeringkat DC ialah 2 × 1.\nContoh 16\n2 3 6 –7\nDiberi matriks A = 3 4 dan matriks B = 3 4. Hitung AB.\n1 5 –2 1\nPenyelesaian:\n3 2 3 4 3 6 –7 4 = 3 (2)(6) + (3)(–2) 4 = 3 6 4 Unsur pada baris 1\n1 5 –2 1 dan lajur 1\n3 2 3 4 3 6 –7 4 = 3 6 (2)(–7) + (3)(1) 4 = 3 6 –11 4 Unsur pada baris 1\n1 5 –2 1 dan lajur 2\n3 2 3 4 3 6 –7 4 = 3 6 –11 4 = 3 6 –11 4 Unsur pada baris 2\n1 5 –2 1 (1)(6) + (5)(–2) – 4 dan lajur 1\n3 2 3 4 3 6 –7 4 = 3 6 –11 4 = 3 6 –11 4 Unsur pada baris 2\n1 5 –2 1 – 4 (1)(–7) + (5)(1) – 4 –2 dan lajur 2\n2 3 6 –7\nMaka, AB = 3 1 5 4 3 –2 1 4 3a 11 a 124 3b 114\na a b\n21 22 2 × 2 21 2 × 1\n= 3\n(2)(6) + (3)(–2) (2)(–7) + (3)(1)\n4 =\n3(a\n11\n× b\n11\n) + (a\n12\n× b\n21\n)4\n(1)(6) + (5)(–2) (1)(–7) + (5)(1) (a × b ) + (a × b )\n21 11 22 21\n= 3c 11 + d 114\n= 3 6 –11 4 e 21 + f 21\n– 4 –2 = 3g 114\nh\n21 2 × 1\n51\nKPM",
+    "tokens": 379
+  },
+  {
+    "id": "matriks-019",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nContoh 17\n5 –1 0 –2\nDiberi matriks E = 3 4 , matriks F = 3 4 dan matriks\n– 4 8 7 7 Sentiasa semak peringkat\nmatriks yang terhasil\nG = [4 3]. Hitung\nsebelum pendaraban.\n(a) GE (b) FG (c) GF Misalnya, matriks\nperingkat m × n darab\nPenyelesaian: matriks peringkat n × p\nmenghasilkan matriks\n5 –1 0\n(a) GE = [4 3] 3 4 peringkat m × p.\n1 × 2 – 4 8 7\n2 × 3\n= [4(5) + 3(– 4) 4(–1) + 3(8) 4(0) + 3(7)]\n= [8 20 21] Hasil darab matriks ialah\n1 × 3\nmatriks berperingkat 1 × 3\n(b) FG = 3 –2 4 [4 3] Mengapakah FG ≠ GF?\n7 1 × 2\n2 × 1\n(–2)(4) (–2)(3)\n= 3 4\n7(4) 7(3)\n–8 – 6\n= 3 4 Hasil darab matriks ialah i – Teknologi\n28 21 matriks berperingkat 2 × 2\n2 × 2\nKalkulator saintifik boleh\n–2 digunakan untuk membuat\n(c) GF = [4 3] 3 4\npendaraban dua matriks.\n1 × 2 7\n2 × 1 Imbas kod QR atau layari\n= [4(–2) + 3(7)] bit.do/Video203 untuk\nmelihat video yang\n= [13] Hasil darab matriks ialah berkaitan.\n1 × 1\nmatriks berperingkat 1 × 1\nContoh 18\n3 2\n3 4 – 4 2\nDiberi matriks K = –1 5 dan matriks L = 3 4 . Hitung\n0 1\n4 –2\n(a) L2 (b) KL2 (c) L3\nPenyelesaian:\n(a) L2 = LL BBuulleettiinn II llmmiiaahh\n= 3 – 4 2 43 – 4 2 4 Diberi L = 3 – 4 2 4,\n0 1 0 1 0 1\n(– 4)2 22\n16 + 0 –8 + 2 L2 ≠ 3 4.\n= 3 4 02 1 2\n0 + 0 0 + 1\nL2 = LL,\n16 – 6\n= 3 4 L3 = L2L = LL2.\n0 1\n52\nKPM",
+    "tokens": 322
+  },
+  {
+    "id": "matriks-020",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\n(b) KL2 (c) L3\n3 2 = L2L\n3 4 16 – 6\n= –1 5 3 4 16 – 6 – 4 2\n0 1 = 3 43 4 Cuba hitung LL 2.\n4 –2 0 1 0 1\n48 + 0 –18 + 2 – 64 + 0 32 + (– 6)\n3 4 = 3 4\n= –16 + 0 6 + 5 0 + 0 0 + 1\n64 + 0 –24 + (–2) Seronoknya\n= 3\n– 64 26\n4\nMatematik!\n48 –16 0 1\n3 4\nImbas kod QR atau layari\n= –16 11\nbit.do/KalkulatorMatriks\n64 –26\nuntuk menggunakan\nkalkulator matriks.\nContoh 19\n2 3\nDiberi [6x –5]3 4 = [7 1 – y], hitung nilai x dan nilai y.\n1 4\nPenyelesaian:\n2 3\n[6x –5]3 4 = [7 1 – y]\n1 4\n2 3\n[6x –5]3 4 = [(6x)(2) + (–5)(1) (6x)(3) + (–5)(4)]\n1 4 1 × 2\n= [12x – 5 18x – 20] Diberi matriks P = [a b + 1]\nc – 1 2\ndan Q = 3 4.\nMaka, [12x – 5 18x – 20] = [7 1 – y].\n–3 4d\nHitung\nBandingkan unsur-unsur sepadan.\n(i) PQ\n12x – 5 = 7 dan 18x – 20 = 1 – y\n(ii) Q 2\n12x = 12 18(1) – 20 = 1 – y\nx = 1 –2 = 1 – y\ny = 3\nContoh 20\nJadual di bawah menunjukkan unit saham yang dibeli oleh Khairil dan Mahmud.\nSaham A (unit) Saham B (unit)\nKhairil 5 000 4 000\nMahmud 2 000 6 000\nDiberi harga seunit saham A dan seunit saham B semasa pembelian ialah RM1.50 dan RM0.82.\nHitung jumlah pelaburan Khairil dan jumlah pelaburan Mahmud.\nPenyelesaian:\n5000 4000 1.50 7500 + 3280\n3 4 3 4 = 3 4\n2000 6000 0.82 3000 + 4920\n10780\n= 3 4\n7920\nJumlah pelaburan Khairil dan Mahmud masing-masing ialah RM10 780 dan RM7 920.\n53\nKPM",
+    "tokens": 336
+  },
+  {
+    "id": "matriks-021",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nLatih Kendiri 2.2c\n3 6 7 0 – 6 1\n1. Diberi empat matriks P = 3 4, Q = 3 4, R = [4 8 5] dan S = 3 4.\n–1 2 9 3 11 –2\nTentukan sama ada pendaraban matriks berikut boleh dilakukan atau tidak. Jika ya, nyatakan\nperingkat hasil darab pasangan matriks itu.\n(a) PQ (b) QR (c) RS\n(d) SP (e) PS (f) QP\n0 – 4\n1 3 4 3 4 – 6 2 1\n2. Diberi empat matriks, T = 3 4, U = –3 5 , V = 3 4 dan W = 3 4.\n–2 2 –1 2 3 – 4\n1 2\nHitung\n(a) TU (b) UW (c) UV\n(d) WV (e) W 2 (f) W 3\n–1 x 4 31\n3. Diberi 3 43 4 = 3 4, hitung nilai x dan nilai y.\ny 3 7 29\n9 r 4 s 15 14.5\n4. Diberi 3 43 4 = 3 4, hitung nilai r dan nilai s.\n5 –2 6 1 8 8\np 5 – 6 7\n5. Diberi G = 3 4 dan H = 3 4, hitung nilai p, nilai q dan nilai r jika\n1 – 4 3 0\n3 2q r –25\n(a) GH = 3 4 (b) G 2 = 3 4\n–18 3p + r –5 7q\n–11 2.5q 57 6p\n(c) HG = p + 3r 5p (d) H 2 = 1.2q 7r\n2 5\n6. Encik Koh menyewa sebuah gerai di Expo Pendidikan untuk menjual tiga jenis barangan\nyang ditunjukkan dalam jadual di bawah.\nBarangan A Barangan B Barangan C\nHari pertama 40 28 36\nHari kedua 42 36 30\nHari ketiga 35 25 42\nDiberi keuntungan jualan setiap barangan A, B dan C masing-masing ialah RM5,\nRM8 dan RM6. Hitung jumlah keuntungan yang diterima oleh Encik Koh setiap hari.\nTunjukkan pengiraan anda dalam bentuk matriks.\n[Diberi bahawa jumlah keuntungan = jualan barangan A × keuntungan barangan A\n+ jualan barangan B × keuntungan barangan B\n+ jualan barangan C × keuntungan barangan C]\n54\nKPM",
+    "tokens": 349
+  },
+  {
+    "id": "matriks-022",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nApakah ciri-ciri matriks identiti?\na × 1 = a\n1 × a = a\nMenerangkan ciri-ciri\nmatriks identiti.\nApabila 1 didarabkan dengan sebarang nombor, a, hasilnya ialah\na. Apabila suatu matriks didarabkan dengan matriks A, hasilnya\nialah matriks A. Matriks tersebut merupakan matriks identiti. Apakah ciri-ciri matriks identiti?\nMobiLisasi Minda 2 Berkumpulan\nTujuan: Menentukan matriks identiti.\nLangkah:\n1. Bahagikan kelas kepada kumpulan 4 orang murid.\n2. Salin Lembaran Aktiviti di bawah dan lengkapkan secara bergilir-gilir.\nLembaran Aktiviti:\nMatriks A Matriks B AB BA\n1\n(a) [5 –2] 3 4\n0\n2 3 1 1\n3 4 3 4\n(b)\n4 –1 1 1\n2 3 1 0\n3 4 3 4\n(c)\n4 –1 0 1\n2 3 0 1\n3 4 3 4\n(d)\n4 –1 1 0\n–1 2 3 1 1 1\n3 4 3 4\n(e) 0 4 1 0 0 0\n5 3 –2 1 1 1\n–1 2 3 0 1 0\n3 4 3 4\n(f) 0 4 1 0 1 0\n5 3 –2 0 1 0\n–1 2 3 1 0 0\n3 4 3 4\n(g) 0 4 1 0 1 0\n5 3 –2 0 0 1\nPerbincangan:\n1. Matriks B yang manakah apabila didarabkan dengan matriks A akan menghasilkan\nmatriks A juga?\n2. Apakah unsur-unsur yang terdapat dalam matriks B tersebut? Bagaimanakah\nkedudukan unsur-unsur itu?\n55\nKPM",
+    "tokens": 234
+  },
+  {
+    "id": "matriks-023",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nHasil daripada Mobilisasi Minda 2, didapati bahawa;\n1 0 0\n(a) Matriks B dalam bentuk 3 1 0 4 atau 3 0 1 0 4 apabila Matriks identiti, I\n0 1 berperingkat n × n:\n0 0 1\n1 0 0 … 0\ndidarabkan dengan matriks A akan menghasilkan matriks\n0 1 0 … 0\nA, iaitu AB = BA = A. I = 0 0 1 … 0\n   \n(b) Unsur-unsur dalam matriks B ini terdiri daripada 0 dan\n0 0 0 … 1\n1 sahaja dengan unsur 1 terletak di sepanjang pepenjuru\ndari sudut kiri di sebelah atas ke sudut kanan di sebelah\nbawah dan unsur yang lain adalah sifar.\n1 0 0 BBuulleettiinn II llmmiiaahh\n1 0 3 4\nMatriks 3 4 atau 0 1 0 dikenali sebagai matriks\n0 1 Susun unsur 1 di\n0 0 1\nsepanjang pepenjuru\nidentiti dan diwakili oleh I. dari sudut kiri di sebelah\natas ke sudut kanan\ndi sebelah bawah dan\nMatriks identiti ialah matriks segi empat sama.\nunsur lain adalah sifar.\nMatriks identiti, I, didarabkan dengan suatu matriks A,\nPepenjuru ini dinamakan\nakan menghasilkan matriks A.\npepenjuru utama. Matriks\nAI = IA = A ini dinamakan matriks\npepenjuru.\nContoh 21\nTuliskan matriks identiti berdasarkan peringkat berikut.\n(a) 1 × 1 (b) 2 × 2\n(c) 4 × 4 (d) 5 × 5\nMatriks identiti ialah\nPenyelesaian:\nmatriks pepenjuru.\n(a) [1] (b) 3 1 0 4 Adakah matriks pepenjuru\n0 1 ialah matriks identiti?\nBincangkan.\n1 0 0 0 0\n1 0 0 0\n0 1 0 0 0\n(c) 0 1 0 0 (d) 0 0 1 0 0\n0 0 1 0 0 0 0 1 0\n0 0 0 1 0 0 0 0 1\nLatih Kendiri 2.2d\n1. Antara matriks berikut, yang manakah matriks identiti? Jika bukan, berikan sebab anda.\n1 1 1\n0 0 3 4\n(a) [0 1] (b) 3 4 (c) 0 1 0\n1 1\n0 1 0\n1 0 0 0 1 0\n3 4 1 0 3 4\n(d) 0 1 0 (e) 3 4 (f) 0 0 0\n0 1\n0 0 1 1 0 1\n56\nKPM",
+    "tokens": 364
+  },
+  {
+    "id": "matriks-024",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\n–1 3 1 0\n2. Diberi matriks C = 3 4 dan matriks D = 3 4 . Tunjukkan matriks D ialah\n2 5 0 1\nmatriks identiti.\n7 2 3 1\n3. Diberi matriks S = 3 4 dan matriks T = 3 4 . Hitung\n6 3 –5 4\n(a) SI + TI (b) (IS)T\n(c) 4IT – I2 (d) (S – I)I\nApakah maksud matriks songsang?\n2 1 3 –1 3 –1 2 1 1 0 Menerangkan maksud\n3 43 4 = 3 43 4 = 3 4\nmatriks songsang dan\n5 3 –5 2 –5 2 5 3 0 1\nseterusnya menentukan\nAB = BA = I matriks songsang bagi\nsuatu matriks 2 × 2.\nJika pendaraban matriks A dan matriks B menghasilkan matriks\nidentiti, I, maka matriks B adalah songsangan matriks A dan sebaliknya.\nMobiLisasi Minda 3 Berkumpulan\nTujuan: Menentukan matriks songsang.\nLangkah:\n1. Bahagikan kelas kepada kumpulan 4 orang murid.\n2. Setiap murid memilih sekeping kad matriks A dan sekeping kad matriks B seperti\nyang ditunjukkan di bawah.\n1 3 4 –3 2 0 3 2\nA = 3 4 A = 3 4 A = 3 4 A = 3 4\n2 7 3 –2 6 –1 2 1\n7 –3 –2 3 –1 6 –1 2\nB = 3 4 B = 3 4 B = 3 4 B = 3 4\n–2 1 –3 4 0 2 2 –3\n3. Murid membuat pendaraban matriks AB dan BA.\nMatriks A Matriks B AB BA\nHasil darab dicatatkan dalam jadual seperti di\nsebelah.\n4. Murid menukar kad matriks B dengan rakan lain\ndalam kumpulan. Langkah 3 diulangi.\n5. Murid membincangkan hasil dapatan mereka\ndalam kumpulan.\nPerbincangan:\n1. Hasil darab dua matriks yang manakah ialah matriks identiti?\n2. Apakah kesimpulan tentang hubungan antara dua matriks tersebut?\n57\nKPM",
+    "tokens": 309
+  },
+  {
+    "id": "matriks-025",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nHasil daripada Mobilisasi Minda 3, didapati bahawa\nBBuulleettiinn II llmmiiaahh\n1 3 7 –3 7 –3 1 3 1 0\n3 43 4 = 3 43 4 = 3 4 A–1 dibaca sebagai\n2 7 –2 1 –2 1 2 7 0 1 matriks songsang A.\n1\n3 4 –3 43 –2 3 4 = 3 –2 3 43 4 –3 4 = 3 1 0 4 A–1 ≠ A\n3 –2 –3 4 –3 4 3 –2 0 1\n3 2 –1 2 –1 2 3 2 1 0\n3 43 4 = 3 43 4 = 3 4\n2 1 2 –3 2 –3 2 1 0 1\nPasangan matriks di atas ialah matriks songsang antara satu\nsama lain.\nPendaraban matriks A dan matriks songsang A, A–1, akan menghasilkan matriks identiti, I.\nAA–1 = A–1A = I\nContoh 22\n4 1\nTentukan sama ada matriks berikut ialah matriks songsang bagi 3 4. Jelaskan jawapan anda.\n7 2\n4 1 2 –1\n(a) 3 4 (b) 3 4\n–7 2 –7 4\nPenyelesaian:\n4 1 4 1 9 6\n(a) 3 43 4 = 3 4 Hasil darab bukan matriks identiti\n7 2 –7 2 14 11\n4 1 4 1\n3 4 bukan matriks songsang bagi 3 4 kerana hasil darab dua matriks ini bukan\n–7 2 7 2\nmatriks identiti.\nBBuulleettiinn II llmmiiaahh\n4 1 2 –1 1 0\n(b) 3 43 4 = 3 4 Hasil darab ialah matriks identiti Matriks songsang hanya\n7 2 –7 4 0 1 wujud dalam bentuk\nmatriks segi empat sama\n2 –1 4 1 1 0\n3 43 4 = 3 4 Hasil darab ialah matriks identiti kerana kedua-dua AA–1\n–7 4 7 2 0 1\ndan A–1A sama dengan\nI. Namun, bukan semua\n2 –1 4 1\n3 4 ialah matriks songsang bagi 3 4 kerana hasil matriks segi empat sama\n–7 4 7 2\nmempunyai matriks\nsongsang.\ndarab dua matriks ini ialah matriks identiti.\nLatih Kendiri 2.2e\n1. Tentukan sama ada matriks berikut ialah matriks songsang antara satu sama lain.\n1 3\n5 4 2 – 4 1 3 3 4\n(a) 3 4 , 3 4 (b) 3 4 , 2\n3 2 –3 5 1 4\n1 2\n1 2 1 –2 –2 3 7 –3\n(c) 3 4 , 3 4 (d) 3 4 , 3 4\n4 9 – 4 9 –5 7 5 –2\n58\nKPM",
+    "tokens": 405
+  },
+  {
+    "id": "matriks-026",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nBagaimanakah menentukan matriks songsang bagi suatu matriks 2 × 2?\nMobiLisasi Minda 4 Berkumpulan\nTujuan: Menerbit rumus untuk menentukan matriks songsang bagi matriks 2 × 2.\nLangkah:\n1. Bahagikan kelas kepada kumpulan 4 orang murid.\n2. Salin dan lengkapkan Lembaran Aktiviti berikut mengikut arahan yang diberikan.\nLembaran Aktiviti:\na b p q\nDiberi A = 3 4 dan A-1 = 3 4.\nc d r s\nArahan Jalan Kerja\nap + br\nDarabkan matriks A dan A–1 AA–1 = 3 4\nap + br\n3 4 31 04\n=\n0 1\nBentukkan 4 persamaan\ndaripada AA–1 = I (i) ap + br = 1 (ii)\n(iii) (iv)\nGuna persamaan (i) dan Guna persamaan (ii) dan\n(iii), ungkapkan pdan r (iv), ungkapkan q dan s\ndalam sebutan a, b, c dalam sebutan a, b, c\nDengan kaedah penggantian,\ndan d dan d\nungkapkan p, q, r dan s\ndalam sebutan a, b, c dan d d q =\np =\nad – bc\ns =\nr =\nd\nTuliskan matriks A–1 dalam 3 4\nA–1 = ad – bc\nsebutan a, b, c dan d\nd\nTuliskan A–1 sebagai 1 3 4\nA–1 =\npendaraban skalar\n3. Tuliskan semua jalan kerja pada kertas sebak dan tampal pada dinding. Murid\nmemberikan komen tentang hasil kerja kumpulan lain dengan menampal nota lekit\npada hasil kerja kumpulan itu.\nPerbincangan:\nApakah rumus untuk menentukan matriks songsang?\n59\nKPM",
+    "tokens": 238
+  },
+  {
+    "id": "matriks-027",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nHasil daripada Mobilisasi Minda 4, didapati bahawa\n1\n(a) skalar yang dihasilkan ialah .\nad – bc\n(b) kedudukan unsur a ialah d, unsur a ialah –b, unsur a ialah – c dan unsur a ialah a.\n11 12 21 22\nPerhatikan kedudukan a dan d saling bertukar kedudukan manakala b dan c\ndidarabkan dengan –1.\na b\nDiberi matriks A = 3 4, matriks songsang, A–1 boleh diperoleh dengan rumus berikut:\nc d\n1 d –b\nA–1 = 3 4 dengan keadaan ad – bc ≠ 0\nad – bc – c a\nIstilah penentu\nPenentu matriks A, | A | ialah ad – bc dengan keadaan\ndiperkenalkan oleh Carl\nad - bc ≠ 0. Oleh itu, matriks songsang, A–1 wujud. Matriks\nGauss (1777-1855), ahli\nsongsang tidak wujud apabila ad – bc = 0.\nmatematik Jerman,\npada tahun 1801.\nContoh 23\nBagi setiap matriks yang berikut, tentukan sama ada matriks songsang wujud. Jika wujud, hitung\nmatriks songsang.\n1 2 3 5\n(a) A = 3 4 (b) B = 3 4\n4 8 2 4\nPenyelesaian: Tentukan kewujudan\n(a) ad – bc = 1(8) – 2(4) matriks songsang B –1 = 1 3 4 –5 4\ndengan penentu 3(4) – 5(2) –2 3\n= 8 – 8\nmatriks, ad – bc\n= 0 = 1 3 4 –5 4 Saling tukar kedudukan\n| A | = 0. Maka, A–1 tidak wujud. 2 –2 3\nunsur dalam pepenjuru\nutama dan darabkan\n(b) ad – bc = 3(4) – 5(2) 2 – 5 kedua-dua unsur lain\n= 12 – 10 2\n= dengan -1\n= 2 –1 3\n≠ 0 2\n| B | ≠ 0. Maka, B–1 wujud.\nContoh 24 i – Teknologi\n2 – 6\nDiberi matriks C = 3 4, hitung matriks songsang bagi C.\n1 –2 Kalkulator saintifik boleh\nPenyelesaian: digunakan untuk mencari\npenentu. Imbas kod QR\n1 –2 6\nC-1 = 3 4 atau layari bit.do/Video204\n2(–2) – (– 6)(1) –1 2\nuntuk melihat video yang\n1 –2 6 berkaitan.\n= 3 4\n2 –1 2\n–1 3\n3 4\n= – 1 1\n2\n60\nKPM",
+    "tokens": 353
+  },
+  {
+    "id": "matriks-028",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nContoh 25\nm – 6\nDiberi matriks D = 3 4, hitung nilai m jika\n1 –2 Apakah matriks songsang\nbagi matriks identiti?\n(a) matriks D tidak mempunyai matriks songsang,\n–1 3\n3 4\n(b) D -1 = . 1\n– 1\n2\nKenapa ad – bc = 0\nPenyelesaian:\nmenyebabkan A–1 tidak\n(a) Matriks D tidak mempunyai matriks songsang, maka wujud?\nad – bc = 0\n–2m – (– 6)(1) = 0\nSemak\n–2m + 6 = 0 Jawapan\nm = 3\n1 –2 6\nD –1 = —————–– 3 4\n–2m – (– 6)(1) –1 m\n(b) DD -1 = I –1 3\n3 1 4 = —– 1 —–– 3 –2 6 4\n–1 3 – — 1 –2m + 6 –1 m\nm – 6 3 4 1 0 2\n3 4 = 3 4\n1\n1 –2 – 1 0 1 Unsur sepadan pada\n2\nbaris 1 lajur 1:\n1 –2\nm(–1) + (– 6)1– 2 = 1 –1 = ———––\n2 –2m + 6\n2m – 6 = –2\n–m + 3 = 1\nm = 2\nm = 2\nContoh 26\n1 2 1 0\nDiberi 3 4 A = 3 4 dan matriks A berperingkat 2 × 2. Hitung matriks A.\n3 8 0 1\nPenyelesaian:\n1 2\nDiberi hasil darab 3 4 dengan A ialah matriks identiti, maka A ialah matriks songsang\n3 8\n1 2\nbagi 3 4.\n3 8\n1 8 –2\nA = 3 4\n(1)(8) – (2)(3) –3 1\n= 1 3 8 –2 4\n2 –3 1\n4 –1\n3 4\n=\n3 1\n–\n2 2\n61\nKPM",
+    "tokens": 278
+  },
+  {
+    "id": "matriks-029",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nLatih Kendiri 2.2f\n1. Bagi setiap matriks yang berikut, tentukan sama ada matriks songsang wujud. Jika wujud,\nhitung matriks songsang.\n6 0 2 3 –2 5 4 2\n(a) 3 4 (b) 3 4 (c) 3 4 (d) 3 4\n0 1 1 2 3 –9 2 1\n2. Hitung matriks songsang bagi matriks yang berikut.\n5 6 2 3 4 –2 –2 –5\n(a) 3 4 (b) 3 4 (c) 3 4 (d) 3 4\n2 3 3 5 –3 2 2 7\n2 1\n3. Diberi matriks G = 3 4. Hitung nilai p jika\n3 p\n(a) matriks G tidak mempunyai matriks songsang,\n4 1\n–\n5 5\n(b) G-1 = .\n3 2\n–\n5 5\n4 10\n4. Diberi 3 4 P = 3 1 0 4 dan matriks P berperingkat 2 × 2. Hitung matriks P.\n1\n1 0 1\n2\nBagaimanakah menggunakan kaedah matriks untuk\nmenyelesaikan persamaan linear serentak?\nMenggunakan kaedah\nPersamaan linear serentak boleh diselesaikan dengan matriks untuk\nmenggunakan kaedah matriks mengikut langkah-langkah menyelesaikan persamaan\nberikut. linear serentak.\nPersamaan linear Bentuk matriks AX = B AX = B\nserentak a b x p A–1AX = A–1B\n3 43 4 = 3 4\nax + by = p c d y q IX = A–1B\ncx + dy = q dengan keadaan a, b, c, d, p X = A–1B\ndan q ialah pemalar manakala x 1 d –b p\n3 4 = 3 43 4\nx dan y ialah pemboleh ubah y ad – bc – c a q\nContoh 27\nTuliskan persamaan linear serentak di bawah dalam\nbentuk matriks. Adakah pendaraban ini\n3x + 4y = 12 boleh dilakukan?\n5x – 6y = 7 AA–1X = BA–1\n62\nKPM",
+    "tokens": 290
+  },
+  {
+    "id": "matriks-030",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nPenyelesaian:\nPekali x membentuk unsur lajur\npertama matriks A\nMatriks X Jika persamaan dalam\nContoh 27,\nPekali y membentuk unsur\n5x – 6y = 7\nlajur kedua matriks A\n3x + 4y = 12\n3 x + 4 y = 12\n3 4 x 12\n3 43 4 = 3 4 ditulis dalam bentuk\n5 x – 6 y = 7 5 – 6 y 7\nmatriks, adakah\nsusunan persamaan itu\nPemalar membentuk matriks B mempengaruhi jawapan?\nPersamaan linear serentak tersebut dapat ditulis sebagai\n3 4 x 12\n3 43 4 = 3 4 .\n5 – 6 y 7\nContoh 28\nSelesaikan persamaan linear serentak di bawah dengan Penyelesaian persamaan\nmenggunakan kaedah matriks. linear serentak bermaksud\nx - 2y = 1 mencari nilai x dan nilai y.\nJadi, jawapan akhir\n3x - 4y = 4\nmenyatakan nilai-nilai itu.\nPenyelesaian:\n1 –2 x 1 Tulis persamaan linear serentak\n3 43 4 = 3 4\ndalam bentuk matriks\n3 – 4 y 4 Semak\nJawapan\nx 1 – 4 2 1\n3 4 = 3 43 4\ny (1)(– 4) – (–2)(3) –3 1 4 Darabkan 3 1 –2 43 2 1 4 .\n3 – 4 —\n= 1 3 4 4 2 2\n2 1 3 1 –2 43 1 4 = 3 2 – 1 4\n3 – 4 — 6 – 2\n2\n2\n=\n3\n1\n4 = 3 1\n4\n4\n2\n1\nMaka, x = 2 dan y = Jawapan akhir\n2\nLatih Kendiri 2.2g\n1. Tuliskan persamaan linear serentak di bawah dalam bentuk matriks.\n(a) x – y = 7, x + 3y = 5 (b) 3x + y = 0, 5x + 2y = –14\n(c) 7x + 2y = –11, 2x – y = -10 (d) 3x + 2y – 14 = 0, 4y = 5x – 5\n(e) 2x + y + 4 = 0, y – 3x = 11 (f) 2x + y = –9, 5x = -12\nx x\n(g) 2x = 5y, + 2y = 3 (h) = 4, 0.8(x + 5) = 3y\n5 y\n2. Dalam suatu pertandingan catur, jumlah peserta ialah 100 orang. Bilangan peserta\nlelaki, x, ialah 14 orang kurang daripada 2 kali bilangan peserta perempuan, y. Tuliskan\npersamaan linear serentak yang mewakili maklumat di atas dalam bentuk matriks.\n63\nKPM",
+    "tokens": 393
+  },
+  {
+    "id": "matriks-031",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\n3. Selesaikan persamaan linear serentak di bawah dengan menggunakan kaedah matriks.\n(a) x – 2y = 5, 2x – 3y = 10 (b) 2x – 5y = 1, 3x – y = –5\n(c) 2x – y = 8, x + y = 1 (d) 3x + 2y = 4, 9x + 4y = 14\n(e) 4x + 3y = 11, 2y = 9 – 6x (f) 5x – 5y – 6 = 0, 2x – 2.1 = 3y\np m n\n(g) p + 3q = 4, 3 + = q (h) m + n = 5, – = 1\n2 2 4\nBagaimanakah menyelesaikan masalah yang melibatkan\nmatriks? Meyelesaikan masalah\nyang melibatkan matriks.\nTulis persamaan linear dalam bentuk ax + by = p, Tulis persamaan Selesaikan dengan\ncx + dy = q dengan keadaan a, b, c, d, p dan q ialah linear serentak dalam pendaraban matriks\npemalar manakala x dan y ialah pemboleh ubah bentuk matriks songsang:\nAX = B X = A–1B\nContoh 29\nSaya membeli 2 keping\ntiket kanak-kanak dan\nSaya membeli 5 keping\nsekeping tiket dewasa\ntiket kanak-kanak dan\ndengan bayaran RM32.\n3 keping tiket dewasa\ndengan bayaran RM88.\nBerdasarkan perbualan di atas, berapakah harga sekeping tiket kanak-kanak dan dewasa?\nPenyelesaian:\nMemahami masalah Merancang strategi\nHarga 2 keping tiket (a) Bentukkan dua persamaan linear.\nkanak-kanak dan 1 keping (b) Ungkapkan persamaan dalam bentuk matriks dan\ntiket dewasa ialah RM32. selesaikannya.\nHarga 5 keping tiket\nkanak-kanak dan 3 keping\nMelaksanakan strategi\ntiket dewasa ialah RM88.\n2x + y = 32\nx = harga sekeping tiket\n5x + 3y = 88\nkanak-kanak\ny = harga sekeping tiket 3 2 1 43 x 4 = 3 32 4\ndewasa 5 3 y 88\nx 1 3 –1 32\n3 4 = 3 43 4\ny (2)(3) – (1)(5) –5 2 88\nMembuat kesimpulan\nHarga sekeping tiket = 1 3 96 – 88 4\n6 – 5 –160 + 176\nkanak-kanak ialah RM8 dan\nsekeping tiket dewasa ialah = 3 8 4\nRM16. 16\n64\nKPM",
+    "tokens": 340
+  },
+  {
+    "id": "matriks-032",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nContoh 30\nKamera K Kamera L\nPemasangan 10 minit 10 minit\nPembungkusan 5 minit 9 minit\nSyarikat Komunikasi Era Baru menghasilkan dua model kamera, K dan L. Setiap kamera\nyang dihasilkan perlu melalui dua bahagian, iaitu Bahagian Pemasangan dan Bahagian\nPembungkusan. Jadual di atas menunjukkan masa pemasangan dan pembungkusan bagi setiap\njenis kamera. Diberi bahawa Bahagian Pemasangan beroperasi selama 12 jam sehari dan\nBahagian Pembungkusan pula beroperasi selama 9 jam sehari. Hitung bilangan kamera K dan\nkamera L yang boleh dihasilkan dalam sehari.\nPenyelesaian:\nMemahami masalah Merancang strategi\nJumlah masa pemasangan ialah (a) Bentukkan dua persamaan linear.\n12 jam bersamaan 720 minit. (b) Ungkapkan persamaan dalam bentuk matriks\nJumlah masa pembungkusan ialah dan selesaikannya.\n9 jam bersamaan 540 minit.\nx = bilangan kamera K\nyang dihasilkan\nMelaksanakan strategi\ny = bilangan kamera L\n10x + 10y = 720\nyang dihasilkan\n5x + 9y = 540\n10 10 x 720\n3 43 4 = 3 4\n5 9 y 540\nx 1 9 –10 720\n3 4 = 3 43 4\nMembuat kesimpulan y (10)(9) – (10)(5) –5 10 540\nBilangan kamera K yang\ndihasilkan ialah 27 unit dan = 1 3 1080 4\n40 1800\nbilangan kamera L yang\n27\ndihasilkan ialah 45 unit. = 3 4\n45\nLatih Kendiri 2.2h\n1. Suatu kaji selidik telah dijalankan mengenai jualan dua jenis karipap, berinti sardin\ndan berinti kentang. Dalam satu jam pertama, 24 biji karipap berinti sardin dan 18 biji\nkaripap berinti kentang telah dijual, dan jumlah jualannya ialah RM28.80. Dalam satu\njam seterusnya, 30 biji karipap berinti sardin dan 14 biji karipap berinti kentang telah\ndijual, dan jumlah jualannya ialah RM29.20. Hitung harga satu biji karipap berinti sardin\ndan satu biji karipap berinti kentang dengan menggunakan kaedah matriks.\n65\nKPM",
+    "tokens": 295
+  },
+  {
+    "id": "matriks-033",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\n2. Akmal menghabiskan RM68 seminggu untuk menjalani kedua-dua sukan yang\ndinyatakan di bawah. Hitung tempoh, dalam jam, Akmal berenang dan bermain\nbadminton di Kelab Sukan dalam seminggu dengan menggunakan kaedah matriks.\nSaya menggunakan\n10 jam seminggu\nuntuk berenang dan\nbermain badminton\ndi Kelab Sukan.\nAkmal\n3. Puan Komala dan Puan Lily pergi ke pasar untuk membeli betik dan pisang. Jadual di\nbawah menunjukkan berat betik dan pisang yang dibeli oleh mereka.\nBetik Pisang\nPuan Komala 4 kg 2 kg\nPuan Lily 5 kg 3 kg\nPuan Komala dan Puan Lily membayar RM26 dan RM35 untuk pembelian dua\njenis buah ini. Hitung harga bagi sekilogram betik dan sekilogram pisang dengan\nmenggunakan kaedah matriks.\n4. Sebuah bangunan mempunyai beberapa tempat parkir untuk kereta dan motosikal. Pada\nsuatu hari, terdapat sejumlah 66 buah kenderaan parkir di sana dan jumlah bilangan\nroda ialah 190. Hitung bilangan kereta dan bilangan motosikal yang parkir pada hari itu\ndengan menggunakan kaedah matriks. Andaikan semua motosikal beroda dua.\n5. Encik Jefri dan Encik Tan masing-masing melabur di Amanah Saham P dan Amanah\nSaham Q seperti ditunjukkan dalam jadual di bawah.\nAmanah Saham P Amanah Saham Q\nEncik Jefri RM5 000 RM3 000\nEncik Tan RM6 000 RM4 000\nSelepas setahun, Encik Jefri memperoleh dividen sebanyak RM350 daripada pelaburan\nkedua-dua amanah saham ini manakala Encik Tan memperoleh dividen sebanyak\nRM440. Hitung kadar dividen yang diberikan oleh Amanah Saham P dan Amanah\nSaham Q dengan menggunakan kaedah matriks.\n66\nKPM",
+    "tokens": 242
+  },
+  {
+    "id": "matriks-034",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nArena Rumusan\nMATRIKS\nMatriks Operasi Asas Matriks\n• Nombor-nombor yang\ndisusun dalam baris dan\nlajur untuk membentuk\nMenambah dan menolak Matriks identiti, I,\nsatu tatasusun segi\nmatriks peringkat n × n dengan\nempat tepat atau segi\nempat sama. 3 a b 4 ± 3 e f 4 = 3 a ± e b ± f 4 unsur 1 di pepenjuru\nutama dan unsur\n• Ditulis dalam c d g h c ± g d ± h\nselainnya 0\nkurungan [ ] atau ( )\n1 0 0 … 0\n0 1 0 … 0\nMendarab matriks dengan\n0 0 1 … 0\nsuatu nombor\n   \nPeringkat Unsur n3 a b 4 = 3 na nb 4 0 0 0 … 1\nc d nc nd\nPeringkat a ialah AI = IA = A\nij\nm × n unsur baris\nmempunyai ke-i dan\nMendarab dua matriks\nm baris dan lajur ke-j\nA B = AB Matriks songsang\nn lajur\nm × n n × p m × p Matriks songsang A\nc diwakili dengan A–1.\n[a b] 3 4 = [ac + bd]\nd a b\nJika A = 3 4, maka\nc ca cb c d\n3 4[a b] = 3 4\nMatriks sama d da db A–1 = 1 3 d –b 4.\nA = B jika peringkat ad – bc – c a\na b e f\nkedua-dua matriks adalah 3 43 4\nc d g h AA–1 = A–1A = I\nsama dan unsur sepadan\nadalah sama = 3 ae + bg af + bh 4\nce + dg cf + dh\nMenyelesaikan persamaan linear serentak\nPersamaan linear Bentuk matriks AX = B AX = B\nserentak a b x p A–1AX = A–1B\n3 43 4 = 3 4 IX = A–1B\nax + by = p c d y q\nX = A–1B\ncx + dy = q\ndengan keadaan a, b, c, d, p\ndan q ialah pemalar manakala 3\nx\n4 =\n1\n3\nd –b\n43\np\n4\nx dan y ialah pemboleh ubah y ad – bc – c a q\n67\nKPM",
+    "tokens": 360
+  },
+  {
+    "id": "matriks-035",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nPada akhir bab ini, saya dapat\nmewakilkan maklumat situasi sebenar dalam bentuk matriks.\nmenentukan peringkat matriks dan seterusnya mengenal pasti unsur tertentu\ndalam suatu matriks.\nmenentukan sama ada dua matriks adalah sama.\nmenambah dan menolak matriks.\nmendarab matriks dengan suatu nombor.\nmendarab dua matriks.\nmenerangkan ciri-ciri matriks identiti.\nmenerangkan maksud matriks songsang dan seterusnya menentukan matriks\nsongsang bagi suatu matriks 2 × 2.\nmenggunakan kaedah matriks untuk menyelesaikan persamaan linear serentak.\nmenyelesaikan masalah yang melibatkan matriks.\nPPPRRROOOJJJEEEKKK MMMIIINNNIII\nSyarikat pengangkutan menggunakan rangkaian untuk mewakili laluan pengangkutan\nmereka. Rangkaian mempunyai bucu yang disambungkan dengan tepi.\nDalam rajah di bawah, bucu P, Q, R, S dan T mewakili bandar manakala tepi\nmewakili laluan bas di antara dua buah bandar. Semua laluan ini merupakan jalan\nyang menghubungkan bandar bersebelahan. Sistem laluan ini boleh diwakili dengan\nmatriks seperti di bawah.\nKe\nP P Q R S T\nQ T P 0 1 1 0 0\nQ 1 0 1 0 0\nS\nDari R 1 1 0 1 0\nS 0 0 1 0 1\nR\nT 0 0 0 1 0\nSediakan satu laporan tentang sistem laluan bas (atau pengangkutan yang lain) di\nkawasan anda. Laporan anda perlu mengandungi\n(i) pengenalan sistem pengangkutan awam di kawasan anda,\n(ii) penggunaan matriks dalam perwakilan sistem laluan pengangkutan awam,\n(iii) maksud unsur dalam matriks.\n68\nKPM",
+    "tokens": 222
+  },
+  {
+    "id": "matriks-036",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nImbas kod QR atau layari\nbit.do/Kuiz02 untuk kuiz interaktif\nFAHAM\n9 –2\n3 4\n1. Nyatakan bilangan baris dan lajur bagi matriks 1 6 .\n5 7\n3 2\n3 4 1\n2. Diberi A = 0 –1 , B = 3 4 dan AB = C. Tentukan peringkat matriks C.\n4\n1 3\n4 p\n3. Diberi matriks D = 3 4. Hitung nilai p jika penentu matriks D ialah 0.\n–2 3\n–1 2\n4. Diberi matriks E = 3 4 , tunjukkan E + E + E = 3E.\n5 4\n5. Tuliskan persamaan linear serentak berikut dalam bentuk matriks.\nm – 3 = 4n\n3m + 2n – 2 = 0\nMASTERI\n4 r 1 3\n6. Diberi G = 3 4 dan H = 3 4. Hitung nilai r dan nilai s jika GH = HG.\n1 2 –1 s\n4 –3\n7. Diberi A = 3 4 dan AB = I. Hitung matriks B.\n2 1\n1 y\n10 –5 11 –25\n3 4 1 3 4\n8. Diberi P = –2 1 , Q = 0.2 – , R = y + 6x – 0.2 dan 0.8P + 3Q = R,\n3\n0 2z – 3 24 9\n8 –1\nhitung nilai x, nilai y dan nilai z.\n–1 2\n9. Diberi matriks F = 3 4.\n3 – 4\n(a) Hitung F 3.\n(b) Seterusnya, hitung matriks G jika F 3 - 5G = 12F.\n10. Diberi 1 3 2 q 43 4 – 6 4 = 3 1 0 4, hitung nilai p dan nilai q.\np 1 4 –1 2 0 1\n11. (a) Tuliskan persamaan linear serentak di bawah dalam bentuk matriks.\n(b) Hitung nilai x dan nilai y dengan menggunakan kaedah matriks.\n2y – x = 5\n3x – 8y = –19\n69\nKPM",
+    "tokens": 311
+  },
+  {
+    "id": "matriks-037",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "Bab",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "2\nBAB\nCABAR\n12. Satu kejohanan maraton mempunyai 128 orang peserta. Bilangan peserta lelaki ialah 16\norang kurang daripada 2 kali bilangan peserta perempuan. Hitung bilangan peserta lelaki\ndan peserta perempuan maraton itu dengan menggunakan kaedah matriks.\n13. Diberi persamaan linear serentak px + 4y = 10 dan qx – 2y = 1 tiada penyelesaian.\nUngkapkan p dalam sebutan q.\n14. Faris mengambil satu kursus di sebuah kolej. Dia telah mendaftar tiga subjek bagi\nsemester pertama. Markah keseluruhan setiap subjek dikira berdasarkan markah bahagian\nlatihan dan peperiksaan mengikut peratusan setiap bahagian. Jadual 1 menunjukkan\nmarkah yang diperoleh Faris bagi setiap bahagian pada semester pertama. Jadual 2\nmenunjukkan peratusan bahagian dalam pengiraan markah keseluruhan.\nLatihan Peperiksaan Semester Pertama\nMatematik 80 70 Latihan 60%\nBahasa Inggeris 60 75 Peperiksaan 40%\nSains Komputer 74 84 Jadual 2\nJadual 1\n(a) Wakilkan maklumat dalam Jadual 1 dan Jadual 2 dengan matriks.\n(b) Hitung markah keseluruhan Matematik pada semester pertama dengan menggunakan\nkaedah matriks.\n(c) Tentukan subjek yang terbaik pada semester pertama.\n15. Syahirah sedang menjalani satu pelan diet yang melibatkan dua jenis minuman iaitu P dan\nQ. Jadual di bawah menunjukkan kandungan protein dan kalori bagi segelas minuman itu.\nMinuman P Minuman Q\nProtein (g) 6 4\nKalori (kcal) 95 110\nPelan diet itu mencadangkan Syahirah supaya mengambil sejumlah 16 g protein dan\n300 kcal setiap hari daripada dua jenis minuman ini.\n(a) Bentuk dua persamaan linear daripada maklumat di atas.\n(b) Hitung bilangan gelas minuman P dan minuman Q yang perlu diminum oleh\nSyahirah setiap hari mengikut pelan diet ini dengan menggunakan kaedah matriks.\n16. Encik Sanjay menjual dua jenama pendingin hawa, K dan L. Harga pendingin hawa\njenama K dan L ialah RM1 500 dan RM2 000. Komisen menjual sebuah pendingin\nhawa jenama K dan L ialah 3% dan 4%. Pada bulan Mei, Encik Sanjay menjual 50 unit\npendingin hawa dan mendapat komisen sejumlah RM2 880. Hitung bilangan pendingin\nhawa jenama K dan L yang dijual dengan menggunakan kaedah matriks.\n70\nKPM",
+    "tokens": 330
+  },
+  {
+    "id": "matriks-038",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "matriks",
+    "chapter": "BAB 2 Matriks",
+    "source": "KSSM Matriks (Matrices), hlm. 1",
+    "content": "BAB 2 Matriks\n2\nBAB\nTTTTeeeerrrrooookkkkaaaaiiii MMMMaaaatttteeeemmmmaaaattttiiiikkkk\nKriptografi ialah sains keselamatan informasi. Kriptografi melibatkan teknik seperti\nmenggabungkan perkataan ke dalam bentuk imej atau menulis perkataan dalam kod\nrahsia supaya perkataan itu tidak dapat dibaca oleh pihak ketiga. Pada masa Perang\nDunia Kedua, tentera Jerman menggunakan mesin Enigma untuk menulis mesej rahsia\ntentera mereka. Tiga orang ahli matematik dari Poland berjaya menyahsulit (decrypt)\nmesej daripada mesin Enigma dan membantu Kuasa Bersekutu menamatkan perang.\nGunakan sistem kod di bawah, hantar mesej “GURU KELAS” kepada rakan anda.\nA B C D E F G H I J K L M N\n0 1 2 3 4 5 6 7 8 9 10 11 12 13 14\nO P Q R S T U V W X Y Z ! ? .\n15 16 17 18 19 20 21 22 23 24 25 26 27 28 29\nIkuti langkah-langkah berikut.\nTip bagi\n(a) Tuliskan mesej tersebut dalam beberapa matriks langkah-langkah:\nperingkat 2 × 1. (a) Contohnya,\nmesej “DI BAS”,\nhuruf “D” = 4, “I” = 9,\n2 –1\n(b) Gunakan mangga M = 3 4 untuk menyulitkan “ ” = 0, “B” = 2, “A” = 1\n1 0 dan “S” = 19. Maka\n(encrypt) mesej, iaitu matriks M didarab dengan setiap matriks-matriks yang\n4 0\nmatriks yang terbentuk di (a). terbentuk ialah 3 4, 3 4\n9 2\n1\ndan 3 4 .\n(c) Hasil darab yang diperoleh akan ditukar kepada 19\nmesej rahsia dalam huruf berdasarkan sistem kod\n(b) Contohnya,\ndi atas dan dihantar kepada rakan. Jika hasil darab 2 –1 4\n3 43 4,\nialah nombor negatif, tambahkan hasil darab itu 1 0 9\ndengan 30. 3 2 –1 43 0 4 dan\n1 0 2\n(d) Apabila menerima mesej rahsia, rakan perlu\n2 –1 1\n3 43 4 .\nmenyahsulit (decrypt) mesej berdasarkan 1 0 19\nlangkah-langkah yang berikut:\n(c) Contohnya,\n(i) tuliskan mesej rahsia yang diperoleh dalam\n2 –1 4 –1\n3 43 4 = 3 4.\nbeberapa matriks peringkat 2 × 1. 1 0 9 4\n–1 + 30 29\n0 1 Jadi, 3 4 = 3 4.\n(ii) darabkan kunci K = 3 4 dengan setiap 4 4\n–1 2\nDengan merujuk\nmatriks yang terbentuk di (d)(i). 29\nsistem kod, 3 4 akan\n4\n(iii) hasil darab yang diperoleh ditukar kepada mesej diwakili dengan 3.4.\nD\nyang sebenarnya dengan merujuk sistem kod\nMesej rahsia penuh\ndi atas. Jika hasil darab ialah nombor negatif, yang dihasilkan ialah\ntambahkan hasil darab itu dengan 30. “.D? MA”.\n71\nKPM",
+    "tokens": 419
+  },
+  {
+    "id": "insurans-001",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "BAB\nMatematik Pengguna:\n3\nInsurans\nApakah yang akan anda pelajari?\n• Risiko dan Perlindungan Insurans\nMaslahat Bab Ini\nPengetahuan tentang risiko dan insurans sebagai perlindungan kewangan adalah sangat\npenting bagi setiap individu sebagai persediaan pada masa depan. Pengetahuan ini juga\npenting dalam pengurusan kewangan peribadi kerana kita mungkin akan menggunakan\nsebahagian pendapatan kita untuk insurans.\nTahukah Anda?\nDi Malaysia, industri insurans telah dikawal selia\noleh Bank Negara Malaysia bawah Akta Insurans 1996\nyang telah menggantikan Akta Insurans 1963. Akta\nini dilengkapi dengan peraturan-peraturan insurans\ndan menjadi asas perundangan utama yang mengawal\nurusan perniagaan insurans di Malaysia. Selain itu, akta\nini telah memberi kuasa kepada Bank Negara Malaysia\nuntuk menentukan perkara-perkara yang selaras dengan\nperuntukan akta.\nUntuk maklumat lanjut:\nbit.do/TahukahAndaBab3\nGERBANG ISTILAH\ndeduktibel deductible\ninsurans am general insurance\ninsurans hayat life insurance\nkadar rate\nko-insurans co-insurance\nperlindungan coverage\npolisi policy\npremium premium\nrisiko risk\n7722\nKKPPMM",
+    "tokens": 145
+  },
+  {
+    "id": "insurans-002",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nMatematik Pengguna:\nInsurans\nA\ncap kali kita mendengar dan melihat dalam berita dan akhbar tentang musibah\nyang menimpa sesebuah keluarga seperti banjir, kebakaran, kecurian, kemalangan\ndan sebagainya. Pernahkah anda terfikir bahawa anda dan keluarga anda mungkin\nakan menghadapi musibah sedemikian pada masa akan datang? Jika ya, sudahkah\nkeluarga anda bersedia menghadapinya?\nSekiranya musibah berlaku kepada diri kita, pastinya kita akan menanggung\nsejumlah kerugian wang ringgit. Oleh itu, adalah sangat penting untuk anda\nmemahami tujuan insurans kerana insurans membantu menangani ketidakpastian\ndan kerugian yang mungkin akan dihadapi.\n7733\nKKPPMM",
+    "tokens": 90
+  },
+  {
+    "id": "insurans-003",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\n3.1 Risiko dan Perlindungan Insurans\nApakah maksud risiko dan kepentingan perlindungan\ninsurans?\nMenjelaskan maksud\nRisiko risiko dan kepentingan\nperlindungan insurans,\ndan seterusnya mengenal\nTahukah anda bahawa setiap daripada kita adalah terdedah pasti jenis insurans hayat\ndan insurans am bagi\nkepada bahaya yang mungkin menimpa diri, keluarga atau harta\nmelindungi pelbagai jenis\nbenda kita?\nrisiko.\nBBuulleettiinn II llmmiiaahh\nElemen penting dalam\ndefinisi risiko:\n(i) Risiko tidak dapat\nditentukan\n(ii) Risiko yang melibatkan\nkerugian\nKemalangan jalan raya yang mencederakan pemandu dan penumpang kenderaan yang terlibat,\nkemusnahan harta benda disebabkan kebakaran, bil perubatan yang tinggi akibat penyakit\nkritikal dan sebagainya mungkin boleh berlaku dalam kehidupan kita. Sudah semestinya\nkejadian seperti ini menyebabkan kita menanggung kerugian. Hakikat bahawa diri kita\nterdedah kepada kerugian sedemikian dan ketidakpastian sama ada perkara tersebut akan\nberlaku kepada diri kita atau tidak menyebabkan wujudnya risiko dalam kehidupan kita.\nOleh itu, risiko secara umumnya ialah kemungkinan berlakunya musibah yang tidak dapat\ndielakkan.\nKehidupan sebagai seorang murid tidak terlepas daripada\nkebarangkalian berdepan dengan risiko. Risiko yang mungkin\nanda hadapi adalah seperti mengalami kemalangan ketika dalam\nAntara berikut, risiko\nperjalanan pergi ke sekolah, mengalami kecederaan semasa\nyang manakah boleh\ndalam perlawanan bola sepak atau terjatuh di tangga semasa diukur dengan wang?\ndalam perjalanan ke perpustakaan sekolah. Bincangkan.\n(i) Risiko membeli\nWalaupun anda mungkin menjalani kehidupan dengan sebuah kereta\nberhati-hati dan mengamalkan cara hidup yang sihat, risiko anda terpakai.\n(ii) Risiko membuat\nberdepan dengan perkara yang tidak diingini masih ada. Oleh\npelaburan dalam\nitu, dengan wujudnya insurans kepada semua lapisan umur,\npasaran saham.\nanda akan diberikan satu perlindungan kewangan jika kejadian (iii) Risiko motosikal\nyang tidak diingini berlaku kepada anda. dicuri.\n74\nKPM",
+    "tokens": 272
+  },
+  {
+    "id": "insurans-004",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nInsurans\nBBuulleettiinn II llmmiiaahh\nInsurans bertujuan memindahkan risiko daripada individu Syarikat insurans\nkepada organisasi insurans. Kontrak insurans dimeterai antara Pihak yang bersetuju untuk\nmembayar pampasan\nsyarikat insurans dengan pemilik insurans. Dalam kontrak\natas kerugian yang telah\nini, syarikat insurans dikehendaki membayar ganti rugi\ndiinsuranskan.\natau pampasan bagi kerugian yang dilindungi seperti yang\nPemegang polisi (pemilik\ndinyatakan dalam polisi, sebagai balasan kepada bayaran insurans)\npremium yang dibuat oleh pemegang polisi. Pihak yang akan menuntut\ndan menerima pampasan\natas kerugian yang\nmembayar premium\ndialami.\nPemegang Syarikat\nKontrak insurans\npolisi insurans\nmembayar pampasan bagi Suatu polisi dan sebagai\nbukti kepada perjanjian kerugian yang berlaku\nyang telah dibuat antara\nsyarikat insurans dengan\nJumlah pembayaran ganti rugi yang akan dibayar kepada\npemegang polisi.\npemegang polisi adalah hanya setakat jumlah kerugian yang\nPremium\ndialami. Hal ini demikian kerana, prinsip utama dalam sistem Jumlah wang yang dibayar\ninsurans adalah untuk memulihkan kedudukan kewangan oleh pemegang polisi\npemegang polisi kepada keadaan sebelum berlakunya kerugian, kepada syarikat insurans.\nyang juga dikenali sebagai prinsip indemniti. Oleh itu,\nprinsip insurans ini tidak akan membenarkan pemegang polisi\nmemperoleh keuntungan daripada insurans yang dibeli. BBuulleettiinn II llmmiiaahh\nPrinsip indemniti:\nInsurans tidak boleh menghalang sesuatu kerugian daripada\nSyarikat insurans akan\nberlaku tetapi insurans berkepentingan untuk mengurangkan\nmembayar ganti rugi\nbeban kewangan yang akan ditanggung oleh pemegang polisi kepada pemegang polisi\napabila berlakunya kerugian atau kemalangan. Hal ini demikian sekiranya berlaku kerugian\nkerana, pembelian amaun insurans yang mencukupi akan yang diinsuranskan\npada amaun yang tidak\nmenghapuskan ketidakpastian terhadap kerugian kewangan jika\nmelebihi kerugian yang\nberlakunya kerugian yang diinsuranskan itu.\ndialami, tertakluk kepada\njumlah perlindungan yang\ndiinsuranskan.\nApakah insurans hayat dan insurans am?\nInsurans terbahagi kepada dua jenis insurans utama, iaitu insurans hayat dan insurans am.\nKedua-dua insurans ini melindungi pelbagai risiko yang berbeza.\nMobiLisasi Minda 1 Berkumpulan\nTujuan: Menentukan kepentingan insurans bagi melindungi pelbagai jenis risiko.\nLangkah:\n1. Bahagikan murid kepada beberapa kumpulan.\n2. Setiap kumpulan perlu mencari beberapa keratan surat khabar atau berita dalam\ntalian yang melibatkan bencana yang menimpa individu atau sesebuah keluarga.\n75\nKPM",
+    "tokens": 339
+  },
+  {
+    "id": "insurans-005",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\n3. Berdasarkan situasi dalam berita itu, kenal pasti jenis kerugian yang dialami dan\njenis risiko yang dilindungi insurans.\nSituasi Jenis kerugian yang dialami Jenis risiko yang dilindungi insurans\n4. Bentangkan hasil kumpulan anda dengan menggunakan kaedah Galeri Jelajah\nMinda (Gallery Walk).\nPerbincangan:\nMengapakah insurans penting kepada pemegang polisi?\nHasil daripada Mobilisasi Minda 1, didapati bahawa insurans berkepentingan dalam\nmelindungi pelbagai jenis risiko yang akan mengakibatkan kerugian yang tidak\ndisengajakan dan boleh menyebabkan pemegang polisi menanggung kerugian kewangan.\nInsurans hayat\nInsurans hayat menjamin pembayaran manfaat kewangan\nAplikasi\nkepada pemegang polisi sekiranya berlaku kematian terhadap & Kerjaya\norang yang diinsuranskan atau bawah keadaan yang ditetapkan Aktuari ialah seorang\ndalam kontrak. Risiko yang dilindungi oleh insurans hayat pakar mengurus dan\nadalah seperti berikut: menghitung risiko dalam\npremium polisi insurans,\nkadar anuiti dan lain-lain\nKematian Penyakit untuk sesebuah syarikat\nkritikal insurans.\nHilang upaya\n(keilatan)\nTujuan insurans hayat adalah untuk menyediakan\nAdakah pembayaran\nperlindungan kewangan kepada ahli keluarga yang bergantung ganti rugi akan dibuat\npada pemegang polisi apabila pemegang polisi meninggal sekiranya tiada kerugian\ndunia. Namun, sekiranya pemegang polisi masih hidup tetapi yang berlaku?\nBincangkan.\nmengalami hilang upaya menyeluruh dan kekal, pemegang\npolisi boleh menerima pampasan daripada syarikat insurans\nberdasarkan syarat yang ditetapkan dalam polisi insurans hayatnya.\nInsurans am\nInsurans am memberikan perlindungan daripada sebarang kerugian atau kerosakan harta benda\nyang ditanggung, selain risiko yang dilindungi dalam insurans hayat. Terdapat banyak jenis\ninsurans am yang melindungi pelbagai risiko.\n76\nKPM",
+    "tokens": 237
+  },
+  {
+    "id": "insurans-006",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nJenis insurans am\nInsurans Insurans perubatan Insurans\nmotor dan kesihatan perjalanan\nInsurans Insurans\nkebakaran kemalangan diri\nBBuulleettiinn II llmmiiaahh\n(i) Insurans motor\nInsurans motor merupakan\nInsurans motor memberikan perlindungan terhadap sebarang\ninsurans yang wajib\nkerugian atau kerosakan berkaitan dengan penggunaan dimiliki oleh setiap pemilik\nkenderaan berenjin. Jadual di bawah menunjukkan empat jenis kenderaan di Malaysia\npolisi insurans motor yang melindungi kenderaan anda. yang tertakluk bawah Akta\nPengangkutan Jalan 1987.\nPihak ketiga,\nPolisi Pihak\nAkta kebakaran & Komprehensif\nPerlindungan ketiga\nkecurian\nLiabiliti kepada pihak ketiga akibat\nYa Ya Ya Ya\nkecederaan dan kematian.\nKerugian terhadap harta benda yang\nTidak Ya Ya Ya\ndialami pihak ketiga.\nKerugian terhadap kenderaan sendiri\nakibat kebakaran yang tidak disengajakan Tidak Tidak Ya Ya\natau kecurian.\nKerugian dan kerosakan terhadap\nTidak Tidak Tidak Ya\nkenderaan sendiri akibat kemalangan.\nPolisi komprehensif memberikan perlindungan yang BBuulleettiinn II llmmiiaahh\nmenyeluruh berbanding dengan tiga polisi di atas. Persamaan\nbagi polisi-polisi ini ialah perlindungan tidak merangkumi Dalam insurans motor,\npihak\ntuntutan pemandu dan penumpang kenderaan seperti kecederaan\n• pertama → pemandu\ndan kematian.\n(pemegang polisi)\nSebagai contoh, Agus memandu kereta miliknya dengan • kedua → syarikat\ninsurans\nmembawa seorang penumpang iaitu kawannya, Faizal. Dalam\n• ketiga → mana-mana\nperjalanannya itu, kereta Agus telah hilang kawalan lalu\nindividu yang terlibat\nmelanggar sebuah kereta lain yang dipandu oleh Devi. Agus, dalam kemalangan\nFaisal dan Devi telah mengalami kecederaan manakala kereta disebabkan oleh\npemandu tidak\nAgus dan Devi mengalami kerosakan.\ntermasuk penumpang.\n77\nKPM",
+    "tokens": 246
+  },
+  {
+    "id": "insurans-007",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nJika Agus menginsuranskan keretanya bawah polisi\nBBuulleettiinn II llmmiiaahh\nkomprehensif, polisi ini akan melindungi tuntutan kerugian\nkecederaan dan kerosakan kereta pihak ketiga, iaitu Devi dan\nLiabiliti ialah jumlah hutang\nkerugian kerosakan kereta Agus. Walau bagaimanapun, kos\nyang perlu dijelaskan\nperubatan kecederaan yang dialami oleh Agus dan Faizal tidak dengan wang, barang,\nakan dilindungi. atau perkhidmatan.\n(ii) Insurans kebakaran\nInsurans kebakaran memberikan perlindungan terhadap kerugian akibat kebakaran, kilat dan\nletupan yang berlaku pada rumah kediaman ataupun bangunan perniagaan. Pampasan akan\ndibayar oleh syarikat insurans untuk memulihkan kedudukan kewangan pemegang polisi,\ntertakluk kepada jumlah yang diinsuranskannya. Bagi mendapatkan perlindungan selain\ndaripada kebakaran, kilat dan letupan, pemegang polisi boleh memasukkan perlindungan\ntambahan seperti taufan, banjir, rusuhan dan sebagainya dalam polisi kebakaran yang sedia\nada dengan tambahan premium.\nBBuulleettiinn II llmmiiaahh\n(iii) Insurans perubatan dan kesihatan\nSelain risiko kematian, anda juga perlu memberikan perhatian Imbas kod QR atau layari\nbit.do/Bab3IPK untuk\nkepada risiko kemerosotan kesihatan yang mungkin dihidapi.\nmaklumat tambahan\nHal ini demikian kerana anda mungkin terpaksa menanggung\nmengenai insurans\nperbelanjaan perubatan seperti kos kemasukan ke hospital dan perubatan dan kesihatan.\npembedahan. Antara polisi yang terdapat dalam insurans ini\nialah:\n• insurans hospital dan pembedahan\n• insurans penyakit kritikal\n• insurans pendapatan akibat hilang upaya\n• insurans pendapatan hospital\n(iv) Insurans kemalangan diri\nMengapakah insurans\nInsurans kemalangan diri memberikan perlindungan sekiranya\nperubatan dan kesihatan\npemegang polisi mengalami kecederaan anggota badan, penting walaupun\nkecacatan, hilang upaya ataupun meninggal dunia berpunca kerajaan menyediakan\nsecara langsung daripada kemalangan. Insurans ini adalah perkhidmatan perubatan\ndan kesihatan di\nberbeza daripada insurans hayat, dan insurans perubatan dan\nhospital-hospital\nkesihatan.\nkerajaan? Bincangkan.\n(v) Insurans perjalanan\nInsurans perjalanan melindungi pemegang polisi terhadap kerugian dalam perjalanan sama\nada melalui darat, udara atau laut seperti kematian dan kecacatan kekal, kehilangan bagasi,\npasport dan duit, belanja perubatan dan lain-lain.\n78\nKPM",
+    "tokens": 298
+  },
+  {
+    "id": "insurans-008",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nTempoh perlindungan bagi kebanyakan polisi insurans am ialah satu tahun ataupun kurang\ndari tempoh satu tahun. Premium yang dibayar pula adalah pada satu-satu masa apabila anda\nmemerlukan perlindungan polisi tersebut.\nInsurans berkelompok\nBBuulleettiinn II llmmiiaahh\nInsurans berkelompok secara asasnya memberikan perlindungan\nkepada sekumpulan individu, biasanya pekerja syarikat atau\nmurid sekolah dan pelajar institusi pendidikan. Skim perlindungan\nmasyarakat mySalam\n• Insurans berkelompok kepada organisasi adalah inisiatif kerajaan\nPerlindungan kewangan disediakan kepada pekerja sesebuah yang bertujuan\norganisasi seperti kematian, hilang upaya, kemasukan hospital menyediakan perlindungan\nkesihatan takaful percuma dan pembedahan dengan polisi dan had perlindungan tertentu.\nkepada 8 juta individu\nDengan adanya insurans ini, pekerja-pekerja syarikat tersebut\nrakyat Malaysia. Layari\nakan menikmati perlindungan sewajarnya daripada majikan mysalam.com.my untuk\nmereka. maklumat lanjut.\n• Insurans berkelompok kepada murid\nPerlindungan kewangan disediakan kepada murid seperti kematian, lumpuh, kecacatan\ndan elaun kerusi roda dengan polisi dan had perlindungan tertentu. Sebagai contoh,\nKementerian Pendidikan Malaysia telah melaksanakan skim perlindungan kepada murid\nsekolah-sekolah kerajaan dan bantuan kerajaan bawah skim Takaful Pelajar Sekolah\nMalaysia (TPSM).\nSecara umumnya, tujuan anda mendapatkan insurans adalah seperti berikut:\n✓ Sebagai bantuan kewangan kepada keluarga sekiranya anda hilang upaya, menghidapi\npenyakit kritikal atau meninggal dunia\n✓ Mengurus perbelanjaan hidup, hutang dan komitmen sekiranya anda tidak mampu\nbekerja\n✓ Bayaran perbelanjaan perubatan rawatan yang tinggi\n✓ Sebagai pampasan terhadap kerugian yang dialami\nLatih Kendiri 3.1a\n1. Berdasarkan situasi di bawah, jawab soalan berikut.\nEncik Daud membeli satu polisi insurans untuk dirinya jika dia terlibat dengan\nkemalangan daripada Syarikat Insurans Bersatu berjumlah RM300 000 dengan bayaran\nbulanan RM100.\n(a) Siapakah syarikat insurans dan pemegang polisi?\n(b) Berapakah had perlindungan?\n(c) Berapakah nilai premium bulanan?\n(d) Nyatakan risiko yang diinsuranskan.\n79\nKPM",
+    "tokens": 282
+  },
+  {
+    "id": "insurans-009",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\n2.\nPada suatu hari, kereta Melisa telah melanggar sebuah kereta lain dalam satu\nkemalangan dan dia didapati bersalah. Akibat kemalangan itu, kedua-dua buah kereta\nmengalami kerosakan teruk dan pemandu kereta yang dilanggar Melisa mengalami\nkecederaan patah kaki. Melisa ingin membuat tuntutan kerosakan bagi kedua-dua\nbuah kereta serta kos rawatan kecederaan pemandu tersebut.\nBerdasarkan senario di atas, nyatakan tuntutan yang boleh dibuat oleh Melisa kepada\nsyarikat insuransnya jika dia menginsuranskan keretanya bawah polisi pihak ketiga.\nBagaimanakah mengkaji, mentafsir dan membuat\npengiraan yang melibatkan kadar dan premium insurans?\nMengkaji, mentafsir dan\nContoh 1 membuat pengiraan yang\nmelibatkan kadar dan\nJadual di bawah menunjukkan harga premium bagi insurans premium insurans.\nperjalanan yang ditawarkan oleh Syarikat Insurans PQ Bhd.\nke negara-negara Asia dan Eropah.\nPemegang polisi Pemegang polisi\nKeluarga (RM)\n(RM) dan pasangan (RM)\nBilangan hari\nAsia Eropah Asia Eropah Asia Eropah\n1 – 5 39 53 69 98 87 133\n6 – 10 58 79 107 150 136 184\n11 – 18 79 127 152 246 218 304\nPremium tahunan\n230 280 – – – –\n(berumur 18 – 69 tahun)\n(a) Apakah faktor yang mempengaruhi perbezaan harga premium bagi insurans perjalanan itu?\n(b) Mengapakah semakin panjang tempoh perjalanan, semakin tinggi harga premium?\n(c) Pekerjaan Shahir sebagai seorang jurugambar memerlukan dia melawat banyak negara\nEropah dalam tempoh setahun. Dia akan mengunjungi sesebuah negara antara 12 hingga\n15 hari. Insurans yang manakah patut dibeli oleh Shahir sesuai dengan pekerjaannya?\nBerikan alasan anda.\nPenyelesaian:\n(a) Destinasi, tempoh perjalanan dan bilangan orang yang diinsuranskan.\n(b) Tempoh perjalanan yang lebih panjang meningkatkan kebarangkalian kerugian berlaku\npada pemegang polisi semasa berada di luar negara.\n(c) Shahir patut membeli insurans perjalanan premium tahunan bagi negara-negara Eropah\nkerana ini lebih menjimatkan daripada membeli insurans bagi tempoh 11 hingga 18 hari\nsetiap kali perjalanan.\n80\nKPM",
+    "tokens": 297
+  },
+  {
+    "id": "insurans-010",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nBagaimanakah mengira premium bagi insurans hayat?\nBBuulleettiinn II llmmiiaahh\nBagi insurans hayat, nilai premium yang dibayar bergantung (i) Jadual kadar premium\npada nilai muka yang dipilih, umur, jantina dan sama ada memberikan amaun\nkasar premium yang\nmerokok atau tidak. Pengiraan premium ini merujuk kepada\ndikenakan kepada\njadual kadar premium bagi setiap RMx nilai muka.\npemegang polisi.\n(ii) Nilai muka polisi\nialah jumlah wang\nNilai muka polisi 1Kadar premium2\nPremium = × yang dipilih oleh\nRMx per RMx\npemegang polisi\nuntuk mendapatkan\nperlindungan insurans.\nJumlah ini akan\nContoh 2\ndibayar kepada\nwaris jika berlakunya\nJadual kadar premium tahunan bagi setiap RM1 000 nilai muka\nkematian atau\ninsurans sementara boleh baharu tahunan yang ditawarkan oleh\nkecacatan kekal dan\nSyarikat Insurans XYZ adalah seperti berikut. menyeluruh pemegang\npolisi pada tarikh\nLelaki (RM) Perempuan (RM) matang polisi.\nUmur Bukan Bukan\nPerokok Perokok\nperokok perokok\nBBuulleettiinn II llmmiiaahh\n35 2.12 2.72 1.45 1.78\nInsurans sementara\n36 2.18 2.80 1.50 1.84\nboleh baharu tahunan\n37 2.26 2.91 1.56 1.93 memberikan perlindungan\ndalam tempoh setahun\n38 2.36 3.05 1.63 2.03\ndan boleh diperbaharui\nuntuk tahun berikutnya\n39 2.49 3.23 1.71 2.14\nseperti yang ditetapkan\n40 2.66 3.47 1.80 2.26 oleh syarikat insurans.\n(a) Mengapakah kadar premium semakin tinggi\n(i) apabila umur semakin meningkat?\n(ii) bagi seorang perokok?\n(b) Berdasarkan jadual tersebut, hitung premium tahunan bagi setiap situasi berikut.\n(i) Encik Guan ingin membeli polisi insurans tersebut bernilai RM100 000. Dia\nberumur 39 tahun, seorang yang sihat dan tidak merokok.\n(ii) Puan Shapuva berumur 36 tahun, seorang yang sihat dan tidak merokok ingin\nmembeli polisi insurans tersebut bernilai RM250 000 dan menambah polisi penyakit\nkritikal. Syarikat Insurans XYZ menawarkan polisi penyakit kritikal dengan\nmemberikan perlindungan sebanyak 30% nilai muka asas dan kadar premium bagi\nsetiap RM1 000 ialah RM1.77 mengikut umur dan status kesihatan Puan Shapuva.\nPenyelesaian:\n(a) (i) Kadar premium meningkat dengan peningkatan umur kerana jangka hayat setiap\norang semakin pendek dengan penambahan umur.\n(ii) Kebarangkalian seorang perokok terdedah kepada risiko penyakit lebih tinggi\nberbanding dengan seseorang yang mengamalkan gaya hidup sihat.\n81\nKPM",
+    "tokens": 344
+  },
+  {
+    "id": "insurans-011",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\n(b) (i) Berdasarkan jadual, kadar premium ialah RM2.49.\nPremium tahunan Encik Guan\nRM100 000\n= × RM2.49\nRM1 000\n= RM249.00\n(ii) Berdasarkan jadual, kadar premium ialah RM1.50.\nJumlah perlindungan untuk penyakit kritikal\n30\n= × RM250 000\n100\n= RM75 000\nPremium tahunan Puan Shapuva\n= Premium asas tahunan + Premium tambahan tahunan penyakit kritikal\nRM250 000 RM75 000\n= × RM1.50 + × RM1.77\nRM1 000 RM1 000\n= RM375 + RM132.75\n= RM507.75\nBagaimanakah mengira premium bagi insurans motor?\nBBuulleettiinn II llmmiiaahh\nInsurans motor dikira berdasarkan Tarif Motor yang\n(i) Tarif ialah senarai\nmenyediakan premium minimum bagi perlindungan insurans harga tetap yang\ntersebut. Tarif ini dikawal oleh undang-undang. Jumlah digunakan untuk\npremium bergantung pada faktor-faktor seperti jenis kenderaan, menyelaras dan\nmengawal caj\nkegunaan kenderaan, kapasiti enjin, jenis dan jumlah\npremium dan susunan\nperlindungan yang diinginkan. Kadar premium yang dikenakan\nkata polisi bawah akta\nadalah berbeza bagi setiap polisi motor. insurans.\n(ii ) Syarikat insurans akan\nKadar premium\nmengenakan tambahan\nialah 75% daripada\natas premium\npremium asas\nminimum seperti\nHanya berga ntung\npolisi komprehensif perbelanjaan kendalian\npada ka pasiti\nperlindungan, komisen\nenjin k enderaan\nejen, perlindungan\nP p o\nk\ni l h i\ne\ns a\nt\ni\ni\nk ga\ntambahan dan lain-lain.\nPo a l k is t i a\nm\nPo\np\nl\nr\nis\ne\ni\nh\nensif\npi\nd\nh k P\na\na e\nn\no k b l a i k k s k i e e a c t r i u g a r a n i , a n\nko\nBergantung pada\nkapas iti enjin dan nilai\nkenderaan semasa\ningin diinsuranskan\n82\nKPM",
+    "tokens": 278
+  },
+  {
+    "id": "insurans-012",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nJadual di bawah menunjukkan pengkadaran premium bawah Tarif Motor bagi polisi motor yang\ndikeluarkan di Semenanjung Malaysia, Sabah dan Sarawak.\nSemenanjung Malaysia Sabah dan Sarawak\nKapasiti enjin\ntidak melebihi\nPolisi komprehensif Polisi pihak Polisi komprehensif Polisi pihak\n(cc)\n(RM) ketiga (RM) (RM) ketiga (RM)\n1 400 273.80 120.60 196.20 67.50\n1 650 305.50 135.00 220.00 75.60\n2 200 339.10 151.20 243.90 85.20\n3 050 372.60 167.40 266.50 93.60\n4 100 404.30 181.80 290.40 101.70\n4 250 436.00 196.20 313.00 110.10\n4 400 469.60 212.40 336.90 118.20\nMelebihi 4 400 501.30 226.80 359.50 126.60\n* Bagi polisi komprehensif, kadar yang dikenakan adalah bagi RM1 000 pertama daripada jumlah\nyang diinsuranskan\nSumber: Jadual Tarif Motor 2015\nRumus mengira premium asas polisi komprehensif: i – Teknologi\n(i) Bagi Semenanjung Malaysia, premium asas\n= Kadar bagi RM1 000 yang pertama + RM26 bagi\nLayari laman sesawang\nsetiap RM1 000 atau sebahagian daripada itu bagi Persatuan Insurans Am\nnilai yang melebihi RM1 000 Malaysia (PIAM) untuk\nmendapatkan maklumat\n(ii) Bagi Sabah dan Sarawak, premium asas lebih lanjut mengenai\n= Kadar bagi RM1 000 yang pertama + RM20.30 bagi perkhidmatan insurans am\nsetiap RM1 000 atau sebahagian daripada itu bagi di Malaysia.\nhttp://www.piam.org.my/\nnilai yang melebihi RM1 000\nContoh 3\nEncik Ramli mempunyai sebuah kereta model Proton Exora 1.6 untuk digunakan di Semenanjung\nMalaysia. Maklumat kereta itu adalah seperti berikut.\nJumlah yang ingin diinsuranskan : RM60 000\nUmur kenderaan : 5 tahun\nKapasiti enjin : 1 600 cc\nNCD : 25%\nHitung premium kasar bagi kereta Encik Ramli untuk polisi komprehensif, polisi pihak\nketiga, kebakaran dan kecurian, dan polisi pihak ketiga.\n83\nKPM",
+    "tokens": 274
+  },
+  {
+    "id": "insurans-013",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nPenyelesaian:\nRujuk pada BBuulleettiinn II llmmiiaahh\nBagi polisi komprehensif:\njadual.\nKlausa Diskaun Tanpa\n(a) RM1 000 yang pertama RM305.50\nTuntutan (NCD) akan\n(b) RM26 × 59 RM1 534 60 000 – 1 000 diberikan jika tiada tuntutan\n1 000 dibuat terhadap insurans\n(setiap RM1 000 baki)\n= 59 motor anda dalam tempoh\n(c) Premium asas = (a) + (b) RM1 839.50 perlindungan sebelum\n0.25 × 1 839.50 pembaharuan polisi\n(d) NCD 25% RM459.88\n= 459.88 dibuat. Oleh itu, premium\nyang perlu dibayar\n(e) Premium kasar = (c) – (d) RM1 379.62\nboleh dikurangkan oleh\nkelayakan NCD anda.\nBagi polisi pihak ketiga, kebakaran dan kecurian: Anda akan kehilangan\n0.75 × 1 839.50 keseluruhan kelayakan\n(a) Premium asas RM1 379.63\n= 1 379.63 NCD anda apabila\n(b) NCD 25% RM344.91 tuntutan kerosakan\n0.25 × 1 379.63 sendiri atau pihak\n(c) Premium kasar = (a) – (b) RM1 034.72 = 344.91 ketiga dibuat terhadap\npolisi anda. Kelayakan\nNCD bergantung pada\nBagi polisi pihak ketiga:\nkelas kenderaan anda\nRujuk pada\n(a) Premium asas RM135.00 dan bilangan tahun\njadual.\npengalaman memandu\n(b) NCD 25% RM33.75 yang berterusan tanpa\n0.25 × 135.00\ntuntutan.\n(c) Premium kasar = (a) – (b) RM101.25 = 33.75\nWalau bagaimanapun, premium yang dibayar mungkin berlainan dengan nilai premium\nsebenar tertakluk kepada syarikat insurans kerana terdapat caj tambahan yang perlu dibayar\noleh pemilik polisi seperti komisen kepada ejen, cukai perkhidmatan dan duti setem.\nLatih Kendiri 3.1b\n1. Jadual di bawah menunjukkan sebahagian faedah bagi insurans kemalangan diri yang\nditawarkan oleh Syarikat Insurans RST.\nJumlah perlindungan Premium tahunan mengikut pekerjaan\nFaedah\n(RM) Kelas 1 & 2 (RM) Kelas 3 (RM)\nKematian akibat\n100 000\nkemalangan\nHilang upaya kekal 364.75 1 065.40\n200 000\ndan menyeluruh\nHilang upaya kekal 150 000\n* Kelas 1 – Pekerjaan dalam industri tidak berbahaya dan bekerja di dalam pejabat.\n* Kelas 2 – Pekerjaan yang melibatkan tugas-tugas bukan manual dalam industri separa bahaya.\n* Kelas 3 – Pekerjaan yang melibatkan tugas-tugas manual dan penggunaan peralatan atau mesin\njentera.\nPada pendapat anda, apakah yang menyebabkan bayaran premium bagi pekerjaan kelas 3\nlebih tinggi berbanding dengan kelas 1 dan 2?\n84\nKPM",
+    "tokens": 354
+  },
+  {
+    "id": "insurans-014",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\n2. Jadual di bawah menunjukkan kadar premium tahunan per RM1 000 nilai muka insurans\nhayat boleh baharu yang ditawarkan oleh sebuah syarikat insurans.\nLelaki (RM) Perempuan (RM)\nUmur\nBukan perokok Perokok Bukan perokok Perokok\n27 2.12 2.72 1.18 1.40\n28 2.12 2.73 1.19 1.42\n29 2.12 2.75 1.21 1.44\n30 2.12 2.79 1.23 1.46\nDengan nilai muka sebanyak RM120 000,\n(a) hitung premium tahunan bagi seorang lelaki berumur 29 tahun yang merokok dan\nyang tidak merokok,\n(b) hitung premium tahunan bagi seorang perempuan berumur 30 tahun yang merokok\ndan yang tidak merokok.\n3. Encik Zakri menetap di Semenanjung Malaysia. Dia ingin membeli satu polisi insurans\nmotor dan berikut ialah maklumat kenderaan yang ingin diinsuranskannya.\nJumlah yang ingin diinsuranskan : RM85 000\nUmur kenderaan : 6 tahun\nKapasiti enjin : 2 494 cc\nNCD : 30%\nHitung premium kasar bagi polisi komprehensif, polisi pihak ketiga, kebakaran dan\nkecurian, dan polisi pihak ketiga berdasarkan Jadual Tarif Motor 2015.\nBagaimanakah menyelesaikan masalah yang melibatkan\ninsurans?\nMenyelesaikan masalah\nKerugian yang encik\nMengapa saya tidak yang melibatkan insurans\nalami berjumlah\nmendapat pampasan termasuk deduktibel dan\nRM5 500. Syarikat\nsepenuhnya? ko-insurans.\ninsurans akan\nmembayar sebanyak\nRM5 300. Baki RM200\nakan ditanggung oleh\nencik. Baca polisi kontrak\ninsurans dengan teliti\nsebelum anda bersetuju\nmembeli polisi insurans\ntersebut dan dapatkan\npenerangan yang lebih\njelas daripada ejen\ninsurans anda.\nTerdapat beberapa peruntukan dalam kontrak insurans\nyang menyebabkan pemegang polisi mungkin menerima\npampasan kurang daripada kerugian sebenar dan perlu menanggung sebahagian daripadanya.\nAntara peruntukan tersebut ialah deduktibel dan ko-insurans, yang juga dikenali sebagai\ninsurans bersama.\n85\nKPM",
+    "tokens": 264
+  },
+  {
+    "id": "insurans-015",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nApa itu deduktibel?\nDeduktibel ialah suatu jumlah yang perlu ditanggung oleh pemegang polisi sebelum layak\nmembuat tuntutan daripada syarikat insurans. Kebiasaannya deduktibel terdapat dalam kontrak\ninsurans harta, insurans perubatan dan kesihatan, dan insurans motor. Peruntukan ini tidak\nterdapat dalam insurans hayat dan insurans liabiliti diri.\nContoh 4\nPuan Suhaila telah membeli insurans motor untuk keretanya yang mempunyai peruntukan\ndeduktibel sebanyak RM300. Sepanjang tempoh insurans tersebut, Puan Suhaila telah\nmengalami tiga kali kemalangan. Kerugian yang dialami adalah pada bulan Mac, Julai dan\nOgos masing-masing sebanyak RM2 800, RM250 dan RM400. Nyatakan sama ada Puan\nSuhaila boleh membuat tuntutan terhadap kerugian yang dialami atau tidak. Jika ya, nyatakan\njumlah bayaran pampasan yang boleh dituntutnya bagi setiap kerugian yang dialami.\nPenyelesaian:\nJumlah kerugian melebihi amaun\nKerugian Boleh buat Bayaran deduktibel. Maka, tuntutan boleh dibuat.\nBulan\n(RM) tuntutan? pampasan (RM) Bayaran pampasan = RM2 800 – RM300\n= RM2 500\nMac 2 800 Boleh 2 500\nJumlah kerugian kurang daripada\nJulai 250 Tidak Tiada amaun deduktibel. Maka, tuntutan\ntidak boleh dibuat bagi kerugian ini.\nOgos 400 Boleh 100\nJumlah kerugian melebihi amaun deduktibel. Maka, tuntutan\nboleh dibuat. Bayaran pampasan = RM400 – RM300 = RM100\nDalam insurans motor, pemegang polisi bertanggungjawab menanggung deduktibel wajib\nsebanyak RM400 sekiranya kenderaan yang diinsuranskan itu dipandu oleh individu yang tidak\ndinamakan dalam polisi, individu tersebut dinamakan dalam polisi tetapi berumur bawah\n21 tahun, pemegang lesen memandu sementara (L) atau pemegang lesen memandu penuh\nyang kurang dari 2 tahun. Deduktibel lain dikenakan mengikut budi bicara syarikat insurans.\nContoh 5\nCher Lin mempunyai polisi insurans perubatan dengan deduktibel sebanyak RM30 000\nsetahun dengan had tahunan bernilai RM300 000. Pada tahun pertama dalam tempoh\ninsuransnya, Cher Lin telah dimasukkan ke hospital untuk pembedahan apendiks dan\ndikenakan kos rawatan sebanyak RM8 000. Pada tahun berikutnya, Cher Lin perlu melakukan\npembedahan jantung dan dikenakan kos rawatan sebanyak RM210 000. Nyatakan jumlah\nyang perlu ditanggung oleh Cher Lin dan jumlah yang dibayar oleh syarikat insurans bagi\ntahun pertama dan kedua tempoh insuransnya.\nPenyelesaian:\nTahun pertama:\nKos rawatan kurang daripada amaun deduktibel.\nKos rawatan = RM8 000\nJumlah yang perlu ditanggung oleh Cher Lin = RM8 000\n86\nKPM",
+    "tokens": 356
+  },
+  {
+    "id": "insurans-016",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nTahun kedua:\nKos rawatan = RM210 000 Kos rawatan lebih daripada amaun deduktibel.\nJumlah yang perlu ditanggung oleh Cher Lin = RM30 000\nJumlah yang dibayar oleh syarikat insurans\n= RM210 000 – RM30 000 Kos rawatan – deduktibel\n= RM180 000\nApakah ko-insurans dalam insurans harta?\nKo-insurans ialah perkongsian bersama kerugian antara syarikat\ninsurans dengan pemegang polisi. BBuulleettiinn II llmmiiaahh\nBagi fasal ko-insurans dalam insurans harta, pemegang (i) Fasal (clause)\nadalah bahagian\npolisi dikehendaki menginsuranskan hartanya pada suatu jumlah\ndaripada bab dalam\ntertentu berdasarkan peratusan ko-insurans yang telah ditetapkan\nundang-undang.\noleh syarikat insurans daripada nilai boleh insurans harta\n(ii) Nilai boleh insurans\ntersebut. Sekiranya peruntukan ko-insurans ini tidak dipenuhi, harta ialah nilai\npemegang polisi perlu menanggung sebahagian daripada sebenar aset, kos\npenggantian aset\nkerugian bersama-sama syarikat insurans.\natau nilai lain yang\nOleh itu, jika pemegang polisi ingin mendapatkan dinyatakan dalam\npampasan penuh atas kerugian separa yang dialami, dia fasal penilaian polisi\ninsurans.\nperlu menginsuranskan harta tersebut mengikut peruntukan\nko-insuransnya.\nJumlah insurans yang harus dibeli\n= Peratusan ko-insurans × Nilai boleh insurans harta\n1 Jika nilai yang diinsuranskan = jumlah insurans yang harus dibeli\nBayaran pampasan\n= Jumlah kerugian – Deduktibel\ndengan keadaan jumlah kerugian < jumlah insurans yang telah dibeli.\n2 Jika nilai yang diinsuranskan , jumlah insurans yang harus dibeli\nBayaran pampasan\nJumlah insurans yang\n1 2\ntelah dibeli 1 Jumlah 2\n= × – (Deduktibel)\nJumlah insurans yang kerugian\nharus dibeli\nDengan adanya\n3 Mengalami kerugian menyeluruh peruntukan deduktibel dan\nko-insurans dalam polisi\nBayaran pampasan\ninsurans, premium yang\n= 1 Jumlah insurans 2 – (Deduktibel) dibayar akan menjadi\nrendah.\nyang telah dibeli\n87\nKPM",
+    "tokens": 274
+  },
+  {
+    "id": "insurans-017",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nContoh 6\nEncik Ismail ingin membeli insurans kebakaran untuk rumahnya. Nilai boleh insurans\nrumah itu ialah RM350 000. Polisi insurans kebakaran yang ingin dibelinya itu mempunyai\nperuntukan ko-insurans untuk menginsuranskan 80% daripada nilai boleh insurans hartanya\ndan deduktibel sebanyak RM2 000.\n(a) Hitung jumlah insurans yang harus dibeli oleh Encik Ismail bagi rumahnya itu.\n(b) Rumah Encik Ismail telah mengalami kebakaran dan jumlah kerugiannya adalah\nsebanyak RM25 000. Hitung bayaran pampasan yang akan diterima Encik Ismail jika\ndia menginsuranskan rumahnya\n(i) pada jumlah insurans yang harus dibelinya,\n(ii) dengan jumlah RM150 000. Seterusnya, hitung nilai penalti ko-insurans.\n(c) Rumah Encik Ismail telah mengalami kerugian menyeluruh.\nJika dia menginsuranskan rumahnya dengan jumlah BBuulleettiinn II llmmiiaahh\nRM200 000, hitung bayaran pampasan yang diterimanya.\nJumlah yang ditanggung\nPenyelesaian: oleh pemegang polisi\n80\n(a) Jumlah insurans yang harus dibeli = × RM350 000 atas kerugian separa\n100 yang dialami akibat tidak\n= RM280 000 memenuhi peruntukan\nko-insurans dikenali sebagai\n(b) (i) Bayaran pampasan = RM25 000 – RM2 000 penalti ko-insurans.\n= RM23 000\n(ii) RM150 000 , RM280 000. Jumlah yang diinsuranskan adalah kurang daripada jumlah\ninsurans yang harus dibeli.\nRM150 000\nBayaran pampasan = × RM25 000 – RM2 000\nRM280 000\n= RM13 392.86 – RM2 000 Penalti ko-insurans adalah\n= RM11 392.86 bersamaan dengan 46.4%\nPenalti ko-insurans = RM25 000 – RM13 392.86 daripada jumlah kerugian\n= RM11 607.14\nKerugian yang ditanggung Encik Ismail\n(c) Bayaran pampasan = RM200 000 – RM2 000\n= RM350 000 – RM198 000\n= RM198 000 = RM152 000\nJika pemegang polisi menginsuranskan hartanya dengan jumlah lebih besar daripada\njumlah yang harus dibeli mengikut peruntukan ko-insurans, bayaran pampasan yang dihitung\nmenggunakan rumus ko-insurans akan melebihi jumlah kerugian sebenar yang dialami. Walau\nbagaimanapun, syarikat insurans hanya akan membayar bayaran pampasan tidak melebihi\njumlah kerugian yang sebenar. Bayaran maksimum untuk sesuatu kerugian adalah bersamaan\ndengan jumlah nilai muka insurans yang telah dibeli oleh pemegang polisi.\nApakah ko-insurans dalam insurans kesihatan?\nDalam kontrak insurans kesihatan, ko-insurans ditetapkan dalam fasal penyertaan peratusan,\nkhasnya bagi polisi insurans perubatan utama. Dalam fasal ini, pemegang polisi dikehendaki\nmenanggung sebahagian daripada kos perubatan yang dilindungi kontrak mengikut suatu kadar\nyang dipersetujui selepas mengambil kira peruntukan deduktibel, sekiranya ada. Sebagai contoh,\npenyertaan peratusan ko-insurans 80/20 bermaksud syarikat insurans menanggung 80% daripada\nkos perubatan yang dilindungi oleh polisi dan 20% akan ditanggung oleh pemegang polisi.\n88\nKPM",
+    "tokens": 395
+  },
+  {
+    "id": "insurans-018",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nContoh 7\nPuan Chen mempunyai polisi insurans perubatan utama dengan\nperuntukan deduktibel sebanyak RM500 dan fasal penyertaan Peruntukan deduktibel\nperlu dipenuhi oleh\nperatusan ko-insurans 75/25 dalam polisinya. Hitung bayaran kos\npemegang polisi terlebih\nyang ditanggung oleh syarikat insurans dan Puan Chen sendiri jika\ndahulu sebelum dapat\nkos perubatan yang dilindungi polisinya berjumlah RM20 600. menikmati faedah\ninsurans yang dibelinya.\nPenyelesaian:\nKos perubatan selepas deduktibel\n= RM20 600 – RM500\n= RM20 100\nPerbezaan antara deduktibel\nBayaran kos yang ditanggung oleh syarikat insurans\ndengan ko-insurans:\n75\n= × RM20 100 • Deduktibel ialah suatu\n100 jumlah yang mesti\n= RM15 075 dibayar dahulu oleh\npemegang polisi tanpa\nBayaran kos yang ditanggung oleh Puan Chen\nmengira jumlah kos\n= 25 × RM20 100 + RM500 Deduktibel manfaat yang layak.\n100 • Ko-insurans ialah\nperkongsian kos dengan\n= RM5 525\nkeadaan pemegang\npolisi menanggung\nPanduan membuat pilihan insurans yang terbaik buat anda:\nperatusan tertentu\nKetahui jumlah Fahami skop daripada kerugian\nbersama dengan\nperlindungan yang perlindungan, terma\nsyarikat insurans.\ndiperlukan. dan syarat polisi.\nBandingkan kadar Elakkan\npremium dan perlindungan yang\nmanfaat insurans. tidak perlu.\nMengapakah insurans\nkesihatan tidak dikenakan\npenalti?\nContoh 8\nJesnita ingin membeli polisi insurans perubatan untuk dirinya. Dia membuat perbandingan faedah\nbagi pelan polisi daripada dua buah syarikat insurans yang berbeza, XX dan YY.\nSyarikat insurans XX YY\nFaedah (RM) (RM)\nHad tahunan keseluruhan 50 000 50 000\nBilik hospital dan makanan 160 200\n(maksimum 365 hari setahun) (maksimum 200 hari setahun)\nUnit rawatan rapi Mengikut caj yang dikenakan 400\n(maksimum 90 hari setahun) (maksimum 90 hari setahun)\nElaun tunai harian di hospital 100 50\nkerajaan (maksimum 365 hari setahun) (maksimum 200 hari setahun)\nPremium tahunan 506.02 637.02\nBerdasarkan jadual tersebut, pelan polisi insurans yang manakah lebih baik untuk Jesnita?\nJustifikasikan jawapan anda.\n89\nKPM",
+    "tokens": 301
+  },
+  {
+    "id": "insurans-019",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nPenyelesaian:\nPelan polisi XX adalah lebih baik kerana walaupun kedua-duanya memberikan had tahunan\nkeseluruhan yang sama, iaitu RM50 000, premium tahunan bagi XX adalah lebih kecil\nberbanding dengan YY. Selain itu, faedah yang ditawarkan juga adalah lebih baik dari segi\ntempoh perlindungan, iaitu sepanjang tahun bagi bilik hospital dan makanan, dan elaun tunai\nharian di hospital kerajaan. Tambahan lagi, tiada had perlindungan bagi unit rawatan rapi\nkerana pampasan dibayar mengikut caj rawatan yang dikenakan kepada pemegang polisi,\nberbeza dengan polisi YY yang mempunyai had sebanyak RM400 bagi tempoh perlindungan\nyang sama.\nArena Rumusan\nRISIKO DAN PERLINDUNGAN INSURANS\nRisiko\nInsurans\nInsurans Hayat Insurans Am\n• Insurans motor • Insurans kemalangan\n• Insurans kebakaran diri\n• Insurans perubatan • Insurans perjalanan\ndan kesihatan\nPengiraan premium insurans Penyelesaian masalah\nPremium\nNilai muka polisi 1Kadar premium2\n= ×\nRMx per RMx Deduktibel Ko-insurans\n90\nKPM",
+    "tokens": 143
+  },
+  {
+    "id": "insurans-020",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nPada akhir bab ini, saya dapat\nmenjelaskan maksud risiko dan kepentingan perlindungan insurans, dan\nseterusnya mengenal pasti jenis insurans hayat dan insurans am bagi\nmelindungi pelbagai jenis risiko.\nmengkaji, mentafsir dan membuat pengiraan yang melibatkan kadar dan\npremium insurans.\nmenyelesaikan masalah yang melibatkan insurans termasuk deduktibel dan\nko-insurans.\nPPPRRROOOJJJEEEKKK MMMIIINNNIII\nMaklumat tentang Encik Farhan:\nPekerjaan: Pegawai polis\nGaji bersih bulanan: RM4 300\nPerbelanjaan kasar bulanan: RM3 000\nSimpanan bulanan: RM500\nBilangan tanggungan: 3\nStatus kesihatan: Baik\nMaklumat di atas mengenai Encik Farhan, seorang pegawai polis yang telah berkhidmat\nselama 7 tahun. Dia ingin membeli insurans hayat yang melindungi dirinya dan juga\nahli keluarganya. Secara berkumpulan, dapatkan maklumat polisi insurans hayat yang\nterdapat di Internet. Pilih satu polisi insurans hayat yang terbaik untuk Encik Farhan\ndan ahli keluarganya. Berikan sebab anda dan bentangkan hasil dapatan kumpulan anda\nkepada kelas.\nImbas kod QR atau layari\nbit.do/Kuiz03 untuk kuiz interaktif\nFAHAM\n1. Berikan tiga contoh risiko boleh diinsuranskan yang dihadapi oleh seorang peniaga yang\nmemiliki sebuah bangunan kedai.\n2. Mengapakah prinsip indemniti penting dalam kontrak insurans?\n91\nKPM",
+    "tokens": 182
+  },
+  {
+    "id": "insurans-021",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\n3. Apakah perbezaan antara insurans kemalangan diri, insurans hayat, dan insurans\nperubatan dan kesihatan?\n4. Sebuah syarikat insurans membayar pampasan atas tuntutan insurans motor seorang\npemegang polisi insuransnya. Tuntutan tersebut mengandungi kerosakan kereta pihak\nketiga dan kebakaran kereta yang dialami oleh pemegang polisi. Nyatakan polisi\ninsurans motor yang mungkin telah dibeli oleh pemegang polisi tersebut.\nMASTERI\n5.\nVanitha telah membeli sebuah kereta daripada sahabatnya tanpa membeli insurans\nmotor baharu untuk kereta tersebut kerana insurans motor sedia ada belum tamat\nlagi. Dia juga tidak menghubungi Jabatan Pengangkutan Jalan Malaysia (JPJ) untuk\nmenukar hak milik kereta tersebut kepada namanya. Pada suatu hari, dia telah\nmengalami kemalangan dan keretanya telah rosak di bahagian hadapan.\nBerdasarkan situasi tersebut, adakah Vanitha boleh membuat tuntutan daripada syarikat\ninsurans yang melindungi kereta tersebut? Berikan justifikasi anda.\n6. Syarikat Insurans ABC menawarkan dua\nPelan / Umur 35 tahun 45 tahun\npelan insurans hayat dengan kadar premium\nTempoh 5\ntahunan bagi setiap RM1 000 nilai muka RM5.24 RM7.96\ntahun\nseperti dalam jadual di sebelah. Kadar\nBoleh baharu\npremium tersebut adalah untuk lelaki yang RM4.03 RM5.52\ntahunan\nsihat dan tidak merokok.\n(a) Rizqi berumur 35 tahun, seorang lelaki yang sihat dan tidak merokok. Dia ingin\nmembeli pelan boleh baharu tahunan bernilai RM150 000. Hitung premium bulanan\nyang perlu dibayarnya.\n(b) (i) Vincent ingin membeli pelan bertempoh 5 tahun dengan nilai muka RM100 000.\nDia berumur 45 tahun, seorang lelaki yang sihat dan tidak merokok. Hitung\npremium tahunannya.\n(ii) Jika Vincent membeli pelan boleh baharu tahunan dengan nilai muka RM100 000,\nberapakah beza premium tahunan yang dibayarnya, berbanding dengan pelan\nbertempoh 5 tahun?\n7. Motosikal milik Salleh dilindungi dengan insurans motor yang mempunyai peruntukan\ndeduktibel sebanyak RM150. Sepanjang tempoh insurans tersebut, Salleh telah\nmengalami tiga peristiwa kemalangan dengan kerugian sebanyak RM90, RM240 dan\nRM300. Nyatakan sama ada Salleh boleh membuat tuntutan terhadap kerugian yang\ndialami atau tidak. Jika ya, nyatakan jumlah bayaran pampasan yang boleh dituntutnya\nbagi setiap kerugian yang dialami.\nCABAR\n8. Pada tahun 2019, Puan Karen telah disahkan menghidapi barah dan telah membuat\npembedahan bagi merawat penyakitnya itu. Perbelanjaan kos pembedahan dan rawatan\nadalah sebanyak RM130 000. Pada tahun berikutnya, Puan Karen telah mengalami\nkemalangan yang menyebabkan tulang tangannya patah. Kos merawat tangannya itu\n92\nKPM",
+    "tokens": 369
+  },
+  {
+    "id": "insurans-022",
+    "subject": "math",
+    "level": "form5",
+    "topic_id": "insurans",
+    "chapter": "Bab",
+    "source": "KSSM Matematik Pengguna: Insurans, hlm. 1",
+    "content": "3\nBAB\nBAB 3 Matematik Pengguna: Insurans\nadalah sebanyak RM12 000. Jika Puan Karen mempunyai polisi insurans perubatan\ndalam tempoh dua tahun itu dengan deduktibel RM5 000 setahun dan had tahunan\nbernilai RM150 000, nyatakan jumlah yang ditanggung Puan Karen dan jumlah bayaran\npampasan yang dibayar oleh syarikat insurans bagi setiap rawatan yang diterimanya pada\ndua tahun itu.\n9. Encik Gailang ingin membeli insurans kebakaran untuk rumahnya. Syarikat insurans\nmenetapkan bahawa nilai boleh insurans rumah tersebut ialah RM1.3 juta. Polisi insurans\nkebakaran yang ingin dibelinya mempunyai peruntukan ko-insurans untuk menginsuranskan\n70% daripada nilai boleh insurans hartanya dan deduktibel sebanyak RM3 000.\n(a) Hitung jumlah insurans yang harus dibeli oleh Encik Gailang bagi rumahnya itu.\n(b) Rumah Encik Gailang telah mengalami kebakaran dan jumlah kerugiannya adalah\nsebanyak RM205 000. Hitung jumlah insurans yang telah dibeli oleh Encik Gailang\njika dia telah menerima bayaran pampasan sebanyak\n(i) RM202 000\n(ii) RM120 000\n10. Rumah Encik Adam diinsuranskan dengan insurans kebakaran yang memperuntukkan\nko-insurans untuk menginsuranskan 80% daripada nilai boleh insurans rumahnya. Nilai\nboleh insurans rumah itu ialah RM250 000.\n(a) Hitung jumlah insurans yang harus dibeli oleh Encik Adam.\n(b) Encik Adam telah menginsuranskan rumahnya mengikut jumlah di (a). Jika keseluruhan\nrumahnya hangus terbakar, adakah Encik Adam akan menerima bayaran pampasan\nsebanyak RM250 000? Berikan justifikasi anda.\n11. Kos perubatan Sofia yang dilindungi polisi insuransnya berjumlah RM10 800. Dia ingin\nmenuntut pampasan daripada polisi insurans perubatan utamanya yang mempunyai\nperuntukan deduktibel sebanyak RM300 dan penyertaan peratusan ko-insurans 80/20.\nHitung bayaran yang perlu ditanggung oleh Sofia dan bayaran pampasan yang diterimanya.\nTTTTeeeerrrrooookkkkaaaaiiii MMMMaaaatttteeeemmmmaaaattttiiiikkkk\nMenurut data Bank Negara Malaysia, hanya 41 peratus rakyat Malaysia dilindungi oleh\nsekurang-kurangnya satu polisi insurans pada masa ini.\nSumber: Berita Harian, 29 Julai 2019, Kerajaan sasar kadar penembusan insurans negara lebih\n75 peratus pada 2020\nSemasa Minggu Matematik di sekolah, kumpulan anda perlu memberikan ucapan\ntentang kesedaran rakyat Malaysia memiliki perlindungan insurans yang masih rendah.\nUcapan anda mesti mengandungi aspek berikut:\n✓ Faktor-faktor yang mempengaruhi tahap kesedaran memiliki insurans yang rendah\ndalam kalangan rakyat Malaysia\n✓ Kepentingan memiliki insurans sebagai perlindungan\nBincangkan dalam kumpulan anda dan pilih seorang wakil untuk menyampaikan\nucapan itu.\n93\nKPM",
+    "tokens": 356
+  }
+]

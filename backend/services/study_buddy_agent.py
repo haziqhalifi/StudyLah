@@ -22,6 +22,10 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+# KSSM RAG components — imported lazily inside StudyBuddyAgent to avoid
+# circular imports and to keep startup fast when RAG is not used.
+# Direct imports are only triggered on the first KSSM-routed request.
+
 # Load backend/.env so GEMINI_API_KEY is available regardless of cwd
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -31,7 +35,7 @@ logger = logging.getLogger(__name__)
 # Model configuration — swap MODEL_NAME here to change the model globally.
 # ---------------------------------------------------------------------------
 
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-2.0-flash"
 
 # ---------------------------------------------------------------------------
 # System prompt — canonical StudyBuddy persona (do not reformat).
@@ -316,6 +320,34 @@ _OUT_OF_SCOPE_REPLY = (
     "*(For this demo I can only help with Ubahan, Matriks, and Insurans for SPM Math Form 5.)*"
 )
 
+# ---------------------------------------------------------------------------
+# KSSM RAG routing helpers
+# ---------------------------------------------------------------------------
+
+# Topics that have KSSM syllabus chunks available for RAG.
+_KSSM_SUPPORTED_TOPICS: frozenset[str] = frozenset({"ubahan", "matriks", "insurans"})
+
+# Question patterns that indicate the student wants a conceptual explanation
+# (as opposed to a quiz request or a casual greeting).
+# When the learning context topic is supported AND the message matches one of
+# these patterns, chat() routes through the KSSM answer engine.
+_CONCEPTUAL_KEYWORDS: list[str] = [
+    # English
+    "explain", "what is", "what are", "what does", "how to", "how do",
+    "how does", "why", "why is", "why does", "define", "definition",
+    "describe", "formula", "concept", "meaning", "understand",
+    "when to", "when do", "when is", "show me", "teach me",
+    # Bahasa Melayu
+    "jelaskan", "apa itu", "apa yang", "apakah", "bagaimana", "mengapa",
+    "kenapa", "rumus", "maksud", "terangkan", "tunjukkan",
+]
+
+
+def _is_conceptual_question(message: str) -> bool:
+    """Return True when the message looks like a conceptual/explanation request."""
+    lower = message.lower()
+    return any(kw in lower for kw in _CONCEPTUAL_KEYWORDS)
+
 
 def is_supported_topic(message: str) -> bool:
     lower = message.lower()
@@ -421,10 +453,52 @@ class StudyBuddyAgent:
 
     chat() is stateless — the caller provides the full conversation history
     and receives the complete assistant reply as a string.
+
+    KSSM RAG mode
+    -------------
+    When kssm_mode is "auto" (default), chat() routes conceptual questions on
+    supported topics (ubahan / matriks / insurans) through the KssmAnswerEngine
+    so answers are grounded in KSSM syllabus chunks rather than free-form Gemini.
+
+    kssm_mode values:
+      "auto"   — use KSSM when topic is supported AND question looks conceptual.
+      "strict" — use KSSM whenever topic is supported (ignores question type).
+      "off"    — never use KSSM; always use the normal Gemini chat pipeline.
     """
 
     def __init__(self, model_name: str = MODEL_NAME) -> None:
         self.model_name = model_name
+        # KSSM engine + retriever are created lazily on first use.
+        self._kssm_engine = None
+        self._kssm_retriever = None
+
+    # ------------------------------------------------------------------
+    # Lazy KSSM singletons (avoid circular imports at module load time)
+    # ------------------------------------------------------------------
+
+    @property
+    def kssm_engine(self):
+        if self._kssm_engine is None:
+            try:
+                from backend.services.kssm_answer_engine import default_engine
+            except ModuleNotFoundError:
+                from services.kssm_answer_engine import default_engine  # type: ignore
+            self._kssm_engine = default_engine
+        return self._kssm_engine
+
+    @property
+    def kssm_retriever(self):
+        if self._kssm_retriever is None:
+            try:
+                from backend.services.kssm_retriever import default_retriever
+            except ModuleNotFoundError:
+                from services.kssm_retriever import default_retriever  # type: ignore
+            self._kssm_retriever = default_retriever
+        return self._kssm_retriever
+
+    # ------------------------------------------------------------------
+    # Public chat interface
+    # ------------------------------------------------------------------
 
     def chat(
         self,
@@ -433,14 +507,15 @@ class StudyBuddyAgent:
         *,
         skip_guardrail: bool = False,
         learning_context: Optional[LearningContext] = None,
+        kssm_mode: str = "auto",
     ) -> dict:
         """
         Returns:
             { "reply": str, "out_of_scope": bool }
 
+        kssm_mode controls KSSM RAG routing (see class docstring).
         When learning_context is provided, a plain-text context block is
-        prepended to the conversation as a system-style user turn so Gemini
-        can give hyper-relevant, personalised answers.
+        prepended to the conversation so Gemini gives personalised answers.
         """
         if not messages:
             return {
@@ -454,6 +529,28 @@ class StudyBuddyAgent:
             logger.info("StudyBuddy [%s]: out-of-scope blocked", user_id)
             return {"reply": _OUT_OF_SCOPE_REPLY, "out_of_scope": True}
 
+        # ── KSSM RAG path ────────────────────────────────────────────────
+        # Route through KssmAnswerEngine when:
+        #   • kssm_mode != "off"
+        #   • topic is one of the three supported KSSM topics
+        #   • kssm_mode == "strict"  OR  question looks conceptual ("auto")
+        #
+        # TODO: extend _is_conceptual_question() with Malay phrasing patterns
+        # as more real-world queries are collected.
+        topic_id: str = (learning_context or {}).get("topicId", "")  # type: ignore[arg-type]
+        if self._should_use_kssm(latest, topic_id, kssm_mode):
+            logger.info(
+                "StudyBuddy [%s]: routing to KSSM engine (topic=%s, mode=%s)",
+                user_id, topic_id, kssm_mode,
+            )
+            answer = self.kssm_engine.answer_with_kssm(
+                user_question=latest,
+                topic_id=topic_id or None,
+                retriever=self.kssm_retriever,
+            )
+            return {"reply": answer, "out_of_scope": False}
+
+        # ── Normal Gemini chat path ──────────────────────────────────────
         try:
             reply_text = self._call_gemini(messages, learning_context=learning_context)
             logger.info("StudyBuddy [%s]: reply %d chars", user_id, len(reply_text))
@@ -461,6 +558,22 @@ class StudyBuddyAgent:
         except Exception as exc:
             logger.error("StudyBuddy [%s]: Gemini error — %s", user_id, exc)
             raise
+
+    # ------------------------------------------------------------------
+    # KSSM routing helper
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _should_use_kssm(message: str, topic_id: str, kssm_mode: str) -> bool:
+        """Return True when the request should be handled by the KSSM engine."""
+        if kssm_mode == "off":
+            return False
+        if topic_id not in _KSSM_SUPPORTED_TOPICS:
+            return False
+        if kssm_mode == "strict":
+            return True
+        # "auto": only for conceptual/explanation questions
+        return _is_conceptual_question(message)
 
     # ------------------------------------------------------------------
     # Internal
