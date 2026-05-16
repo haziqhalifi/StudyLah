@@ -6,85 +6,47 @@ interface Props {
   topics: TopicStats[];
 }
 
-const LEVEL_META: Record<Level, { color: string; bg: string; emoji: string }> = {
-  beginner:   { color: "#dc2626", bg: "#fee2e2", emoji: "🌱" },
-  developing: { color: "#d97706", bg: "#fef3c7", emoji: "📈" },
-  proficient: { color: "#2563eb", bg: "#dbeafe", emoji: "🎯" },
-  advanced:   { color: "#16a34a", bg: "#dcfce7", emoji: "🏆" },
+const LEVEL_META: Record<Level, { chip: string; fill: string; label: string; next: string }> = {
+  beginner:   { chip: "chip chip-wrong",    fill: "progress-fill wrong-fill",   label: "Beginner",   next: "40% to Developing" },
+  developing: { chip: "chip chip-warn",     fill: "progress-fill warn-fill",    label: "Developing", next: "65% to Proficient"  },
+  proficient: { chip: "chip chip-brand",    fill: "progress-fill",              label: "Proficient", next: "85% to Advanced"    },
+  advanced:   { chip: "chip chip-correct",  fill: "progress-fill correct-fill", label: "Advanced",   next: ""                   },
 };
 
-function formatTopicLabel(topicId: string) {
-  return topicId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function fmtTopic(id: string) {
+  return id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function ProgressSummary({ topics }: Props) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <div className="progress-summary">
       {topics.map((t) => {
         const meta = LEVEL_META[t.level];
-        const pct = Math.round(t.accuracy * 100);
-
+        const pct  = Math.round(t.accuracy * 100);
         return (
-          <div
-            key={t.topic_id}
-            style={{
-              background: "white",
-              borderRadius: 16,
-              padding: "1.5rem",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            }}
-          >
-            {/* Topic header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <div key={t.topic_id} className="card topic-card page-enter">
+            <div className="topic-card-header">
               <div>
-                <h3 style={{ fontWeight: 700, fontSize: "1rem", margin: 0 }}>
-                  {meta.emoji} {formatTopicLabel(t.topic_id)}
-                </h3>
-                <p style={{ color: "#888", fontSize: "0.8rem", margin: "0.25rem 0 0" }}>
-                  {t.attempts} question{t.attempts !== 1 ? "s" : ""} attempted · {t.correct} correct
-                </p>
+                <h3 className="font-display topic-card-title">{fmtTopic(t.topic_id)}</h3>
+                <p className="topic-card-sub">{t.attempts} attempted · {t.correct} correct</p>
               </div>
-              <span
-                style={{
-                  background: meta.bg,
-                  color: meta.color,
-                  borderRadius: 8,
-                  padding: "0.3rem 0.85rem",
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  textTransform: "capitalize",
-                }}
-              >
-                {t.level}
-              </span>
+              <span className={meta.chip}>{meta.label}</span>
             </div>
 
-            {/* Accuracy bar */}
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
-                <span style={{ fontSize: "0.8rem", color: "#666", fontWeight: 600 }}>Accuracy</span>
-                <span style={{ fontSize: "0.8rem", fontWeight: 700, color: meta.color }}>{pct}%</span>
-              </div>
-              <div style={{ background: "#f3f4f6", borderRadius: 99, height: 10 }}>
-                <div
-                  style={{
-                    width: `${pct}%`,
-                    background: `linear-gradient(90deg, ${meta.color}, ${meta.bg === "#fee2e2" ? "#f87171" : meta.color})`,
-                    height: "100%",
-                    borderRadius: 99,
-                    transition: "width 0.5s ease",
-                  }}
-                />
-              </div>
+            <div className="topic-card-bar-row">
+              <span className="topic-card-bar-label">Accuracy</span>
+              <span className="topic-card-bar-pct">{pct}%</span>
+            </div>
+            <div className="progress-track">
+              {/* width driven via CSS custom property to avoid inline style warning */}
+              <div
+                className={meta.fill}
+                style={{ ["--bar-w" as string]: `${pct}%` }}
+              />
             </div>
 
-            {/* Next milestone hint */}
-            {t.level !== "advanced" && (
-              <p style={{ fontSize: "0.78rem", color: "#888", marginTop: "0.75rem" }}>
-                {t.level === "beginner" && "Reach 40% accuracy to move to Developing"}
-                {t.level === "developing" && "Reach 65% accuracy to move to Proficient"}
-                {t.level === "proficient" && "Reach 85% accuracy to unlock Advanced"}
-              </p>
+            {meta.next && (
+              <p className="topic-card-next">{meta.next}</p>
             )}
           </div>
         );

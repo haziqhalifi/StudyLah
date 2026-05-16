@@ -7,17 +7,18 @@ interface Props {
   questionNumber?: number;
   selectedOptionIndex: number | null;
   onSelectOption?: (index: number) => void;
-  correctOptionIndex?: number;
   showResult?: boolean;
   isCorrect?: boolean;
+  correctOptionIndex?: number;
+  isReview?: boolean;
 }
 
 const LETTERS = ["A", "B", "C", "D"];
 
-const DIFFICULTY_COLORS: Record<string, { bg: string; text: string }> = {
-  easy:   { bg: "#dcfce7", text: "#15803d" },
-  medium: { bg: "#fef9c3", text: "#854d0e" },
-  hard:   { bg: "#fee2e2", text: "#991b1b" },
+const DIFFICULTY_CHIP: Record<string, { label: string; cls: string }> = {
+  easy:   { label: "Easy",   cls: "chip chip-correct" },
+  medium: { label: "Medium", cls: "chip chip-warn"    },
+  hard:   { label: "Hard",   cls: "chip chip-wrong"   },
 };
 
 export default function QuestionCard({
@@ -27,119 +28,64 @@ export default function QuestionCard({
   onSelectOption,
   showResult = false,
   isCorrect,
+  correctOptionIndex,
+  isReview = false,
 }: Props) {
-  const diff = DIFFICULTY_COLORS[question.difficulty] ?? DIFFICULTY_COLORS.medium;
+  const diff = DIFFICULTY_CHIP[question.difficulty] ?? DIFFICULTY_CHIP.medium;
 
-  function optionStyle(idx: number): React.CSSProperties {
-    const isSelected = idx === selectedOptionIndex;
-    const base: React.CSSProperties = {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.75rem",
-      padding: "0.85rem 1rem",
-      borderRadius: 10,
-      border: "2px solid",
-      cursor: onSelectOption ? "pointer" : "default",
-      transition: "all 0.15s",
-      marginBottom: "0.6rem",
-      fontSize: "0.95rem",
-    };
-
-    if (!showResult) {
-      return {
-        ...base,
-        borderColor: isSelected ? "#6c47ff" : "#e5e5e5",
-        background: isSelected ? "#ede9ff" : "white",
-        color: isSelected ? "#4c1d95" : "#1a1a2e",
-        fontWeight: isSelected ? 600 : 400,
-      };
-    }
-
-    // After submission
-    if (isSelected && isCorrect) {
-      return { ...base, borderColor: "#16a34a", background: "#dcfce7", color: "#14532d", fontWeight: 700 };
-    }
-    if (isSelected && !isCorrect) {
-      return { ...base, borderColor: "#dc2626", background: "#fee2e2", color: "#7f1d1d", fontWeight: 700 };
-    }
-    return { ...base, borderColor: "#e5e5e5", background: "white", color: "#9ca3af" };
+  function optionClass(idx: number): string {
+    const base = "option-card";
+    if (!showResult) return base + (idx === selectedOptionIndex ? " selected" : "");
+    if (idx === correctOptionIndex) return `${base} correct disabled`;
+    if (idx === selectedOptionIndex && !isCorrect) return `${base} wrong disabled`;
+    return `${base} dimmed disabled`;
   }
 
+  function letterClass(idx: number): string {
+    const base = "option-letter";
+    if (!showResult && idx === selectedOptionIndex) return `${base} option-letter-selected`;
+    if (showResult && idx === correctOptionIndex)   return `${base} option-letter-correct`;
+    if (showResult && idx === selectedOptionIndex)  return `${base} option-letter-wrong`;
+    return base;
+  }
+
+  const cardClass = [
+    "card qcard page-enter",
+    showResult && isCorrect  ? "qcard-result-correct" : "",
+    showResult && !isCorrect ? "qcard-result-wrong"   : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: 16,
-        padding: "1.5rem",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
-        border: showResult
-          ? `2px solid ${isCorrect ? "#16a34a" : "#dc2626"}`
-          : "2px solid transparent",
-      }}
-    >
-      {/* Header row */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", alignItems: "flex-start" }}>
-        <div style={{ color: "#888", fontSize: "0.8rem", fontWeight: 600 }}>
-          {questionNumber ? `Q${questionNumber}` : question.topic_id.replace(/_/g, " ")}
-        </div>
-        <span
-          style={{
-            background: diff.bg,
-            color: diff.text,
-            borderRadius: 6,
-            padding: "0.2rem 0.65rem",
-            fontSize: "0.75rem",
-            fontWeight: 700,
-            textTransform: "capitalize",
-          }}
-        >
-          {question.difficulty}
+    <div className={cardClass}>
+      <div className="qcard-header">
+        <span className="qcard-label">
+          {questionNumber ? `Question ${questionNumber}` : question.topic_id.replace(/_/g, " ")}
+          {isReview && <span className="chip chip-brand chip-ml">↺ Review</span>}
         </span>
+        <span className={diff.cls}>{diff.label}</span>
       </div>
 
-      {/* Question text */}
-      <p
-        style={{
-          fontWeight: 700,
-          fontSize: "1.05rem",
-          lineHeight: 1.5,
-          marginBottom: "1.25rem",
-          color: "#1a1a2e",
-        }}
-      >
-        {question.text}
-      </p>
+      <p className="font-display qcard-question">{question.text}</p>
 
-      {/* Options */}
-      <div>
+      <div className="qcard-options">
         {question.options.map((opt, idx) => (
-          <div
+          <button
+            type="button"
             key={idx}
-            style={optionStyle(idx)}
+            className={optionClass(idx)}
             onClick={() => !showResult && onSelectOption?.(idx)}
+            disabled={showResult}
           >
-            <span
-              style={{
-                minWidth: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: idx === selectedOptionIndex ? "#6c47ff" : "#f3f4f6",
-                color: idx === selectedOptionIndex ? "white" : "#6b7280",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 700,
-                fontSize: "0.8rem",
-                flexShrink: 0,
-              }}
-            >
-              {LETTERS[idx]}
-            </span>
-            {opt}
+            <span className={letterClass(idx)}>{LETTERS[idx]}</span>
+            <span className="option-text">{opt}</span>
+
             {showResult && idx === selectedOptionIndex && (
-              <span style={{ marginLeft: "auto" }}>{isCorrect ? "✓" : "✗"}</span>
+              <span className="option-check">{isCorrect ? "✓" : "✗"}</span>
             )}
-          </div>
+            {showResult && idx === correctOptionIndex && idx !== selectedOptionIndex && (
+              <span className="option-check option-check-correct">✓</span>
+            )}
+          </button>
         ))}
       </div>
     </div>

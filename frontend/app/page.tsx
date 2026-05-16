@@ -1,138 +1,186 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createUser } from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [name, setName]         = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [existing, setExisting] = useState<string | null>(null);
+
+  useEffect(() => {
+    const n = sessionStorage.getItem("userName");
+    if (n) setExisting(n);
+  }, []);
 
   async function handleStart() {
-    if (!name.trim()) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
     setLoading(true);
     setError("");
     try {
-      const userId = name.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now();
-      await createUser(userId, name.trim());
+      const userId = trimmed.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now();
+      await createUser(userId, trimmed);
       sessionStorage.setItem("userId", userId);
-      sessionStorage.setItem("userName", name.trim());
+      sessionStorage.setItem("userName", trimmed);
       router.push("/diagnostic");
-    } catch (e) {
-      setError("Could not connect to server. Make sure the backend is running.");
+    } catch {
+      setError("Cannot reach server. Make sure the backend is running.");
     } finally {
       setLoading(false);
     }
   }
 
+  if (existing) {
+    return <Dashboard name={existing} onReset={() => { sessionStorage.clear(); setExisting(null); }} />;
+  }
+
   return (
-    <div style={{ textAlign: "center", paddingTop: "3rem" }}>
-      <div
-        style={{
-          display: "inline-block",
-          background: "#6c47ff",
-          color: "white",
-          borderRadius: 12,
-          padding: "0.4rem 1rem",
-          fontSize: "0.8rem",
-          fontWeight: 700,
-          letterSpacing: "0.05em",
-          marginBottom: "1.2rem",
-        }}
-      >
-        AI-NATIVE LEARNING
+    <div className="page-enter">
+      <div className="home-greeting">
+        <p className="home-greeting-eyebrow">AI-Native Learning</p>
+        <h1 className="font-display home-greeting-title home-hero-title">
+          Study smarter,<br />not harder.
+        </h1>
+        <p className="home-greeting-sub">
+          Adaptive questions · Personalised explanations · Spaced repetition
+        </p>
       </div>
 
-      <h1 style={{ fontSize: "2.4rem", fontWeight: 800, lineHeight: 1.2, marginBottom: "1rem" }}>
-        Learn smarter, not harder
-      </h1>
-      <p style={{ color: "#555", maxWidth: 480, margin: "0 auto 2.5rem", lineHeight: 1.6 }}>
-        StudyLah adapts to <em>your</em> pace and learning style. Our AI engine analyses your
-        answers, identifies gaps, and personalises every explanation and question just for you.
-      </p>
+      <div className="home-name-card">
+        <h1 className="font-display">What&apos;s your name?</h1>
+        <p>We&apos;ll personalise every question and explanation just for you.</p>
 
-      <div
-        style={{
-          background: "white",
-          borderRadius: 16,
-          padding: "2rem",
-          boxShadow: "0 4px 24px rgba(108,71,255,0.1)",
-          maxWidth: 400,
-          margin: "0 auto",
-        }}
-      >
-        <label style={{ display: "block", fontWeight: 600, marginBottom: "0.5rem", textAlign: "left" }}>
-          What&apos;s your name?
-        </label>
         <input
+          className="home-name-input"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleStart()}
           placeholder="e.g. Aisha, Ravi, Jun Wei…"
-          style={{
-            width: "100%",
-            padding: "0.75rem 1rem",
-            border: "2px solid #e5e5e5",
-            borderRadius: 10,
-            fontSize: "1rem",
-            marginBottom: "1rem",
-            outline: "none",
-            boxSizing: "border-box",
-          }}
+          autoFocus
         />
-        {error && <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{error}</p>}
+        {error && <p className="home-error">{error}</p>}
+
         <button
+          type="button"
+          className="btn-primary"
           onClick={handleStart}
           disabled={loading || !name.trim()}
-          style={{
-            width: "100%",
-            background: loading || !name.trim() ? "#c4b5fd" : "#6c47ff",
-            color: "white",
-            border: "none",
-            borderRadius: 10,
-            padding: "0.85rem",
-            fontSize: "1rem",
-            fontWeight: 700,
-            cursor: loading || !name.trim() ? "not-allowed" : "pointer",
-          }}
         >
           {loading ? "Starting…" : "Start Diagnostic →"}
         </button>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "1.5rem",
-          justifyContent: "center",
-          marginTop: "3rem",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="home-features">
         {[
-          { icon: "🧠", label: "AI-adaptive questions" },
+          { icon: "🧠", label: "AI-adaptive questions"    },
           { icon: "💡", label: "Personalised explanations" },
-          { icon: "🔄", label: "Spaced repetition" },
-          { icon: "📊", label: "Live progress tracking" },
+          { icon: "↺",  label: "Spaced repetition"        },
+          { icon: "▤",  label: "Live progress tracking"   },
         ].map(({ icon, label }) => (
-          <div
-            key={label}
-            style={{
-              background: "white",
-              borderRadius: 12,
-              padding: "0.75rem 1.25rem",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              color: "#444",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-            }}
-          >
-            {icon} {label}
+          <div key={label} className="home-feature-pill">
+            <span>{icon}</span> {label}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function Dashboard({ name, onReset }: { name: string; onReset: () => void }) {
+  const router = useRouter();
+
+  const actions = [
+    {
+      href: "/learn",
+      label: "Continue practice",
+      sub: "Pick up where you left off",
+      icon: "✦",
+      iconCls: "home-action-icon home-action-icon-light",
+      primary: true,
+    },
+    {
+      href: "/diagnostic",
+      label: "New diagnostic",
+      sub: "Re-assess your knowledge",
+      icon: "◎",
+      iconCls: "home-action-icon home-action-icon-brand",
+      primary: false,
+    },
+    {
+      href: "/review",
+      label: "Quick review",
+      sub: "Spaced repetition — your weak spots",
+      icon: "↺",
+      iconCls: "home-action-icon home-action-icon-review",
+      primary: false,
+    },
+  ];
+
+  return (
+    <div>
+      <div className="home-greeting">
+        <p className="home-greeting-eyebrow">StudyLah</p>
+        <h1 className="font-display home-greeting-title">
+          Hi {name},<br />ready to practise?
+        </h1>
+        <p className="home-greeting-sub">Your AI tutor is ready.</p>
+      </div>
+
+      <div className="home-actions">
+        {actions.map(({ href, label, sub, icon, iconCls, primary }) =>
+          primary ? (
+            <button
+              type="button"
+              key={href}
+              className="home-action-primary"
+              onClick={() => router.push(href)}
+            >
+              <span className={iconCls}>{icon}</span>
+              <span>
+                <span className="home-action-label home-action-label-white">{label}</span>
+                <span className="home-action-sub home-action-sub-white">{sub}</span>
+              </span>
+              <span className="home-action-arrow">→</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              key={href}
+              className="home-action-secondary"
+              onClick={() => router.push(href)}
+            >
+              <span className={iconCls}>{icon}</span>
+              <span>
+                <span className="home-action-label">{label}</span>
+                <span className="home-action-sub home-action-sub-muted">{sub}</span>
+              </span>
+              <span className="home-action-arrow">→</span>
+            </button>
+          )
+        )}
+      </div>
+
+      <p className="home-section-title">Quick links</p>
+      <div className="home-quicklinks">
+        <button
+          type="button"
+          className="btn-ghost btn-ghost-sm"
+          onClick={() => router.push("/assessment")}
+        >
+          My Progress ▤
+        </button>
+        <button
+          type="button"
+          className="btn-ghost btn-ghost-sm btn-ghost-neutral"
+          onClick={onReset}
+        >
+          Switch user
+        </button>
       </div>
     </div>
   );

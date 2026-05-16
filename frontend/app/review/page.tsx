@@ -2,18 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getReview, submitAnswer, ReviewItem, Question, SubmitAnswerResponse } from "@/lib/api";
+import { getReview, submitAnswer, ReviewItem, SubmitAnswerResponse } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
+import AiBadge from "@/components/AiBadge";
+
+const REASON_LABEL: Record<string, string> = {
+  low_accuracy:     "Low accuracy — let's fix this",
+  not_seen_recently: "Not seen recently",
+};
 
 export default function ReviewPage() {
   const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [userId, setUserId]         = useState<string | null>(null);
+  const [items, setItems]           = useState<ReviewItem[]>([]);
+  const [idx, setIdx]               = useState(0);
+  const [selected, setSelected]     = useState<number | null>(null);
+  const [result, setResult]         = useState<SubmitAnswerResponse | null>(null);
+  const [loading, setLoading]       = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -22,19 +28,20 @@ export default function ReviewPage() {
     setUserId(uid);
 
     getReview(uid)
-      .then((res) => setReviewItems(res.review_questions))
+      .then((res) => setItems(res.review_questions))
       .catch(() => alert("Failed to load review questions."))
       .finally(() => setLoading(false));
   }, [router]);
 
-  const currentItem = reviewItems[currentIndex];
-  const isDone = currentIndex >= reviewItems.length;
+  const item  = items[idx];
+  const done  = idx >= items.length && !loading;
+  const empty = !loading && items.length === 0;
 
   async function handleSubmit() {
-    if (selectedOption === null || !currentItem || !userId) return;
+    if (selected === null || !item || !userId) return;
     setSubmitting(true);
     try {
-      const res = await submitAnswer(userId, currentItem.question.id, selectedOption);
+      const res = await submitAnswer(userId, item.question.id, selected);
       setResult(res);
     } finally {
       setSubmitting(false);
@@ -42,129 +49,106 @@ export default function ReviewPage() {
   }
 
   function handleNext() {
-    setCurrentIndex((i) => i + 1);
-    setSelectedOption(null);
+    setIdx((i) => i + 1);
+    setSelected(null);
     setResult(null);
   }
 
-  if (loading) return <p style={{ color: "#888" }}>Loading review session…</p>;
+  if (loading) return <LoadingShell />;
 
-  if (isDone) {
-    return (
-      <div style={{ textAlign: "center", paddingTop: "3rem" }}>
-        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎉</div>
-        <h2 style={{ fontWeight: 800, fontSize: "1.5rem" }}>Review complete!</h2>
-        <p style={{ color: "#666", marginTop: "0.5rem" }}>
-          You&apos;ve revisited all your weak spots. Keep it up!
-        </p>
-        <div style={{ display: "flex", gap: "0.75rem", marginTop: "2rem", justifyContent: "center" }}>
-          <button
-            onClick={() => router.push("/learn")}
-            style={{ background: "#6c47ff", color: "white", border: "none", borderRadius: 12, padding: "0.85rem 1.5rem", fontWeight: 700, cursor: "pointer" }}
-          >
-            Continue Learning →
-          </button>
-          <button
-            onClick={() => router.push("/assessment")}
-            style={{ background: "white", color: "#6c47ff", border: "2px solid #6c47ff", borderRadius: 12, padding: "0.85rem 1.5rem", fontWeight: 700, cursor: "pointer" }}
-          >
-            View Progress
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (reviewItems.length === 0) {
-    return (
-      <div style={{ textAlign: "center", paddingTop: "3rem" }}>
-        <h2 style={{ fontWeight: 800, fontSize: "1.5rem" }}>Nothing to review yet!</h2>
-        <p style={{ color: "#666", marginTop: "0.5rem" }}>
-          Keep practising and we&apos;ll surface your weak spots here.
-        </p>
-        <button
-          onClick={() => router.push("/learn")}
-          style={{ marginTop: "1.5rem", background: "#6c47ff", color: "white", border: "none", borderRadius: 12, padding: "0.85rem 1.5rem", fontWeight: 700, cursor: "pointer" }}
-        >
+  if (empty) return (
+    <div className="review-done page-enter">
+      <div className="review-done-emoji">📚</div>
+      <h2 className="font-display review-done-title">Nothing to review yet!</h2>
+      <p className="review-done-sub">Keep practising and we&apos;ll surface your weak spots here.</p>
+      <div className="review-done-actions">
+        <button type="button" className="btn-primary" onClick={() => router.push("/learn")}>
           Go Learn →
         </button>
       </div>
-    );
-  }
+    </div>
+  );
+
+  if (done) return (
+    <div className="review-done page-enter">
+      <div className="review-done-emoji">🎉</div>
+      <h2 className="font-display review-done-title">Review complete!</h2>
+      <p className="review-done-sub">You&apos;ve revisited all your weak spots. Keep it up!</p>
+      <div className="review-done-actions">
+        <button type="button" className="btn-primary" onClick={() => router.push("/learn")}>
+          Continue Learning →
+        </button>
+        <button type="button" className="btn-ghost diag-skip-btn" onClick={() => router.push("/assessment")}>
+          Progress ▤
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div>
-      <div style={{ marginBottom: "1.5rem" }}>
-        <div
-          style={{
-            display: "inline-block",
-            background: "#fff3cd",
-            color: "#92400e",
-            borderRadius: 8,
-            padding: "0.3rem 0.85rem",
-            fontSize: "0.8rem",
-            fontWeight: 700,
-            marginBottom: "0.75rem",
-          }}
-        >
-          {currentItem.reason === "low_accuracy" ? "Low accuracy – let's fix this!" : "Not seen recently"}
+      {/* Review mode banner */}
+      <div className="ai-cue ai-cue-review review-banner">
+        <div className="review-banner-reason">
+          {REASON_LABEL[item.reason] ?? item.reason}
         </div>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800 }}>
-          Spaced Repetition Review ({currentIndex + 1}/{reviewItems.length})
-        </h1>
-        <p style={{ color: "#666", marginTop: "0.3rem" }}>
-          These questions are chosen by the AI engine based on where you need the most practice.
-        </p>
+        <h1 className="font-display review-banner-title">Review mode</h1>
+        <p className="review-banner-sub">AI is focusing on your weak spots.</p>
       </div>
 
-      <QuestionCard
-        question={currentItem.question}
-        selectedOptionIndex={selectedOption}
-        onSelectOption={result ? undefined : setSelectedOption}
-        showResult={result !== null}
-        isCorrect={result?.is_correct}
-      />
+      {/* Progress */}
+      <div className="review-progress-row">
+        <span className="review-progress-label">Spaced repetition</span>
+        <span className="review-progress-frac">{idx + 1} / {items.length}</span>
+      </div>
+      <div className="progress-track review-progress-track">
+        <div
+          className="progress-fill"
+          style={{ ["--bar-w" as string]: `${Math.round(((idx + 1) / items.length) * 100)}%` }}
+        />
+      </div>
+
+      <AiBadge variant="review" label={`Review from: ${REASON_LABEL[item.reason] ?? item.reason}`} />
+
+      <div className="diag-questions review-questions-gap">
+        <QuestionCard
+          question={item.question}
+          selectedOptionIndex={selected}
+          onSelectOption={result ? undefined : setSelected}
+          showResult={result !== null}
+          isCorrect={result?.is_correct}
+          correctOptionIndex={result ? 0 : undefined}
+          isReview
+        />
+      </div>
 
       {result && <ExplanationBlock explanation={result.explanation} isCorrect={result.is_correct} />}
 
-      {!result ? (
-        <button
-          onClick={handleSubmit}
-          disabled={selectedOption === null || submitting}
-          style={{
-            marginTop: "1.25rem",
-            width: "100%",
-            background: selectedOption === null ? "#c4b5fd" : "#6c47ff",
-            color: "white",
-            border: "none",
-            borderRadius: 12,
-            padding: "1rem",
-            fontSize: "1rem",
-            fontWeight: 700,
-            cursor: selectedOption === null ? "not-allowed" : "pointer",
-          }}
-        >
-          {submitting ? "Checking…" : "Submit Answer"}
-        </button>
-      ) : (
-        <button
-          onClick={handleNext}
-          style={{
-            marginTop: "1.25rem",
-            width: "100%",
-            background: "#6c47ff",
-            color: "white",
-            border: "none",
-            borderRadius: 12,
-            padding: "1rem",
-            fontSize: "1rem",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          {currentIndex + 1 < reviewItems.length ? "Next Review Question →" : "Finish Review →"}
-        </button>
-      )}
+      <div className="sticky-bar">
+        {!result ? (
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleSubmit}
+            disabled={selected === null || submitting}
+          >
+            {submitting ? "Checking…" : "Submit Answer"}
+          </button>
+        ) : (
+          <button type="button" className="btn-primary" onClick={handleNext}>
+            {idx + 1 < items.length ? "Next Review →" : "Finish Review →"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadingShell() {
+  return (
+    <div className="page-enter">
+      <div className="card skeleton-card-sm review-banner" />
+      <div className="card skeleton-card" />
     </div>
   );
 }
