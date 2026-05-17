@@ -23,7 +23,7 @@ export default function UbahanSubtopicsPage() {
   const circleRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   function syncCompletedFromStorage() {
-    const raw = sessionStorage.getItem(COMPLETION_KEY);
+    const raw = localStorage.getItem(COMPLETION_KEY);
     if (!raw) {
       setCompletedIds([]);
       return;

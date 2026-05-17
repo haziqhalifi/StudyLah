@@ -404,25 +404,29 @@ export default function StudyBuddyChat({
 
         {/* Input row */}
         <div className="sb-input-row">
-          <textarea
-            ref={inputRef}
-            className="sb-input"
-            rows={1}
-            placeholder="Ask about Ubahan, Matriks, or Insurans…"
-            value={input}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            disabled={loading}
-          />
-          <button
-            type="button"
-            className="sb-send"
-            onClick={handleSend}
-            disabled={!input.trim() || loading}
-            aria-label="Send"
-          >
-            ↑
-          </button>
+          <div className="sb-input-wrap">
+            <textarea
+              ref={inputRef}
+              className="sb-input"
+              rows={1}
+              placeholder="Tanya soalan kamu di sini…"
+              value={input}
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+            />
+            <button
+              type="button"
+              className="sb-send"
+              onClick={handleSend}
+              disabled={!input.trim() || loading}
+              aria-label="Send"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </>

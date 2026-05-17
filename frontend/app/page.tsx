@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { getAssessment, getPapers } from "@/lib/api";
@@ -298,6 +298,8 @@ type TopicKey = keyof typeof TOPICS;
 
 function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => void }) {
   const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const topic = TOPICS[selectedTopic];
 
   const topicChips = topic.subtopics.map((sub) => ({
@@ -305,26 +307,39 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
     message: `Terangkan ${sub} dengan contoh soalan SPM`,
   }));
 
+  function handleSend() {
+    const msg = draft.trim();
+    if (!msg) return;
+    setDraft("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
+    onOpen(selectedTopic, msg);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }
+
+  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setDraft(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
+  }
+
   return (
     <section className="ai-chat-card" aria-label="AI tutor chat">
-      <button
-        type="button"
-        className="ai-chat-header ai-chat-header-btn"
-        onClick={() => onOpen(selectedTopic)}
-        aria-label="Buka chat tutor AI"
-      >
-        <div className="ai-chat-avatar" aria-hidden="true">
-          AI
-        </div>
+      {/* Header */}
+      <div className="ai-chat-header">
+        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
         <div className="ai-chat-header-text">
           <h2>Tanya Tutor AI</h2>
           <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
         </div>
-        <span className="ai-chat-open-hint" aria-hidden="true">
-          <ArrowIcon />
-        </span>
-      </button>
+      </div>
 
+      {/* Topic tabs */}
       <div className="ai-topic-tabs" role="tablist" aria-label="Pilih topik">
         {(Object.keys(TOPICS) as TopicKey[]).map((key) => (
           <button
@@ -333,16 +348,14 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
             role="tab"
             aria-selected={selectedTopic === key ? "true" : "false"}
             className={`ai-topic-tab${selectedTopic === key ? " active" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedTopic(key);
-            }}
+            onClick={() => setSelectedTopic(key)}
           >
             {TOPICS[key].label}
           </button>
         ))}
       </div>
 
+      {/* Subtopic chips */}
       <div className="ai-chat-suggestions">
         {topicChips.map((chip) => (
           <button
@@ -354,6 +367,30 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
             {chip.label}
           </button>
         ))}
+      </div>
+
+      {/* Inline input */}
+      <div className="ai-chat-input-wrap">
+        <textarea
+          ref={inputRef}
+          className="ai-chat-input"
+          rows={1}
+          placeholder="Taip soalan kamu di sini…"
+          value={draft}
+          onChange={handleInput}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          type="button"
+          className="ai-chat-send"
+          onClick={handleSend}
+          disabled={!draft.trim()}
+          aria-label="Hantar soalan"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </div>
     </section>
   );
@@ -473,11 +510,29 @@ function IconBase({ children }: { children: ReactNode }) {
   );
 }
 
-function BookIcon() {
+function FireIcon() {
   return (
     <IconBase>
-      <path d="M5 5.8c0-1 0.8-1.8 1.8-1.8H11v15H6.8A1.8 1.8 0 0 1 5 17.2V5.8Z" />
-      <path d="M13 4h4.2c1 0 1.8.8 1.8 1.8v11.4c0 1-.8 1.8-1.8 1.8H13V4Z" />
+      <path d="M12 2c0 0-5 4-5 9a5 5 0 0 0 10 0c0-2.5-1.5-5-3-6.5 0 2-1 3.5-2 4.5-1-2-1-4.5 0-7Z" />
+    </IconBase>
+  );
+}
+
+function CheckCircleIcon() {
+  return (
+    <IconBase>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 12 2 2 4-4" />
+    </IconBase>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <IconBase>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
     </IconBase>
   );
 }
