@@ -5432,6 +5432,162 @@ button.map-node:hover {
   align-self: center;
 }
 
+/* ── Laluan Pembelajaran hero card ───────────────────────────────── */
+.lp-path-card {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b4cf5 45%, #4f46e5 100%);
+  border-radius: var(--r-2xl);
+  padding: 1.4rem 1.4rem 1.3rem;
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(91, 76, 245, 0.38);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.lp-path-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0.25rem 0.7rem;
+  width: fit-content;
+}
+
+.lp-path-copy {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.55;
+  opacity: 0.92;
+}
+
+.lp-path-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lp-path-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.lp-path-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.9);
+  width: var(--pct, 0%);
+  transition: width 0.5s ease;
+}
+
+.lp-path-pct {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.lp-path-progress-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.72;
+  margin-top: -0.2rem;
+}
+
+.lp-path-cta-btn {
+  width: 100%;
+  background: #fff;
+  color: #4f46e5;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  border: none;
+  border-radius: var(--r-lg);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.35;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  margin-top: 0.2rem;
+}
+.lp-path-cta-btn:hover {
+  background: #eef2ff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+.lp-path-cta-btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Section hint ─────────────────────────────────────────────────── */
+.lp-section-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 0.25rem;
+  line-height: 1.5;
+}
+
+/* ── Recommended chapter card emphasis ───────────────────────────── */
+.lp-chapter-recommended {
+  outline: 2.5px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 2px;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.18),
+    0 0 0 4px rgba(91, 76, 245, 0.18);
+}
+
+/* ── Recommended badge inside card ───────────────────────────────── */
+.lp-recommended-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0.2rem 0.6rem;
+  width: fit-content;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Difficulty pill variants ─────────────────────────────────────── */
+.lp-tag-diff-mudah {
+  background: rgba(16, 185, 129, 0.25);
+}
+.lp-tag-diff-sederhana {
+  background: rgba(245, 158, 11, 0.25);
+}
+.lp-tag-diff-sukar {
+  background: rgba(239, 68, 68, 0.25);
+}
+.lp-tag-time {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Mini study plan CTA under progress ──────────────────────────── */
+.lp-chapter-next-cta {
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.4;
+}
+
 /* ── Learn page: Subtopic picker ──────────────────────────────────── */
 .lp-all-card {
   display: flex;
@@ -6777,6 +6933,97 @@ button.map-node:hover {
   letter-spacing: 0.02em;
 }
 
+/* ── Fokus Hari Ini card ────────────────────────────────────── */
+.fokus-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 1.125rem 1.125rem 1rem;
+  border-radius: 22px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(142, 120, 255, 0.13);
+  border: 1.5px solid #ede9ff;
+}
+
+.fokus-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.fokus-eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand);
+  flex-shrink: 0;
+}
+
+.fokus-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 0.45rem;
+  color: var(--ink);
+}
+
+.fokus-highlight {
+  color: var(--brand);
+}
+
+.fokus-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0 0 0.875rem;
+}
+
+.fokus-meta-sep {
+  opacity: 0.4;
+}
+
+.fokus-accuracy-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f87171;
+  flex-shrink: 0;
+}
+
+.fokus-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, #8e78ff 0%, #b26cff 100%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(142, 120, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fokus-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(142, 120, 255, 0.45);
+}
+
 /* ── Weak Topic card ────────────────────────────────────────── */
 .weak-topic-card {
   display: flex;
@@ -6876,6 +7123,211 @@ button.map-node:hover {
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--brand);
+}
+
+/* Quick stats row */
+.quick-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+}
+
+.quick-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.9rem 0.5rem;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  text-align: center;
+}
+
+.quick-stat-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.quick-stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.quick-stat-label {
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* Quick flashcard widget */
+.quick-flashcard-widget {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  overflow: hidden;
+}
+
+.quick-flashcard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.quick-flashcard-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.quick-flashcard-see-all {
+  border: none;
+  background: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brand);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  transition: background 0.15s;
+}
+
+.quick-flashcard-see-all:hover {
+  background: var(--brand-light);
+}
+
+.quick-flashcard-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-flashcard-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.quick-flashcard-item:last-child {
+  border-bottom: none;
+}
+
+.quick-flashcard-item:hover {
+  background: var(--surface);
+}
+
+.quick-flashcard-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.quick-flashcard-item-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-flashcard-item-count {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.quick-flashcard-item-arrow {
+  font-size: 1.2rem;
+  color: var(--muted);
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.quick-flashcard-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 1rem 1.125rem;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-xl);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.quick-flashcard-empty:hover {
+  border-color: var(--brand-muted);
+  background: var(--brand-light);
+}
+
+.quick-flashcard-empty-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.quick-flashcard-empty-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.quick-flashcard-empty-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.76rem;
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* Floating AI button */
+.fab-ai {
+  position: fixed;
+  bottom: calc(72px + 1.25rem);
+  right: 1.25rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #5b4cf5);
+  color: #fff;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(91, 76, 245, 0.45);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  z-index: 50;
+  line-height: 1;
+}
+
+.fab-ai:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 14px 32px rgba(91, 76, 245, 0.55);
+}
+
+.fab-ai:active {
+  transform: scale(0.96);
 }
 
 /* AI Chat collapsed entry point */
@@ -8333,24 +8785,26 @@ button.map-node:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
 }
 
 .progress-section-title {
   margin: 0;
-  color: #26203f;
+  color: var(--ink);
   font-family: var(--font-body);
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 900;
 }
 
 .progress-see-all {
   border: 0;
   background: transparent;
-  color: #7f65ff;
-  font-size: 0.85rem;
+  color: var(--brand);
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
+  font-family: var(--font-body);
+  padding: 0;
 }
 
 /* History sections (flashcards + quizzes) */
@@ -8449,10 +8903,16 @@ button.map-node:hover {
   flex-direction: column;
 }
 
+.progress-set-list-container {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  overflow: hidden;
+}
+
 .progress-set-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
 .progress-set-card,
@@ -8461,10 +8921,32 @@ button.map-node:hover {
   align-items: center;
   gap: 1rem;
   padding: 0.85rem 1rem;
-  border-radius: 20px;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
   cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.progress-set-card:first-child,
+.progress-resume-card:first-child {
+  border-radius: 22px 22px 0 0;
+}
+
+.progress-set-card:last-child,
+.progress-resume-card:last-child {
+  border-radius: 0 0 22px 22px;
+  border-bottom: none;
+}
+
+.progress-set-card:only-child,
+.progress-resume-card:only-child {
+  border-radius: 22px;
+  border-bottom: none;
+}
+
+.progress-set-card:hover,
+.progress-resume-card:hover {
+  background: var(--surface);
 }
 
 .progress-set-ring-wrap {

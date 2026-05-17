@@ -66,17 +66,12 @@ function FlameIcon() {
 // Header
 // ---------------------------------------------------------------------------
 
-function ProgressHeader({ name, xp, level }: { name: string; xp: number; level: number }) {
+function ProgressHeader({ name }: { name: string; xp: number; level: number }) {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Kemajuan</p>
-        <h1 style={{ paddingLeft: "0.5rem" }}>{name || "Pelajar"}</h1>
-        <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
-          <span>Tahap {level}</span>
-          <span aria-hidden="true">•</span>
-          <span>{xp} XP</span>
-        </div>
+        <p className="student-time">Kemajuan</p>
+        <h1>{name || "Pelajar"}</h1>
       </div>
     </header>
   );
@@ -270,61 +265,6 @@ function TopicResourceSheet({
   );
 }
 
-function SetProgressSection({ topics }: { topics: TopicStats[] }) {
-  const [activeTopic, setActiveTopic] = useState<TopicStats | null>(null);
-
-  return (
-    <section className="progress-set-section" aria-label="Kemajuan set">
-      <div className="progress-section-header">
-        <h2 className="progress-section-title">Kemajuan set</h2>
-      </div>
-      <div className="progress-set-list">
-        {topics.map((t) => {
-          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "#7f65ff", bg: "" };
-          const pct = Math.round(t.accuracy * 100);
-          return (
-            <article
-              key={t.topic_id}
-              className={`progress-set-card page-enter topic-${t.topic_id}`}
-              role="button"
-              tabIndex={0}
-              style={{ cursor: "pointer" }}
-              onClick={() => setActiveTopic(t)}
-              onKeyDown={(e) => e.key === "Enter" && setActiveTopic(t)}
-              aria-label={`${meta.name} – ${pct}% – ketik untuk lihat sumber`}
-            >
-              <div className="progress-set-ring-wrap">
-                <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
-                  <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
-                  <circle
-                    cx="28" cy="28" r="22" fill="none"
-                    className="progress-ring-arc"
-                    strokeWidth="5"
-                    strokeDasharray={`${2 * Math.PI * 22}`}
-                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 28 28)"
-                  />
-                </svg>
-                <span className="progress-set-ring-pct">{pct}%</span>
-              </div>
-              <div className="progress-set-info">
-                <p className="progress-set-name">{meta.name}</p>
-                <p className="progress-set-sub">{t.correct} / {t.attempts} betul</p>
-              </div>
-              <span className="progress-set-arrow"><ArrowRightIcon /></span>
-            </article>
-          );
-        })}
-      </div>
-
-      {activeTopic && (
-        <TopicResourceSheet topic={activeTopic} onClose={() => setActiveTopic(null)} />
-      )}
-    </section>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // My Flashcards
 // ---------------------------------------------------------------------------
@@ -403,13 +343,8 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
   const router = useRouter();
   const [activeTopic, setActiveTopic] = useState<TopicStats | null>(null);
 
-  // Show topic with lowest accuracy first
   const sorted = [...topics].sort((a, b) => a.accuracy - b.accuracy);
-  const first = sorted[0];
-  if (!first) return null;
-
-  const meta = TOPIC_META[first.topic_id] ?? { name: first.topic_id, color: "#7f65ff", bg: "" };
-  const pct = Math.round(first.accuracy * 100);
+  if (sorted.length === 0) return null;
 
   return (
     <section className="progress-resume-section" aria-label="Sambung semula">
@@ -419,45 +354,45 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
           Semua topik
         </button>
       </div>
-      <div className="progress-resume-row">
-        <article
-          className={`progress-resume-card page-enter topic-${first.topic_id}`}
-          onClick={() => setActiveTopic(first)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && setActiveTopic(first)}
-          aria-label={`Sambung ${meta.name}`}
-          style={{ cursor: "pointer" }}
-        >
-          <div className="progress-set-ring-wrap">
-            <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
-              <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
-              <circle
-                cx="28" cy="28" r="22" fill="none"
-                className="progress-ring-arc"
-                strokeWidth="5"
-                strokeDasharray={`${2 * Math.PI * 22}`}
-                strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
-                strokeLinecap="round"
-                transform="rotate(-90 28 28)"
-              />
-            </svg>
-            <span className="progress-set-ring-pct">{pct}%</span>
-          </div>
-          <div className="progress-set-info">
-            <p className="progress-set-name">{meta.name}</p>
-            <p className="progress-set-sub">Perlukan perhatian</p>
-          </div>
-          <span className="progress-set-arrow"><ArrowRightIcon /></span>
-        </article>
-        <button
-          type="button"
-          className="progress-chat-btn"
-          aria-label="Latihan adaptif"
-          onClick={() => router.push("/learn")}
-        >
-          <span>🧠</span>
-        </button>
+      <div className="progress-set-list">
+        {sorted.map((t, i) => {
+          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "#7f65ff", bg: "" };
+          const pct = Math.round(t.accuracy * 100);
+          return (
+            <article
+              key={t.topic_id}
+              className={`progress-set-card page-enter topic-${t.topic_id}`}
+              role="button"
+              tabIndex={0}
+              onClick={() => setActiveTopic(t)}
+              onKeyDown={(e) => e.key === "Enter" && setActiveTopic(t)}
+              aria-label={`${meta.name} – ${pct}%`}
+            >
+              <div className="progress-set-ring-wrap">
+                <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                  <circle
+                    cx="28" cy="28" r="22" fill="none"
+                    className="progress-ring-arc"
+                    strokeWidth="5"
+                    strokeDasharray={`${2 * Math.PI * 22}`}
+                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 28 28)"
+                  />
+                </svg>
+                <span className="progress-set-ring-pct">{pct}%</span>
+              </div>
+              <div className="progress-set-info">
+                <p className="progress-set-name">{meta.name}</p>
+                <p className="progress-set-sub">
+                  {i === 0 ? "Perlukan perhatian" : `${t.correct} / ${t.attempts} betul`}
+                </p>
+              </div>
+              <span className="progress-set-arrow"><ArrowRightIcon /></span>
+            </article>
+          );
+        })}
       </div>
 
       {activeTopic && (
@@ -553,7 +488,6 @@ export default function ProgressPage() {
           <ResumeLearningSection topics={topics} />
           <MyFlashcardsSection sets={flashcardSets} />
           <MyQuizzesSection quizzes={quizzes} />
-          <SetProgressSection topics={topics} />
         </>
       ) : (
         <EmptyTopics onStart={() => router.push("/learn")} />

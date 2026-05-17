@@ -26,7 +26,7 @@ import {
   INSURANS_SUBTOPICS,
 } from "@/app/materials/insurans/data";
 
-type View = "topics" | "subtopics" | "practice";
+type View = "topics" | "practice";
 
 interface SubtopicOption {
   id: string;
@@ -97,22 +97,20 @@ export default function LearnPage() {
   >({});
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
-  const [starting, setStarting] = useState(false);
+  const [, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
 
   // Which topic the user drilled into
   const [activeTopic, setActiveTopic] = useState<
     (typeof MATH_F5_TOPICS)[number] | null
   >(null);
-  // Which subtopic was selected (null = "all")
-  const [activeSubtopicId, setActiveSubtopicId] = useState<string | null>(null);
-
   // Practice state
   const [question, setQuestion] = useState<Question | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [generatingExplanation, setGeneratingExplanation] = useState(false);
+  const [explanation, setExplanation] = useState<import("@/lib/api").Explanation | null>(null);
   const [count, setCount] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [prevDiff, setPrevDiff] = useState<string | null>(null);
@@ -229,7 +227,6 @@ export default function LearnPage() {
       let resolvedSubtopic = subtopicId ?? undefined;
       if (!resolvedSubtopic && activeTopic) {
         resolvedSubtopic = pickWeakestSubtopic(activeTopic.subtopics, topicStats);
-        setActiveSubtopicId(resolvedSubtopic);
       }
 
       const diagRes = await startDiagnostic(userId, topicId, paper.id, resolvedSubtopic);
@@ -246,6 +243,7 @@ export default function LearnPage() {
       setRecentAttempts([]);
       setCorrectOptionIndex(-1);
       setSessionStreak(0);
+      setExplanation(null);
       setView("practice");
     } catch {
       setStartError("Tidak dapat memuatkan soalan. Cuba lagi.");
@@ -329,18 +327,15 @@ export default function LearnPage() {
     setSelected(null);
     setResult(null);
     setCorrectOptionIndex(-1);
+    setExplanation(null);
   }
 
   async function handleGenerateExplanation() {
     if (!result || !question || !userId || selected === null) return;
     setGeneratingExplanation(true);
     try {
-      const explanation = await generateExplanation(
-        userId,
-        question.id,
-        selected,
-      );
-      setResult({ ...result, explanation });
+      const exp = await generateExplanation(userId, question.id, selected);
+      setExplanation(exp);
     } catch {
       alert("Gagal menjana penerangan. Sila cuba lagi.");
     } finally {
@@ -350,53 +345,125 @@ export default function LearnPage() {
 
   // ── VIEW: Chapter picker ────────────────────────────────────────────
   if (view === "topics") {
+    // Compute total subtopics done across all chapters
+    const totalSubtopicsDone = MATH_F5_TOPICS.reduce((acc, topic) => {
+      const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+      return acc + np.done;
+    }, 0);
+    const totalSubtopics = MATH_F5_TOPICS.reduce((acc, t) => acc + t.steps.length, 0);
+
+    // Determine recommended chapter: lowest completion pct (first untouched, else least done)
+    const topicPcts = MATH_F5_TOPICS.map((topic) => {
+      const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+      return { topic, pct: np.total > 0 ? Math.round((np.done / np.total) * 100) : 0 };
+    });
+    const recommendedId = topicPcts.reduce((best, cur) =>
+      cur.pct < best.pct ? cur : best
+    ).topic.id;
+
+    const firstTopic = MATH_F5_TOPICS[0];
+    const firstNp = nodeProgress[firstTopic.id] ?? { done: 0, total: firstTopic.steps.length };
+    const firstPct = firstNp.total > 0 ? Math.round((firstNp.done / firstNp.total) * 100) : 0;
+    const overallPct = totalSubtopics > 0 ? Math.round((totalSubtopicsDone / totalSubtopics) * 100) : 0;
+
     return (
       <section
         className="home-dashboard-shell page-enter"
-        aria-label="Latih — pilih bab"
+        aria-label="Pilih Bab"
       >
+        {/* ── Header ── */}
         <header className="student-header">
           <div className="student-header-copy">
             <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Latihan Adaptif</p>
             <h1 style={{ paddingLeft: "0.5rem" }}>Pilih Bab</h1>
             <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
               <span>Matematik Tingkatan 5</span>
-              <span aria-hidden="true">•</span>
+              <span aria-hidden="true">·</span>
               <span>{MATH_F5_TOPICS.length} bab</span>
+              <span aria-hidden="true">·</span>
+              <span>{totalSubtopics} subtopik</span>
             </div>
           </div>
         </header>
 
-        {/* Chapter list */}
+        {/* ── Laluan Pembelajaran card ── */}
+        <div className="lp-path-card">
+          <div className="lp-path-badge">✦ Laluan Pembelajaran</div>
+          <p className="lp-path-copy">
+            Kami pilih urutan bab terbaik untuk kamu — ikut sahaja, kamu akan cover semua topik penting SPM.
+          </p>
+
+          {/* Overall progress bar */}
+          <div className="lp-path-progress-row">
+            <div className="lp-path-track">
+              <div
+                className="lp-path-fill"
+                style={{ "--pct": `${overallPct}%` } as React.CSSProperties}
+              />
+            </div>
+            <span className="lp-path-pct">{overallPct}%</span>
+          </div>
+          <p className="lp-path-progress-label">
+            {totalSubtopicsDone} subtopik siap daripada {totalSubtopics}
+          </p>
+
+          {/* CTA button */}
+          <button
+            type="button"
+            className="lp-path-cta-btn"
+            onClick={() => {
+              const next = MATH_F5_TOPICS.find((t) => t.id === recommendedId) ?? firstTopic;
+              setActiveTopic(next);
+              handleStartPractice(next.id, null);
+            }}
+          >
+            {firstPct === 0
+              ? `Mulakan Laluan → ${firstTopic.bab}: ${firstTopic.name} (${firstTopic.estimatedTime})`
+              : `Sambung Laluan → ${MATH_F5_TOPICS.find(t => t.id === recommendedId)?.bab}: ${MATH_F5_TOPICS.find(t => t.id === recommendedId)?.name}`
+            }
+          </button>
+        </div>
+
+        {/* ── Chapter list hint ── */}
+        <p className="lp-section-hint">
+          💡 Kami syorkan habiskan 1 bab dahulu sebelum lompat ke bab lain.
+        </p>
+
+        {/* ── Chapter cards ── */}
         <div className="lp-chapter-list">
           {MATH_F5_TOPICS.map((topic) => {
-            const np = nodeProgress[topic.id] ?? {
-              done: 0,
-              total: topic.steps.length,
-            };
-            const pct =
-              np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+            const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+            const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+            const isRecommended = topic.id === recommendedId;
+            const isInProgress = pct > 0 && pct < 100;
+
             return (
               <button
                 key={topic.id}
                 type="button"
-                className={`lp-chapter-card lp-chapter-${topic.tone}`}
+                className={`lp-chapter-card lp-chapter-${topic.tone}${isRecommended ? " lp-chapter-recommended" : ""}`}
                 onClick={() => {
                   setActiveTopic(topic);
-                  setView("subtopics");
+                  handleStartPractice(topic.id, null);
                 }}
               >
                 <div className="lp-chapter-left">
+                  {isRecommended && (
+                    <div className="lp-recommended-badge">⭐ Disyorkan hari ini</div>
+                  )}
                   <p className="lp-chapter-bab">{topic.bab}</p>
                   <h2 className="lp-chapter-name">{topic.name}</h2>
                   <p className="lp-chapter-desc">{topic.desc}</p>
+
                   <div className="lp-chapter-tags">
-                    <span className="lp-tag">{topic.difficulty}</span>
-                    <span className="lp-tag">{topic.estimatedTime}</span>
-                    <span className="lp-tag">
-                      {topic.subtopics.length} subtopik
+                    <span className={`lp-tag lp-tag-difficulty lp-tag-diff-${topic.difficulty.toLowerCase()}`}>
+                      {topic.difficulty}
                     </span>
+                    <span className="lp-tag lp-tag-time">⏱ {topic.estimatedTime}</span>
+                    <span className="lp-tag">{topic.subtopics.length} subtopik</span>
                   </div>
+
+                  {/* Progress bar with percentage */}
                   <div className="lp-chapter-progress-row">
                     <div className="lp-chapter-track">
                       <div
@@ -404,13 +471,19 @@ export default function LearnPage() {
                         style={{ "--pct": `${pct}%` } as React.CSSProperties}
                       />
                     </div>
-                    {pct === 0 ? (
-                      <span className="lp-chapter-cta">Mula →</span>
-                    ) : (
-                      <span className="lp-chapter-pct">{pct}%</span>
-                    )}
+                    <span className="lp-chapter-pct">{pct}%</span>
                   </div>
+
+                  {/* Mini study plan CTA */}
+                  <p className="lp-chapter-next-cta">
+                    {pct === 100
+                      ? "✓ Siap! Ulangkaji untuk kukuhkan lagi →"
+                      : isInProgress
+                      ? "Sambung subtopik seterusnya →"
+                      : "Mulakan dengan contoh mudah →"}
+                  </p>
                 </div>
+
                 <div className="lp-chapter-icon" aria-hidden="true">
                   {topic.icon}
                 </div>
@@ -420,118 +493,6 @@ export default function LearnPage() {
         </div>
 
         {startError && <p className="diag-error">{startError}</p>}
-
-        {question && (
-          <div className="home-actions">
-            <button
-              type="button"
-              className="home-action-primary"
-              onClick={() => setView("practice")}
-            >
-              <span
-                className="home-action-icon home-action-icon-light"
-                aria-hidden="true"
-              >
-                ↺
-              </span>
-              <span>
-                <span className="home-action-label">
-                  Sambung sesi sebelumnya
-                </span>
-                <span className="home-action-sub">
-                  Teruskan dari tempat anda berhenti
-                </span>
-              </span>
-            </button>
-          </div>
-        )}
-      </section>
-    );
-  }
-
-  // ── VIEW: Subtopic picker ───────────────────────────────────────────
-  if (view === "subtopics" && activeTopic) {
-    return (
-      <section
-        className="home-dashboard-shell page-enter"
-        aria-label="Pilih subtopik"
-      >
-        <header className="student-header">
-          <div className="student-header-copy">
-            <button
-              type="button"
-              className="learn-back-btn"
-              onClick={() => setView("topics")}
-            >
-              ← Kembali
-            </button>
-            <p className="student-time">{activeTopic.bab}</p>
-            <h1>{activeTopic.name}</h1>
-            <div className="student-meta-row">
-              <span>{activeTopic.subtopics.length} subtopik</span>
-              <span aria-hidden="true">•</span>
-              <span>{activeTopic.difficulty}</span>
-              <span aria-hidden="true">•</span>
-              <span>{activeTopic.estimatedTime}</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Practice all subtopics */}
-        <button
-          type="button"
-          className="lp-all-card"
-          onClick={() => {
-            setActiveSubtopicId(null);
-            handleStartPractice(activeTopic.id, null);
-          }}
-          disabled={starting}
-        >
-          <span className="lp-all-icon" aria-hidden="true">
-            ⚡
-          </span>
-          <div className="lp-all-body">
-            <p className="lp-all-title">Semua Subtopik</p>
-            <p className="lp-all-sub">
-              AI pilih subtopik terlemah &amp; sesuaikan soalan mengikut tahap penguasaan
-            </p>
-          </div>
-          <span className="lp-arrow" aria-hidden="true">
-            →
-          </span>
-        </button>
-
-        <p className="lp-section-label">Atau pilih subtopik tertentu</p>
-
-        {/* Individual subtopics */}
-        <div className="lp-subtopic-list">
-          {activeTopic.subtopics.map((sub, idx) => (
-            <button
-              key={sub.id}
-              type="button"
-              className="lp-subtopic-row"
-              onClick={() => {
-                setActiveSubtopicId(sub.id);
-                handleStartPractice(activeTopic.id, sub.id);
-              }}
-              disabled={starting}
-            >
-              <span className="lp-subtopic-num" aria-hidden="true">
-                {idx + 1}
-              </span>
-              <div className="lp-subtopic-body">
-                <p className="lp-subtopic-title">{sub.title}</p>
-                <p className="lp-subtopic-id">{sub.id}</p>
-              </div>
-              <span className="lp-arrow" aria-hidden="true">
-                →
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {startError && <p className="diag-error">{startError}</p>}
-        {starting && <p className="diag-sub">Memuatkan soalan…</p>}
       </section>
     );
   }
@@ -546,23 +507,12 @@ export default function LearnPage() {
     medium: "Sederhana",
     hard: "Sukar",
   };
-  const diffClass: Record<string, string> = {
-    easy: "learn-diff-easy",
-    medium: "learn-diff-medium",
-    hard: "learn-diff-hard",
-  };
   const topicLabel =
     question.topic_id === "matriks"
       ? "Matriks"
       : question.topic_id === "insurans"
         ? "Insurans"
         : "Ubahan";
-
-  // Show selected subtopic name if one was picked
-  const activeSubtopicTitle = activeSubtopicId
-    ? (activeTopic?.subtopics.find((s) => s.id === activeSubtopicId)?.title ??
-      null)
-    : null;
 
   const topicDisplayName =
     question.topic_id === "matriks"
@@ -607,7 +557,7 @@ export default function LearnPage() {
       progress={count}
       total={Math.max(10, count)}
       onClose={() => {
-        setView("subtopics");
+        setView("topics");
         setResult(null);
         setSelected(null);
         setShowBuddy(false);
@@ -621,25 +571,14 @@ export default function LearnPage() {
       )}
 
 
-      {/* ── Question context row ── */}
-      <div className="learn-meta-row">
-        <span className="learn-meta-topic">
-          {activeSubtopicTitle ?? topicLabel}
-        </span>
-        <span className="learn-meta-sep" aria-hidden="true">
-          ·
-        </span>
-        <span
-          className={`learn-meta-diff ${diffClass[diff] ?? diffClass.easy}`}
-        >
-          {diffLabel[diff] ?? diff}
-        </span>
-        {diffShift && (
+      {/* ── Difficulty shift indicator ── */}
+      {diffShift && (
+        <div className="learn-meta-row">
           <span className="learn-meta-shift">
             {diffShift === "up" ? "↑ Naik tahap" : "↓ Turun tahap"}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Question card ── */}
       <QuestionCard
@@ -654,7 +593,7 @@ export default function LearnPage() {
       {/* ── Explanation shown after answering ── */}
       {result && (
         <ExplanationBlock
-          explanation={result.explanation}
+          explanation={explanation}
           isCorrect={result.is_correct}
           onGenerateExplanation={handleGenerateExplanation}
           isGenerating={generatingExplanation}

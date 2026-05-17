@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { getAssessment } from "@/lib/api";
-import type { TopicStats } from "@/lib/api";
+import { getAssessment, fetchFlashcardSets } from "@/lib/api";
+import type { TopicStats, FlashcardSetSummary } from "@/lib/api";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
 
@@ -21,9 +21,8 @@ function xpToLevel(xp: number) {
 }
 
 function xpProgress(xp: number) {
-  return Math.min(Math.round((xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100), 100);
+  return Math.min(Math.round(((xp % XP_PER_LEVEL) / XP_PER_LEVEL) * 100), 100);
 }
-
 
 export default function Home() {
   return <HomeDashboard />;
@@ -48,6 +47,7 @@ function HomeDashboard() {
   const [chatInitialMsg, setChatInitialMsg] = useState<string | undefined>();
   const [aiSheetOpen, setAiSheetOpen] = useState(false);
   const [topics, setTopics] = useState<TopicStats[]>([]);
+  const [flashcardSets, setFlashcardSets] = useState<FlashcardSetSummary[]>([]);
   const [chatContext, setChatContext] = useState<LearningContext>({
     topicId: "ubahan",
     topicName: "Ubahan (Variation)",
@@ -61,6 +61,9 @@ function HomeDashboard() {
         setUserId(uid);
         getAssessment(uid)
           .then((res) => setTopics(res.topics))
+          .catch(() => {});
+        fetchFlashcardSets(uid)
+          .then((sets) => setFlashcardSets(sets))
           .catch(() => {});
       }
       const shown = localStorage.getItem("onboardingDiagnosticShown");
@@ -93,9 +96,12 @@ function HomeDashboard() {
         <StudentHeader />
         <LevelProgressCard />
         <DailyMissionCard />
-        <WeakTopicCard topics={topics} />
-        <AIChatCard onOpenSheet={() => setAiSheetOpen(true)} />
+        <FokusHariIni topics={topics} />
+        <QuickStatsRow topics={topics} />
+        <ResumeLearningSection topics={topics} />
+        <QuickFlashcardWidget sets={flashcardSets} />
       </section>
+      <FloatingAIButton onClick={() => setAiSheetOpen(true)} />
       <AIChatSheet
         open={aiSheetOpen}
         onClose={() => setAiSheetOpen(false)}
@@ -104,7 +110,10 @@ function HomeDashboard() {
       <StudyBuddyChat
         userId={userId}
         isOpen={chatOpen}
-        onClose={() => { setChatOpen(false); setChatInitialMsg(undefined); }}
+        onClose={() => {
+          setChatOpen(false);
+          setChatInitialMsg(undefined);
+        }}
         learningContext={chatContext}
         initialMessage={chatInitialMsg}
       />
@@ -125,7 +134,6 @@ function useXpState() {
 
 function StudentHeader() {
   const [name, setName] = useState(DEFAULT_STUDENT.name);
-  const xp = useXpState();
 
   useEffect(() => {
     try {
@@ -142,7 +150,6 @@ function StudentHeader() {
         <h1 style={{ paddingLeft: "0.5rem" }}>Helo, {name}</h1>
         <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
           <span>{DEFAULT_STUDENT.form}</span>
-          <span>{xp} XP</span>
         </div>
       </div>
 
@@ -174,13 +181,13 @@ function LevelProgressCard() {
   const xp = useXpState();
   const level = xpToLevel(xp);
   const progress = xpProgress(xp);
-  const levelLabel = progress === 0 && xp === 0 ? "Ini langkah pertama kamu menuju kejayaan!" : `${XP_PER_LEVEL - (xp % XP_PER_LEVEL)} XP ke Tahap ${level + 1}`;
+  const levelLabel =
+    progress === 0 && xp === 0
+      ? "Ini langkah pertama kamu menuju kejayaan!"
+      : `${XP_PER_LEVEL - (xp % XP_PER_LEVEL)} XP ke Tahap ${level + 1}`;
 
   return (
-    <section
-      className="level-card"
-      aria-label={`Kemajuan Tahap ${level}`}
-    >
+    <section className="level-card" aria-label={`Kemajuan Tahap ${level}`}>
       <div className="level-card-content">
         <p className="level-eyebrow">Tahap {level}</p>
         <h2>{levelLabel}</h2>
@@ -222,62 +229,274 @@ function DailyMissionCard() {
     router.push("/learn");
   }
 
+  if (done) return null;
+
   return (
     <button
       type="button"
-      className={`daily-mission-card${done ? " daily-mission-card--done" : ""}`}
+      className="daily-mission-card"
       onClick={handleClaim}
       aria-label="Misi harian"
     >
       <span className="daily-mission-icon" aria-hidden="true">
-        {done ? <CheckCircleIcon /> : <FireIcon />}
+        <FireIcon />
       </span>
       <div className="daily-mission-body">
         <p className="daily-mission-label">Misi Hari Ini</p>
-        <p className="daily-mission-title">
-          {done ? "Misi selesai! Teruskan streak kamu" : "Jawab 5 soalan hari ini"}
-        </p>
+        <p className="daily-mission-title">Jawab 5 soalan hari ini</p>
       </div>
-      {!done && (
-        <span className="daily-mission-badge" aria-hidden="true">+10 XP</span>
-      )}
+      <span className="daily-mission-badge" aria-hidden="true">
+        +10 XP
+      </span>
     </button>
   );
 }
 
-function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
+const TOPIC_SUBJECT: Record<string, string> = {
+  ubahan: "Matematik",
+  matriks: "Matematik",
+  insurans: "Matematik",
+};
+
+function FokusHariIni({ topics }: { topics: TopicStats[] }) {
   const router = useRouter();
 
-  const weakest = topics.length > 0
-    ? topics.reduce((a, b) => (a.accuracy < b.accuracy ? a : b))
-    : null;
+  if (topics.length === 0) return null;
 
-  if (!weakest) return null;
-
-  const name = TOPIC_META[weakest.topic_id]?.name ?? weakest.topic_id;
+  const weakest = [...topics].sort((a, b) => a.accuracy - b.accuracy)[0];
+  const meta = TOPIC_META[weakest.topic_id] ?? { name: weakest.topic_id };
   const pct = Math.round(weakest.accuracy * 100);
+  const subject = TOPIC_SUBJECT[weakest.topic_id] ?? "Matematik";
 
+  return (
+    <section className="fokus-card" aria-label="Fokus Hari Ini">
+      <p className="fokus-eyebrow">
+        <span className="fokus-eyebrow-dot" aria-hidden="true" />
+        FOKUS HARI INI
+      </p>
+      <h2 className="fokus-title">
+        Ulang kaji dan latih{" "}
+        <span className="fokus-highlight">{meta.name}</span>
+      </h2>
+      <p className="fokus-meta">
+        {subject}
+        <span className="fokus-meta-sep" aria-hidden="true">
+          ·
+        </span>
+        <span className="fokus-accuracy-dot" aria-hidden="true" />
+        {pct}% ketepatan
+      </p>
+      <button
+        type="button"
+        className="fokus-cta"
+        onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+        aria-label={`Mula ulang kaji ${meta.name}`}
+      >
+        <span aria-hidden="true">⚡</span>
+        Mula Ulang Kaji →
+      </button>
+    </section>
+  );
+}
+
+function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
+  const router = useRouter();
+
+  const sorted = [...topics].sort((a, b) => a.accuracy - b.accuracy);
+  if (sorted.length === 0) return null;
+
+  return (
+    <section className="progress-resume-section" aria-label="Sambung semula">
+      <div className="progress-section-header">
+        <h2 className="progress-section-title">Sambung semula</h2>
+        <button
+          type="button"
+          className="progress-see-all"
+          onClick={() => router.push("/progress")}
+        >
+          Lihat kemajuan
+        </button>
+      </div>
+      <div className="progress-set-list-container">
+        <div className="progress-set-list">
+          {sorted.map((t, i) => {
+            const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id };
+            const pct = Math.round(t.accuracy * 100);
+            return (
+              <article
+                key={t.topic_id}
+                className={`progress-set-card page-enter topic-${t.topic_id}`}
+                role="button"
+                tabIndex={0}
+                onClick={() =>
+                  router.push(`/materials/${t.topic_id}/subtopics`)
+                }
+                onKeyDown={(e) =>
+                  e.key === "Enter" &&
+                  router.push(`/materials/${t.topic_id}/subtopics`)
+                }
+                aria-label={`${meta.name} – ${pct}%`}
+              >
+                <div className="progress-set-ring-wrap">
+                  <svg
+                    className="progress-set-ring"
+                    viewBox="0 0 56 56"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      cx="28"
+                      cy="28"
+                      r="22"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="5"
+                    />
+                    <circle
+                      cx="28"
+                      cy="28"
+                      r="22"
+                      fill="none"
+                      className="progress-ring-arc"
+                      strokeWidth="5"
+                      strokeDasharray={`${2 * Math.PI * 22}`}
+                      strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 28 28)"
+                    />
+                  </svg>
+                  <span className="progress-set-ring-pct">{pct}%</span>
+                </div>
+                <div className="progress-set-info">
+                  <p className="progress-set-name">{meta.name}</p>
+                  <p className="progress-set-sub">
+                    {i === 0
+                      ? "Perlukan perhatian"
+                      : `${t.correct} / ${t.attempts} betul`}
+                  </p>
+                </div>
+                <span className="progress-set-arrow">›</span>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuickStatsRow({ topics }: { topics: TopicStats[] }) {
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("streakDays");
+      if (stored) setStreak(Number(stored));
+    } catch {}
+  }, []);
+
+  const mastered = topics.filter(
+    (t) => t.level === "proficient" || t.level === "advanced",
+  ).length;
+
+  return (
+    <div className="quick-stats-row">
+      <div className="quick-stat-card">
+        <span className="quick-stat-icon" aria-hidden="true">
+          🔥
+        </span>
+        <span className="quick-stat-value">{streak}</span>
+        <span className="quick-stat-label">Hari streak</span>
+      </div>
+      <div className="quick-stat-card">
+        <span className="quick-stat-icon" aria-hidden="true">
+          ⭐
+        </span>
+        <span className="quick-stat-value">{mastered}</span>
+        <span className="quick-stat-label">Topik mahir</span>
+      </div>
+      <div className="quick-stat-card">
+        <span className="quick-stat-icon" aria-hidden="true">
+          📚
+        </span>
+        <span className="quick-stat-value">{topics.length}</span>
+        <span className="quick-stat-label">Topik dipelajari</span>
+      </div>
+    </div>
+  );
+}
+
+function QuickFlashcardWidget({ sets }: { sets: FlashcardSetSummary[] }) {
+  const router = useRouter();
+
+  if (sets.length === 0) {
+    return (
+      <button
+        type="button"
+        className="quick-flashcard-empty"
+        onClick={() => router.push("/learn")}
+        aria-label="Buat flashcard pertama kamu"
+      >
+        <span className="quick-flashcard-empty-icon" aria-hidden="true">
+          🃏
+        </span>
+        <div>
+          <p className="quick-flashcard-empty-title">Tiada flashcard lagi</p>
+          <p className="quick-flashcard-empty-sub">
+            Tanya AI untuk jana flashcard baru →
+          </p>
+        </div>
+      </button>
+    );
+  }
+
+  const recent = sets.slice(0, 3);
+
+  return (
+    <div className="quick-flashcard-widget">
+      <div className="quick-flashcard-header">
+        <h2 className="quick-flashcard-title">Flashcard Saya</h2>
+        <button
+          type="button"
+          className="quick-flashcard-see-all"
+          onClick={() => router.push("/progress")}
+        >
+          Lihat semua
+        </button>
+      </div>
+      <div className="quick-flashcard-list">
+        {recent.map((set) => (
+          <button
+            key={set.id}
+            type="button"
+            className="quick-flashcard-item"
+            onClick={() => router.push(`/flashcards/${set.id}`)}
+            aria-label={`Buka flashcard ${set.title}`}
+          >
+            <div className="quick-flashcard-item-info">
+              <span className="quick-flashcard-item-title">{set.title}</span>
+              <span className="quick-flashcard-item-count">
+                {set.card_count} kad
+              </span>
+            </div>
+            <span className="quick-flashcard-item-arrow" aria-hidden="true">
+              ›
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FloatingAIButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
-      className="weak-topic-card"
-      onClick={() => router.push("/learning")}
-      aria-label={`Fokus hari ini: ${name}`}
+      className="fab-ai"
+      onClick={onClick}
+      aria-label="Buka Tutor AI"
     >
-      <span className="weak-topic-icon" aria-hidden="true">
-        <TargetIcon />
-      </span>
-      <div className="weak-topic-body">
-        <p className="weak-topic-label">Fokus Hari Ini</p>
-        <p className="weak-topic-title">{name}</p>
-        <div className="weak-topic-bar-wrap" aria-hidden="true">
-          <div className="weak-topic-bar">
-            <div className="weak-topic-bar-fill" style={{ "--fill": `${pct}%` } as React.CSSProperties} />
-          </div>
-          <span className="weak-topic-pct">{pct}% tepat</span>
-        </div>
-        <span className="weak-topic-cta">Ulangkaji sekarang ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â +10 XP</span>
-      </div>
+      <span aria-hidden="true">🤖</span>
     </button>
   );
 }
@@ -285,7 +504,12 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
 const TOPICS = {
   ubahan: {
     label: "Ubahan",
-    subtopics: ["Ubahan Langsung", "Ubahan Songsang", "Ubahan Bergabung", "Ubahan Separa"],
+    subtopics: [
+      "Ubahan Langsung",
+      "Ubahan Songsang",
+      "Ubahan Bergabung",
+      "Ubahan Separa",
+    ],
   },
   matriks: {
     label: "Matriks",
@@ -299,49 +523,6 @@ const TOPICS = {
 
 type TopicKey = keyof typeof TOPICS;
 
-
-function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
-  return (
-    <div
-      className="ai-chat-collapsed"
-      onClick={onOpenSheet}
-      role="button"
-      tabIndex={0}
-      aria-label="Buka Skorrel"
-      onKeyDown={(e) => e.key === "Enter" && onOpenSheet()}
-    >
-      <div className="ai-chat-avatar" aria-hidden="true">
-        <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-      </div>
-      <div className="ai-chat-collapsed-text">
-        <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
-        <p className="ai-chat-collapsed-sub">Skorrel sedia membantu</p>
-      </div>
-      <div className="icb-input-wrap">
-        <textarea
-          className="icb-input"
-          rows={1}
-          placeholder={"Tanya soalan kamu di sini\u2026"}
-          onFocus={onOpenSheet}
-          readOnly
-        />
-        <button type="button" className="icb-send" disabled aria-label="Hantar">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-          </svg>
-        </button>
-      </div>
-      <div className="icb-chips">
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F4A1}"}</span>Hint Please</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F50D}"}</span>Step-by-Step</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F3AF}"}</span>Practice Quiz</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F4D6}"}</span>Teach Me This</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F9D1}\u200D\u{1F3EB}"}</span>Ask AI Coach</button>
-      </div>
-    </div>
-  );
-}
-
 function AIChatSheet({
   open,
   onClose,
@@ -352,11 +533,17 @@ function AIChatSheet({
   onOpen: (topicKey: string, msg?: string) => void;
 }) {
   const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
-  const [selectedMode, setSelectedMode] = useState<"notes" | "questions" | "flashcard">("notes");
+  const [selectedMode, setSelectedMode] = useState<
+    "notes" | "questions" | "flashcard"
+  >("notes");
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const MODE_CHIPS: { key: "notes" | "questions" | "flashcard"; label: string; emoji: string }[] = [
+  const MODE_CHIPS: {
+    key: "notes" | "questions" | "flashcard";
+    label: string;
+    emoji: string;
+  }[] = [
     { key: "notes", label: "Nota", emoji: "\u{1F4DD}" },
     { key: "questions", label: "Soalan", emoji: "\u2753" },
     { key: "flashcard", label: "Flashcard", emoji: "\u{1F0CF}" },
@@ -381,7 +568,9 @@ function AIChatSheet({
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   function handleSend() {
@@ -423,11 +612,17 @@ function AIChatSheet({
 
         <div className="ai-chat-header">
           <div className="ai-chat-avatar" aria-hidden="true">
-            <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img
+              src="/assets/mascot.webp"
+              alt="Skorrel"
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            />
           </div>
           <div className="ai-chat-header-text">
             <h2>Tanya Skorrel</h2>
-            <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
+            <p className="ai-chat-subtitle">
+              Pilih topik &amp; bab untuk mulakan
+            </p>
           </div>
           <button
             type="button"
@@ -474,9 +669,15 @@ function AIChatSheet({
         <button
           type="button"
           className="ai-sheet-go-btn"
-          onClick={() => { onClose(); onOpen(selectedTopic, MODE_PROMPT[selectedMode]); }}
+          onClick={() => {
+            onClose();
+            onOpen(selectedTopic, MODE_PROMPT[selectedMode]);
+          }}
         >
-          {"Mula \u2014 "}{MODE_CHIPS.find(m => m.key === selectedMode)?.emoji} {MODE_CHIPS.find(m => m.key === selectedMode)?.label} {" \u00B7 "}{TOPICS[selectedTopic].label}
+          {"Mula \u2014 "}
+          {MODE_CHIPS.find((m) => m.key === selectedMode)?.emoji}{" "}
+          {MODE_CHIPS.find((m) => m.key === selectedMode)?.label} {" \u00B7 "}
+          {TOPICS[selectedTopic].label}
         </button>
 
         <div className="ai-chat-input-wrap">
@@ -497,7 +698,11 @@ function AIChatSheet({
             aria-label="Hantar soalan"
           >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M12 19V5M5 12l7-7 7 7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -506,13 +711,11 @@ function AIChatSheet({
   );
 }
 
-
 const TOPIC_META: Record<string, { name: string }> = {
-  ubahan:   { name: "Ubahan" },
-  matriks:  { name: "Matriks" },
+  ubahan: { name: "Ubahan" },
+  matriks: { name: "Matriks" },
   insurans: { name: "Insurans" },
 };
-
 
 function IconBase({ children }: { children: ReactNode }) {
   return (
@@ -526,25 +729,6 @@ function FireIcon() {
   return (
     <IconBase>
       <path d="M12 2c0 0-5 4-5 9a5 5 0 0 0 10 0c0-2.5-1.5-5-3-6.5 0 2-1 3.5-2 4.5-1-2-1-4.5 0-7Z" />
-    </IconBase>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <IconBase>
-      <circle cx="12" cy="12" r="9" />
-      <path d="m9 12 2 2 4-4" />
-    </IconBase>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <IconBase>
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
     </IconBase>
   );
 }
