@@ -246,7 +246,7 @@ function StatisticsTab({ xp }: { xp: number }) {
 
 function BadgesTab() {
   const badgeList = [
-    ...student.badges.map((badge) => ({ label: badge, locked: false })),
+    ...DEFAULT_STUDENT.badges.map((badge) => ({ label: badge, locked: false })),
     { label: "Lencana Terkunci", locked: true },
     { label: "Lencana Terkunci", locked: true },
   ];

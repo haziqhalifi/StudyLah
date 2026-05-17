@@ -33,10 +33,10 @@ export default function AssessmentPage() {
     <div>
       <div className="assessment-header page-enter">
         <h1 className="font-display assessment-title">
-          {name ? `${name}'s progress` : "Your Progress"}
+          {name ? `Kemajuan ${name}` : "Kemajuan Anda"}
         </h1>
         <p className="assessment-sub">
-          The AI engine uses this to personalise your next questions.
+          Enjin AI menggunakan ini untuk menyesuaikan soalan seterusnya.
         </p>
       </div>
 
@@ -44,16 +44,16 @@ export default function AssessmentPage() {
 
       {topics.length === 0 ? (
         <div className="card assessment-empty page-enter">
-          <p className="assessment-empty-title">No data yet</p>
+          <p className="assessment-empty-title">Tiada data lagi</p>
           <p className="assessment-empty-sub">
-            Complete the diagnostic to get started!
+            Selesaikan diagnostik untuk bermula!
           </p>
           <button
             type="button"
             className="btn-primary"
             onClick={() => router.push("/diagnostic")}
           >
-            Start Diagnostic →
+            Mula Diagnostik →
           </button>
         </div>
       ) : (
@@ -66,14 +66,14 @@ export default function AssessmentPage() {
           className="btn-primary"
           onClick={() => router.push("/materials")}
         >
-          Continue Learning →
+          Teruskan Belajar →
         </button>
         <button
           type="button"
           className="btn-ghost diag-skip-btn"
           onClick={() => router.push("/review")}
         >
-          Review ↺
+          Ulang Kaji ↺
         </button>
       </div>
     </div>
