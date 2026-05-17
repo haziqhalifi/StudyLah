@@ -8,9 +8,11 @@ import {
   startDiagnostic,
   submitDiagnostic,
   getPapers,
+  getAssessment,
   Question,
   SubmitAnswerResponse,
   Paper,
+  TopicStats,
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
@@ -18,6 +20,9 @@ import AiBadge from "@/components/AiBadge";
 import QuizSheet from "@/components/QuizSheet";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
+import { UBAHAN_STEPS } from "@/app/materials/ubahan/data";
+import { MATRIKS_STEPS } from "@/app/materials/matriks/data";
+import { INSURANS_STEPS } from "@/app/materials/insurans/data";
 
 type View = "topics" | "practice";
 
@@ -28,6 +33,8 @@ const MATH_F5_TOPICS = [
     subtitle: "Variation",
     icon: "∝",
     desc: "Direct, inverse, joint & partial variation",
+    steps: UBAHAN_STEPS,
+    completionKey: "ubahan_completed_steps_v1",
   },
   {
     id: "matriks",
@@ -35,6 +42,8 @@ const MATH_F5_TOPICS = [
     subtitle: "Matrices",
     icon: "⊞",
     desc: "Matrix operations & simultaneous equations",
+    steps: MATRIKS_STEPS,
+    completionKey: "matriks_completed_steps_v1",
   },
   {
     id: "insurans",
@@ -42,8 +51,20 @@ const MATH_F5_TOPICS = [
     subtitle: "Insurance",
     icon: "🛡",
     desc: "Premiums, policies & claims",
+    steps: INSURANS_STEPS,
+    completionKey: "insurans_completed_steps_v1",
   },
 ];
+
+function readCompletedSteps(key: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    return new Set();
+  }
+}
 
 export default function LearnPage() {
   const router = useRouter();
@@ -51,6 +72,8 @@ export default function LearnPage() {
   const [view, setView] = useState<View>("topics");
 
   // Topic picker state
+  const [topicStats, setTopicStats] = useState<TopicStats[]>([]);
+  const [nodeProgress, setNodeProgress] = useState<Record<string, { done: number; total: number }>>({});
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -90,6 +113,15 @@ export default function LearnPage() {
       setPrevDiff(q.difficulty);
       setView("practice");
     }
+
+    getAssessment(uid).catch(() => ({ topics: [] })).then((res) => setTopicStats(res.topics));
+
+    const progress: Record<string, { done: number; total: number }> = {};
+    for (const topic of MATH_F5_TOPICS) {
+      const completed = readCompletedSteps(topic.completionKey);
+      progress[topic.id] = { done: completed.size, total: topic.steps.length };
+    }
+    setNodeProgress(progress);
 
     getPapers()
       .then((res) => {
@@ -220,15 +252,25 @@ export default function LearnPage() {
         <section className="level-card" aria-label="Choose a topic to practise">
           <div className="level-card-content">
             <p className="level-eyebrow">Learning Path</p>
-            <h2>Pick a topic and jump into adaptive practice.</h2>
-            <div className="level-progress-row">
-              <div className="level-progress-track" aria-hidden="true">
-                <div className="level-progress-fill level-progress-fill-full">
-                  <span className="level-progress-dot" />
-                </div>
-              </div>
-              <span>{MATH_F5_TOPICS.length} available</span>
-            </div>
+            {(() => {
+              const totalNodes = MATH_F5_TOPICS.reduce((s, t) => s + t.steps.length, 0);
+              const doneNodes = Object.values(nodeProgress).reduce((s, v) => s + v.done, 0);
+              const pct = totalNodes > 0 ? Math.round((doneNodes / totalNodes) * 100) : 0;
+              const hasStarted = doneNodes > 0;
+              return (
+                <>
+                  <h2>{hasStarted ? `${doneNodes} of ${totalNodes} nodes unlocked` : "Start from a chapter and move into the subtopic map."}</h2>
+                  <div className="level-progress-row">
+                    <div className="level-progress-track" aria-hidden="true">
+                      <div className="level-progress-fill" style={{ width: `${pct}%` }}>
+                        <span className="level-progress-dot" />
+                      </div>
+                    </div>
+                    <span>{hasStarted ? `${pct}%` : `${MATH_F5_TOPICS.length} available`}</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
           <div className="level-trophy" aria-hidden="true">
             <span className="learn-hub-chip">AI</span>
@@ -245,6 +287,10 @@ export default function LearnPage() {
           <div className="home-learning-stack">
             {MATH_F5_TOPICS.map((topic, index) => {
               const tone = index === 0 ? "lesson" : index === 1 ? "game" : "path";
+              const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+              const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+              const stat = topicStats.find(t => t.topic_id === topic.id);
+              const level = stat?.level ?? null;
               return (
                 <button
                   key={topic.id}
@@ -257,7 +303,14 @@ export default function LearnPage() {
                     <p className="learning-feature-kicker">Matematik Tingkatan 5</p>
                     <h2>{topic.name}</h2>
                     <p>{topic.desc}</p>
-                    <p className="study-select-subtitle">{topic.subtitle}</p>
+                    <div className="learn-topic-progress-row">
+                      <div className="learn-topic-progress-track">
+                        <div className="learn-topic-progress-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="learn-topic-progress-label">
+                        {np.done}/{np.total} nodes{level ? ` · ${level}` : ""}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="feature-visual" aria-hidden="true">

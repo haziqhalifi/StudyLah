@@ -11,11 +11,18 @@ import type { LearningContext } from "@/lib/types";
 const DEFAULT_STUDENT = {
   name: "Pelajar",
   form: "Form 5",
-  progress: 0,
-  level: 1,
-  xp: 0,
   streak: 1,
 };
+
+const XP_PER_LEVEL = 50;
+
+function xpToLevel(xp: number) {
+  return Math.max(1, Math.floor(xp / XP_PER_LEVEL) + 1);
+}
+
+function xpProgress(xp: number) {
+  return Math.min(Math.round((xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100), 100);
+}
 
 const quickActions = [
   { label: "Ambil Kuiz", icon: QuizIcon, href: "/exams", color: "#7f65ff" },
@@ -110,16 +117,25 @@ function HomeDashboard() {
   );
 }
 
+function useXpState() {
+  const [xp, setXp] = useState(0);
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("userXp");
+      if (stored) setXp(Number(stored));
+    } catch {}
+  }, []);
+  return xp;
+}
+
 function StudentHeader() {
   const [name, setName] = useState(DEFAULT_STUDENT.name);
-  const [xp, setXp] = useState(DEFAULT_STUDENT.xp);
+  const xp = useXpState();
 
   useEffect(() => {
     try {
       const storedName = sessionStorage.getItem("userName");
-      const storedXp = sessionStorage.getItem("userXp");
       if (storedName) setName(storedName);
-      if (storedXp) setXp(Number(storedXp));
     } catch {
       // ignore storage errors
     }
@@ -154,24 +170,29 @@ function StudentHeader() {
 }
 
 function LevelProgressCard() {
+  const xp = useXpState();
+  const level = xpToLevel(xp);
+  const progress = xpProgress(xp);
+  const levelLabel = progress === 0 && xp === 0 ? "This is your first step to greatness!" : `${XP_PER_LEVEL - (xp % XP_PER_LEVEL)} XP to Level ${level + 1}`;
+
   return (
     <section
       className="level-card"
-      aria-label={`Level ${DEFAULT_STUDENT.level} progress`}
+      aria-label={`Level ${level} progress`}
     >
       <div className="level-card-content">
-        <p className="level-eyebrow">Level {DEFAULT_STUDENT.level}</p>
-        <h2>This is your first step to greatness!</h2>
+        <p className="level-eyebrow">Level {level}</p>
+        <h2>{levelLabel}</h2>
         <div className="level-progress-row">
           <div className="level-progress-track" aria-hidden="true">
             <div
               className="level-progress-fill"
-              style={{ width: `${DEFAULT_STUDENT.progress}%` }}
+              style={{ width: `${progress}%` }}
             >
               <span className="level-progress-dot" />
             </div>
           </div>
-          <span>{DEFAULT_STUDENT.progress}%</span>
+          <span>{xp} XP</span>
         </div>
       </div>
       <div className="level-trophy" aria-hidden="true">

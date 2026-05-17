@@ -6,38 +6,24 @@ import type { ReactNode } from "react";
 import { getAssessment, fetchFlashcardSets, fetchUserQuizzes, TopicStats, FlashcardSetSummary, QuizSummary } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
-// Static / mock data
+// Static meta (display names, colours)
 // ---------------------------------------------------------------------------
 
-const MOCK_TOPICS: TopicStats[] = [
-  { topic_id: "ubahan", accuracy: 0.4, attempts: 10, correct: 4, level: "developing" },
-  { topic_id: "matriks", accuracy: 0.2, attempts: 10, correct: 2, level: "beginner" },
-  { topic_id: "insurans", accuracy: 0.75, attempts: 8, correct: 6, level: "proficient" },
-];
-
-const TOPIC_META: Record<string, { name: string; color: string; bg: string }> = {
-  ubahan:   { name: "Ubahan",   color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)" },
-  matriks:  { name: "Matriks",  color: "#ff6b93", bg: "linear-gradient(135deg,#ff8dc0,#ffb0c9)" },
-  insurans: { name: "Insurans", color: "#22c55e", bg: "linear-gradient(135deg,#5bd4bc,#22c55e)" },
+const TOPIC_META: Record<string, { name: string; color: string; bg: string; icon: string; learnRoute: string; materialsRoute: string }> = {
+  ubahan:   { name: "Ubahan",   color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)", icon: "∝",  learnRoute: "/learn",     materialsRoute: "/materials/ubahan/subtopics" },
+  matriks:  { name: "Matriks",  color: "#ff6b93", bg: "linear-gradient(135deg,#ff8dc0,#ffb0c9)", icon: "⊞",  learnRoute: "/learn",     materialsRoute: "/materials/matriks/subtopics" },
+  insurans: { name: "Insurans", color: "#22c55e", bg: "linear-gradient(135deg,#5bd4bc,#22c55e)", icon: "🛡", learnRoute: "/learn",     materialsRoute: "/materials/insurans/subtopics" },
 };
-
-const LEADERBOARD = [
-  { rank: 1, name: "VOLLEYBEAR", xp: 92000, avatar: "🚴" },
-  { rank: 2, name: "Clara",      xp: 8000,  avatar: "🦩" },
-  { rank: 3, name: "husna",      xp: 5700,  avatar: "🟤" },
-  { rank: 4, name: "DeionKingen",xp: 2300,  avatar: "🐧" },
-  { rank: 5, name: "You",        xp: 180,   avatar: "🐢", isMe: true },
-];
 
 const WEEK_DAYS = ["Ah", "Is", "Se", "Ra", "Kh", "Ju", "Sa"];
 
-function formatXP(xp: number) {
-  if (xp >= 1000) return `${(xp / 1000).toFixed(xp % 1000 === 0 ? 0 : 1)}k XP`;
-  return `${xp} XP`;
+
+function levelFromXP(xp: number) {
+  return Math.max(1, Math.floor(xp / 50) + 1);
 }
 
 // ---------------------------------------------------------------------------
-// Sub-components
+// Icons
 // ---------------------------------------------------------------------------
 
 function IconBase({ children }: { children: ReactNode }) {
@@ -64,14 +50,23 @@ function ArrowRightIcon() {
   );
 }
 
+function FlameIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ width: 54, height: 54 }}>
+      <path
+        d="M12 2C9.5 6 8 8.5 9 11.5c.4 1.2-.2 2.5-1.5 2.5C6.2 14 5 12.6 5 11c0 4 2 7.5 7 9 5-1.5 7-5 7-9 0-2.5-1.5-5-3-7-1 2.5-2.5 3-3 3-.5 0-1-.5-1-1 0-.5.5-2.5-1-5Z"
+        fill="rgba(255,255,255,0.9)"
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
 // ---------------------------------------------------------------------------
-// Progress Header (matches StudentHeader on home)
+// Header
 // ---------------------------------------------------------------------------
 
 function ProgressHeader({ name, xp, level }: { name: string; xp: number; level: number }) {
-  const toNext = 50;
-  const pct = Math.round((xp / toNext) * 100);
-
   return (
     <header className="student-header">
       <div className="student-header-copy">
@@ -83,19 +78,18 @@ function ProgressHeader({ name, xp, level }: { name: string; xp: number; level: 
           <span>{xp} XP</span>
         </div>
       </div>
-
-
     </header>
   );
 }
 
 // ---------------------------------------------------------------------------
-// XP Progress bar card (like LevelProgressCard on home)
+// XP card
 // ---------------------------------------------------------------------------
 
 function XPProgressCard({ xp, level }: { xp: number; level: number }) {
-  const toNext = 50;
-  const pct = Math.min(Math.round((xp / toNext) * 100), 100);
+  const toNext = level * 50;
+  const prev = (level - 1) * 50;
+  const pct = Math.min(Math.round(((xp - prev) / (toNext - prev)) * 100), 100);
 
   return (
     <section className="level-card" aria-label="XP progress">
@@ -118,26 +112,12 @@ function XPProgressCard({ xp, level }: { xp: number; level: number }) {
   );
 }
 
-function FlameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ width: 54, height: 54 }}>
-      <path
-        d="M12 2C9.5 6 8 8.5 9 11.5c.4 1.2-.2 2.5-1.5 2.5C6.2 14 5 12.6 5 11c0 4 2 7.5 7 9 5-1.5 7-5 7-9 0-2.5-1.5-5-3-7-1 2.5-2.5 3-3 3-.5 0-1-.5-1-1 0-.5.5-2.5-1-5Z"
-        fill="rgba(255,255,255,0.9)"
-        stroke="none"
-      />
-    </svg>
-  );
-}
-
 // ---------------------------------------------------------------------------
-// Streak card with week calendar
+// Streak card
 // ---------------------------------------------------------------------------
 
 function StreakCard({ streak }: { streak: number }) {
-  const today = new Date().getDay(); // 0 = Sunday
-  const weekStart = 10; // mock: week starts on day 10 of month
-  const activeDay = today; // 0-indexed in week
+  const today = new Date().getDay();
 
   return (
     <article className="progress-streak-card page-enter">
@@ -157,7 +137,6 @@ function StreakCard({ streak }: { streak: number }) {
         </div>
       </div>
 
-      {/* Streak milestone hint */}
       <div className="progress-streak-milestone">
         <span className="progress-streak-milestone-icon">🔥</span>
         <span className="progress-streak-milestone-arrow">→</span>
@@ -165,12 +144,10 @@ function StreakCard({ streak }: { streak: number }) {
         <span className="progress-streak-milestone-text">10 soalan untuk dapatkan Emas</span>
       </div>
 
-      {/* Week calendar */}
       <div className="progress-week-grid" role="list" aria-label="Aktiviti minggu ini">
         {WEEK_DAYS.map((day, i) => {
-          const dateNum = weekStart + i;
-          const isToday = i === activeDay;
-          const isDone = i < activeDay;
+          const isToday = i === today;
+          const isDone = i < today;
           return (
             <div
               key={day}
@@ -179,7 +156,7 @@ function StreakCard({ streak }: { streak: number }) {
             >
               <span className="progress-week-day">{day}</span>
               <span className="progress-week-circle">
-                {isDone ? "🔥" : isToday ? "💎" : dateNum}
+                {isDone ? "🔥" : isToday ? "💎" : ""}
               </span>
             </div>
           );
@@ -194,24 +171,128 @@ function StreakCard({ streak }: { streak: number }) {
 }
 
 // ---------------------------------------------------------------------------
-// Set progress section
+// Topic Progress cards – clickable, show resource options
 // ---------------------------------------------------------------------------
 
+function TopicResourceSheet({
+  topic,
+  onClose,
+}: {
+  topic: TopicStats;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const meta = TOPIC_META[topic.topic_id];
+  if (!meta) return null;
+
+  function go(path: string) {
+    onClose();
+    router.push(path);
+  }
+
+  return (
+    <div
+      className="topic-sheet-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Sumber untuk ${meta.name}`}
+      onClick={onClose}
+    >
+      <div className="topic-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="topic-sheet-handle" />
+        <div className="topic-sheet-title-row">
+          <span className="topic-sheet-icon">{meta.icon}</span>
+          <div>
+            <p className="topic-sheet-name">{meta.name}</p>
+            <p className="topic-sheet-level">{Math.round(topic.accuracy * 100)}% tepat · {topic.level}</p>
+          </div>
+        </div>
+
+        <div className="topic-sheet-actions">
+          <button
+            type="button"
+            className={`topic-sheet-btn topic-sheet-btn--learn topic-${topic.topic_id}`}
+            onClick={() => go(meta.learnRoute)}
+          >
+            <span className="topic-sheet-btn-icon">🧠</span>
+            <div>
+              <p className="topic-sheet-btn-label">Latihan Adaptif</p>
+              <p className="topic-sheet-btn-sub">Sambung belajar dengan soalan pintar</p>
+            </div>
+            <ArrowRightIcon />
+          </button>
+
+          <button
+            type="button"
+            className={`topic-sheet-btn topic-sheet-btn--materials topic-${topic.topic_id}`}
+            onClick={() => go(meta.materialsRoute)}
+          >
+            <span className="topic-sheet-btn-icon">📖</span>
+            <div>
+              <p className="topic-sheet-btn-label">Bahan Pembelajaran</p>
+              <p className="topic-sheet-btn-sub">Lihat nota, latihan & penilaian</p>
+            </div>
+            <ArrowRightIcon />
+          </button>
+
+          <button
+            type="button"
+            className="topic-sheet-btn topic-sheet-btn--review"
+            onClick={() => go("/review")}
+          >
+            <span className="topic-sheet-btn-icon">🔄</span>
+            <div>
+              <p className="topic-sheet-btn-label">Ulang Kaji</p>
+              <p className="topic-sheet-btn-sub">Ulang soalan yang belum dikuasai</p>
+            </div>
+            <ArrowRightIcon />
+          </button>
+
+          <button
+            type="button"
+            className="topic-sheet-btn topic-sheet-btn--exam"
+            onClick={() => go("/exams")}
+          >
+            <span className="topic-sheet-btn-icon">📝</span>
+            <div>
+              <p className="topic-sheet-btn-label">Kertas Peperiksaan</p>
+              <p className="topic-sheet-btn-sub">Cuba soalan peperiksaan sebenar</p>
+            </div>
+            <ArrowRightIcon />
+          </button>
+        </div>
+
+        <button type="button" className="topic-sheet-close" onClick={onClose}>
+          Tutup
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SetProgressSection({ topics }: { topics: TopicStats[] }) {
+  const [activeTopic, setActiveTopic] = useState<TopicStats | null>(null);
+
   return (
     <section className="progress-set-section" aria-label="Kemajuan set">
       <div className="progress-section-header">
         <h2 className="progress-section-title">Kemajuan set</h2>
-        <button type="button" className="progress-see-all">Lihat semua</button>
       </div>
       <div className="progress-set-list">
         {topics.map((t) => {
-          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)" };
+          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "#7f65ff", bg: "" };
           const pct = Math.round(t.accuracy * 100);
-          const mastered = Math.round(t.correct);
-          const total = t.attempts;
           return (
-            <article key={t.topic_id} className={`progress-set-card page-enter topic-${t.topic_id}`}>
+            <article
+              key={t.topic_id}
+              className={`progress-set-card page-enter topic-${t.topic_id}`}
+              role="button"
+              tabIndex={0}
+              style={{ cursor: "pointer" }}
+              onClick={() => setActiveTopic(t)}
+              onKeyDown={(e) => e.key === "Enter" && setActiveTopic(t)}
+              aria-label={`${meta.name} – ${pct}% – ketik untuk lihat sumber`}
+            >
               <div className="progress-set-ring-wrap">
                 <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
                   <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
@@ -229,71 +310,23 @@ function SetProgressSection({ topics }: { topics: TopicStats[] }) {
               </div>
               <div className="progress-set-info">
                 <p className="progress-set-name">{meta.name}</p>
-                <p className="progress-set-sub">{mastered} daripada {total} kad dikuasai</p>
+                <p className="progress-set-sub">{t.correct} / {t.attempts} betul</p>
               </div>
+              <span className="progress-set-arrow"><ArrowRightIcon /></span>
             </article>
           );
         })}
       </div>
+
+      {activeTopic && (
+        <TopicResourceSheet topic={activeTopic} onClose={() => setActiveTopic(null)} />
+      )}
     </section>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Leaderboard section
-// ---------------------------------------------------------------------------
-
-const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
-
-function LeaderboardSection() {
-  const [tab, setTab] = useState<"hari" | "minggu" | "bulan" | "sepanjang">("sepanjang");
-  const tabs = [
-    { key: "hari", label: "Hari" },
-    { key: "minggu", label: "Minggu" },
-    { key: "bulan", label: "Bulan" },
-    { key: "sepanjang", label: "Sepanjang" },
-  ] as const;
-
-  return (
-    <section className="progress-leaderboard-section" aria-label="Papan kedudukan rakan">
-      <h2 className="progress-section-title">Papan kedudukan rakan anda</h2>
-
-      <div className="progress-tab-row" role="tablist">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            role="tab"
-            aria-selected={tab === t.key ? "true" : "false"}
-            type="button"
-            className={`progress-tab${tab === t.key ? " active" : ""}`}
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="progress-leaderboard-list">
-        {LEADERBOARD.map((entry) => (
-          <div
-            key={entry.rank}
-            className={`progress-lb-row${entry.isMe ? " is-me" : ""}`}
-          >
-            <span className="progress-lb-rank">
-              {MEDAL[entry.rank] ?? entry.rank}
-            </span>
-            <span className="progress-lb-avatar">{entry.avatar}</span>
-            <span className="progress-lb-name">{entry.name}</span>
-            <span className="progress-lb-xp">{formatXP(entry.xp)}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// My Flashcards section
+// My Flashcards
 // ---------------------------------------------------------------------------
 
 function MyFlashcardsSection({ sets }: { sets: FlashcardSetSummary[] }) {
@@ -328,7 +361,7 @@ function MyFlashcardsSection({ sets }: { sets: FlashcardSetSummary[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// My Quizzes section
+// My Quizzes
 // ---------------------------------------------------------------------------
 
 function MyQuizzesSection({ quizzes }: { quizzes: QuizSummary[] }) {
@@ -363,13 +396,18 @@ function MyQuizzesSection({ quizzes }: { quizzes: QuizSummary[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// Resume learning section (matches home "continue" pattern)
+// Resume learning – shows weakest topic
 // ---------------------------------------------------------------------------
 
 function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
   const router = useRouter();
-  const first = topics[0];
+  const [activeTopic, setActiveTopic] = useState<TopicStats | null>(null);
+
+  // Show topic with lowest accuracy first
+  const sorted = [...topics].sort((a, b) => a.accuracy - b.accuracy);
+  const first = sorted[0];
   if (!first) return null;
+
   const meta = TOPIC_META[first.topic_id] ?? { name: first.topic_id, color: "#7f65ff", bg: "" };
   const pct = Math.round(first.accuracy * 100);
 
@@ -377,16 +415,19 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
     <section className="progress-resume-section" aria-label="Sambung semula">
       <div className="progress-section-header">
         <h2 className="progress-section-title">Sambung semula</h2>
-        <button type="button" className="progress-see-all">Lihat semua</button>
+        <button type="button" className="progress-see-all" onClick={() => router.push("/learn")}>
+          Semua topik
+        </button>
       </div>
       <div className="progress-resume-row">
         <article
           className={`progress-resume-card page-enter topic-${first.topic_id}`}
-          onClick={() => router.push("/materials")}
+          onClick={() => setActiveTopic(first)}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && router.push("/materials")}
+          onKeyDown={(e) => e.key === "Enter" && setActiveTopic(first)}
           aria-label={`Sambung ${meta.name}`}
+          style={{ cursor: "pointer" }}
         >
           <div className="progress-set-ring-wrap">
             <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
@@ -405,18 +446,23 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
           </div>
           <div className="progress-set-info">
             <p className="progress-set-name">{meta.name}</p>
-            <p className="progress-set-sub">Kuiz</p>
+            <p className="progress-set-sub">Perlukan perhatian</p>
           </div>
+          <span className="progress-set-arrow"><ArrowRightIcon /></span>
         </article>
         <button
           type="button"
           className="progress-chat-btn"
-          aria-label="Buka chat"
-          onClick={() => router.push("/")}
+          aria-label="Latihan adaptif"
+          onClick={() => router.push("/learn")}
         >
-          <span>💬</span>
+          <span>🧠</span>
         </button>
       </div>
+
+      {activeTopic && (
+        <TopicResourceSheet topic={activeTopic} onClose={() => setActiveTopic(null)} />
+      )}
     </section>
   );
 }
@@ -436,6 +482,23 @@ function LoadingShell() {
 }
 
 // ---------------------------------------------------------------------------
+// Empty state
+// ---------------------------------------------------------------------------
+
+function EmptyTopics({ onStart }: { onStart: () => void }) {
+  return (
+    <section className="progress-empty" aria-label="Tiada data">
+      <p className="progress-empty-icon">📊</p>
+      <p className="progress-empty-title">Belum ada kemajuan</p>
+      <p className="progress-empty-sub">Mulakan latihan untuk melihat statistik anda di sini.</p>
+      <button type="button" className="progress-gold-btn" onClick={onStart}>
+        Mula Belajar
+      </button>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -446,45 +509,54 @@ export default function ProgressPage() {
   const [quizzes, setQuizzes] = useState<QuizSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-  const streak = 1;
-  const level = 2;
-  const xp = 30;
+  const [xp, setXp] = useState(0);
 
   useEffect(() => {
     const userId = sessionStorage.getItem("userId");
     const n = sessionStorage.getItem("userName") ?? "";
-    setName(n || "Noob");
+    const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
+    setName(n || "Pelajar");
+    setXp(storedXp);
 
     if (!userId) {
-      setTopics(MOCK_TOPICS);
       setLoading(false);
       return;
     }
 
     Promise.all([
-      getAssessment(userId).catch(() => ({ topics: MOCK_TOPICS })),
-      fetchFlashcardSets(userId).catch(() => []),
-      fetchUserQuizzes(userId).catch(() => []),
+      getAssessment(userId).catch(() => ({ topics: [] as TopicStats[] })),
+      fetchFlashcardSets(userId).catch(() => [] as FlashcardSetSummary[]),
+      fetchUserQuizzes(userId).catch(() => [] as QuizSummary[]),
     ]).then(([assessment, sets, qs]) => {
-      setTopics(assessment.topics.length === 0 ? MOCK_TOPICS : assessment.topics);
+      setTopics(assessment.topics);
       setFlashcardSets(sets);
       setQuizzes(qs);
       setLoading(false);
     });
-  }, [router]);
+  }, []);
+
+  const level = levelFromXP(xp);
+  const streak = parseInt(sessionStorage.getItem("streak") ?? "1", 10);
 
   if (loading) return <LoadingShell />;
+
+  const hasData = topics.length > 0;
 
   return (
     <section className="home-dashboard-shell page-enter" aria-label="Halaman kemajuan">
       <ProgressHeader name={name} xp={xp} level={level} />
       <XPProgressCard xp={xp} level={level} />
       <StreakCard streak={streak} />
-      <ResumeLearningSection topics={topics} />
-      <MyFlashcardsSection sets={flashcardSets} />
-      <MyQuizzesSection quizzes={quizzes} />
-      <SetProgressSection topics={topics} />
-      <LeaderboardSection />
+      {hasData ? (
+        <>
+          <ResumeLearningSection topics={topics} />
+          <MyFlashcardsSection sets={flashcardSets} />
+          <MyQuizzesSection quizzes={quizzes} />
+          <SetProgressSection topics={topics} />
+        </>
+      ) : (
+        <EmptyTopics onStart={() => router.push("/learn")} />
+      )}
     </section>
   );
 }

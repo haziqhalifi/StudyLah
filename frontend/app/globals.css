@@ -1128,6 +1128,37 @@ h3 {
 .learn-stat-value.brand {
   color: var(--brand);
 }
+.learn-topic-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.learn-topic-progress-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.learn-topic-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: width 0.4s ease;
+  min-width: 0;
+}
+
+.learn-topic-progress-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
 .learn-ai-cues {
   display: flex;
   flex-direction: column;
@@ -6731,3 +6762,153 @@ button.map-node:hover {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* =========================================================
+   Progress page – topic resource sheet & extras
+   ========================================================= */
+
+.progress-set-arrow {
+  margin-left: auto;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.progress-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+}
+.progress-empty-icon { font-size: 3rem; margin: 0; }
+.progress-empty-title { font-weight: 700; font-size: 1.1rem; margin: 0; }
+.progress-empty-sub { color: #6b7280; font-size: 0.875rem; margin: 0; }
+
+/* Bottom-sheet overlay */
+.topic-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+}
+
+.topic-sheet {
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  will-change: transform;
+  animation: slideUpSheet 0.25s ease forwards;
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0%); }
+}
+
+.topic-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin: 0 auto 4px;
+}
+
+.topic-sheet-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topic-sheet-icon {
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 12px;
+}
+
+.topic-sheet-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.topic-sheet-level {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 2px 0 0;
+  text-transform: capitalize;
+}
+
+.topic-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.topic-sheet-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid #e5e7eb;
+  background: #fafafa;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.topic-sheet-btn:hover { background: #f3f4f6; }
+
+.topic-sheet-btn-icon {
+  font-size: 1.4rem;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.topic-sheet-btn-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.topic-sheet-btn-sub {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 2px 0 0;
+}
+
+.topic-sheet-btn .progress-svg-icon {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.topic-sheet-close {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #374151;
+  width: 100%;
+}
+
+.topic-sheet-close:hover { background: #e5e7eb; }
