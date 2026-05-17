@@ -74,9 +74,9 @@ export default function MaterialsHubPage() {
       {/* ── Header ── */}
       <header className="student-header">
         <div className="student-header-copy">
-          <p className="student-time">Bahan</p>
-          <h1>Pilih Bab</h1>
-          <div className="student-meta-row">
+          <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Bahan</p>
+          <h1 style={{ paddingLeft: "0.5rem" }}>Pilih Bab</h1>
+          <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
             <span>Matematik Tingkatan 5</span>
             <span aria-hidden="true">·</span>
             <span>{BAB_CARDS.length} bab</span>

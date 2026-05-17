@@ -145,8 +145,8 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Helo, {name}</h1>
-        <div className="student-meta-row">
+        <h1 style={{ paddingLeft: "0.5rem" }}>Helo, {name}</h1>
+        <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
           <span>{DEFAULT_STUDENT.form}</span>
         </div>
       </div>
@@ -547,21 +547,23 @@ function AIChatSheet({
         className={`ai-sheet${open ? " ai-sheet--open" : ""}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Cikgu AI"
+        aria-label="Skorrel"
       >
         <div className="ai-sheet-handle" aria-hidden="true" />
 
         <div className="ai-chat-header">
-          <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+          <div className="ai-chat-avatar" aria-hidden="true">
+            <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          </div>
           <div className="ai-chat-header-text">
-            <h2>Tanya Tutor AI</h2>
+            <h2>Tanya Skorrel</h2>
             <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
           </div>
           <button
             type="button"
             className="ai-chat-collapse-btn"
             onClick={onClose}
-            aria-label="Tutup Cikgu AI"
+            aria-label="Tutup Skorrel"
           >
             {"\u2715"}
           </button>

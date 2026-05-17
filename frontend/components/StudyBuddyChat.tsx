@@ -5,7 +5,12 @@ import Image from "next/image";
 import MathText from "@/components/MathText";
 import QuickActionChips from "@/components/QuickActionChips";
 import QuizDrawer from "@/components/QuizDrawer";
-import { postStudyBuddyMessage, fetchCoachMessage, ChatMessage, AgentAction } from "@/lib/api";
+import {
+  postStudyBuddyMessage,
+  fetchCoachMessage,
+  ChatMessage,
+  AgentAction,
+} from "@/lib/api";
 import FlashcardReadyCard from "@/components/FlashcardReadyCard";
 import QuizReadyCard from "@/components/QuizReadyCard";
 import { LearningContext, QuickAction } from "@/lib/types";
@@ -30,7 +35,11 @@ interface StudyBuddyChatProps {
 // Extends ChatMessage with optional flags:
 //   isCoach  — style as AI Coach bubble
 //   action   — attach an agent action to a bot bubble (e.g. create_flashcards)
-type DisplayMessage = ChatMessage & { isCoach?: boolean; action?: AgentAction; pickFlashcardTopic?: boolean };
+type DisplayMessage = ChatMessage & {
+  isCoach?: boolean;
+  action?: AgentAction;
+  pickFlashcardTopic?: boolean;
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -106,13 +115,15 @@ export default function StudyBuddyChat({
       // Small delay so the drawer is fully rendered before sending
       setTimeout(() => sendMessage(initialMessage), 120);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Re-generate welcome message if context changes (e.g. user moves to next Q)
   useEffect(() => {
     sentInitial.current = false;
-    setMessages([{ role: "assistant", content: buildWelcomeMessage(learningContext) }]);
+    setMessages([
+      { role: "assistant", content: buildWelcomeMessage(learningContext) },
+    ]);
     setChipsVisible(true);
   }, [learningContext?.currentQuestion?.id]);
 
@@ -138,7 +149,11 @@ export default function StudyBuddyChat({
     setChipsVisible(false);
 
     try {
-      const res = await postStudyBuddyMessage(userId, historyToSend, learningContext);
+      const res = await postStudyBuddyMessage(
+        userId,
+        historyToSend,
+        learningContext,
+      );
 
       setMessages((prev) => [
         ...prev,
@@ -150,7 +165,6 @@ export default function StudyBuddyChat({
         },
       ]);
       setChipsVisible(true);
-
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -250,22 +264,22 @@ export default function StudyBuddyChat({
         <div className="sb-header">
           <div className="sb-header-left">
             <Image
-                src="/assets/mascot.webp"
-                alt="Skorrel"
-                width={40}
-                height={40}
-                className="sb-avatar"
-              />
+              src="/assets/mascot.webp"
+              alt="Skorrel"
+              width={40}
+              height={40}
+              className="sb-avatar"
+            />
             <div>
               <div className="sb-title">Skorrel</div>
-              <div className="sb-subtitle">Your study AI partner!</div>
+              <div className="sb-subtitle">Ubahan · Matriks · Insurans</div>
             </div>
           </div>
           <button
             type="button"
             className="sb-close"
             onClick={onClose}
-            aria-label="Close Skorrel"
+            aria-label="Tutup Skorrel"
           >
             ✕
           </button>
@@ -278,7 +292,8 @@ export default function StudyBuddyChat({
             <span className="sb-context-text">
               Helping with:{" "}
               <strong>
-                {TOPIC_DISPLAY[learningContext.topicId] ?? learningContext.topicName}
+                {TOPIC_DISPLAY[learningContext.topicId] ??
+                  learningContext.topicName}
               </strong>
               {learningContext.chapterName && (
                 <> &rsaquo; {learningContext.chapterName}</>
@@ -292,7 +307,9 @@ export default function StudyBuddyChat({
                     : "sb-context-wrong"
                 }`}
               >
-                {learningContext.lastAttempt.isCorrect ? "✓ Correct" : "✗ Wrong"}
+                {learningContext.lastAttempt.isCorrect
+                  ? "✓ Correct"
+                  : "✗ Wrong"}
               </span>
             )}
           </div>
@@ -304,7 +321,9 @@ export default function StudyBuddyChat({
             <div
               key={i}
               className={
-                msg.role === "user" ? "sb-msg-group sb-msg-group--user" : "sb-msg-group"
+                msg.role === "user"
+                  ? "sb-msg-group sb-msg-group--user"
+                  : "sb-msg-group"
               }
             >
               <div
@@ -312,8 +331,8 @@ export default function StudyBuddyChat({
                   msg.role === "user"
                     ? "sb-bubble-user"
                     : msg.isCoach
-                    ? "sb-bubble-coach"
-                    : "sb-bubble-bot"
+                      ? "sb-bubble-coach"
+                      : "sb-bubble-bot"
                 }`}
               >
                 {msg.isCoach && (
@@ -337,18 +356,22 @@ export default function StudyBuddyChat({
               )}
 
               {/* Quiz ready card — shown beneath the bot reply bubble */}
-              {msg.action?.type === "create_quiz" && (() => {
-                const qa = msg.action as Extract<AgentAction, { type: "create_quiz" }>;
-                return (
-                  <QuizReadyCard
-                    quizId={qa.quiz_id}
-                    title={qa.title}
-                    topicId={qa.topic_id}
-                    questionCount={qa.question_count}
-                    onStart={() => setActiveQuizId(qa.quiz_id)}
-                  />
-                );
-              })()}
+              {msg.action?.type === "create_quiz" &&
+                (() => {
+                  const qa = msg.action as Extract<
+                    AgentAction,
+                    { type: "create_quiz" }
+                  >;
+                  return (
+                    <QuizReadyCard
+                      quizId={qa.quiz_id}
+                      title={qa.title}
+                      topicId={qa.topic_id}
+                      questionCount={qa.question_count}
+                      onStart={() => setActiveQuizId(qa.quiz_id)}
+                    />
+                  );
+                })()}
 
               {/* Inline topic picker — shown when bot asks which topic for flashcards */}
               {msg.pickFlashcardTopic && !loading && (
@@ -358,7 +381,9 @@ export default function StudyBuddyChat({
                       key={tid}
                       type="button"
                       className={`sb-topic-btn sb-topic-btn--${tid}`}
-                      onClick={() => sendMessage(`Create 8 flashcards for ${tid}`)}
+                      onClick={() =>
+                        sendMessage(`Create 8 flashcards for ${tid}`)
+                      }
                       disabled={loading}
                     >
                       🃏 {tid.charAt(0).toUpperCase() + tid.slice(1)}
@@ -438,7 +463,11 @@ export default function StudyBuddyChat({
               aria-label="Send"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M12 19V5M5 12l7-7 7 7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </div>

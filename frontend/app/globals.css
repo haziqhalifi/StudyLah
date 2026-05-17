@@ -679,7 +679,9 @@ h3 {
   padding: 0.55rem 0;
   white-space: nowrap;
 }
-.top-nav-scroll::-webkit-scrollbar { display: none; }
+.top-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
 
 .top-nav-group-label {
   font-size: 0.65rem;
@@ -712,7 +714,10 @@ h3 {
   border: 1.5px solid var(--border);
   text-decoration: none;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .top-nav-chip:hover {
   background: #ede9ff;
@@ -1223,16 +1228,28 @@ h3 {
   border-radius: 999px;
   z-index: 999;
   pointer-events: none;
-  animation: xp-toast-in 0.25s ease, xp-toast-out 0.3s ease 1.7s forwards;
+  animation:
+    xp-toast-in 0.25s ease,
+    xp-toast-out 0.3s ease 1.7s forwards;
   white-space: nowrap;
 }
 @keyframes xp-toast-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 @keyframes xp-toast-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 .learn-topic-progress-row {
@@ -3877,7 +3894,9 @@ button.map-node:hover {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .qs-icon-btn:hover {
   background: #ddd6fe;
@@ -4060,7 +4079,10 @@ button.map-node:hover {
   background: var(--surface);
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .qs-settings-toggle--on {
   background: var(--brand);
@@ -4427,7 +4449,9 @@ button.map-node:hover {
   border-radius: 0.875rem;
   box-shadow: 0 3px 0 var(--fb-btn-shadow);
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .qs-feedback-btn:hover {
@@ -4868,7 +4892,10 @@ button.map-node:hover {
   font-weight: 500;
   color: var(--ink);
   box-shadow: 0 2px 0 #d1d5db;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s;
 }
 .qs-shell .option-card:hover:not(.selected):not(:disabled) {
   border-color: #60a5fa;
@@ -4925,7 +4952,10 @@ button.map-node:hover {
   align-items: center;
   justify-content: center;
   border: 2px solid #e5e7eb;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .qs-shell .option-letter-selected {
   background: #06b6d4;
@@ -4938,7 +4968,7 @@ button.map-node:hover {
   background: #fff;
   border: none;
   padding: 1.25rem 1.25rem 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border-radius: var(--r-2xl);
 }
 .qs-shell .qcard-question {
@@ -5700,6 +5730,11 @@ button.map-node:hover {
   bottom: calc(72px + env(safe-area-inset-bottom) + 0.75rem);
   right: 1rem;
   z-index: 60;
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -5833,11 +5868,15 @@ button.map-node:hover {
   gap: 0.65rem;
 }
 .sb-avatar {
-  width: 40px;
-  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  object-fit: contain;
+  overflow: hidden;
   flex-shrink: 0;
+  background: var(--brand-light);
 }
 .sb-title {
   font-size: 0.95rem;
@@ -10752,50 +10791,169 @@ button.map-node:hover {
 /* Mascot + dialogue row */
 .ob-mascot-row {
   display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.85rem;
   margin: 2rem 0 1.25rem;
   align-self: flex-start;
   width: 100%;
 }
 .ob-mascot-img {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid var(--brand-muted);
+  width: 72px;
+  height: 72px;
+  border-radius: 0;
+  object-fit: contain;
   flex-shrink: 0;
-  animation: ob-float 3s ease-in-out infinite;
+  animation: none;
+  transform-origin: bottom center;
 }
-@keyframes ob-float {
+.ob-mascot-img.ob-mascot-talking {
+  animation: ob-mascot-talk 0.45s ease-in-out infinite;
+}
+@keyframes ob-mascot-talk {
   0%,
   100% {
-    transform: translateY(0);
+    transform: scale(1) rotate(0deg) translateY(0);
   }
-  50% {
-    transform: translateY(-7px);
+  25% {
+    transform: scale(1.05) rotate(-2.5deg) translateY(-3px);
+  }
+  75% {
+    transform: scale(1.04) rotate(1.5deg) translateY(-1px);
   }
 }
 .ob-dialogue {
+  position: relative;
   flex: 1;
   background: white;
-  border: 2px solid var(--brand-muted);
-  border-radius: 14px 14px 14px 3px;
-  padding: 0.6rem 0.9rem;
+  border: none;
+  border-radius: 16px;
+  padding: 0.65rem 1rem;
   font-size: 0.875rem;
   color: var(--ink);
-  box-shadow: var(--shadow-card);
-  line-height: 1.45;
-  animation: ob-dialogue-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  line-height: 1.5;
+  animation: ob-dialogue-pop 0.25s ease both;
+}
+.ob-dialogue::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-style: solid;
+  border-width: 8px 10px 8px 0;
+  border-color: transparent white transparent transparent;
 }
 @keyframes ob-dialogue-pop {
   from {
-    transform: scale(0.85);
+    transform: scale(0.9) translateX(6px);
     opacity: 0;
   }
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* Onboarding back button */
+.ob-back-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--ink-2);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.ob-back-btn:hover {
+  background: var(--brand-light);
+  border-color: var(--brand-muted);
+  color: var(--brand);
+}
+
+/* Welcome Duolingo-style layout */
+.ob-welcome-layout {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+}
+.ob-mascot-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.ob-dialogue--above {
+  flex: none;
+  width: 90%;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  border-radius: 18px;
+  padding: 1.1rem 1.35rem;
+  margin-bottom: 14px;
+  transform-origin: bottom center;
+  animation: ob-bubble-expand 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.ob-dialogue--above::before {
+  display: none;
+}
+.ob-dialogue--above::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-width: 12px 10px 0;
+  border-color: white transparent transparent;
+}
+@keyframes ob-bubble-expand {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.ob-mascot-center {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  transform-origin: bottom center;
+  animation: ob-mascot-jiggle 1.4s ease-in-out infinite;
+}
+@keyframes ob-mascot-jiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(4deg);
   }
 }
 
@@ -10915,7 +11073,9 @@ button.map-node:hover {
   height: 8px;
   border-radius: 4px;
   background: var(--border);
-  transition: width 0.25s, background 0.25s;
+  transition:
+    width 0.25s,
+    background 0.25s;
 }
 .ob-dot-active {
   width: 20px;
@@ -11475,9 +11635,15 @@ button.map-node:hover {
 }
 
 /* Staggered fade-in delays */
-.ob-delay-1 { animation-delay: 0.2s; }
-.ob-delay-2 { animation-delay: 0.35s; }
-.ob-delay-3 { animation-delay: 0.5s; }
+.ob-delay-1 {
+  animation-delay: 0.2s;
+}
+.ob-delay-2 {
+  animation-delay: 0.35s;
+}
+.ob-delay-3 {
+  animation-delay: 0.5s;
+}
 
 /* Sticky CTA */
 .ob-sticky-cta {
@@ -11514,5 +11680,362 @@ button.map-node:hover {
   .ob-option {
     padding: 0.75rem 0.875rem;
     font-size: 0.88rem;
+  }
+}
+
+/* ============================================================
+   Card System — v2 Improvements
+   Targets: hierarchy, elevation, interaction, rhythm, mobile
+   ============================================================ */
+
+/* ── 1. Extended design tokens ────────────────────────────── */
+:root {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 6px rgba(0, 0, 0, 0.04);
+  --shadow-raised:
+    0 2px 8px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.07);
+  --shadow-hover:
+    0 8px 28px rgba(91, 76, 245, 0.16), 0 2px 8px rgba(0, 0, 0, 0.07);
+  --card-press: scale(0.985) translateY(1px);
+  --card-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── 2. Universal press state for all interactive cards ───── */
+.daily-mission-card:active,
+.weak-topic-card:active,
+.ai-chat-collapsed:active,
+.study-select-card:active,
+.quick-action-btn:active,
+.learning-feature-card:active {
+  transform: var(--card-press);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
+}
+
+/* ── 3. Home dashboard rhythm ─────────────────────────────── */
+.home-dashboard-shell {
+  gap: 0.85rem;
+  padding-bottom: 2rem;
+}
+
+/* ── 4. Level card — primary hero card ───────────────────── */
+.level-card {
+  border-radius: 28px;
+  min-height: 148px;
+}
+.level-card-content h2 {
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.level-progress-track {
+  height: 7px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.22);
+}
+.level-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: #fff;
+  transition: width 0.6s var(--card-ease);
+}
+
+/* ── 5. Daily mission card — secondary action ─────────────── */
+.daily-mission-card {
+  border-radius: 20px;
+  padding: 0.95rem 1.15rem;
+  gap: 0.95rem;
+}
+.daily-mission-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.daily-mission-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+.daily-mission-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+/* ── 6. Weak topic card — info action card ────────────────── */
+.weak-topic-card {
+  border-radius: 20px;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(91, 76, 245, 0.07);
+  box-shadow: var(--shadow-raised);
+}
+.weak-topic-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+.weak-topic-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #fff8ed;
+}
+.weak-topic-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+.weak-topic-title {
+  font-size: 0.9rem;
+  color: var(--ink);
+  margin-bottom: 0.45rem;
+}
+.weak-topic-cta {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--brand);
+  margin-top: 0.4rem;
+  display: block;
+}
+
+/* ── 7. AI chat collapsed — tertiary utility card ─────────── */
+.ai-chat-collapsed {
+  border-radius: 18px;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.ai-chat-collapsed:hover {
+  border-color: var(--brand-muted);
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-1px);
+}
+.ai-chat-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+}
+.ai-chat-avatar img {
+  mix-blend-mode: multiply;
+}
+.ai-chat-collapsed-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.ai-chat-collapsed-sub {
+  font-size: 0.75rem;
+  margin-top: 0.1rem;
+}
+
+/* ── 8. Learning feature cards ────────────────────────────── */
+.learning-feature-card {
+  border-radius: 22px;
+  transition:
+    transform 0.2s var(--card-ease),
+    box-shadow 0.2s var(--card-ease);
+  padding: 1.2rem 1.2rem 1.2rem 1.4rem;
+}
+.learning-feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(91, 76, 245, 0.22);
+}
+.learning-feature-card h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.learning-feature-card p {
+  font-size: 0.83rem;
+  opacity: 0.88;
+  line-height: 1.45;
+  margin-bottom: 0.6rem;
+}
+
+/* ── 9. Profile stat cards ────────────────────────────────── */
+.profile-stat-card {
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  min-height: 72px;
+  border: 1px solid #eeedf8;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease;
+}
+.profile-stat-card:hover {
+  box-shadow: var(--shadow-raised);
+}
+.profile-stat-card strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.profile-stat-card span {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ── 10. Profile metric & info cards ──────────────────────── */
+.profile-metric-card,
+.profile-info-card {
+  border-radius: 20px;
+  border: 1px solid #eeedf8;
+  padding: 1.1rem 1.15rem;
+  transition: box-shadow 0.15s ease;
+}
+.profile-metric-card:hover,
+.profile-info-card:hover {
+  box-shadow: var(--shadow-raised);
+}
+
+/* ── 11. Profile badge cards ──────────────────────────────── */
+.profile-badge-card {
+  border-radius: 18px;
+  border: 1px solid #eeedf8;
+  padding: 1rem;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.profile-badge-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+}
+
+/* ── 12. Material zig meta content cards ──────────────────── */
+.material-zig-meta {
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.material-zig-meta:not(.locked-meta):hover {
+  border-color: var(--brand-muted);
+  box-shadow:
+    0 4px 16px rgba(91, 76, 245, 0.12),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+.material-zig-kicker {
+  font-size: 0.6rem;
+  letter-spacing: 0.09em;
+  font-weight: 800;
+}
+.material-zig-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+/* ── 13. Material node circles ────────────────────────────── */
+.material-zig-circle {
+  width: 68px;
+  height: 68px;
+  transition:
+    transform 0.18s var(--card-ease),
+    box-shadow 0.18s ease;
+}
+.material-zig-circle:not(.locked):hover {
+  transform: scale(1.12);
+  box-shadow: 0 6px 20px rgba(91, 76, 245, 0.36);
+}
+.material-zig-circle.completed {
+  box-shadow:
+    0 0 0 4px rgba(5, 150, 105, 0.18),
+    0 6px 18px rgba(5, 150, 105, 0.22);
+}
+
+/* ── 14. Material floating header ─────────────────────────── */
+.material-current-head {
+  box-shadow:
+    0 4px 20px rgba(91, 76, 245, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* ── 15. Settings cards ───────────────────────────────────── */
+.settings-card {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 1.1rem 1.15rem;
+}
+
+/* ── 16. Quick action buttons ─────────────────────────────── */
+.quick-action-btn {
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  transition:
+    transform 0.18s var(--card-ease),
+    box-shadow 0.18s ease;
+}
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+}
+
+/* ── 17. Exam review items ────────────────────────────────── */
+.exam-review-item {
+  border-radius: 18px;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+.exam-review-item:hover {
+  border-color: var(--brand-muted);
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-1px);
+}
+
+/* ── 18. Onboarding result cards ──────────────────────────── */
+.ob-topic-card {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.ob-ai-card {
+  border-radius: 18px;
+}
+.ob-list-card {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── 19. Consistent keyboard focus ring ───────────────────── */
+.daily-mission-card:focus-visible,
+.weak-topic-card:focus-visible,
+.ai-chat-collapsed:focus-visible,
+.learning-feature-card:focus-visible,
+.quick-action-btn:focus-visible,
+.study-select-card:focus-visible,
+.material-zig-circle:focus-visible {
+  outline: 2.5px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* ── 20. Desktop refinements ──────────────────────────────── */
+@media (min-width: 769px) {
+  .home-dashboard-shell {
+    gap: 1rem;
+  }
+  .level-card {
+    min-height: 156px;
+  }
+  .learning-feature-card {
+    padding: 1.35rem 1.35rem 1.35rem 1.5rem;
+  }
+  .material-zig-meta {
+    max-width: 210px;
   }
 }

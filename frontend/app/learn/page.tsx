@@ -374,9 +374,9 @@ export default function LearnPage() {
         {/* ── Header ── */}
         <header className="student-header">
           <div className="student-header-copy">
-            <p className="student-time">Latihan Adaptif</p>
-            <h1>Pilih Bab</h1>
-            <div className="student-meta-row">
+            <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Latihan Adaptif</p>
+            <h1 style={{ paddingLeft: "0.5rem" }}>Pilih Bab</h1>
+            <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
               <span>Matematik Tingkatan 5</span>
               <span aria-hidden="true">·</span>
               <span>{MATH_F5_TOPICS.length} bab</span>

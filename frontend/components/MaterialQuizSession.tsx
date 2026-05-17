@@ -5,9 +5,18 @@ import Image from "next/image";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
-import { Question, Explanation, submitAnswer as apiSubmitAnswer, generateExplanation } from "@/lib/api";
+import {
+  Question,
+  Explanation,
+  submitAnswer as apiSubmitAnswer,
+  generateExplanation,
+} from "@/lib/api";
 import { MaterialMcq } from "@/app/materials/ubahan/data";
-import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
+import {
+  playSubmitSound,
+  playCorrectSound,
+  playWrongSound,
+} from "@/lib/sounds";
 import ExplanationBlock from "@/components/ExplanationBlock";
 
 type ChapterKey = "ubahan" | "matriks" | "insurans";
@@ -42,15 +51,21 @@ function chapterTopicId(chapter: ChapterKey): string {
   return "Matematik Bab 3: Insurans";
 }
 
-function buildQuestion(chapter: ChapterKey, step: StepLite, subtopic: SubtopicLite): { question: Question; correctIndex: number } {
-  const correct = step.answer ?? "Gunakan konsep subtopik ini secara langkah demi langkah.";
-  const distractor1 = step.task ?? "Teruskan dengan langkah rawak tanpa semakan formula.";
+function buildQuestion(
+  chapter: ChapterKey,
+  step: StepLite,
+  subtopic: SubtopicLite,
+): { question: Question; correctIndex: number } {
+  const correct =
+    step.answer ?? "Gunakan konsep subtopik ini secara langkah demi langkah.";
+  const distractor1 =
+    step.task ?? "Teruskan dengan langkah rawak tanpa semakan formula.";
   const distractor2 =
     chapter === "ubahan"
       ? "Abaikan pemalar k dan fokus pada nombor akhir sahaja."
       : chapter === "matriks"
-      ? "Abaikan syarat saiz matriks sebelum operasi."
-      : "Abaikan istilah polisi dan terus pilih premium paling rendah.";
+        ? "Abaikan syarat saiz matriks sebelum operasi."
+        : "Abaikan istilah polisi dan terus pilih premium paling rendah.";
   const distractor3 = "Buat anggaran tanpa menunjukkan sebarang langkah kerja.";
 
   return {
@@ -66,21 +81,41 @@ function buildQuestion(chapter: ChapterKey, step: StepLite, subtopic: SubtopicLi
   };
 }
 
-function mapMaterialQuestion(chapter: ChapterKey, item: MaterialMcq): { question: Question; correctIndex: number } {
+function mapMaterialQuestion(
+  chapter: ChapterKey,
+  item: MaterialMcq,
+): { question: Question; correctIndex: number } {
   return {
     question: {
       id: item.id,
       topic_id: chapterTopicId(chapter),
       text: item.text,
       options: item.options,
-      difficulty: item.difficulty === "Mudah" ? "easy" : item.difficulty === "Sederhana" ? "medium" : "hard",
-      tags: [chapter, "material", item.subtopicId, `kategori:${item.difficulty}`],
+      difficulty:
+        item.difficulty === "Mudah"
+          ? "easy"
+          : item.difficulty === "Sederhana"
+            ? "medium"
+            : "hard",
+      tags: [
+        chapter,
+        "material",
+        item.subtopicId,
+        `kategori:${item.difficulty}`,
+      ],
     },
     correctIndex: item.answerIndex,
   };
 }
 
-export default function MaterialQuizSession({ chapter, step, subtopic, materialQuestions, onClose, onContinue }: Props) {
+export default function MaterialQuizSession({
+  chapter,
+  step,
+  subtopic,
+  materialQuestions,
+  onClose,
+  onContinue,
+}: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -142,9 +177,12 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
     const today = new Date().toISOString().slice(0, 10);
     const lastActiveDay = localStorage.getItem("lastActiveDay");
     if (lastActiveDay !== today) {
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const yesterday = new Date(Date.now() - 86400000)
+        .toISOString()
+        .slice(0, 10);
       const stored = parseInt(localStorage.getItem("dailyStreak") ?? "0", 10);
-      const newDailyStreak = lastActiveDay === yesterday ? (isNaN(stored) ? 1 : stored) + 1 : 1;
+      const newDailyStreak =
+        lastActiveDay === yesterday ? (isNaN(stored) ? 1 : stored) + 1 : 1;
       localStorage.setItem("dailyStreak", String(newDailyStreak));
       localStorage.setItem("lastActiveDay", today);
       sessionStorage.setItem("streak", String(newDailyStreak));
@@ -199,17 +237,28 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   }
 
   const bar = !submitted ? (
-    <button type="button" className="btn-primary" disabled={selected === null} onClick={handleSubmit}>
+    <button
+      type="button"
+      className="btn-primary"
+      disabled={selected === null}
+      onClick={handleSubmit}
+    >
       Hantar Jawapan
     </button>
   ) : (
-    <div className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+    <div
+      className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}
+    >
       <div className="qs-feedback-top">
         <span className="qs-feedback-icon">{isCorrect ? "✓" : "✗"}</span>
         <div className="qs-feedback-text">
-          <p className="qs-feedback-title">{isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+          <p className="qs-feedback-title">
+            {isCorrect ? "Betul!" : "Jawapan Salah"}
+          </p>
           {!isCorrect && (
-            <p className="qs-feedback-hint">Semak jawapan betul yang ditunjukkan di atas.</p>
+            <p className="qs-feedback-hint">
+              Semak jawapan betul yang ditunjukkan di atas.
+            </p>
           )}
         </div>
       </div>
@@ -234,7 +283,9 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
           <span className="qs-feedback-icon">🚩</span>
           <div className="qs-feedback-text">
             <p className="qs-feedback-title">Semakan soalan ditandakan</p>
-            <p className="qs-feedback-hint">{reviewIndex + 1} / {flaggedList.length}</p>
+            <p className="qs-feedback-hint">
+              {reviewIndex + 1} / {flaggedList.length}
+            </p>
           </div>
         </div>
         <button
@@ -300,7 +351,11 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
       )}
 
       {submitted && showBuddy && userId && (
-        <StudyBuddyPanel userId={userId} questionContext={question.text} onClose={() => setShowBuddy(false)} />
+        <StudyBuddyPanel
+          userId={userId}
+          questionContext={question.text}
+          onClose={() => setShowBuddy(false)}
+        />
       )}
 
       {submitted && !showBuddy && (
@@ -308,9 +363,13 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Ask Skorrel"
+          aria-label="Tanya Skorrel"
         >
-          <Image src="/assets/mascot.webp" alt="Skorrel" width={30} height={30} />
+          <img
+            src="/assets/mascot.webp"
+            alt="Skorrel"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
         </button>
       )}
     </QuizSheet>

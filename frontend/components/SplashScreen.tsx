@@ -8,7 +8,7 @@ export default function SplashScreen() {
     const splash = document.getElementById("splash-screen");
     if (!splash) return;
 
-    splash.style.transition = "opacity 2.0s ease";
+    splash.style.transition = "opacity 1.0s ease";
     splash.style.opacity = "0";
     splash.addEventListener("transitionend", () => splash.remove(), {
       once: true,
