@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import StandardQuizShell from "@/components/StandardQuizShell";
 import QuestionCard from "@/components/QuestionCard";
 import { QuizDetail, fetchQuizDetail, submitQuiz } from "@/lib/api";
+
+// Lazy-loaded to avoid circular dep: StudyBuddyChat → QuizDrawer → StudyBuddyPanel → StudyBuddyChat
+const StudyBuddyPanel = dynamic(() => import("@/components/StudyBuddyPanel"), { ssr: false });
 
 interface QuizDrawerProps {
   quizId: string;
@@ -28,6 +32,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
   const [checking, setChecking] = useState(false);
   const [checkedResult, setCheckedResult] = useState<QuestionResult | null>(null);
   const [allResults, setAllResults] = useState<Record<string, QuestionResult>>({});
+  const [showBuddy, setShowBuddy] = useState(false);
 
   useEffect(() => {
     setPhase("loading");
@@ -36,6 +41,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
     setCurrentIndex(0);
     setCheckedResult(null);
     setAllResults({});
+    setShowBuddy(false);
 
     fetchQuizDetail(quizId)
       .then((data) => {
@@ -82,6 +88,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
     } else {
       setCurrentIndex((i) => i + 1);
       setCheckedResult(null);
+      setShowBuddy(false);
     }
   }
 
@@ -90,6 +97,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
     setCurrentIndex(0);
     setCheckedResult(null);
     setAllResults({});
+    setShowBuddy(false);
     setError(null);
     setPhase("questions");
   }
@@ -261,6 +269,26 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
       />
 
       {error && <p className="diag-error">{error}</p>}
+
+      {checkedResult && showBuddy && (
+        <StudyBuddyPanel
+          userId={userId}
+          questionContext={currentQuestion.text}
+          topicId={quiz.topicId}
+          onClose={() => setShowBuddy(false)}
+        />
+      )}
+
+      {checkedResult && !showBuddy && (
+        <button
+          type="button"
+          className="sb-fab"
+          onClick={() => setShowBuddy(true)}
+          aria-label="Tanya Skorrel"
+        >
+          <img src="/assets/mascot.webp" alt="Skorrel" className="sb-fab-img" />
+        </button>
+      )}
     </StandardQuizShell>
   );
 }
