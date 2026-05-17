@@ -305,14 +305,14 @@ function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
     <div className="icb-wrap" aria-label="Buka Cikgu AI">
       <div className="icb-header">
         <span className="icb-avatar" aria-hidden="true">{"\u{1F916}"}</span>
-        <span className="icb-title">Tanya AI</span>
+        <span className="icb-title">StudyBuddy</span>
         <button type="button" className="icb-expand-btn" aria-label="Buka chat penuh" onClick={onOpenSheet}>
           {"Buka penuh \u2197"}
         </button>
       </div>
       <div className="icb-mid-copy">
-        <p>Keliru dengan soalan? Tanya je.</p>
-        <p>Skorrel sedia membantu.</p>
+        <p>Buntu nak jawab soalan?</p>
+        <p>Kami bantu anda cari jalan penyelesaian</p>
       </div>
       <div className="icb-input-wrap">
         <textarea
