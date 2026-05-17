@@ -10,9 +10,9 @@ import { getAssessment, fetchFlashcardSets, fetchUserQuizzes, TopicStats, Flashc
 // ---------------------------------------------------------------------------
 
 const TOPIC_META: Record<string, { name: string; color: string; bg: string; icon: string; learnRoute: string; materialsRoute: string }> = {
-  ubahan:   { name: "Ubahan",   color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)", icon: "∝",  learnRoute: "/learn",     materialsRoute: "/materials/ubahan/subtopics" },
-  matriks:  { name: "Matriks",  color: "#ff6b93", bg: "linear-gradient(135deg,#ff8dc0,#ffb0c9)", icon: "⊞",  learnRoute: "/learn",     materialsRoute: "/materials/matriks/subtopics" },
-  insurans: { name: "Insurans", color: "#22c55e", bg: "linear-gradient(135deg,#5bd4bc,#22c55e)", icon: "🛡", learnRoute: "/learn",     materialsRoute: "/materials/insurans/subtopics" },
+  ubahan:   { name: "Ubahan",   color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)", icon: "∝",  learnRoute: "/learn",     materialsRoute: "/learning" },
+  matriks:  { name: "Matriks",  color: "#ff6b93", bg: "linear-gradient(135deg,#ff8dc0,#ffb0c9)", icon: "⊞",  learnRoute: "/learn",     materialsRoute: "/learning" },
+  insurans: { name: "Insurans", color: "#22c55e", bg: "linear-gradient(135deg,#5bd4bc,#22c55e)", icon: "🛡", learnRoute: "/learn",     materialsRoute: "/learning" },
 };
 
 const WEEK_DAYS = ["Ah", "Is", "Se", "Ra", "Kh", "Ju", "Sa"];

@@ -101,10 +101,10 @@ function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
     [...diag.by_topic]
       .sort((a, b) => a.accuracy - b.accuracy)[0]
       ?.topic?.toLowerCase() ?? "";
-  if (weakest.includes("ubahan")) return "/materials/ubahan/subtopics";
-  if (weakest.includes("matriks")) return "/materials/matriks/subtopics";
-  if (weakest.includes("insurans")) return "/materials/insurans/subtopics";
-  return "/materials";
+  if (weakest.includes("ubahan")) return "/learning";
+  if (weakest.includes("matriks")) return "/learning";
+  if (weakest.includes("insurans")) return "/learning";
+  return "/learning";
 }
 
 function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
