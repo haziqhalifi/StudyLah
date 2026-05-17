@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import StandardQuizShell from "@/components/StandardQuizShell";
-import OptionCard from "@/components/OptionCard";
-import { QuizDetail, QuizSubmitResult, fetchQuizDetail, submitQuiz } from "@/lib/api";
+import QuestionCard from "@/components/QuestionCard";
+import { QuizDetail, fetchQuizDetail, submitQuiz } from "@/lib/api";
 
 interface QuizDrawerProps {
   quizId: string;
@@ -13,21 +13,29 @@ interface QuizDrawerProps {
 
 type Phase = "loading" | "error" | "questions" | "results";
 
+interface QuestionResult {
+  isCorrect: boolean;
+  correctOptionIndex: number;
+  explanation: string;
+}
+
 export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps) {
   const [quiz, setQuiz] = useState<QuizDetail | null>(null);
   const [phase, setPhase] = useState<Phase>("loading");
   const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [result, setResult] = useState<QuizSubmitResult | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [checkedResult, setCheckedResult] = useState<QuestionResult | null>(null);
+  const [allResults, setAllResults] = useState<Record<string, QuestionResult>>({});
 
   useEffect(() => {
     setPhase("loading");
     setError(null);
     setAnswers({});
     setCurrentIndex(0);
-    setResult(null);
+    setCheckedResult(null);
+    setAllResults({});
 
     fetchQuizDetail(quizId)
       .then((data) => {
@@ -42,38 +50,46 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
 
   const questions = quiz?.questions ?? [];
   const currentQuestion = questions[currentIndex];
-  const answeredCount = Object.keys(answers).length;
-  const allAnswered = questions.length > 0 && questions.every((q) => answers[q.id] !== undefined);
+  const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
+  const isLast = currentIndex === questions.length - 1;
 
-  const scoreMessage = useMemo(() => {
-    if (!result) return "";
-    if (result.percentage >= 80) return "Hebat! Anda semakin mahir dalam topik ini. 🎉";
-    if (result.percentage >= 50) return "Usaha yang baik! Mari ulang kaji soalan yang terlepas. 💪";
-    return "Tak apa, mari kita semak bersama. 📘";
-  }, [result]);
-
-  async function handleSubmit() {
-    if (!quiz || submitting || !allAnswered) return;
-    setSubmitting(true);
+  async function handleCheck() {
+    if (!quiz || checking || currentAnswer === undefined || !currentQuestion) return;
+    setChecking(true);
+    setError(null);
     try {
-      const res = await submitQuiz(
-        quiz.quizId,
-        userId,
-        questions.map((q) => ({ questionId: q.id, selectedOptionIndex: answers[q.id] })),
-      );
-      setResult(res);
-      setPhase("results");
+      const res = await submitQuiz(quiz.quizId, userId, [
+        { questionId: currentQuestion.id, selectedOptionIndex: currentAnswer },
+      ]);
+      const r = res.results[0];
+      const qResult: QuestionResult = {
+        isCorrect: r.isCorrect,
+        correctOptionIndex: r.correctOptionIndex,
+        explanation: r.explanation.text,
+      };
+      setCheckedResult(qResult);
+      setAllResults((prev) => ({ ...prev, [currentQuestion.id]: qResult }));
     } catch {
-      setError("Kuiz tidak dapat dihantar. Sila cuba lagi.");
+      setError("Gagal menyemak jawapan. Sila cuba lagi.");
     } finally {
-      setSubmitting(false);
+      setChecking(false);
+    }
+  }
+
+  function handleNext() {
+    if (isLast) {
+      setPhase("results");
+    } else {
+      setCurrentIndex((i) => i + 1);
+      setCheckedResult(null);
     }
   }
 
   function handleRetry() {
     setAnswers({});
     setCurrentIndex(0);
-    setResult(null);
+    setCheckedResult(null);
+    setAllResults({});
     setError(null);
     setPhase("questions");
   }
@@ -125,16 +141,24 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
   }
 
   // ── Results ──
-  if (phase === "results" && result && quiz) {
-    const scoreEmoji =
-      result.percentage >= 80 ? "🎉" : result.percentage >= 50 ? "💪" : "📘";
+  if (phase === "results") {
+    const total = questions.length;
+    const score = Object.values(allResults).filter((r) => r.isCorrect).length;
+    const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+    const scoreEmoji = percentage >= 80 ? "🎉" : percentage >= 50 ? "💪" : "📘";
+    const scoreMessage =
+      percentage >= 80
+        ? "Hebat! Anda semakin mahir dalam topik ini."
+        : percentage >= 50
+          ? "Usaha yang baik! Mari ulang kaji soalan yang terlepas."
+          : "Tak apa, mari kita semak bersama.";
 
     return (
       <StandardQuizShell
         title="Keputusan Kuiz"
-        subtitle={quiz.title}
-        progress={questions.length}
-        total={questions.length}
+        subtitle={quiz?.title}
+        progress={total}
+        total={total}
         onClose={onClose}
         bar={
           <div className="learn-actions">
@@ -151,32 +175,30 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
           <div className="quiz-result-banner">
             <span className="quiz-result-emoji">{scoreEmoji}</span>
             <div>
-              <p className="quiz-result-score">
-                {result.score} / {result.total}
-              </p>
+              <p className="quiz-result-score">{score} / {total}</p>
               <p className="quiz-result-msg">{scoreMessage}</p>
             </div>
-            <span className="quiz-result-pct">{result.percentage}%</span>
+            <span className="quiz-result-pct">{percentage}%</span>
           </div>
         </div>
 
         <div className="space-y-3">
           {questions.map((q, idx) => {
-            const item = result.results[idx];
-            if (!item) return null;
+            const r = allResults[q.id];
+            if (!r) return null;
             return (
               <div key={q.id} className="card quiz-review-card">
                 <div className="quiz-review-row">
                   <span className="quiz-review-num">S{idx + 1}</span>
-                  <span className={`chip ${item.isCorrect ? "chip-correct" : "chip-wrong"}`}>
-                    {item.isCorrect ? "✓ Betul" : "✗ Terlepas"}
+                  <span className={`chip ${r.isCorrect ? "chip-correct" : "chip-wrong"}`}>
+                    {r.isCorrect ? "✓ Betul" : "✗ Terlepas"}
                   </span>
                 </div>
                 <p className="quiz-review-text">{q.text}</p>
                 <p className="quiz-review-answer">
-                  Jawapan betul: <strong>{q.options[item.correctOptionIndex]}</strong>
+                  Jawapan betul: <strong>{q.options[r.correctOptionIndex]}</strong>
                 </p>
-                <p className="quiz-review-explanation">{item.explanation.text}</p>
+                <p className="quiz-review-explanation">{r.explanation}</p>
               </div>
             );
           })}
@@ -186,72 +208,59 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
   }
 
   // ── Questions ──
-  if (phase !== "questions" || !quiz || !currentQuestion) return null;
+  if (!quiz || !currentQuestion) return null;
 
-  const bar = (
+  const bar = !checkedResult ? (
     <button
       type="button"
       className="btn-primary"
-      disabled={!allAnswered || submitting}
-      onClick={handleSubmit}
+      disabled={currentAnswer === undefined || checking}
+      onClick={handleCheck}
     >
-      {submitting
-        ? "Menghantar…"
-        : allAnswered
-          ? "Hantar Kuiz"
-          : `Hantar (${answeredCount}/${questions.length} dijawab)`}
+      {checking ? "Menyemak…" : "Semak"}
     </button>
+  ) : (
+    <div className={`qs-feedback-panel ${checkedResult.isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+      <div className="qs-feedback-top">
+        <span className="qs-feedback-icon">{checkedResult.isCorrect ? "✓" : "✗"}</span>
+        <div className="qs-feedback-text">
+          <p className="qs-feedback-title">{checkedResult.isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+        </div>
+      </div>
+      <button type="button" className="qs-feedback-btn" onClick={handleNext}>
+        {isLast ? "LIHAT KEPUTUSAN" : "SETERUSNYA"} &rsaquo;
+      </button>
+    </div>
   );
 
   return (
     <StandardQuizShell
       title={quiz.title}
       subtitle={`Soalan ${currentIndex + 1} / ${questions.length}`}
-      progress={answeredCount}
+      progress={currentIndex + (checkedResult ? 1 : 0)}
       total={questions.length}
       onClose={onClose}
       bar={bar}
     >
-      <div className="card qcard">
-        <div className="qcard-header">
-          <span className="qcard-label">Soalan {currentIndex + 1}</span>
-        </div>
-        <p className="qcard-question">{currentQuestion.text}</p>
-        <div className="qcard-options">
-          {currentQuestion.options.map((opt, i) => (
-            <OptionCard
-              key={i}
-              index={i}
-              text={opt}
-              selected={answers[currentQuestion.id] === i}
-              onClick={() =>
-                setAnswers((prev) => ({ ...prev, [currentQuestion.id]: i }))
-              }
-            />
-          ))}
-        </div>
-      </div>
+      <QuestionCard
+        question={{
+          id: currentQuestion.id,
+          text: currentQuestion.text,
+          options: currentQuestion.options,
+          difficulty: currentQuestion.difficulty,
+          topic_id: quiz.topicId,
+          tags: currentQuestion.tags,
+        }}
+        selectedOptionIndex={currentAnswer ?? null}
+        onSelectOption={checkedResult ? undefined : (idx) =>
+          setAnswers((prev) => ({ ...prev, [currentQuestion.id]: idx }))
+        }
+        showResult={checkedResult !== null}
+        isCorrect={checkedResult?.isCorrect}
+        correctOptionIndex={checkedResult?.correctOptionIndex}
+      />
 
       {error && <p className="diag-error">{error}</p>}
-
-      <div className="learn-actions quiz-nav-actions">
-        <button
-          type="button"
-          className="btn-ghost diag-skip-btn"
-          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-          disabled={currentIndex === 0}
-        >
-          ← Sebelumnya
-        </button>
-        <button
-          type="button"
-          className="btn-ghost diag-skip-btn"
-          onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-          disabled={currentIndex >= questions.length - 1}
-        >
-          Seterusnya →
-        </button>
-      </div>
     </StandardQuizShell>
   );
 }

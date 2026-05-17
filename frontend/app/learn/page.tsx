@@ -15,7 +15,6 @@ import {
   TopicStats,
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
-import ExplanationBlock from "@/components/ExplanationBlock";
 import QuizSheet from "@/components/QuizSheet";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
@@ -587,15 +586,6 @@ export default function LearnPage() {
         correctOptionIndex={result ? 0 : undefined}
       />
 
-      {/* ── Explanation shown after answering ── */}
-      {result && (
-        <ExplanationBlock
-          explanation={explanation}
-          isCorrect={result.is_correct}
-          onGenerateExplanation={handleGenerateExplanation}
-          isGenerating={generatingExplanation}
-        />
-      )}
 
       {/* ── StudyBuddy floating action button ── */}
       {userId && (
