@@ -145,7 +145,7 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Helo, {name}</h1>
+        <h1>Hai, {name}</h1>
         <div className="student-meta-row">
           <span>{DEFAULT_STUDENT.form}</span>
         </div>

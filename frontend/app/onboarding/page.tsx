@@ -154,6 +154,7 @@ export default function OnboardingPage() {
           ? crypto.randomUUID()
           : `user-${Date.now()}`);
       sessionStorage.setItem("userId", userId);
+      sessionStorage.setItem("userName", name.trim());
       sessionStorage.setItem("onboardingName", name.trim());
       sessionStorage.setItem("onboardingSchool", school.trim());
       sessionStorage.setItem("onboardingForm", form);
