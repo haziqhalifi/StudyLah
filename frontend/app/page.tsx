@@ -24,16 +24,6 @@ function xpProgress(xp: number) {
   return Math.min(Math.round((xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100), 100);
 }
 
-const quickActions = [
-  { label: "Ambil Kuiz", icon: QuizIcon, href: "/exams", color: "#7f65ff" },
-  { label: "Bahan", icon: BookIcon, href: "/materials", color: "#ff8dc0" },
-  {
-    label: "Kemajuan",
-    icon: ProgressIcon,
-    href: "/progress",
-    color: "#5bd4bc",
-  },
-] as const;
 
 export default function Home() {
   return <HomeDashboard />;
@@ -55,6 +45,7 @@ function HomeDashboard() {
   const router = useRouter();
   const [userId, setUserId] = useState("guest");
   const [chatOpen, setChatOpen] = useState(false);
+  const [topics, setTopics] = useState<TopicStats[]>([]);
   const [chatContext, setChatContext] = useState<LearningContext>({
     topicId: "ubahan",
     topicName: "Ubahan (Variation)",
@@ -64,7 +55,12 @@ function HomeDashboard() {
   useEffect(() => {
     try {
       const uid = sessionStorage.getItem("userId");
-      if (uid) setUserId(uid);
+      if (uid) {
+        setUserId(uid);
+        getAssessment(uid)
+          .then((res) => setTopics(res.topics))
+          .catch(() => {});
+      }
       const shown = localStorage.getItem("onboardingDiagnosticShown");
       if (uid && !shown) {
         localStorage.setItem("onboardingDiagnosticShown", "1");
@@ -103,7 +99,8 @@ function HomeDashboard() {
       >
         <StudentHeader />
         <LevelProgressCard />
-        <QuickActionsRow />
+        <DailyMissionCard />
+        <WeakTopicCard topics={topics} />
         <AIChatCard onOpen={openChat} />
         <RecentSessionCard />
       </section>
@@ -202,25 +199,82 @@ function LevelProgressCard() {
   );
 }
 
-function QuickActionsRow() {
+function DailyMissionCard() {
   const router = useRouter();
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    try {
+      const today = new Date().toDateString();
+      const saved = localStorage.getItem("dailyMissionDate");
+      if (saved === today) setDone(true);
+    } catch {}
+  }, []);
+
+  function handleClaim() {
+    try {
+      localStorage.setItem("dailyMissionDate", new Date().toDateString());
+    } catch {}
+    router.push("/learn");
+  }
+
   return (
-    <div className="quick-actions-row" aria-label="Quick actions">
-      {quickActions.map(({ label, icon: Icon, href, color }) => (
-        <button
-          key={label}
-          type="button"
-          className="quick-action-btn"
-          data-color={color}
-          onClick={() => router.push(href)}
-        >
-          <span className="quick-action-icon">
-            <Icon />
-          </span>
-          <span>{label}</span>
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      className={`daily-mission-card${done ? " daily-mission-card--done" : ""}`}
+      onClick={handleClaim}
+      aria-label="Misi harian"
+    >
+      <span className="daily-mission-icon" aria-hidden="true">
+        {done ? <CheckCircleIcon /> : <FireIcon />}
+      </span>
+      <div className="daily-mission-body">
+        <p className="daily-mission-label">Misi Hari Ini</p>
+        <p className="daily-mission-title">
+          {done ? "Misi selesai! Teruskan streak kamu" : "Jawab 5 soalan hari ini"}
+        </p>
+      </div>
+      {!done && (
+        <span className="daily-mission-badge" aria-hidden="true">+10 XP</span>
+      )}
+    </button>
+  );
+}
+
+function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
+  const router = useRouter();
+
+  const weakest = topics.length > 0
+    ? topics.reduce((a, b) => (a.accuracy < b.accuracy ? a : b))
+    : null;
+
+  if (!weakest) return null;
+
+  const name = TOPIC_META[weakest.topic_id]?.name ?? weakest.topic_id;
+  const pct = Math.round(weakest.accuracy * 100);
+
+  return (
+    <button
+      type="button"
+      className="weak-topic-card"
+      onClick={() => router.push("/learn")}
+      aria-label={`Topik lemah: ${name}`}
+    >
+      <span className="weak-topic-icon" aria-hidden="true">
+        <TargetIcon />
+      </span>
+      <div className="weak-topic-body">
+        <p className="weak-topic-label">Topik Paling Lemah</p>
+        <p className="weak-topic-title">{name}</p>
+        <div className="weak-topic-bar-wrap" aria-hidden="true">
+          <div className="weak-topic-bar">
+            <div className="weak-topic-bar-fill" style={{ "--fill": `${pct}%` } as React.CSSProperties} />
+          </div>
+          <span className="weak-topic-pct">{pct}% tepat</span>
+        </div>
+      </div>
+      <span className="weak-topic-cta">Ulangkaji &rsaquo;</span>
+    </button>
   );
 }
 
