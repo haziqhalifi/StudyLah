@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 SYSTEM_PROMPT = (
     "You are an expert SPM Mathematics Form 5 question writer for Malaysian students. "
     "Generate MCQ questions that follow SPM exam format and marking scheme. Questions must be clear, "
-    "unambiguous, and at the specified difficulty level. Always return valid JSON only, no extra text."
+    "unambiguous, and at the specified difficulty level. "
+    "IMPORTANT: Write ALL question text and answer options in Bahasa Melayu (Malay). "
+    "Always return valid JSON only, no extra text."
 )
 
 _TOPIC_NAMES = {
@@ -157,6 +159,7 @@ class QuestionGenerator:
             f"Difficulty: {difficulty}\n"
             f"Number of questions: {num_questions}\n"
             f"{subtopic_line}\n\n"
+            "REMINDER: All question text and all answer options MUST be written in Bahasa Melayu.\n\n"
             "Return exactly this JSON shape:\n"
             "{\n"
             '  "questions": [\n'
