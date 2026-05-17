@@ -27,25 +27,25 @@ export const UBAHAN_SUBTOPICS: Subtopic[] = [
     title: "Ubahan Langsung",
     meaning:
       "Hubungan di mana apabila satu pemboleh ubah y bertambah, maka pemboleh ubah x juga bertambah pada kadar yang sama dan sebaliknya.",
-    relation: "y berkadar terus dengan x^n.",
-    equation: "y = kx^n, dengan keadaan k ialah pemalar.",
-    graph: "Graf y melawan x^n ialah satu garis lurus yang melalui asalan.",
+    relation: "Hubungan kadar: y ∝ xⁿ",
+    equation: "Bentuk persamaan: y = kxⁿ, dengan k sebagai pemalar.",
+    graph: "Graf y melawan xⁿ ialah garis lurus yang melalui asalan (0, 0).",
   },
   {
     id: "1.2",
     title: "Ubahan Songsang",
     meaning:
       "Hubungan di mana pemboleh ubah y bertambah apabila pemboleh ubah x berkurang pada kadar yang sama dan sebaliknya.",
-    relation: "y berkadar songsang dengan x^n.",
-    equation: "y = k / x^n, dengan keadaan k ialah pemalar.",
+    relation: "Hubungan kadar: y ∝ 1/xⁿ",
+    equation: "Bentuk persamaan: y = k/xⁿ, dengan k sebagai pemalar.",
     graph:
-      "Graf y melawan x berbentuk hiperbola, manakala graf y melawan 1 / x^n ialah satu garis lurus yang bermula daripada asalan.",
+      "Graf y melawan x berbentuk hiperbola. Graf y melawan (1/xⁿ) pula ialah garis lurus melalui asalan (0, 0).",
   },
   {
     id: "1.3",
     title: "Ubahan Bergabung",
     meaning: "Melibatkan gabungan ubahan langsung atau ubahan tercantum dan ubahan songsang.",
-    generalForm: "Bentuk umum: y berkadar dengan x^m / z^n atau y = kx^m / z^n.",
+    generalForm: "Bentuk umum: y ∝ xᵐ/zⁿ, jadi persamaan ialah y = kxᵐ/zⁿ.",
   },
 ];
 

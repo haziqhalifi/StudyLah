@@ -14,6 +14,8 @@ const NAV_ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const hiddenRoutes = ["/sign-in", "/sign-up", "/onboarding"];
+  if (hiddenRoutes.includes(pathname)) return null;
 
   return (
     <nav className="bottom-nav" aria-label="Primary navigation">

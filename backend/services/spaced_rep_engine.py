@@ -79,10 +79,6 @@ class SpacedRepEngine:
     Reads warm the in-memory cache once per user per process lifetime.
     """
 
-    # TODO: SpacedRepEngine._store is in-memory — state is lost on restart.
-    # The _persist() method writes to Supabase but only if the table
-    # studylah_spaced_rep_states already exists (see CREATE TABLE comment at top).
-    # Run that migration before deploying to production.
     def __init__(self) -> None:
         self._store: Dict[str, ReviewState] = {}
         self._loaded_users: Set[str] = set()

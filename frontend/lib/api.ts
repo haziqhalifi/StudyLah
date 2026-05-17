@@ -120,6 +120,7 @@ export interface ReviewResponse {
 
 export interface ReviewSubmitResponse {
   is_correct: boolean;
+  correct_option_index: number;
   explanation: Explanation;
   next_review_at: string; // ISO datetime (backward compat)
   review_state: ReviewState;
@@ -148,6 +149,37 @@ export interface Paper {
 
 export interface PapersResponse {
   papers: Paper[];
+}
+
+export interface OnboardingQuestion {
+  id: string;
+  topic: string;
+  text: string;
+  options: string[];
+  correct_index: number;
+}
+
+export interface StartOnboardingResponse {
+  session_id: string;
+  questions: OnboardingQuestion[];
+}
+
+export interface TopicDiagnosticSummary {
+  topic: string;
+  correct: number;
+  total: number;
+  accuracy: number;
+  level: "strong" | "weak";
+}
+
+export interface OnboardingDiagnosticResponse {
+  score: number;
+  total: number;
+  strengths: string[];
+  weaknesses: string[];
+  by_topic: TopicDiagnosticSummary[];
+  recommendation: string;
+  next_step: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -280,6 +312,21 @@ export async function getSpacedRepSummary(
   return get("/api/spaced-rep/summary", { user_id: userId });
 }
 
+export async function startOnboarding(
+  name: string,
+  school: string,
+  form: number,
+): Promise<StartOnboardingResponse> {
+  return post("/api/onboarding/start", { name, school, form });
+}
+
+export async function submitOnboarding(
+  sessionId: string,
+  answers: Array<{ question_id: string; selected_option_index: number }>,
+): Promise<OnboardingDiagnosticResponse> {
+  return post("/api/onboarding/submit", { session_id: sessionId, answers });
+}
+
 // ---------------------------------------------------------------------------
 // StudyBuddy chat (Gemini-powered agentic tutor)
 // ---------------------------------------------------------------------------
@@ -405,6 +452,19 @@ function normalizeCreateQuizResponse(raw: any): CreateQuizResponse {
     title: raw.title,
     questionCount: raw.questionCount ?? raw.question_count,
   };
+}
+
+export type QuizSummary = {
+  quiz_id: string;
+  topic_id: "ubahan" | "matriks" | "insurans";
+  title: string;
+  question_count: number;
+  created_at: string;
+};
+
+/** List all quizzes created by a user. */
+export async function fetchUserQuizzes(userId: string): Promise<QuizSummary[]> {
+  return get("/api/quizzes", { userId });
 }
 
 /** Fetch a previously-created personalised quiz by ID. */
@@ -554,6 +614,40 @@ export async function fetchDiagnosticResult(
   userId: string,
 ): Promise<DiagnosticResult> {
   return get("/api/diagnostic/result", { userId });
+}
+
+export type QuestionAttemptDetail = {
+  questionId: string;
+  questionText: string;
+  selectedOptionIndex: number;
+  correctOptionIndex: number;
+  isCorrect: boolean;
+  difficulty: Difficulty;
+  attemptedAt: string;
+};
+
+export type TopicReport = {
+  topicId: DiagnosticTopicId;
+  topicName: string;
+  accuracy: number;
+  attempts: number;
+  correct: number;
+  level: "weak" | "okay" | "strong";
+  questions: QuestionAttemptDetail[];
+};
+
+export type DiagnosticReport = {
+  userId: string;
+  totalQuestions: number;
+  correctQuestions: number;
+  overallAccuracy: number;
+  topics: TopicReport[];
+};
+
+export async function fetchDiagnosticReport(
+  userId: string,
+): Promise<DiagnosticReport> {
+  return get("/api/diagnostic/report", { userId });
 }
 
 // ---------------------------------------------------------------------------

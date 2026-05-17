@@ -199,15 +199,24 @@ export default function ExamsPage() {
         <section className="level-card" aria-label="Pick a paper to begin">
           <div className="level-card-content">
             <p className="level-eyebrow">Paper Picker</p>
-            <h2>Tap a paper to start the exam instantly.</h2>
-            <div className="level-progress-row">
-              <div className="level-progress-track" aria-hidden="true">
-                <div className="level-progress-fill level-progress-fill-full">
-                  <span className="level-progress-dot" />
-                </div>
-              </div>
-              <span>{trialPapers.length} available</span>
-            </div>
+            {(() => {
+              const completedCount = completedPaperIds.size;
+              const total = trialPapers.length;
+              const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+              return (
+                <>
+                  <h2>{completedCount === 0 ? "Tap a paper to start the exam instantly." : `${completedCount} of ${total} papers completed`}</h2>
+                  <div className="level-progress-row">
+                    <div className="level-progress-track" aria-hidden="true">
+                      <div className="level-progress-fill" style={{ width: `${pct}%` }}>
+                        <span className="level-progress-dot" />
+                      </div>
+                    </div>
+                    <span>{completedCount === 0 ? `${total} available` : `${pct}% done`}</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
           <div className="level-trophy" aria-hidden="true">
             <span className="learn-hub-chip">SPM</span>

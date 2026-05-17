@@ -30,7 +30,7 @@ def _row_to_question(row: dict) -> Question:
 
 
 def get_question_by_id(question_id: str) -> Optional[Question]:
-    # Seed/quiz questions have UUID string IDs — check those first
+    # 1. In-memory seed (fastest, no network)
     try:
         from backend.data.seed_questions import get_seed_questions
         for q in get_seed_questions():
@@ -39,7 +39,21 @@ def get_question_by_id(question_id: str) -> Optional[Question]:
     except Exception:
         pass
 
-    # Fall back to Supabase (integer row IDs)
+    # 2. studylah_questions (our schema, text PK)
+    try:
+        resp = (
+            supabase.table("studylah_questions")
+            .select("id, topic_id, text, options, correct_option_index, difficulty, tags")
+            .eq("id", question_id)
+            .maybe_single()
+            .execute()
+        )
+        if resp and resp.data:
+            return _row_to_studylah_question(resp.data)
+    except Exception:
+        pass
+
+    # 3. JomSkor questions table (integer row IDs — AI-generated questions land here)
     try:
         int_id = int(question_id)
     except (ValueError, TypeError):
@@ -121,18 +135,40 @@ def get_questions_from_trial_papers(limit: int = 200) -> List[Question]:
     return [_row_to_question(r) for r in response.data]
 
 
-def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Question]:
-    query = (
-        supabase.table("questions")
-        .select("id, question, options, correct_index, difficulty, topic, subject")
-        .not_.is_("question", "null")
-        .limit(limit)
+def _row_to_studylah_question(row: dict) -> Question:
+    return Question(
+        id=str(row["id"]),
+        topic_id=row["topic_id"],
+        text=row["text"],
+        options=row["options"] if isinstance(row["options"], list) else list(row["options"]),
+        correct_option_index=row["correct_option_index"],
+        difficulty=row.get("difficulty") or "medium",
+        tags=row.get("tags") or [],
     )
-    if topic_id:
-        # `topic` column is currently unused (always null); filter by `subject` instead.
-        query = query.eq("subject", topic_id)
-    response = query.execute()
-    return [_row_to_question(r) for r in response.data]
+
+
+def get_all_questions(topic_id: Optional[str] = None, limit: int = 50) -> List[Question]:
+    from backend.data.seed_questions import get_seed_questions
+
+    # Pull from studylah_questions (our schema, RLS-safe)
+    try:
+        query = (
+            supabase.table("studylah_questions")
+            .select("id, topic_id, text, options, correct_option_index, difficulty, tags")
+            .limit(limit)
+        )
+        if topic_id:
+            query = query.eq("topic_id", topic_id)
+        response = query.execute()
+        studylah_qs = [_row_to_studylah_question(r) for r in (response.data or [])]
+    except Exception:
+        studylah_qs = []
+
+    # Always merge with in-memory seeds so we never return empty
+    seed_qs = get_seed_questions(topic_id=topic_id)
+    existing_ids = {q.id for q in studylah_qs}
+    merged = studylah_qs + [q for q in seed_qs if q.id not in existing_ids]
+    return merged[:limit]
 
 
 # ---------------------------------------------------------------------------

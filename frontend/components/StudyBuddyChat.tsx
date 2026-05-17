@@ -6,6 +6,7 @@ import QuickActionChips from "@/components/QuickActionChips";
 import QuizDrawer from "@/components/QuizDrawer";
 import { postStudyBuddyMessage, fetchCoachMessage, ChatMessage, AgentAction } from "@/lib/api";
 import FlashcardReadyCard from "@/components/FlashcardReadyCard";
+import QuizReadyCard from "@/components/QuizReadyCard";
 import { LearningContext, QuickAction } from "@/lib/types";
 import { getChipsForContext } from "@/lib/quickActions";
 
@@ -18,6 +19,7 @@ interface StudyBuddyChatProps {
   learningContext?: LearningContext;
   isOpen: boolean;
   onClose: () => void;
+  initialMessage?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -62,6 +64,7 @@ export default function StudyBuddyChat({
   learningContext,
   isOpen,
   onClose,
+  initialMessage,
 }: StudyBuddyChatProps) {
   const [messages, setMessages] = useState<DisplayMessage[]>(() => [
     { role: "assistant", content: buildWelcomeMessage(learningContext) },
@@ -69,8 +72,8 @@ export default function StudyBuddyChat({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  // "expanded" = chips visible above input; "collapsed" = chips hidden
   const [chipsVisible, setChipsVisible] = useState(true);
+  const sentInitial = useRef(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -93,15 +96,21 @@ export default function StudyBuddyChat({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Focus input when opened
+  // Focus input when opened; auto-send initialMessage once
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
+    if (!isOpen) return;
+    setTimeout(() => inputRef.current?.focus(), 50);
+    if (initialMessage && !sentInitial.current) {
+      sentInitial.current = true;
+      // Small delay so the drawer is fully rendered before sending
+      setTimeout(() => sendMessage(initialMessage), 120);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Re-generate welcome message if context changes (e.g. user moves to next Q)
   useEffect(() => {
+    sentInitial.current = false;
     setMessages([{ role: "assistant", content: buildWelcomeMessage(learningContext) }]);
     setChipsVisible(true);
   }, [learningContext?.currentQuestion?.id]);
@@ -141,16 +150,10 @@ export default function StudyBuddyChat({
       ]);
       setChipsVisible(true);
 
-      if (res.action?.type === "create_quiz") {
-        setTimeout(
-          () => setActiveQuizId(res.action.type === "create_quiz" ? res.action.quiz_id : null),
-          800,
-        );
-      }
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I couldn't reach the server. Please try again." },
+        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
       ]);
       setChipsVisible(true);
     } finally {
@@ -182,7 +185,7 @@ export default function StudyBuddyChat({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I couldn't reach your coach. Please try again." },
+        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
       ]);
       setChipsVisible(true);
     } finally {
@@ -326,6 +329,20 @@ export default function StudyBuddyChat({
                 />
               )}
 
+              {/* Quiz ready card — shown beneath the bot reply bubble */}
+              {msg.action?.type === "create_quiz" && (() => {
+                const qa = msg.action as Extract<AgentAction, { type: "create_quiz" }>;
+                return (
+                  <QuizReadyCard
+                    quizId={qa.quiz_id}
+                    title={qa.title}
+                    topicId={qa.topic_id}
+                    questionCount={qa.question_count}
+                    onStart={() => setActiveQuizId(qa.quiz_id)}
+                  />
+                );
+              })()}
+
               {/* Inline topic picker — shown when bot asks which topic for flashcards */}
               {msg.pickFlashcardTopic && !loading && (
                 <div className="sb-topic-picker">
@@ -395,25 +412,29 @@ export default function StudyBuddyChat({
 
         {/* Input row */}
         <div className="sb-input-row">
-          <textarea
-            ref={inputRef}
-            className="sb-input"
-            rows={1}
-            placeholder="Ask about Ubahan, Matriks, or Insurans…"
-            value={input}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            disabled={loading}
-          />
-          <button
-            type="button"
-            className="sb-send"
-            onClick={handleSend}
-            disabled={!input.trim() || loading}
-            aria-label="Send"
-          >
-            ↑
-          </button>
+          <div className="sb-input-wrap">
+            <textarea
+              ref={inputRef}
+              className="sb-input"
+              rows={1}
+              placeholder="Tanya soalan kamu di sini…"
+              value={input}
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+            />
+            <button
+              type="button"
+              className="sb-send"
+              onClick={handleSend}
+              disabled={!input.trim() || loading}
+              aria-label="Send"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </>
