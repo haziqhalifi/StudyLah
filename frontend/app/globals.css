@@ -3965,17 +3965,19 @@ button.map-node:hover {
 
 .sb-bubble {
   max-width: 86%;
-  padding: 0.6rem 0.95rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--r-lg);
   font-size: 0.9rem;
-  line-height: 1.55;
+  line-height: 1.6;
   word-break: break-word;
 }
 .sb-bubble-bot {
   align-self: flex-start;
-  background: var(--brand-light);
+  background: #ffffff;
   color: var(--ink);
+  border: 1px solid var(--brand-muted);
   border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(91, 76, 245, 0.07);
 }
 .sb-bubble-coach {
   align-self: flex-start;
@@ -3983,14 +3985,15 @@ button.map-node:hover {
   color: var(--ink);
   border: 1px solid #bbf7d0;
   border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(22, 163, 74, 0.06);
 }
 .sb-coach-label {
   display: block;
   font-size: 0.7rem;
   font-weight: 700;
   color: #16a34a;
-  letter-spacing: 0.03em;
-  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
   text-transform: uppercase;
 }
 .sb-bubble-user {
@@ -4001,6 +4004,146 @@ button.map-node:hover {
 }
 .sb-bubble-text {
   white-space: pre-wrap;
+}
+
+/* ── Bot message markdown rich styling ── */
+.sb-md {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.sb-md p {
+  margin: 0 0 0.6rem;
+}
+.sb-md p:last-child {
+  margin-bottom: 0;
+}
+.sb-md strong {
+  font-weight: 700;
+  color: var(--brand-dark);
+  background: #eef2ff;
+  padding: 0.05em 0.3em;
+  border-radius: 4px;
+}
+.sb-md em {
+  font-style: italic;
+  color: var(--ink-2);
+}
+.sb-md h1,
+.sb-md h2,
+.sb-md h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0.75rem 0 0.35rem;
+  color: var(--brand-dark);
+  border-bottom: 1.5px solid var(--brand-muted);
+  padding-bottom: 0.2rem;
+}
+.sb-md h1 { font-size: 1rem; }
+.sb-md h2 { font-size: 0.95rem; }
+.sb-md h3 { font-size: 0.875rem; }
+.sb-md ul {
+  margin: 0.4rem 0 0.6rem 0;
+  padding: 0;
+  list-style: none;
+}
+.sb-md ul li {
+  position: relative;
+  padding-left: 1.1rem;
+  margin-bottom: 0.3rem;
+}
+.sb-md ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--brand);
+  font-weight: 700;
+}
+.sb-md ol {
+  margin: 0.4rem 0 0.6rem 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: sb-ol;
+}
+.sb-md ol li {
+  position: relative;
+  padding-left: 1.75rem;
+  margin-bottom: 0.35rem;
+  counter-increment: sb-ol;
+}
+.sb-md ol li::before {
+  content: counter(sb-ol);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.sb-md code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  background: var(--brand-light);
+  color: var(--brand-dark);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--brand-muted);
+}
+.sb-md pre {
+  background: #1e1b4b;
+  border-radius: var(--r-md);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.sb-md pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: #e0e7ff;
+}
+.sb-md blockquote {
+  border-left: 3px solid var(--brand);
+  background: var(--brand-light);
+  padding: 0.4rem 0.75rem;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  color: var(--ink-2);
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+.sb-md hr {
+  border: none;
+  border-top: 1px solid var(--brand-muted);
+  margin: 0.65rem 0;
+}
+.sb-md table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 0.5rem 0;
+}
+.sb-md th {
+  background: var(--brand);
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+  font-weight: 600;
+}
+.sb-md td {
+  padding: 0.28rem 0.6rem;
+  border-bottom: 1px solid var(--brand-muted);
+}
+.sb-md tr:nth-child(even) td {
+  background: var(--brand-light);
 }
 
 /* â”€â”€ Message group (bubble + optional action card) â”€â”€ */
@@ -4085,6 +4228,45 @@ button.map-node:hover {
 }
 .fc-ready-btn:hover  { background: var(--brand-dark); }
 .fc-ready-btn:active { transform: scale(0.97); }
+
+/* ── Quiz ready card (inline in chat, mirrors FlashcardReadyCard) ── */
+.sb-quiz-ready {
+  background: var(--brand-light);
+  border: 1.5px solid var(--brand-muted);
+  border-radius: var(--r-xl);
+  padding: 0.85rem 1rem;
+  width: 100%;
+  max-width: 86%;
+  box-shadow: 0 2px 8px rgba(91, 76, 245, 0.08);
+  animation: fadeUp 0.25s ease both;
+}
+.sb-quiz-ready-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+.sb-quiz-ready-count {
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.sb-quiz-ready-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 0.2rem;
+  line-height: 1.35;
+}
+.sb-quiz-ready-sub {
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  margin: 0 0 0.65rem;
+}
+.review-ready-actions {
+  display: flex;
+  gap: 0.5rem;
+}
 
 /* Typing indicator */
 .sb-typing {

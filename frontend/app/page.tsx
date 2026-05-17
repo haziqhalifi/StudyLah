@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { postStudyBuddyMessage, getAssessment, getPapers } from "@/lib/api";
-import type { ChatMessage, TopicStats } from "@/lib/api";
+import { getAssessment, getPapers } from "@/lib/api";
+import type { TopicStats } from "@/lib/api";
+import StudyBuddyChat from "@/components/StudyBuddyChat";
+import type { LearningContext } from "@/lib/types";
 
 const student = {
   name: "Amir",
@@ -30,14 +32,32 @@ export default function Home() {
   return <HomeDashboard />;
 }
 
+const TOPIC_NAME_MAP: Record<string, LearningContext["topicId"]> = {
+  ubahan: "ubahan",
+  matriks: "matriks",
+  insurans: "insurans",
+};
+
+const TOPIC_DISPLAY_NAMES: Record<string, string> = {
+  ubahan: "Ubahan (Variation)",
+  matriks: "Matriks (Matrices)",
+  insurans: "Insurans",
+};
+
 function HomeDashboard() {
   const router = useRouter();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerInitialMsg, setDrawerInitialMsg] = useState("");
+  const [userId, setUserId] = useState("guest");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatContext, setChatContext] = useState<LearningContext>({
+    topicId: "ubahan",
+    topicName: "Ubahan (Variation)",
+    pageContext: "general",
+  });
 
   useEffect(() => {
     try {
       const uid = sessionStorage.getItem("userId");
+      if (uid) setUserId(uid);
       const shown = localStorage.getItem("onboardingDiagnosticShown");
       if (uid && !shown) {
         localStorage.setItem("onboardingDiagnosticShown", "1");
@@ -48,9 +68,24 @@ function HomeDashboard() {
     }
   }, [router]);
 
-  function openChat(initialMsg = "") {
-    setDrawerInitialMsg(initialMsg);
-    setDrawerOpen(true);
+  function openChat(topicKey: string, initialMsg?: string) {
+    const topicId = TOPIC_NAME_MAP[topicKey] ?? "ubahan";
+    setChatContext({
+      topicId,
+      topicName: TOPIC_DISPLAY_NAMES[topicKey] ?? "Ubahan (Variation)",
+      pageContext: "general",
+      ...(initialMsg
+        ? {
+            currentQuestion: {
+              id: "home-context",
+              text: initialMsg,
+              options: [],
+              difficulty: "medium" as const,
+            },
+          }
+        : {}),
+    });
+    setChatOpen(true);
   }
 
   return (
@@ -65,10 +100,11 @@ function HomeDashboard() {
         <AIChatCard onOpen={openChat} />
         <RecentSessionCard />
       </section>
-      <ChatDrawer
-        open={drawerOpen}
-        initialMessage={drawerInitialMsg}
-        onClose={() => setDrawerOpen(false)}
+      <StudyBuddyChat
+        userId={userId}
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        learningContext={chatContext}
       />
     </>
   );
@@ -170,13 +206,8 @@ const TOPICS = {
 
 type TopicKey = keyof typeof TOPICS;
 
-const CHAT_CHIPS: { label: string; message: string; topic: TopicKey }[] = [
-  { label: "Ubahan Langsung", message: "Terangkan ubahan langsung dengan contoh", topic: "ubahan" },
-  { label: "Matriks Songsang", message: "Macam mana nak cari matriks songsang 2×2?", topic: "matriks" },
-  { label: "Kiraan Premium", message: "Terangkan cara kira premium insurans", topic: "insurans" },
-];
 
-function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
+function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => void }) {
   const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
   const topic = TOPICS[selectedTopic];
 
@@ -190,7 +221,7 @@ function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
       <button
         type="button"
         className="ai-chat-header ai-chat-header-btn"
-        onClick={() => onOpen()}
+        onClick={() => onOpen(selectedTopic)}
         aria-label="Buka chat tutor AI"
       >
         <div className="ai-chat-avatar" aria-hidden="true">
@@ -229,7 +260,7 @@ function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
             key={chip.label}
             type="button"
             className="ai-chat-chip"
-            onClick={() => onOpen(chip.message)}
+            onClick={() => onOpen(selectedTopic, chip.message)}
           >
             {chip.label}
           </button>
@@ -239,165 +270,6 @@ function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
   );
 }
 
-function ChatDrawer({
-  open,
-  initialMessage,
-  onClose,
-}: {
-  open: boolean;
-  initialMessage: string;
-  onClose: () => void;
-}) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // When drawer opens with a pre-filled message, send it immediately
-  useEffect(() => {
-    if (!open) return;
-    setTimeout(() => inputRef.current?.focus(), 100);
-    if (initialMessage) {
-      sendMessage(initialMessage);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialMessage]);
-
-  // Reset messages when drawer closes
-  useEffect(() => {
-    if (!open) setMessages([]);
-  }, [open]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
-
-  async function sendMessage(text: string) {
-    const trimmed = text.trim();
-    if (!trimmed || loading) return;
-    setInput("");
-    const next: ChatMessage[] = [
-      ...messages,
-      { role: "user", content: trimmed },
-    ];
-    setMessages(next);
-    setLoading(true);
-    try {
-      const userId =
-        (typeof window !== "undefined" && sessionStorage.getItem("userId")) ||
-        "guest";
-      const res = await postStudyBuddyMessage(userId, next);
-      setMessages([...next, { role: "assistant", content: res.reply }]);
-    } catch {
-      setMessages([
-        ...next,
-        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    sendMessage(input);
-  }
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={`chat-drawer-backdrop${open ? " open" : ""}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      {/* Drawer */}
-      <div
-        className={`chat-drawer${open ? " open" : ""}`}
-        role="dialog"
-        aria-label="AI Tutor Chat"
-        aria-modal="true"
-      >
-        <div className="chat-drawer-handle" aria-hidden="true" />
-        <header className="chat-drawer-header">
-          <div className="chat-drawer-avatar" aria-hidden="true">
-            AI
-          </div>
-          <div>
-            <h2>Tutor AI</h2>
-            <p>StudyBuddy — sedia membantu</p>
-          </div>
-          <button
-            type="button"
-            className="chat-drawer-close"
-            onClick={onClose}
-            aria-label="Tutup chat"
-          >
-            <CloseIcon />
-          </button>
-        </header>
-
-        <div className="chat-drawer-messages">
-          {messages.length === 0 && !loading && (
-            <div className="chat-drawer-empty">
-              <p>Tanya apa sahaja tentang pelajaran anda!</p>
-              <div className="ai-chat-suggestions">
-                {CHAT_CHIPS.map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    className="ai-chat-chip"
-                    onClick={() => sendMessage(chip.message)}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`chat-bubble ${m.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}`}
-            >
-              {m.content}
-            </div>
-          ))}
-          {loading && (
-            <div className="chat-bubble chat-bubble-ai chat-bubble-typing">
-              <span />
-              <span />
-              <span />
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-
-        <form className="chat-drawer-input-row" onSubmit={handleSubmit}>
-          <input
-            ref={inputRef}
-            className="ai-chat-input"
-            type="text"
-            placeholder="Tanya soalan..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            aria-label="Chat input"
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            className="ai-chat-send"
-            aria-label="Hantar"
-            disabled={loading || !input.trim()}
-          >
-            <SendIcon />
-          </button>
-        </form>
-      </div>
-    </>
-  );
-}
 
 const TOPIC_META: Record<string, { name: string }> = {
   ubahan:   { name: "Ubahan" },
@@ -565,18 +437,3 @@ function ArrowIcon() {
   );
 }
 
-function SendIcon() {
-  return (
-    <IconBase>
-      <path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7Z" />
-    </IconBase>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <IconBase>
-      <path d="M18 6 6 18M6 6l12 12" />
-    </IconBase>
-  );
-}

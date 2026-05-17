@@ -6,6 +6,7 @@ import QuickActionChips from "@/components/QuickActionChips";
 import QuizDrawer from "@/components/QuizDrawer";
 import { postStudyBuddyMessage, fetchCoachMessage, ChatMessage, AgentAction } from "@/lib/api";
 import FlashcardReadyCard from "@/components/FlashcardReadyCard";
+import QuizReadyCard from "@/components/QuizReadyCard";
 import { LearningContext, QuickAction } from "@/lib/types";
 import { getChipsForContext } from "@/lib/quickActions";
 
@@ -141,12 +142,6 @@ export default function StudyBuddyChat({
       ]);
       setChipsVisible(true);
 
-      if (res.action?.type === "create_quiz") {
-        setTimeout(
-          () => setActiveQuizId(res.action.type === "create_quiz" ? res.action.quiz_id : null),
-          800,
-        );
-      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -325,6 +320,20 @@ export default function StudyBuddyChat({
                   numCards={msg.action.num_cards}
                 />
               )}
+
+              {/* Quiz ready card — shown beneath the bot reply bubble */}
+              {msg.action?.type === "create_quiz" && (() => {
+                const qa = msg.action as Extract<AgentAction, { type: "create_quiz" }>;
+                return (
+                  <QuizReadyCard
+                    quizId={qa.quiz_id}
+                    title={qa.title}
+                    topicId={qa.topic_id}
+                    questionCount={qa.question_count}
+                    onStart={() => setActiveQuizId(qa.quiz_id)}
+                  />
+                );
+              })()}
 
               {/* Inline topic picker — shown when bot asks which topic for flashcards */}
               {msg.pickFlashcardTopic && !loading && (

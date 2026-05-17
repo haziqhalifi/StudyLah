@@ -1,30 +1,31 @@
 "use client";
 
 /**
- * MathText — renders a string that may contain LaTeX math.
+ * MathText — renders markdown + LaTeX math from AI replies.
  *
  * Handles two sources:
- *   1. Question/option text from the DB: uses raw LaTeX without delimiters,
+ *   1. Question/option text from the DB: bare LaTeX without delimiters,
  *      e.g.  "Given s \times s = 6^{t}"  or  "100004_{5}"
- *   2. Gemini markdown replies: may use $...$ or $$...$$ delimiters.
+ *   2. OpenAI markdown replies: may use $...$ or $$...$$ or \(...\) / \[...\]
  *
  * Strategy:
- *   - Wrap any bare LaTeX expressions (containing \cmd or ^{} or _{}) that
- *     are NOT already inside $...$ with $...$ so remark-math picks them up.
- *   - Then render with ReactMarkdown + remark-math + rehype-katex.
+ *   - Normalise LaTeX delimiters so remark-math can parse them.
+ *   - Only wrap bare LaTeX as $...$ when there's no markdown structure present,
+ *     to avoid breaking AI markdown replies that happen to contain backslashes.
+ *   - Render with ReactMarkdown + remark-math + rehype-katex.
  */
 
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
 
 interface Props {
   children: string;
   className?: string;
-  inline?: boolean; // true → render as inline span, false → block div
+  inline?: boolean;
 }
 
-// Convert all LaTeX delimiter styles to $ / $$ so remark-math can parse them.
 function normaliseMath(text: string): string {
   let out = text;
 
@@ -34,35 +35,32 @@ function normaliseMath(text: string): string {
   // \(...\)  →  $...$   (inline math)
   out = out.replace(/\\\(([\s\S]*?)\\\)/g, (_m, inner) => `$${inner}$`);
 
-  // If there are no $ delimiters at all but the text looks like bare LaTeX
-  // (contains \cmd or ^{} or _{}) wrap the whole thing as inline math.
-  if (!/\$/.test(out) && /\\[a-zA-Z]|[\^_]\{/.test(out)) {
+  // Only wrap the whole thing as bare math when:
+  //   - no $ delimiters already present
+  //   - no markdown headings / bullets / code fences (i.e. it's plain math text)
+  //   - the text looks like LaTeX (\cmd or ^{} or _{})
+  const hasDollar = /\$/.test(out);
+  const hasMarkdown = /^#{1,6}\s|^[-*]\s|^```|^\d+\.\s/m.test(out);
+  const hasLatex = /\\[a-zA-Z]|[\^_]\{/.test(out);
+
+  if (!hasDollar && !hasMarkdown && hasLatex) {
     out = `$${out}$`;
   }
 
   return out;
 }
 
-export default function MathText({
-  children,
-  className,
-  inline = false,
-}: Props) {
+export default function MathText({ children, className, inline = false }: Props) {
   const normalised = normaliseMath(children);
-  const responsiveClass = [className, "math-text-responsive"]
-    .filter(Boolean)
-    .join(" ");
+  const cls = ["math-text-responsive", className].filter(Boolean).join(" ");
 
   if (inline) {
     return (
-      <span className={responsiveClass}>
+      <span className={cls}>
         <ReactMarkdown
-          remarkPlugins={[remarkMath]}
+          remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex]}
-          components={{
-            // Suppress the wrapping <p> so inline math flows in-line
-            p: ({ children }) => <>{children}</>,
-          }}
+          components={{ p: ({ children }) => <>{children}</> }}
         >
           {normalised}
         </ReactMarkdown>
@@ -71,8 +69,11 @@ export default function MathText({
   }
 
   return (
-    <div className={responsiveClass}>
-      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+    <div className={cls}>
+      <ReactMarkdown
+        remarkPlugins={[remarkMath, remarkGfm]}
+        rehypePlugins={[rehypeKatex]}
+      >
         {normalised}
       </ReactMarkdown>
     </div>
