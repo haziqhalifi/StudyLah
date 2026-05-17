@@ -12,6 +12,7 @@ type LessonPage = {
 };
 
 const COMPLETION_KEY = "ubahan_completed_steps_v1";
+const MATH_LINE_PATTERN = /[=∝÷×⁻ⁿᵐ]|\bA\^?-?1\b|\b\d+\/\w+/;
 
 function buildPages(step: (typeof UBAHAN_STEPS)[number], subtopic: (typeof UBAHAN_SUBTOPICS)[number]): LessonPage[] {
   const conceptLines = [subtopic.meaning];
@@ -104,6 +105,10 @@ export default function UbahanStepPage() {
     router.push("/materials/ubahan/subtopics");
   }
 
+  function isMathLine(line: string) {
+    return MATH_LINE_PATTERN.test(line) || line.startsWith("Bentuk") || line.startsWith("Formula");
+  }
+
   if (step.type !== "Content") {
     return (
       <MaterialQuizSession
@@ -135,7 +140,9 @@ export default function UbahanStepPage() {
             </p>
             <h2>{pages[pageIndex]?.title}</h2>
             {pages[pageIndex]?.lines.map((line) => (
-              <p key={line}>{line}</p>
+              <p key={line} className={isMathLine(line) ? "material-math-line" : undefined}>
+                {line}
+              </p>
             ))}
           </div>
 

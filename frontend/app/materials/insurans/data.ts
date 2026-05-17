@@ -29,7 +29,7 @@ export const INSURANS_SUBTOPICS: Subtopic[] = [
       "Bab ini memfokuskan kepada pengurusan risiko dan perlindungan kewangan melalui insurans.",
     relation: "Risiko ialah kemungkinan berlakunya musibah yang melibatkan kerugian kewangan.",
     equation:
-      "Insurans bertujuan memindahkan risiko daripada individu kepada organisasi insurans melalui kontrak polisi.",
+      "Konsep utama: Risiko dipindahkan daripada individu kepada syarikat insurans melalui kontrak polisi.",
   },
   {
     id: "3.2",
@@ -47,7 +47,7 @@ export const INSURANS_SUBTOPICS: Subtopic[] = [
     meaning:
       "Premium ialah jumlah wang yang dibayar untuk mendapatkan perlindungan insurans.",
     equation:
-      "Premium = (Nilai Muka / RM x) x Kadar Premium per RM x.",
+      "Formula premium: Premium = (Nilai Muka ÷ RM x) × Kadar Premium bagi setiap RM x.",
     relation:
       "Deduktibel ialah amaun yang ditanggung sendiri sebelum pampasan dibayar oleh syarikat insurans.",
     generalForm:
