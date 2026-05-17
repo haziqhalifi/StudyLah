@@ -73,13 +73,10 @@ export default function MaterialsHubPage() {
     <section className="home-dashboard-shell page-enter" aria-label="Hab bahan pembelajaran">
       <header className="student-header">
         <div className="student-header-copy">
-          <p className="student-time">Bahan</p>
+          <p className="student-time">Bahan Pembelajaran</p>
           <h1>Pilih Bab</h1>
           <div className="student-meta-row">
             <span>Matematik Tingkatan 5</span>
-            <span aria-hidden="true">•</span>
-            <span>{BAB_CARDS.length} bab</span>
-            <span>{BAB_CARDS.length} bab</span>
           </div>
         </div>
       </header>
@@ -106,7 +103,7 @@ export default function MaterialsHubPage() {
         </div>
       </section>
 
-      {/* Chapter cards — scrollable with bottom peek affordance */}
+      {/* Chapter cards â€” scrollable with bottom peek affordance */}
       <div className="home-learning-stack pb-32 overflow-y-auto">
         {BAB_CARDS.map((card) => {
           const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
@@ -141,13 +138,13 @@ export default function MaterialsHubPage() {
                     />
                   </div>
                   {pct === 0 ? (
-                    <span className="text-white/70 text-xs font-medium whitespace-nowrap ml-2">Mula sekarang →</span>
+                    <span className="text-white/70 text-xs font-medium whitespace-nowrap ml-2">Mula sekarang â†’</span>
                   ) : (
                     <span className="learn-topic-progress-label">{pct}%</span>
                   )}
                 </div>
               </div>
-              {/* Floating number badge removed — chapter number is in title text */}
+              {/* Floating number badge removed â€” chapter number is in title text */}
             </button>
           );
         })}
