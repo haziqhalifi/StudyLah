@@ -261,7 +261,7 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
     <button
       type="button"
       className="weak-topic-card"
-      onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+      onClick={() => router.push("/learning")}
       aria-label={`Fokus hari ini: ${name}`}
     >
       <span className="weak-topic-icon" aria-hidden="true">

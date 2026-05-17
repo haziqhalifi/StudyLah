@@ -120,7 +120,7 @@ export default function InsuransSubtopicsPage() {
         <div className="material-header-top-row">
           <button
             type="button"
-            onClick={() => router.push("/materials/insurans")}
+            onClick={() => router.push("/learning")}
             className="material-back-btn"
             aria-label="Kembali ke Insurans"
           >

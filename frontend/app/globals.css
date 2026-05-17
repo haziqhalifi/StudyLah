@@ -11557,3 +11557,175 @@ button.map-node:hover {
     max-width: 210px;
   }
 }
+
+/* ============================================================
+   Learning page — Duolingo-style snake path
+   ============================================================ */
+
+/* Banner */
+.lp-banner { transition: border-color 0.4s ease; }
+.lp-banner-title { transition: color 0.4s ease; font-size: 1.25rem; }
+
+/* Overall progress bar */
+.lp-overall-progress { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; }
+.lp-progress-track   { flex: 1; height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.lp-progress-fill    { height: 100%; border-radius: 99px; transition: width 0.6s ease, background 0.4s ease; }
+.lp-progress-label   { font-size: 0.7rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+/* Snake content area */
+.lp-snake-content {
+  padding-top: 155px;
+  padding-bottom: 6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Chapter section separator */
+.lp-section-sep {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem 1.25rem;
+}
+.lp-section-sep-line {
+  flex: 1;
+  height: 2px;
+  background: #d1d5db;
+  border-radius: 99px;
+}
+.lp-section-sep-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #9ca3af;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* Each node row */
+.lp-node-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+/* Wrapper holds label + circle + text */
+.lp-node-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+/* START label */
+.lp-start-label {
+  position: absolute;
+  top: -52px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2.5px solid;
+  border-radius: 14px;
+  padding: 0.3rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+}
+.lp-start-arrow {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-width: 9px 7px 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+/* 3D node circle — the Duolingo coin look */
+.lp-node-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.lp-node-circle:not(.lp-node-locked):hover {
+  transform: translateY(-3px);
+}
+.lp-node-circle:not(.lp-node-locked):active {
+  transform: translateY(4px);
+  box-shadow: none !important;
+}
+.lp-node-locked {
+  cursor: default;
+  opacity: 0.6;
+}
+.lp-node-active {
+  width: 80px;
+  height: 80px;
+}
+
+/* Ring halo on active node */
+.lp-node-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 4px solid;
+  animation: lp-ring-pulse 2s ease-in-out infinite;
+}
+@keyframes lp-ring-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.6; }
+  50%       { transform: scale(1.08); opacity: 1;   }
+}
+
+/* Node type tag */
+.lp-node-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px solid;
+  line-height: 1;
+}
+
+/* Node label */
+.lp-node-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  max-width: 100px;
+  line-height: 1.3;
+  margin: 0;
+}
+
+/* Finish banner */
+.lp-finish {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  width: 80%;
+}
+.lp-finish-icon { font-size: 2.5rem; }
+.lp-finish-text { font-weight: 800; font-size: 1rem; color: var(--ink); margin: 0; }
+.lp-finish-sub  { font-size: 0.8rem; color: var(--muted); margin: 0; }

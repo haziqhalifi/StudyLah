@@ -120,7 +120,7 @@ export default function MatriksSubtopicsPage() {
         <div className="material-header-top-row">
           <button
             type="button"
-            onClick={() => router.push("/materials/matriks")}
+            onClick={() => router.push("/learning")}
             className="material-back-btn"
             aria-label="Kembali ke Matriks"
           >

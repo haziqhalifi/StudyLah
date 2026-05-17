@@ -7,7 +7,7 @@ export default function LessonsRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/materials");
+    router.replace("/learning");
   }, [router]);
 
   return (

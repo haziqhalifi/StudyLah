@@ -66,7 +66,7 @@ export default function AssessmentPage() {
         <button
           type="button"
           className="btn-primary"
-          onClick={() => router.push("/materials")}
+          onClick={() => router.push("/learning")}
         >
           Teruskan Pembelajaran ?
         </button>
