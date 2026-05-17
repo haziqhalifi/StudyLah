@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,7 @@ export default function AssessmentPage() {
     getAssessment(userId)
       .then((res) => setTopics(res.topics))
       .catch(() => setError("Gagal memuatkan data penilaian."))
+      .catch(() => setError("Gagal memuatkan data penilaian."))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -34,9 +35,10 @@ export default function AssessmentPage() {
       <div className="assessment-header page-enter">
         <h1 className="font-display assessment-title">
           {name ? `Kemajuan ${name}` : "Kemajuan Anda"}
+          {name ? `Kemajuan ${name}` : "Kemajuan Anda"}
         </h1>
         <p className="assessment-sub">
-          Enjin AI menggunakan ini untuk menyesuaikan soalan seterusnya.
+          Enjin AI menggunakan data ini untuk mempersonalisasi soalan seterusnya.
         </p>
       </div>
 
@@ -44,16 +46,16 @@ export default function AssessmentPage() {
 
       {topics.length === 0 ? (
         <div className="card assessment-empty page-enter">
-          <p className="assessment-empty-title">Tiada data lagi</p>
+          <p className="assessment-empty-title">Belum ada data</p>
           <p className="assessment-empty-sub">
-            Selesaikan diagnostik untuk bermula!
+            Selesaikan diagnostik untuk mula belajar!
           </p>
           <button
             type="button"
             className="btn-primary"
             onClick={() => router.push("/diagnostic")}
           >
-            Mula Diagnostik →
+            Mula Diagnostik ?
           </button>
         </div>
       ) : (
@@ -66,14 +68,14 @@ export default function AssessmentPage() {
           className="btn-primary"
           onClick={() => router.push("/materials")}
         >
-          Teruskan Belajar →
+          Teruskan Pembelajaran ?
         </button>
         <button
           type="button"
           className="btn-ghost diag-skip-btn"
           onClick={() => router.push("/review")}
         >
-          Ulang Kaji ↺
+          Ulang Kaji ?
         </button>
       </div>
     </div>
@@ -93,3 +95,4 @@ function LoadingShell() {
     </div>
   );
 }
+

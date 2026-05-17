@@ -24,7 +24,10 @@ import type { LearningContext, QuickAction } from "@/lib/types";
 import { getChipsForContext } from "@/lib/quickActions";
 import { UBAHAN_STEPS, UBAHAN_SUBTOPICS } from "@/app/materials/ubahan/data";
 import { MATRIKS_STEPS, MATRIKS_SUBTOPICS } from "@/app/materials/matriks/data";
-import { INSURANS_STEPS, INSURANS_SUBTOPICS } from "@/app/materials/insurans/data";
+import {
+  INSURANS_STEPS,
+  INSURANS_SUBTOPICS,
+} from "@/app/materials/insurans/data";
 
 type View = "topics" | "subtopics" | "practice";
 
@@ -92,14 +95,18 @@ export default function LearnPage() {
 
   // Picker state
   const [topicStats, setTopicStats] = useState<TopicStats[]>([]);
-  const [nodeProgress, setNodeProgress] = useState<Record<string, { done: number; total: number }>>({});
+  const [nodeProgress, setNodeProgress] = useState<
+    Record<string, { done: number; total: number }>
+  >({});
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
 
   // Which topic the user drilled into
-  const [activeTopic, setActiveTopic] = useState<typeof MATH_F5_TOPICS[number] | null>(null);
+  const [activeTopic, setActiveTopic] = useState<
+    (typeof MATH_F5_TOPICS)[number] | null
+  >(null);
   // Which subtopic was selected (null = "all")
   const [activeSubtopicId, setActiveSubtopicId] = useState<string | null>(null);
 
@@ -161,7 +168,9 @@ export default function LearnPage() {
       // then can resume via the "Sambung sesi" banner.
     }
 
-    getAssessment(uid).catch(() => ({ topics: [] })).then((res) => setTopicStats(res.topics));
+    getAssessment(uid)
+      .catch(() => ({ topics: [] }))
+      .then((res) => setTopicStats(res.topics));
 
     const progress: Record<string, { done: number; total: number }> = {};
     for (const topic of MATH_F5_TOPICS) {
@@ -224,7 +233,11 @@ export default function LearnPage() {
       setCorrectOptionIndex(inferredCorrect);
       setRecentAttempts((prev) => [
         ...prev.slice(-9),
-        { questionId: question.id, isCorrect: res.is_correct, topicId: question.topic_id },
+        {
+          questionId: question.id,
+          isCorrect: res.is_correct,
+          topicId: question.topic_id,
+        },
       ]);
 
       const nextDiff = res.next_question?.difficulty;
@@ -288,7 +301,11 @@ export default function LearnPage() {
     if (!result || !question || !userId || selected === null) return;
     setGeneratingExplanation(true);
     try {
-      const explanation = await generateExplanation(userId, question.id, selected);
+      const explanation = await generateExplanation(
+        userId,
+        question.id,
+        selected,
+      );
       setResult({ ...result, explanation });
     } catch {
       alert("Gagal menjana penerangan. Sila cuba lagi.");
@@ -300,7 +317,10 @@ export default function LearnPage() {
   // ── VIEW: Chapter picker ────────────────────────────────────────────
   if (view === "topics") {
     return (
-      <section className="home-dashboard-shell page-enter" aria-label="Latih — pilih bab">
+      <section
+        className="home-dashboard-shell page-enter"
+        aria-label="Latih — pilih bab"
+      >
         <header className="student-header">
           <div className="student-header-copy">
             <p className="student-time">Latihan Adaptif</p>
@@ -316,14 +336,21 @@ export default function LearnPage() {
         {/* Chapter list */}
         <div className="lp-chapter-list">
           {MATH_F5_TOPICS.map((topic) => {
-            const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
-            const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+            const np = nodeProgress[topic.id] ?? {
+              done: 0,
+              total: topic.steps.length,
+            };
+            const pct =
+              np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
             return (
               <button
                 key={topic.id}
                 type="button"
                 className={`lp-chapter-card lp-chapter-${topic.tone}`}
-                onClick={() => { setActiveTopic(topic); setView("subtopics"); }}
+                onClick={() => {
+                  setActiveTopic(topic);
+                  setView("subtopics");
+                }}
               >
                 <div className="lp-chapter-left">
                   <p className="lp-chapter-bab">{topic.bab}</p>
@@ -332,16 +359,22 @@ export default function LearnPage() {
                   <div className="lp-chapter-tags">
                     <span className="lp-tag">{topic.difficulty}</span>
                     <span className="lp-tag">{topic.estimatedTime}</span>
-                    <span className="lp-tag">{topic.subtopics.length} subtopik</span>
+                    <span className="lp-tag">
+                      {topic.subtopics.length} subtopik
+                    </span>
                   </div>
                   <div className="lp-chapter-progress-row">
                     <div className="lp-chapter-track">
-                      <div className="lp-chapter-fill" style={{ "--pct": `${pct}%` } as React.CSSProperties} />
+                      <div
+                        className="lp-chapter-fill"
+                        style={{ "--pct": `${pct}%` } as React.CSSProperties}
+                      />
                     </div>
-                    {pct === 0
-                      ? <span className="lp-chapter-cta">Mula →</span>
-                      : <span className="lp-chapter-pct">{pct}%</span>
-                    }
+                    {pct === 0 ? (
+                      <span className="lp-chapter-cta">Mula →</span>
+                    ) : (
+                      <span className="lp-chapter-pct">{pct}%</span>
+                    )}
                   </div>
                 </div>
                 <div className="lp-chapter-icon" aria-hidden="true">
@@ -361,12 +394,20 @@ export default function LearnPage() {
               className="home-action-primary"
               onClick={() => setView("practice")}
             >
-              <span className="home-action-icon home-action-icon-light" aria-hidden="true">↺</span>
-              <span>
-                <span className="home-action-label">Sambung sesi sebelumnya</span>
-                <span className="home-action-sub">Teruskan dari tempat anda berhenti</span>
+              <span
+                className="home-action-icon home-action-icon-light"
+                aria-hidden="true"
+              >
+                ↺
               </span>
-              <span className="home-action-arrow" aria-hidden="true">→</span>
+              <span>
+                <span className="home-action-label">
+                  Sambung sesi sebelumnya
+                </span>
+                <span className="home-action-sub">
+                  Teruskan dari tempat anda berhenti
+                </span>
+              </span>
             </button>
           </div>
         )}
@@ -377,7 +418,10 @@ export default function LearnPage() {
   // ── VIEW: Subtopic picker ───────────────────────────────────────────
   if (view === "subtopics" && activeTopic) {
     return (
-      <section className="home-dashboard-shell page-enter" aria-label="Pilih subtopik">
+      <section
+        className="home-dashboard-shell page-enter"
+        aria-label="Pilih subtopik"
+      >
         <header className="student-header">
           <div className="student-header-copy">
             <button
@@ -403,15 +447,24 @@ export default function LearnPage() {
         <button
           type="button"
           className="lp-all-card"
-          onClick={() => { setActiveSubtopicId(null); handleStartPractice(activeTopic.id); }}
+          onClick={() => {
+            setActiveSubtopicId(null);
+            handleStartPractice(activeTopic.id);
+          }}
           disabled={starting}
         >
-          <span className="lp-all-icon" aria-hidden="true">⚡</span>
+          <span className="lp-all-icon" aria-hidden="true">
+            ⚡
+          </span>
           <div className="lp-all-body">
             <p className="lp-all-title">Semua Subtopik</p>
-            <p className="lp-all-sub">AI pilih soalan dari semua bahagian {activeTopic.name}</p>
+            <p className="lp-all-sub">
+              AI pilih soalan dari semua bahagian {activeTopic.name}
+            </p>
           </div>
-          <span className="lp-arrow" aria-hidden="true">→</span>
+          <span className="lp-arrow" aria-hidden="true">
+            →
+          </span>
         </button>
 
         <p className="lp-section-label">Atau pilih subtopik tertentu</p>
@@ -423,15 +476,22 @@ export default function LearnPage() {
               key={sub.id}
               type="button"
               className="lp-subtopic-row"
-              onClick={() => { setActiveSubtopicId(sub.id); handleStartPractice(activeTopic.id); }}
+              onClick={() => {
+                setActiveSubtopicId(sub.id);
+                handleStartPractice(activeTopic.id);
+              }}
               disabled={starting}
             >
-              <span className="lp-subtopic-num" aria-hidden="true">{idx + 1}</span>
+              <span className="lp-subtopic-num" aria-hidden="true">
+                {idx + 1}
+              </span>
               <div className="lp-subtopic-body">
                 <p className="lp-subtopic-title">{sub.title}</p>
                 <p className="lp-subtopic-id">{sub.id}</p>
               </div>
-              <span className="lp-arrow" aria-hidden="true">→</span>
+              <span className="lp-arrow" aria-hidden="true">
+                →
+              </span>
             </button>
           ))}
         </div>
@@ -448,20 +508,35 @@ export default function LearnPage() {
 
   const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
   const diff = question.difficulty ?? "easy";
-  const diffLabel: Record<string, string> = { easy: "Mudah", medium: "Sederhana", hard: "Sukar" };
-  const diffClass: Record<string, string> = { easy: "learn-diff-easy", medium: "learn-diff-medium", hard: "learn-diff-hard" };
+  const diffLabel: Record<string, string> = {
+    easy: "Mudah",
+    medium: "Sederhana",
+    hard: "Sukar",
+  };
+  const diffClass: Record<string, string> = {
+    easy: "learn-diff-easy",
+    medium: "learn-diff-medium",
+    hard: "learn-diff-hard",
+  };
   const topicLabel =
-    question.topic_id === "matriks" ? "Matriks" :
-    question.topic_id === "insurans" ? "Insurans" : "Ubahan";
+    question.topic_id === "matriks"
+      ? "Matriks"
+      : question.topic_id === "insurans"
+        ? "Insurans"
+        : "Ubahan";
 
   // Show selected subtopic name if one was picked
   const activeSubtopicTitle = activeSubtopicId
-    ? activeTopic?.subtopics.find(s => s.id === activeSubtopicId)?.title ?? null
+    ? (activeTopic?.subtopics.find((s) => s.id === activeSubtopicId)?.title ??
+      null)
     : null;
 
   const topicDisplayName =
-    question.topic_id === "matriks" ? "Matriks (Matrices)" :
-    question.topic_id === "insurans" ? "Insurans (Insurance)" : "Ubahan (Variation)";
+    question.topic_id === "matriks"
+      ? "Matriks (Matrices)"
+      : question.topic_id === "insurans"
+        ? "Insurans (Insurance)"
+        : "Ubahan (Variation)";
 
   const bar = !result ? (
     <button
@@ -508,7 +583,9 @@ export default function LearnPage() {
         </div>
         <div className="learn-stat">
           <div className="learn-stat-label">Ketepatan</div>
-          <div className={`learn-stat-value ${count === 0 ? "" : accuracy >= 60 ? "green" : "red"}`}>
+          <div
+            className={`learn-stat-value ${count === 0 ? "" : accuracy >= 60 ? "green" : "red"}`}
+          >
             {count > 0 ? `${accuracy}%` : "—"}
           </div>
         </div>
@@ -525,7 +602,9 @@ export default function LearnPage() {
         {result?.skill_summary && (
           <div className="learn-stat">
             <div className="learn-stat-label">Tahap</div>
-            <div className="learn-stat-value brand">{result.skill_summary.level}</div>
+            <div className="learn-stat-value brand">
+              {result.skill_summary.level}
+            </div>
           </div>
         )}
       </div>
@@ -535,8 +614,12 @@ export default function LearnPage() {
         <span className="learn-meta-topic">
           {activeSubtopicTitle ?? topicLabel}
         </span>
-        <span className="learn-meta-sep" aria-hidden="true">·</span>
-        <span className={`learn-meta-diff ${diffClass[diff] ?? diffClass.easy}`}>
+        <span className="learn-meta-sep" aria-hidden="true">
+          ·
+        </span>
+        <span
+          className={`learn-meta-diff ${diffClass[diff] ?? diffClass.easy}`}
+        >
           {diffLabel[diff] ?? diff}
         </span>
         {diffShift && (
@@ -572,7 +655,8 @@ export default function LearnPage() {
         <InlineChatBar
           userId={userId}
           learningContext={{
-            topicId: (question.topic_id ?? "ubahan") as LearningContext["topicId"],
+            topicId: (question.topic_id ??
+              "ubahan") as LearningContext["topicId"],
             topicName: topicDisplayName,
             currentQuestion: {
               id: question.id,
@@ -581,7 +665,11 @@ export default function LearnPage() {
               difficulty: question.difficulty,
             },
             lastAttempt: result
-              ? { selectedOptionIndex: selected ?? 0, isCorrect: result.is_correct, correctOptionIndex }
+              ? {
+                  selectedOptionIndex: selected ?? 0,
+                  isCorrect: result.is_correct,
+                  correctOptionIndex,
+                }
               : undefined,
             recentAttempts,
             pageContext: "learn",
@@ -597,7 +685,8 @@ export default function LearnPage() {
           isOpen={showBuddy}
           onClose={() => setShowBuddy(false)}
           learningContext={{
-            topicId: (question.topic_id ?? "ubahan") as LearningContext["topicId"],
+            topicId: (question.topic_id ??
+              "ubahan") as LearningContext["topicId"],
             topicName: topicDisplayName,
             currentQuestion: {
               id: question.id,
@@ -606,7 +695,11 @@ export default function LearnPage() {
               difficulty: question.difficulty,
             },
             lastAttempt: result
-              ? { selectedOptionIndex: selected ?? 0, isCorrect: result.is_correct, correctOptionIndex }
+              ? {
+                  selectedOptionIndex: selected ?? 0,
+                  isCorrect: result.is_correct,
+                  correctOptionIndex,
+                }
               : undefined,
             recentAttempts,
             pageContext: "learn",
@@ -627,7 +720,11 @@ interface InlineChatBarProps {
   onOpenFull: () => void;
 }
 
-function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarProps) {
+function InlineChatBar({
+  userId,
+  learningContext,
+  onOpenFull,
+}: InlineChatBarProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -656,18 +753,29 @@ function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarPro
     setLoading(true);
     try {
       const res = await postStudyBuddyMessage(userId, history, learningContext);
-      setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: res.reply },
+      ]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
+      ]);
     } finally {
       setLoading(false);
     }
   }
 
-  function handleChip(action: QuickAction) { send(action.message); }
+  function handleChip(action: QuickAction) {
+    send(action.message);
+  }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send(input);
+    }
   }
 
   function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -679,9 +787,16 @@ function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarPro
   return (
     <div className="icb-wrap">
       <div className="icb-header">
-        <span className="icb-avatar" aria-hidden="true">🤖</span>
+        <span className="icb-avatar" aria-hidden="true">
+          🤖
+        </span>
         <span className="icb-title">Tanya AI</span>
-        <button type="button" className="icb-expand-btn" onClick={onOpenFull} aria-label="Buka chat penuh">
+        <button
+          type="button"
+          className="icb-expand-btn"
+          onClick={onOpenFull}
+          aria-label="Buka chat penuh"
+        >
           Buka penuh ↗
         </button>
       </div>
@@ -690,15 +805,20 @@ function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarPro
         <div className="icb-messages">
           {messages.map((m, i) => (
             <div key={i} className={`icb-bubble icb-bubble--${m.role}`}>
-              {m.role === "assistant"
-                ? <MathText className="icb-md">{m.content}</MathText>
-                : <span>{m.content}</span>
-              }
+              {m.role === "assistant" ? (
+                <MathText className="icb-md">{m.content}</MathText>
+              ) : (
+                <span>{m.content}</span>
+              )}
             </div>
           ))}
           {loading && (
             <div className="icb-bubble icb-bubble--assistant">
-              <span className="sb-typing"><span /><span /><span /></span>
+              <span className="sb-typing">
+                <span />
+                <span />
+                <span />
+              </span>
             </div>
           )}
           <div ref={bottomRef} />
@@ -724,7 +844,12 @@ function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarPro
           aria-label="Hantar"
         >
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+            <path
+              d="M12 19V5M5 12l7-7 7 7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+            />
           </svg>
         </button>
       </div>

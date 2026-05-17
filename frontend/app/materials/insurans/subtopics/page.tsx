@@ -12,6 +12,12 @@ function getStepTone(type: (typeof INSURANS_STEPS)[number]["type"]) {
   return "material-node-assessment";
 }
 
+function stepTypeLabel(type: (typeof INSURANS_STEPS)[number]["type"]) {
+  if (type === "Content") return "Kandungan";
+  if (type === "Exercise") return "Latihan";
+  return "Pentaksiran";
+}
+
 export default function InsuransSubtopicsPage() {
   const router = useRouter();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
@@ -133,7 +139,7 @@ export default function InsuransSubtopicsPage() {
         <p className="material-subtitle">Scroll untuk tukar subtopik semasa.</p>
       </header>
 
-      <section className="material-vertical-map" aria-label="Learning map menegak">
+      <section className="material-vertical-map" aria-label="Peta pembelajaran menegak">
         <div className="material-vertical-line" aria-hidden="true" />
         {INSURANS_STEPS.map((step, index) => {
           const completed = isCompleted(step.id);
@@ -164,7 +170,7 @@ export default function InsuransSubtopicsPage() {
                   .join(" ")}
                 onClick={() => handleCircleClick(step, index)}
                 disabled={locked}
-                aria-label={`${step.type} ${step.no}: ${step.title}${locked ? " (terkunci)" : completed ? " (selesai)" : ""}`}
+                aria-label={`${stepTypeLabel(step.type)} ${step.no}: ${step.title}${locked ? " (terkunci)" : completed ? " (selesai)" : ""}`}
               >
                 {completed ? (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -181,7 +187,7 @@ export default function InsuransSubtopicsPage() {
               </button>
 
               <div className={`material-zig-meta${locked ? " locked-meta" : ""}`}>
-                <p className="material-zig-kicker">{step.type}</p>
+                <p className="material-zig-kicker">{stepTypeLabel(step.type)}</p>
                 <p className="material-zig-title">{step.title}</p>
                 <p className="material-zig-sub">{step.prompt}</p>
               </div>

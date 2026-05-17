@@ -1,410 +1,756 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUser, startOnboarding, submitOnboarding } from "@/lib/api";
-import type {
-  OnboardingDiagnosticResponse,
-  OnboardingQuestion,
+import Image from "next/image";
+import {
+  createUser,
+  startOnboarding,
+  submitOnboarding,
+  type OnboardingDiagnosticResponse,
+  type OnboardingQuestion,
 } from "@/lib/api";
+import MathText from "@/components/MathText";
 
-type Step = "welcome" | "profile" | "quiz" | "loading" | "result";
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-function IconBase({ children }: { children: React.ReactNode }) {
+type Step = "welcome" | "profile" | "quiz" | "analyzing" | "result";
+
+interface SlotState {
+  selected: number;
+  isCorrect: boolean;
+  revealed: boolean;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const LETTERS = ["A", "B", "C", "D"];
+const FEEDBACK_MS = 1500;
+
+const DIALOGUES: Record<string, string[]> = {
+  welcome: [
+    "Hi! I'm Lah, your study buddy! 🦉",
+    "Let's see what you already know!",
+  ],
+  profile: [
+    "Tell me about yourself!",
+    "I'll make your lessons extra personal 😊",
+  ],
+  quiz_start: ["First question — let's go! 🚀"],
+  quiz_correct: [
+    "Amazing! You got it! 🎉",
+    "Correct! You're on fire! 🔥",
+    "Yes! Keep it up! ⭐",
+    "Brilliant work! 💪",
+  ],
+  quiz_wrong: [
+    "Oops! No worries, keep going! 💪",
+    "Not quite — but that's how we learn! 📚",
+    "Mistakes make us stronger! 🌱",
+  ],
+  quiz_mid: ["Halfway there! 🎯", "Almost done! Keep the momentum! ⚡"],
+  analyzing: [
+    "Let me look at your answers... 🔍",
+    "Analysing with Google AI! 🧮",
+  ],
+  result: [
+    "Your personalised path is ready! 🚀",
+    "Check out your diagnosis! 📊",
+  ],
+};
+
+function pick(arr: string[]) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function topicTier(accuracy: number): { label: string; cls: string } {
+  if (accuracy >= 0.75) return { label: "✓ MASTERED", cls: "strong" };
+  if (accuracy >= 0.5) return { label: "○ GETTING THERE", cls: "medium" };
+  return { label: "↑ NEEDS WORK", cls: "weak" };
+}
+
+function topicEmoji(topic: string) {
+  if (topic.toLowerCase().includes("ubahan")) return "📐";
+  if (topic.toLowerCase().includes("matriks")) return "🔢";
+  if (topic.toLowerCase().includes("insurans")) return "📋";
+  return "📘";
+}
+
+function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
+  const weakest =
+    [...diag.by_topic]
+      .sort((a, b) => a.accuracy - b.accuracy)[0]
+      ?.topic?.toLowerCase() ?? "";
+  if (weakest.includes("ubahan")) return "/materials/ubahan/subtopics";
+  if (weakest.includes("matriks")) return "/materials/matriks/subtopics";
+  if (weakest.includes("insurans")) return "/materials/insurans/subtopics";
+  return "/materials";
+}
+
+function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {children}
-    </svg>
+    [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ??
+    "Lessons"
   );
 }
 
-function SparkleIcon() {
-  return (
-    <IconBase>
-      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" />
-    </IconBase>
-  );
-}
-
-function UserIcon() {
-  return (
-    <IconBase>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-    </IconBase>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <IconBase>
-      <path d="M20 6L9 17l-5-5" />
-    </IconBase>
-  );
-}
-
-function BrainIcon() {
-  return (
-    <IconBase>
-      <path d="M9.5 2a2.5 2.5 0 0 1 5 0M12 2v2M9 6.5a3 3 0 0 0-3 3v1a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-1a3 3 0 0 0-3-3" />
-      <path d="M6 9.5H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2M18 9.5h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2" />
-      <path d="M9 13.5v4a1.5 1.5 0 0 0 3 0v-4M15 13.5v4a1.5 1.5 0 0 0-3 0" />
-    </IconBase>
-  );
-}
-
-function TrophyIcon() {
-  return (
-    <IconBase>
-      <path d="M8 5h8v4.5a4 4 0 0 1-8 0V5Z" />
-      <path d="M8 7H5.5A1.5 1.5 0 0 0 4 8.5C4 10.4 5.6 12 8 12M16 7h2.5A1.5 1.5 0 0 1 20 8.5c0 1.9-1.6 3.5-4 3.5M12 13.5V17M9 20h6M10 17h4" />
-    </IconBase>
-  );
-}
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("welcome");
 
+  const [step, setStep] = useState<Step>("welcome");
+  const [dialogue, setDialogue] = useState(pick(DIALOGUES.welcome));
+  const [dialogueKey, setDialogueKey] = useState(0);
+
+  // Profile
   const [name, setName] = useState("");
   const [school, setSchool] = useState("");
-  const [form, setForm] = useState("5");
+  const [form, setForm] = useState("4");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  // Quiz
   const [sessionId, setSessionId] = useState("");
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([]);
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(null);
-  const [error, setError] = useState("");
+  const [qIndex, setQIndex] = useState(0);
+  const [qKey, setQKey] = useState(0);
+  const [slotStates, setSlotStates] = useState<Record<number, SlotState>>({});
+  const [score, setScore] = useState(0);
+  const answersRef = useRef<Record<string, number>>({});
 
-  const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  // Result
+  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(
+    null,
+  );
 
-  function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
-    const weakestTopic = [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic?.toLowerCase() ?? "";
-    if (weakestTopic.includes("ubahan")) return "/materials/ubahan/subtopics";
-    if (weakestTopic.includes("matriks")) return "/materials/matriks/subtopics";
-    if (weakestTopic.includes("insurans")) return "/materials/insurans/subtopics";
-    return "/materials";
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  function showDialogue(key: string) {
+    setDialogue(pick(DIALOGUES[key] ?? DIALOGUES.welcome));
+    setDialogueKey((k) => k + 1);
   }
 
-  function getPersonalizedBabName(diag: OnboardingDiagnosticResponse): string {
-    const weakestTopic = [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ?? "";
-    if (!weakestTopic) return "Pelajaran";
-    return weakestTopic;
-  }
+  const progress = (() => {
+    if (step === "welcome") return 0;
+    if (step === "profile") return 4;
+    if (step === "quiz")
+      return 8 + Math.round((qIndex / (questions.length || 10)) * 88);
+    if (step === "analyzing") return 98;
+    return 100;
+  })();
 
-  const current = questions[index];
-  const answeredCount = Object.keys(answers).length;
-  const progress = questions.length
-    ? Math.round((answeredCount / questions.length) * 100)
-    : 0;
+  // ── Profile submit ─────────────────────────────────────────────────────────
 
-  const canSubmitProfile = name.trim() && school.trim();
-
-  async function beginQuiz(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!canSubmitProfile) return;
-
+  async function handleStartQuiz() {
+    if (!name.trim() || !school.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
     setError("");
+    setLoading(true);
     try {
       const userId =
-        (typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID()) ||
-        `user-${Date.now()}`;
+        sessionStorage.getItem("userId") ||
+        (typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `user-${Date.now()}`);
       sessionStorage.setItem("userId", userId);
-      await createUser(userId, name.trim());
+      sessionStorage.setItem("onboardingName", name.trim());
+      sessionStorage.setItem("onboardingSchool", school.trim());
+      sessionStorage.setItem("onboardingForm", form);
 
-      const res = await startOnboarding(name.trim(), school.trim(), Number(form));
+      await createUser(userId, name.trim());
+      const res = await startOnboarding(
+        name.trim(),
+        school.trim(),
+        Number(form),
+      );
+
       setSessionId(res.session_id);
       setQuestions(res.questions);
-      setIndex(0);
-      setAnswers({});
+      setQIndex(0);
+      setQKey((k) => k + 1);
+      setSlotStates({});
+      setScore(0);
+      answersRef.current = {};
       setStep("quiz");
+      showDialogue("quiz_start");
     } catch {
-      setError("Tidak dapat memulakan onboarding. Sila cuba lagi.");
+      setError(
+        "Unable to start onboarding. Check your connection and try again.",
+      );
+    } finally {
+      setLoading(false);
     }
   }
 
-  function handlePick(optionIndex: number) {
-    if (!current) return;
-    setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }));
+  // ── Option pick ────────────────────────────────────────────────────────────
 
-    const isCorrect = optionIndex === current.correct_index;
-    setFeedback(isCorrect ? "correct" : "wrong");
+  function handlePick(optionIdx: number) {
+    const q = questions[qIndex];
+    if (!q || slotStates[qIndex]?.revealed) return;
 
-    window.setTimeout(() => {
-      setFeedback(null);
-      if (index < questions.length - 1) {
-        setIndex((v) => v + 1);
+    const isCorrect = optionIdx === q.correct_index;
+    answersRef.current[q.id] = optionIdx;
+    if (isCorrect) setScore((s) => s + 1);
+
+    setSlotStates((prev) => ({
+      ...prev,
+      [qIndex]: { selected: optionIdx, isCorrect, revealed: true },
+    }));
+    showDialogue(isCorrect ? "quiz_correct" : "quiz_wrong");
+
+    setTimeout(() => {
+      const isLast = qIndex === questions.length - 1;
+      if (isLast) {
+        handleFinishQuiz();
+      } else {
+        const next = qIndex + 1;
+        setQIndex(next);
+        setQKey((k) => k + 1);
+        showDialogue(
+          next === Math.floor(questions.length / 2)
+            ? "quiz_mid"
+            : isCorrect
+              ? "quiz_correct"
+              : "quiz_wrong",
+        );
       }
-    }, 520);
+    }, FEEDBACK_MS);
   }
 
-  async function finishQuiz() {
-    setStep("loading");
-    setError("");
+  // ── Submit ─────────────────────────────────────────────────────────────────
+
+  async function handleFinishQuiz() {
+    setStep("analyzing");
+    showDialogue("analyzing");
+
+    const minDelay = new Promise<void>((r) => setTimeout(r, 2500));
+    const payload = questions.map((q) => ({
+      question_id: q.id,
+      selected_option_index: answersRef.current[q.id] ?? -1,
+    }));
+
     try {
-      const payload = questions.map((q) => ({
-        question_id: q.id,
-        selected_option_index: answers[q.id] ?? -1,
-      }));
-      const res = await submitOnboarding(sessionId, payload);
-      setResult(res);
+      const [res] = await Promise.all([
+        submitOnboarding(sessionId, payload),
+        minDelay,
+      ]);
       localStorage.setItem("onboardingDiagnosticShown", "1");
+      setResult(res);
       setStep("result");
+      showDialogue("result");
     } catch {
-      setError("Gagal menjana diagnostik AI. Sila cuba lagi.");
+      setError("AI diagnostic failed. Please retry.");
       setStep("quiz");
     }
   }
 
-  const stepNode = useMemo(() => {
-    if (step === "welcome") {
-      return (
-        <div className="ob-card page-enter">
-          {/* gradient hero banner */}
-          <div className="ob-hero">
-            <div className="ob-hero-icon" aria-hidden="true">
-              <SparkleIcon />
-            </div>
-            <div className="ob-hero-glow" aria-hidden="true" />
-          </div>
+  // ── Render ─────────────────────────────────────────────────────────────────
 
-          <div className="ob-body">
-            <p className="ob-eyebrow">StudyLah AI</p>
-            <h1 className="ob-title">Mari ketahui tahap pengetahuan anda!</h1>
-            <p className="ob-sub">
-              Jawab beberapa soalan ringkas supaya kami boleh peribadikan perjalanan pembelajaran SPM anda.
-            </p>
+  const currentQ = questions[qIndex];
+  const currentSlot = slotStates[qIndex];
 
-            <div className="ob-features-row">
-              <div className="ob-feature-pill">
-                <span className="ob-feature-dot ob-feature-dot--brand" />
-                Dikuasai AI
-              </div>
-              <div className="ob-feature-pill">
-                <span className="ob-feature-dot ob-feature-dot--green" />
-                Kuiz 5 min
-              </div>
-              <div className="ob-feature-pill">
-                <span className="ob-feature-dot ob-feature-dot--pink" />
-                Diperibadikan
-              </div>
-            </div>
-
-            <button className="btn-primary ob-cta" type="button" onClick={() => setStep("profile")}>
-              Jom Mula
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (step === "profile") {
-      return (
-        <form className="ob-card page-enter" onSubmit={beginQuiz}>
-          <div className="ob-card-header">
-            <div className="ob-icon-badge ob-icon-badge--purple" aria-hidden="true">
-              <UserIcon />
-            </div>
-            <div>
-              <p className="ob-eyebrow">Langkah 1 daripada 2</p>
-              <h2 className="ob-title-sm">Ceritakan tentang diri anda</h2>
-            </div>
-          </div>
-
-          <div className="ob-fields">
-            <label className="ob-field">
-              <span className="ob-field-label">Nama Penuh</span>
-              <input
-                className="ob-input"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="cth. Ahmad Haziq"
-                required
-              />
-            </label>
-
-            <label className="ob-field">
-              <span className="ob-field-label">Sekolah</span>
-              <input
-                className="ob-input"
-                value={school}
-                onChange={(e) => setSchool(e.target.value)}
-                placeholder="cth. SMK Taman Muda"
-                required
-              />
-            </label>
-
-            <label className="ob-field">
-              <span className="ob-field-label">Tingkatan</span>
-              <select className="ob-input ob-select" value={form} onChange={(e) => setForm(e.target.value)}>
-                {[1, 2, 3, 4, 5].map((f) => (
-                  <option key={f} value={f}>{`Tingkatan ${f}`}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <button className="btn-primary ob-cta" type="submit" disabled={!canSubmitProfile}>
-            Mula Kuiz
-          </button>
-        </form>
-      );
-    }
-
-    if (step === "loading") {
-      return (
-        <div className="ob-card ob-card--center page-enter">
-          <div className="ob-loading-ring" aria-hidden="true">
-            <div className="ob-loading-inner">
-              <BrainIcon />
-            </div>
-          </div>
-          <h2 className="ob-title-sm">Menganalisis jawapan anda&hellip;</h2>
-          <p className="ob-sub">AI sedang menyediakan kekuatan, kelemahan, dan laluan pelajaran seterusnya anda.</p>
-          <div className="ob-dots" aria-hidden="true">
-            <span className="ob-dot ob-dot--1" />
-            <span className="ob-dot ob-dot--2" />
-            <span className="ob-dot ob-dot--3" />
-          </div>
-        </div>
-      );
-    }
-
-    if (step === "result" && result) {
-      const personalizedRoute = getPersonalizedRoute(result);
-      const personalizedBabName = getPersonalizedBabName(result);
-      const scorePct = Math.round((result.score / result.total) * 100);
-      const scoreColor = scorePct >= 70 ? "ob-score--green" : scorePct >= 40 ? "ob-score--brand" : "ob-score--warn";
-
-      return (
-        <div className="ob-card page-enter">
-          {/* score hero */}
-          <div className="ob-result-hero">
-            <div className="ob-trophy-badge" aria-hidden="true">
-              <TrophyIcon />
-            </div>
-            <div>
-              <p className="ob-eyebrow">Diagnostik AI Anda</p>
-              <p className={`ob-score ${scoreColor}`}>{result.score}<span className="ob-score-total">/{result.total}</span></p>
-            </div>
-            <div className="ob-result-hero-glow" aria-hidden="true" />
-          </div>
-
-          {/* score bar */}
-          <div className="ob-score-bar-wrap">
-            <div className="ob-score-bar">
-              <div className="ob-score-bar-fill" style={{ "--fill": `${scorePct}%` } as React.CSSProperties} />
-            </div>
-            <span className="ob-score-bar-label">{scorePct}%</span>
-          </div>
-
-          <div className="ob-result-grid">
-            <div className="ob-result-section ob-result-section--green">
-              <p className="ob-result-label">
-                <span className="ob-result-dot ob-result-dot--green" />
-                Kekuatan
-              </p>
-              <ul className="ob-result-list">
-                {result.strengths.length
-                  ? result.strengths.map((s) => <li key={s}><CheckIcon />{s}</li>)
-                  : <li>Teruskan berlatih untuk temui kekuatan anda!</li>}
-              </ul>
-            </div>
-            <div className="ob-result-section ob-result-section--warn">
-              <p className="ob-result-label">
-                <span className="ob-result-dot ob-result-dot--warn" />
-                Kawasan Tumpuan
-              </p>
-              <ul className="ob-result-list">
-                {result.weaknesses.length
-                  ? result.weaknesses.map((w) => <li key={w}><span className="ob-list-dash">—</span>{w}</li>)
-                  : <li>Hebat — tiada subtopik lemah dikesan!</li>}
-              </ul>
-            </div>
-          </div>
-
-          <div className="ob-reco-card">
-            <p className="ob-reco-label">Cadangan AI</p>
-            <p className="ob-reco-text">{result.recommendation}</p>
-            <p className="ob-next-text">{result.next_step}</p>
-          </div>
-
-          <button className="btn-primary ob-cta" type="button" onClick={() => router.push(personalizedRoute)}>
-            Teruskan ke {personalizedBabName}
-          </button>
-        </div>
-      );
-    }
-
-    return null;
-  }, [step, canSubmitProfile, name, school, form, result, router]);
+  function optionClass(idx: number) {
+    if (!currentSlot?.revealed) return "ob-option";
+    if (idx === currentQ?.correct_index) return "ob-option ob-correct";
+    if (idx === currentSlot.selected && !currentSlot.isCorrect)
+      return "ob-option ob-wrong";
+    return "ob-option ob-dimmed";
+  }
 
   return (
-    <section className="ob-shell" aria-label="Student onboarding">
-      {step === "quiz" && current && (
-        <div className="ob-quiz-wrap page-enter">
-          {/* quiz header */}
-          <div className="ob-quiz-header">
-            <div className="ob-quiz-meta">
-              <p className="ob-eyebrow">Soalan {index + 1} daripada {questions.length}</p>
-              <p className="ob-quiz-topic-label">{current.topic}</p>
-            </div>
-            <div className="ob-quiz-counter">
-              <span>{index + 1}</span>
-              <span className="ob-quiz-counter-sep">/{questions.length}</span>
-            </div>
+    <div className="ob-page">
+      {/* Fixed progress bar */}
+      <div className="ob-progress-track">
+        <div className="ob-progress-fill" style={{ width: `${progress}%` }} />
+      </div>
+
+      {/* Mascot + dialogue (welcome and profile only) */}
+      {(step === "welcome" || step === "profile") && (
+        <div className="ob-mascot-row">
+          <Image
+            src="/assets/mascot.webp"
+            alt="Lah the mascot"
+            width={64}
+            height={64}
+            className="ob-mascot-img"
+            priority
+          />
+          <div className="ob-dialogue" key={dialogueKey}>
+            {dialogue}
           </div>
-
-          <div className="ob-quiz-progress-track">
-            <div className="ob-quiz-progress-fill" style={{ "--fill": `${progress}%` } as React.CSSProperties} />
-          </div>
-
-          <article key={current.id} className="ob-question-card onboard-slide-in">
-            <h3 className="ob-question-text">{current.text}</h3>
-
-            <div className="ob-options">
-              {current.options.map((opt, i) => {
-                const selected = answers[current.id] === i;
-                const isCorrectPick = selected && i === current.correct_index;
-                const isWrongPick = selected && i !== current.correct_index;
-                return (
-                  <button
-                    key={`${current.id}-${i}`}
-                    type="button"
-                    className={`ob-option ${selected ? "ob-option--selected" : ""} ${isCorrectPick ? "ob-option--correct" : ""} ${isWrongPick ? "ob-option--wrong" : ""} ${feedback === "wrong" && isWrongPick ? "onboard-shake" : ""}`}
-                    onClick={() => handlePick(i)}
-                    disabled={feedback !== null}
-                  >
-                    <span className={`ob-option-letter ${isCorrectPick ? "ob-option-letter--correct" : ""} ${isWrongPick ? "ob-option-letter--wrong" : ""} ${selected && !isCorrectPick && !isWrongPick ? "ob-option-letter--selected" : ""}`}>
-                      {String.fromCharCode(65 + i)}
-                    </span>
-                    <span className="ob-option-text">{opt}</span>
-                    {isCorrectPick && <span className="ob-option-check" aria-label="Betul"><CheckIcon /></span>}
-                  </button>
-                );
-              })}
-            </div>
-          </article>
-
-          {index === questions.length - 1 && answers[current.id] !== undefined && feedback === null && (
-            <button className="btn-primary ob-cta" type="button" onClick={finishQuiz}>
-              Hantar &amp; Dapatkan Diagnostik AI
-            </button>
-          )}
         </div>
       )}
 
-      {step !== "quiz" && stepNode}
-      {error && <p className="diag-error" role="alert">{error}</p>}
-    </section>
+      {/* ── WELCOME ────────────────────────────────────────────────────────── */}
+      {step === "welcome" && (
+        <>
+          <h1 className="ob-welcome-title">
+            Let&apos;s find out what you know! 🎓
+          </h1>
+          <p className="ob-welcome-sub">
+            Answer 10 quick questions so we can personalise your SPM Matematik
+            learning journey. It only takes a few minutes!
+          </p>
+
+          {/* Topic preview chips */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.5rem",
+              marginBottom: "2rem",
+              alignSelf: "flex-start",
+            }}
+          >
+            {[
+              ["Ubahan", "📐"],
+              ["Matriks", "🔢"],
+              ["Insurans", "📋"],
+            ].map(([label, emoji]) => (
+              <span
+                key={label}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.3rem",
+                  background: "white",
+                  border: "1.5px solid var(--brand-muted)",
+                  borderRadius: "999px",
+                  padding: "0.3rem 0.85rem",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  color: "var(--ink-2)",
+                }}
+              >
+                {emoji} {label}
+              </span>
+            ))}
+          </div>
+
+          <div className="ob-sticky-cta">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setStep("profile");
+                showDialogue("profile");
+              }}
+            >
+              Let&apos;s Start! 🚀
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── PROFILE ────────────────────────────────────────────────────────── */}
+      {step === "profile" && (
+        <>
+          <h2 className="ob-section-title">Tell us about yourself</h2>
+          <p className="ob-section-sub">
+            We&apos;ll personalise your experience just for you.
+          </p>
+
+          <div className="ob-form">
+            <div className="ob-field">
+              <label className="ob-label" htmlFor="ob-name">
+                Your Name
+              </label>
+              <input
+                id="ob-name"
+                className="ob-input"
+                type="text"
+                placeholder="e.g. Ahmad Haziq"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="given-name"
+              />
+            </div>
+            <div className="ob-field">
+              <label className="ob-label" htmlFor="ob-school">
+                School
+              </label>
+              <input
+                id="ob-school"
+                className="ob-input"
+                type="text"
+                placeholder="e.g. SMK Taman Desa"
+                value={school}
+                onChange={(e) => setSchool(e.target.value)}
+                autoComplete="organization"
+              />
+            </div>
+            <div className="ob-field">
+              <label className="ob-label" htmlFor="ob-form">
+                Form
+              </label>
+              <select
+                id="ob-form"
+                className="ob-input ob-select"
+                value={form}
+                onChange={(e) => setForm(e.target.value)}
+              >
+                {[1, 2, 3, 4, 5].map((f) => (
+                  <option key={f} value={f}>
+                    Form {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {error && (
+              <p
+                style={{
+                  color: "var(--wrong)",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  margin: 0,
+                }}
+              >
+                {error}
+              </p>
+            )}
+          </div>
+
+          <div className="ob-sticky-cta">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleStartQuiz}
+              disabled={loading}
+            >
+              {loading ? "Loading questions..." : "Start Quiz →"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── QUIZ ───────────────────────────────────────────────────────────── */}
+      {step === "quiz" && currentQ && (
+        <>
+          {/* Counter + score */}
+          <div className="ob-quiz-header">
+            <span className="ob-q-counter">
+              Question {qIndex + 1} / {questions.length}
+            </span>
+            <span className="ob-score-chip">⭐ {score} correct</span>
+          </div>
+
+          {/* Dot mini-progress */}
+          <div className="ob-dots-row">
+            {questions.map((_, i) => {
+              const slot = slotStates[i];
+              return (
+                <div
+                  key={i}
+                  style={{
+                    width: i === qIndex ? 20 : 8,
+                    height: 8,
+                    borderRadius: 4,
+                    background: slot
+                      ? slot.isCorrect
+                        ? "var(--correct)"
+                        : "var(--wrong)"
+                      : i === qIndex
+                        ? "var(--brand)"
+                        : "var(--border)",
+                    transition: "width 0.25s, background 0.25s",
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Question card — keyed so slide animation re-fires on advance */}
+          <div
+            className="ob-question-enter"
+            key={qKey}
+            style={{ width: "100%" }}
+          >
+            <div className="ob-topic-tag">
+              {topicEmoji(currentQ.topic)} {currentQ.topic}
+            </div>
+
+            <p className="ob-q-text">
+              <MathText>{currentQ.text}</MathText>
+            </p>
+
+            <div className="ob-options">
+              {currentQ.options.map((opt, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={optionClass(idx)}
+                  onClick={() => handlePick(idx)}
+                  disabled={!!currentSlot?.revealed}
+                >
+                  <span className="ob-option-letter">{LETTERS[idx]}</span>
+                  <span style={{ flex: 1, textAlign: "left" }}>
+                    <MathText inline>{opt}</MathText>
+                  </span>
+                  {currentSlot?.revealed && idx === currentQ.correct_index && (
+                    <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>
+                      ✓
+                    </span>
+                  )}
+                  {currentSlot?.revealed &&
+                    idx === currentSlot.selected &&
+                    !currentSlot.isCorrect && (
+                      <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>
+                        ✗
+                      </span>
+                    )}
+                </button>
+              ))}
+            </div>
+
+            {currentSlot?.revealed && (
+              <p
+                style={{
+                  marginTop: "1rem",
+                  fontSize: "0.82rem",
+                  color: "var(--muted)",
+                  textAlign: "center",
+                }}
+              >
+                {currentSlot.isCorrect
+                  ? "Correct! Next question loading…"
+                  : `The correct answer was ${LETTERS[currentQ.correct_index]}. Moving on…`}
+              </p>
+            )}
+          </div>
+
+          {error && (
+            <p
+              style={{
+                color: "var(--wrong)",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                marginTop: "1rem",
+              }}
+            >
+              {error}
+            </p>
+          )}
+        </>
+      )}
+
+      {/* ── ANALYZING ──────────────────────────────────────────────────────── */}
+      {step === "analyzing" && (
+        <div className="ob-analyzing" style={{ marginTop: "2rem" }}>
+          <Image
+            src="/assets/mascot.webp"
+            alt="Lah analysing"
+            width={110}
+            height={110}
+            className="ob-analyzing-mascot"
+          />
+          <h2 className="ob-analyzing-title">Analysing your results…</h2>
+          <p className="ob-analyzing-sub">
+            Google AI is building your personalised
+            <br />
+            SPM learning path 🗺️
+          </p>
+          <div className="ob-spinner" />
+          <div className="ob-bounce-dots">
+            <div className="ob-bounce-dot" />
+            <div className="ob-bounce-dot" />
+            <div className="ob-bounce-dot" />
+          </div>
+        </div>
+      )}
+
+      {/* ── RESULT ─────────────────────────────────────────────────────────── */}
+      {step === "result" && result && (
+        <ResultScreen
+          result={result}
+          userName={name}
+          onContinue={() => router.push(getPersonalizedRoute(result))}
+          weakestTopic={getWeakestTopicName(result)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Result Screen ────────────────────────────────────────────────────────────
+
+const RING_R = 52;
+const CIRCUMFERENCE = 2 * Math.PI * RING_R;
+
+function ResultScreen({
+  result,
+  userName,
+  weakestTopic,
+  onContinue,
+}: {
+  result: OnboardingDiagnosticResponse;
+  userName: string;
+  weakestTopic: string;
+  onContinue: () => void;
+}) {
+  const pct = Math.round((result.score / result.total) * 100);
+  const [displayScore, setDisplayScore] = useState(0);
+  const [displayPct, setDisplayPct] = useState(0);
+
+  useEffect(() => {
+    let raf: number;
+    const duration = 950;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - (1 - t) ** 3;
+      setDisplayScore(Math.round(eased * result.score));
+      setDisplayPct(Math.round(eased * pct));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const ringColor =
+    pct >= 70 ? "var(--correct)" : pct >= 45 ? "#f59e0b" : "var(--wrong)";
+  const ringOffset = CIRCUMFERENCE - (CIRCUMFERENCE * displayPct) / 100;
+
+  return (
+    <>
+      {/* Score hero */}
+      <div className="ob-result-hero">
+        <div className="ob-score-ring-wrap">
+          <svg
+            className="ob-score-svg"
+            viewBox="0 0 120 120"
+            aria-hidden="true"
+          >
+            <circle className="ob-score-svg-track" cx="60" cy="60" r={RING_R} />
+            <circle
+              className="ob-score-svg-fill"
+              cx="60"
+              cy="60"
+              r={RING_R}
+              style={{ stroke: ringColor, strokeDashoffset: ringOffset }}
+            />
+          </svg>
+          <div className="ob-score-circle" style={{ borderColor: ringColor }}>
+            <span className="ob-score-number">
+              {displayScore}
+              <span style={{ fontSize: "1rem", fontWeight: 700 }}>
+                /{result.total}
+              </span>
+            </span>
+            <span className="ob-score-denom">{displayPct}%</span>
+          </div>
+        </div>
+        <p
+          className="ob-xp-line ob-result-fadein"
+          style={{ animationDelay: "0.2s" }}
+        >
+          +50 XP earned for completing your diagnosis!
+        </p>
+        <h2
+          className="ob-result-title ob-result-fadein"
+          style={{ animationDelay: "0.35s" }}
+        >
+          {pct >= 70 ? "Excellent" : pct >= 45 ? "Good effort" : "Great start"},{" "}
+          {userName || "student"}! 🎉
+        </h2>
+        <p
+          className="ob-result-sub ob-result-fadein"
+          style={{ animationDelay: "0.5s" }}
+        >
+          Your personalised diagnosis is ready
+        </p>
+      </div>
+
+      {/* Topic breakdown */}
+      {result.by_topic.length > 0 && (
+        <section style={{ width: "100%", marginBottom: "0.25rem" }}>
+          <p
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--muted)",
+              margin: "0 0 0.55rem",
+            }}
+          >
+            Topic Breakdown
+          </p>
+          {result.by_topic.map((t, i) => {
+            const tier = topicTier(t.accuracy);
+            return (
+              <div
+                key={t.topic}
+                className="ob-topic-card"
+                style={{ animationDelay: `${0.6 + i * 0.12}s` }}
+              >
+                <div className="ob-topic-row">
+                  <span className="ob-topic-name">
+                    {topicEmoji(t.topic)} {t.topic}
+                  </span>
+                  <span className={`ob-topic-badge ${tier.cls}`}>
+                    {tier.label}
+                  </span>
+                </div>
+                <p className="ob-topic-score">
+                  {t.correct}/{t.total} correct
+                </p>
+                <div className="ob-topic-bar-track">
+                  <div
+                    className={`ob-topic-bar-fill ${tier.cls}`}
+                    style={{ width: `${Math.round(t.accuracy * 100)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+
+      {/* AI Recommendation */}
+      <div className="ob-ai-card">
+        <div className="ob-ai-label">
+          <span>✦</span> AI Diagnosis
+        </div>
+        <p className="ob-ai-text">{result.recommendation}</p>
+      </div>
+
+      {/* Strengths */}
+      {result.strengths.length > 0 && (
+        <div className="ob-list-card">
+          <h4 className="ob-list-title">
+            <span style={{ color: "var(--correct)" }}>✅</span> Your Strengths
+          </h4>
+          {result.strengths.map((s, i) => (
+            <div key={i} className="ob-list-item">
+              <span style={{ color: "var(--correct)", flexShrink: 0 }}>•</span>
+              <span>{s}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Next step */}
+      {result.next_step && (
+        <div className="ob-list-card" style={{ marginBottom: "1rem" }}>
+          <h4 className="ob-list-title">
+            <span style={{ color: "var(--brand)" }}>🎯</span> Next Step
+          </h4>
+          <div className="ob-list-item">
+            <span style={{ color: "var(--brand)", flexShrink: 0 }}>→</span>
+            <span>{result.next_step}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="ob-sticky-cta">
+        <button type="button" className="btn-primary" onClick={onContinue}>
+          Start My Learning Path →
+        </button>
+      </div>
+    </>
   );
 }

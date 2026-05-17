@@ -4,6 +4,7 @@ import type React from "react";
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import MaterialQuizSession from "@/components/MaterialQuizSession";
+import MathText from "@/components/MathText";
 import { INSURANS_STEPS, INSURANS_SUBTOPICS } from "../../data";
 
 type LessonPage = {
@@ -12,7 +13,7 @@ type LessonPage = {
 };
 
 const COMPLETION_KEY = "insurans_completed_steps_v1";
-const MATH_LINE_PATTERN = /[=÷×⁻ⁿᵐᵢⱼ≠]|\b\d+\/\w+|\bFormula\b/;
+const MATH_LINE_PATTERN = /[$=]|\\frac|\\times|\\neq|\\left|\\right|\\begin|\\end/;
 
 function buildPages(step: (typeof INSURANS_STEPS)[number], subtopic: (typeof INSURANS_SUBTOPICS)[number]): LessonPage[] {
   const conceptLines = [subtopic.meaning];
@@ -31,7 +32,7 @@ function buildPages(step: (typeof INSURANS_STEPS)[number], subtopic: (typeof INS
       lines: conceptLines,
     },
     {
-      title: step.type === "Assessment" ? "Assessment Task" : "Task",
+      title: step.type === "Assessment" ? "Tugasan Pentaksiran" : "Tugasan",
       lines: [
         step.task ?? "Ulangkaji konsep ini dan pastikan anda boleh menerangkan semula dengan ayat sendiri.",
         step.answer ?? "Pastikan anda faham syarat, formula, dan langkah pengiraan yang berkaitan.",
@@ -67,12 +68,12 @@ export default function InsuransStepPage() {
         <section className="material-viewer material-viewer-standalone">
           <div className="material-viewer-top">
             <button type="button" className="material-close-btn" onClick={() => router.push("/materials/insurans/subtopics")}>
-              Close
+              Tutup
             </button>
-            <p className="material-viewer-step">Step not found</p>
+            <p className="material-viewer-step">Langkah tidak dijumpai</p>
           </div>
           <div className="material-viewer-body">
-            <h2>Step tidak dijumpai</h2>
+            <h2>Langkah tidak dijumpai</h2>
           </div>
         </section>
       </div>
@@ -127,7 +128,7 @@ export default function InsuransStepPage() {
         <section className="material-viewer material-viewer-standalone">
           <div className="material-viewer-top">
             <button type="button" className="material-close-btn" onClick={closePage}>
-              Close
+              Tutup
             </button>
             <p className="material-viewer-step">
               {subtopic.id} {subtopic.title}
@@ -136,24 +137,28 @@ export default function InsuransStepPage() {
 
           <div className="material-viewer-body">
             <p className="material-viewer-page">
-              Page {pageIndex + 1} / {pages.length}
+              Halaman {pageIndex + 1} / {pages.length}
             </p>
             <h2>{pages[pageIndex]?.title}</h2>
-            {pages[pageIndex]?.lines.map((line) => (
-              <p key={line} className={isMathLine(line) ? "material-math-line" : undefined}>
-                {line}
-              </p>
-            ))}
+            {pages[pageIndex]?.lines.map((line) =>
+              isMathLine(line) ? (
+                <div key={line} className="material-math-line">
+                  <MathText>{line}</MathText>
+                </div>
+              ) : (
+                <p key={line}>{line}</p>
+              )
+            )}
           </div>
 
           <div className="material-viewer-footer">
             {!isLastPage ? (
               <button type="button" className="btn-primary material-viewer-cta" onClick={nextPage}>
-                Next
+                Seterusnya
               </button>
             ) : (
               <button type="button" className="btn-primary material-viewer-cta" onClick={submitStep}>
-                Submit
+                Hantar
               </button>
             )}
           </div>
@@ -174,10 +179,10 @@ export default function InsuransStepPage() {
               />
             ))}
           </div>
-          <h2>Great Work</h2>
-          <p>{`No.${step.no} complete. Circle akan dikemaskini sebagai completed.`}</p>
+          <h2>Tahniah</h2>
+          <p>{`No.${step.no} selesai. Bulatan akan dikemas kini sebagai selesai.`}</p>
           <button type="button" className="btn-primary material-viewer-cta" onClick={continueToMap}>
-            Continue
+            Teruskan
           </button>
         </section>
       )}

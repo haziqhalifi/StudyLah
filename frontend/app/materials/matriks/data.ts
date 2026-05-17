@@ -1,4 +1,4 @@
-export type StepType = "Content" | "Exercise" | "Assessment";
+﻿export type StepType = "Content" | "Exercise" | "Assessment";
 
 export type Subtopic = {
   id: string;
@@ -26,41 +26,45 @@ export const MATRIKS_SUBTOPICS: Subtopic[] = [
     id: "2.1",
     title: "Asas Matriks",
     meaning:
-      "Matriks ialah set nombor yang disusun dalam baris dan lajur untuk membentuk satu tatasusun segi empat tepat atau segi empat sama.",
-    relation: "Peringkat matriks ditulis sebagai m × n (m baris, n lajur).",
-    equation: "Unsur aᵢⱼ bermaksud unsur pada baris ke-i dan lajur ke-j.",
+      "Matriks ialah susunan nombor dalam baris dan lajur yang membentuk jadual segi empat tepat.",
+    relation: "Peringkat matriks ditulis sebagai $m \\times n$, dengan $m$ baris dan $n$ lajur.",
+    equation: "Unsur $a_{ij}$ bermaksud unsur pada baris ke-$i$ dan lajur ke-$j$.",
     generalForm:
-      "Matriks sama berlaku apabila dua matriks mempunyai peringkat yang sama dan setiap unsur sepadan adalah sama.",
+      "Dua matriks adalah sama jika peringkatnya sama dan setiap unsur sepadan adalah sama.",
   },
   {
     id: "2.2",
     title: "Operasi Asas Matriks",
     meaning:
-      "Operasi asas melibatkan penambahan, penolakan, pendaraban skalar, dan pendaraban dua matriks.",
+      "Operasi asas termasuk penambahan, penolakan, pendaraban skalar, dan pendaraban matriks.",
     relation:
-      "Penambahan dan penolakan hanya boleh dilakukan jika kedua-dua matriks mempunyai peringkat yang sama.",
-    equation:
-      "Pendaraban matriks: (m × n)(n × p) = (m × p).",
-    generalForm: "Pendaraban skalar mendarab setiap unsur matriks dengan suatu nombor nyata.",
+      "Penambahan dan penolakan hanya sah jika kedua-dua matriks mempunyai peringkat yang sama.",
+    equation: "Pendaraban matriks: $$(m \\times n)(n \\times p) \\rightarrow (m \\times p)$$.",
+    generalForm: "Pendaraban skalar mendarab setiap unsur matriks dengan satu nombor nyata.",
   },
   {
     id: "2.3",
     title: "Matriks Identiti dan Songsang",
     meaning:
       "Matriks identiti ialah matriks segi empat sama dengan 1 pada pepenjuru utama dan 0 pada unsur lain.",
-    relation: "Sifat identiti: AI = IA = A.",
-    equation:
-      "Matriks songsang A⁻¹ memenuhi syarat AA⁻¹ = A⁻¹A = I.",
+    relation: "Sifat identiti: $$AI = IA = A$$.",
+    equation: "Matriks songsang $A^{-1}$ memenuhi syarat $$AA^{-1} = A^{-1}A = I$$.",
     generalForm:
-      "Untuk A = [[a, b], [c, d]], A⁻¹ = (1/(ad - bc))[[d, -b], [-c, a]], dengan syarat ad - bc ≠ 0.",
+      "Untuk $$A = \\begin{bmatrix}a & b \\\\ c & d\\end{bmatrix},\\quad A^{-1} = \\frac{1}{ad-bc}\\begin{bmatrix}d & -b \\\\ -c & a\\end{bmatrix}$$ dengan syarat $ad-bc \\neq 0$.",
   },
   {
     id: "2.4",
     title: "Persamaan Linear Serentak",
-    meaning: "Matriks digunakan untuk menyelesaikan persamaan linear serentak dalam bentuk AX = B.",
-    equation: "Jika A boleh disongsangkan, penyelesaian ialah X = A⁻¹B.",
+    meaning: "Matriks boleh digunakan untuk menyelesaikan persamaan linear serentak dalam bentuk $AX = B$.",
+    equation: "Jika $A$ mempunyai songsang, maka penyelesaian ialah $$X = A^{-1}B$$.",
   },
 ];
+
+function labelJenis(type: StepType): string {
+  if (type === "Content") return "Kandungan";
+  if (type === "Exercise") return "Latihan";
+  return "Pentaksiran";
+}
 
 export const MATRIKS_STEPS: JourneyStep[] = MATRIKS_SUBTOPICS.flatMap((subtopic, index) => {
   const baseNo = index * 4;
@@ -70,7 +74,7 @@ export const MATRIKS_STEPS: JourneyStep[] = MATRIKS_SUBTOPICS.flatMap((subtopic,
       no: baseNo + 1,
       subtopicId: subtopic.id,
       type: "Content",
-      title: `Learning content subtopic ${subtopic.id}`,
+      title: `${labelJenis("Content")} ${subtopic.id}`,
       prompt: `Baca dan fahami konsep ${subtopic.title}.`,
     },
     {
@@ -78,30 +82,30 @@ export const MATRIKS_STEPS: JourneyStep[] = MATRIKS_SUBTOPICS.flatMap((subtopic,
       no: baseNo + 2,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `Exercise subtopic ${subtopic.id}`,
+      title: `${labelJenis("Exercise")} ${subtopic.id}`,
       prompt: `Kenal pasti konsep utama bagi ${subtopic.title}.`,
-      task: "Tentukan syarat, definisi, atau hubungan penting berdasarkan subtopic ini.",
-      answer: "Semak semula peringkat matriks, unsur sepadan, atau syarat operasi yang betul.",
+      task: "Nyatakan definisi, syarat operasi, atau hubungan penting bagi subtopik ini.",
+      answer: "Semak semula peringkat matriks, unsur sepadan, dan syarat operasi yang betul.",
     },
     {
       id: `${subtopic.id}-exercise-2`,
       no: baseNo + 3,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `Exercise subtopic ${subtopic.id}`,
+      title: `${labelJenis("Exercise")} ${subtopic.id}`,
       prompt: `Gunakan kaedah ${subtopic.title} untuk menyelesaikan soalan.`,
-      task: "Laksanakan pengiraan langkah demi langkah dan semak ketepatan bentuk matriks hasil.",
-      answer: "Pastikan dimensi matriks serasi dan operasi dilakukan pada unsur yang betul.",
+      task: "Lakukan pengiraan langkah demi langkah dan pastikan bentuk matriks akhir tepat.",
+      answer: "Pastikan dimensi matriks serasi dan setiap operasi dibuat pada unsur yang betul.",
     },
     {
       id: `${subtopic.id}-assessment`,
       no: baseNo + 4,
       subtopicId: subtopic.id,
       type: "Assessment",
-      title: `Assessment subtopic ${subtopic.id}`,
-      prompt: `Uji penguasaan ${subtopic.title}.`,
-      task: "Selesaikan soalan campuran konsep dan pengiraan bagi subtopic ini.",
-      answer: "Fokus pada syarat operasi, formula tepat, dan ketelitian susunan baris-lajur.",
+      title: `${labelJenis("Assessment")} ${subtopic.id}`,
+      prompt: `Uji penguasaan anda bagi ${subtopic.title}.`,
+      task: "Selesaikan soalan campuran konsep dan pengiraan untuk subtopik ini.",
+      answer: "Tumpukan pada syarat operasi, formula tepat, dan ketelitian susunan baris-lajur.",
     },
   ];
 });
