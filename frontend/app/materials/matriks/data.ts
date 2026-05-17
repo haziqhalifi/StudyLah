@@ -27,8 +27,8 @@ export const MATRIKS_SUBTOPICS: Subtopic[] = [
     title: "Asas Matriks",
     meaning:
       "Matriks ialah set nombor yang disusun dalam baris dan lajur untuk membentuk satu tatasusun segi empat tepat atau segi empat sama.",
-    relation: "Peringkat matriks ditentukan dengan bilangan baris x bilangan lajur (m x n).",
-    equation: "Unsur a_ij mewakili unsur pada baris ke-i dan lajur ke-j.",
+    relation: "Peringkat matriks ditulis sebagai m × n (m baris, n lajur).",
+    equation: "Unsur aᵢⱼ bermaksud unsur pada baris ke-i dan lajur ke-j.",
     generalForm:
       "Matriks sama berlaku apabila dua matriks mempunyai peringkat yang sama dan setiap unsur sepadan adalah sama.",
   },
@@ -40,7 +40,7 @@ export const MATRIKS_SUBTOPICS: Subtopic[] = [
     relation:
       "Penambahan dan penolakan hanya boleh dilakukan jika kedua-dua matriks mempunyai peringkat yang sama.",
     equation:
-      "Pendaraban dua matriks: (m x n) darab (n x p) menghasilkan matriks (m x p).",
+      "Pendaraban matriks: (m × n)(n × p) = (m × p).",
     generalForm: "Pendaraban skalar mendarab setiap unsur matriks dengan suatu nombor nyata.",
   },
   {
@@ -50,15 +50,15 @@ export const MATRIKS_SUBTOPICS: Subtopic[] = [
       "Matriks identiti ialah matriks segi empat sama dengan 1 pada pepenjuru utama dan 0 pada unsur lain.",
     relation: "Sifat identiti: AI = IA = A.",
     equation:
-      "Matriks songsang A^-1 memenuhi syarat A(A^-1) = I.",
+      "Matriks songsang A⁻¹ memenuhi syarat AA⁻¹ = A⁻¹A = I.",
     generalForm:
-      "Untuk A = [[a,b],[c,d]], A^-1 = (1/(ad-bc))[[d,-b],[-c,a]] dengan ad-bc != 0.",
+      "Untuk A = [[a, b], [c, d]], A⁻¹ = (1/(ad - bc))[[d, -b], [-c, a]], dengan syarat ad - bc ≠ 0.",
   },
   {
     id: "2.4",
     title: "Persamaan Linear Serentak",
     meaning: "Matriks digunakan untuk menyelesaikan persamaan linear serentak dalam bentuk AX = B.",
-    equation: "Penyelesaian: X = A^-1 B.",
+    equation: "Jika A boleh disongsangkan, penyelesaian ialah X = A⁻¹B.",
   },
 ];
 

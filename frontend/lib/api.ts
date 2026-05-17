@@ -151,6 +151,37 @@ export interface PapersResponse {
   papers: Paper[];
 }
 
+export interface OnboardingQuestion {
+  id: string;
+  topic: string;
+  text: string;
+  options: string[];
+  correct_index: number;
+}
+
+export interface StartOnboardingResponse {
+  session_id: string;
+  questions: OnboardingQuestion[];
+}
+
+export interface TopicDiagnosticSummary {
+  topic: string;
+  correct: number;
+  total: number;
+  accuracy: number;
+  level: "strong" | "weak";
+}
+
+export interface OnboardingDiagnosticResponse {
+  score: number;
+  total: number;
+  strengths: string[];
+  weaknesses: string[];
+  by_topic: TopicDiagnosticSummary[];
+  recommendation: string;
+  next_step: string;
+}
+
 // ---------------------------------------------------------------------------
 // API helpers
 // ---------------------------------------------------------------------------
@@ -279,6 +310,21 @@ export async function getSpacedRepSummary(
   userId: string,
 ): Promise<SpacedRepSummaryResponse> {
   return get("/api/spaced-rep/summary", { user_id: userId });
+}
+
+export async function startOnboarding(
+  name: string,
+  school: string,
+  form: number,
+): Promise<StartOnboardingResponse> {
+  return post("/api/onboarding/start", { name, school, form });
+}
+
+export async function submitOnboarding(
+  sessionId: string,
+  answers: Array<{ question_id: string; selected_option_index: number }>,
+): Promise<OnboardingDiagnosticResponse> {
+  return post("/api/onboarding/submit", { session_id: sessionId, answers });
 }
 
 // ---------------------------------------------------------------------------
