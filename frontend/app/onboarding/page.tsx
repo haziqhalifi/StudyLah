@@ -250,7 +250,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="ob-page">
+    <div className={`ob-page ${step === "result" ? "ob-page--result" : ""}`}>
       {/* Fixed progress bar */}
       <div className="ob-progress-track">
         <div className="ob-progress-fill ob-progress-fill-dynamic" data-pct={progress} />
@@ -654,7 +654,7 @@ function ResultScreen({
         </div>
       )}
 
-      <div className="ob-sticky-cta">
+      <div className="ob-sticky-cta ob-sticky-cta--floating">
         <button type="button" className="btn-primary" onClick={onContinue}>
           Start My Learning Path →
         </button>
@@ -662,3 +662,5 @@ function ResultScreen({
     </>
   );
 }
+
+
