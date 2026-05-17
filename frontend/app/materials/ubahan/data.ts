@@ -16,7 +16,7 @@ export type JourneyStep = {
   subtopicId: string;
   type: StepType;
   title: string;
-  prompt: string;
+  prompt?: string;
   task?: string;
   answer?: string;
 };
@@ -66,56 +66,49 @@ export const UBAHAN_STEPS: JourneyStep[] = [
     no: 1,
     subtopicId: "1.1",
     type: "Content",
-    title: "Kandungan 1.1",
-    prompt: "Baca dan fahami konsep Ubahan Langsung.",
+    title: "1.1 Ubahan Langsung",
   },
   {
     id: "1.1-exercise",
     no: 2,
     subtopicId: "1.1",
     type: "Exercise",
-    title: "Latihan 1.1",
-    prompt: "Jawab soalan Ubahan Langsung.",
+    title: "1.1 Ubahan Langsung",
   },
   {
     id: "1.2-content",
     no: 3,
     subtopicId: "1.2",
     type: "Content",
-    title: "Kandungan 1.2",
-    prompt: "Baca dan fahami konsep Ubahan Songsang.",
+    title: "1.2 Ubahan Songsang",
   },
   {
     id: "1.2-exercise",
     no: 4,
     subtopicId: "1.2",
     type: "Exercise",
-    title: "Latihan 1.2",
-    prompt: "Jawab soalan Ubahan Songsang.",
+    title: "1.2 Ubahan Songsang",
   },
   {
     id: "1.3-content",
     no: 5,
     subtopicId: "1.3",
     type: "Content",
-    title: "Kandungan 1.3",
-    prompt: "Baca dan fahami konsep Ubahan Bergabung.",
+    title: "1.3 Ubahan Bergabung",
   },
   {
     id: "1.3-exercise",
     no: 6,
     subtopicId: "1.3",
     type: "Exercise",
-    title: "Latihan 1.3",
-    prompt: "Jawab soalan Ubahan Bergabung.",
+    title: "1.3 Ubahan Bergabung",
   },
   {
     id: "ubahan-final-exam",
     no: 7,
     subtopicId: "1.3",
     type: "Assessment",
-    title: "Peperiksaan",
-    prompt: "Jawab peperiksaan campuran daripada semua subtopik ubahan.",
+    title: "Peperiksaan Ubahan",
   },
 ];
 
