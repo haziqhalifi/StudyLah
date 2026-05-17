@@ -286,7 +286,15 @@ export default function ReviewPage() {
   );
 
   return (
-    <QuizSheet open bar={bar} onClose={() => router.push("/")}>
+    <QuizSheet
+      open
+      bar={bar}
+      onClose={() => router.push("/")}
+      title="Ulang Kaji"
+      subtitle={`${idx + 1} / ${items.length} soalan`}
+      progress={idx}
+      total={items.length}
+    >
       {/* ── Header banner ── */}
       <div className="ai-cue ai-cue-review review-banner">
         <div className="review-banner-reason">

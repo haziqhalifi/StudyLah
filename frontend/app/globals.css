@@ -3851,6 +3851,110 @@ button.map-node:hover {
   border: 2px solid var(--surface);
 }
 
+.qs-icon-placeholder {
+  width: 2rem;
+  flex-shrink: 0;
+}
+
+/* ── Shared quiz result / review classes ── */
+.quiz-result-card {
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.quiz-result-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.quiz-result-emoji {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.quiz-result-score {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.quiz-result-msg {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+}
+
+.quiz-result-pct {
+  margin-left: auto;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.35rem 0.875rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.quiz-review-card {
+  padding: 1rem;
+}
+
+.quiz-review-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.quiz-review-num {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.quiz-review-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+}
+
+.quiz-review-answer {
+  font-size: 0.875rem;
+  color: var(--ink-2);
+  margin: 0 0 0.4rem;
+}
+
+.quiz-review-explanation {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.quiz-nav-actions {
+  margin-top: 0.75rem;
+}
+
+.qs-empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.qs-empty-emoji {
+  font-size: 2.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.qs-empty-text {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0;
+}
+
 .qs-scroll {
   flex: 1;
   overflow-y: auto;
@@ -7957,10 +8061,16 @@ button.map-node:hover {
 }
 
 .exam-review-item {
-  background: var(--card);
   border: 1.5px solid var(--border);
-  border-radius: var(--r-xl);
-  padding: 0.875rem 1rem;
+}
+
+.exam-grade-badge {
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 900;
+  padding: 0.35rem 0.875rem;
+  border-radius: 999px;
 }
 
 .exam-review-item.exam-review-correct {
@@ -9077,23 +9187,19 @@ button.map-node:hover {
 
 .ob-option-text {
   flex: 1;
+  text-align: left;
 }
 
 .ob-option-check {
   margin-left: auto;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
+  font-size: 1.05rem;
+}
+.ob-option-check-correct {
   color: var(--correct);
 }
-
-.ob-option-check svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.ob-option-check-wrong {
+  color: var(--wrong);
 }
 
 /* Submit button inside quiz wrap */
@@ -9460,6 +9566,25 @@ button.map-node:hover {
   gap: 5px;
   margin-bottom: 1rem;
   align-self: flex-start;
+}
+
+/* Individual dot states (replaces inline styles) */
+.ob-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  transition: width 0.25s, background 0.25s;
+}
+.ob-dot-active {
+  width: 20px;
+  background: var(--brand);
+}
+.ob-dot-correct {
+  background: var(--correct);
+}
+.ob-dot-wrong {
+  background: var(--wrong);
 }
 
 /* Question card */
@@ -9926,6 +10051,91 @@ button.map-node:hover {
 .ob-list-item:last-child {
   margin-bottom: 0;
 }
+
+/* Topic chips on welcome screen */
+.ob-topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  align-self: flex-start;
+}
+.ob-topic-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: white;
+  border: 1.5px solid var(--brand-muted);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+/* Form error (replaces inline style) */
+.ob-form-error {
+  color: var(--wrong);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Next-question hint shown after reveal */
+.ob-next-hint {
+  margin-top: 1rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* List card helpers (replaces inline color styles) */
+.ob-list-card-last {
+  margin-bottom: 1rem;
+}
+.ob-list-icon {
+  flex-shrink: 0;
+}
+.ob-list-icon-correct {
+  color: var(--correct);
+}
+.ob-list-icon-brand {
+  color: var(--brand);
+}
+.ob-list-bullet {
+  flex-shrink: 0;
+}
+.ob-list-bullet-correct {
+  color: var(--correct);
+}
+.ob-list-bullet-brand {
+  color: var(--brand);
+}
+
+/* Result breakdown section */
+.ob-breakdown-section {
+  width: 100%;
+  margin-bottom: 0.25rem;
+}
+.ob-breakdown-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.55rem;
+}
+
+/* Score ring denom inline (replaces inline fontSize/fontWeight) */
+.ob-score-denom-inline {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Staggered fade-in delays */
+.ob-delay-1 { animation-delay: 0.2s; }
+.ob-delay-2 { animation-delay: 0.35s; }
+.ob-delay-3 { animation-delay: 0.5s; }
 
 /* Sticky CTA */
 .ob-sticky-cta {

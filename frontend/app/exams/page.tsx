@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import QuestionCard from "@/components/QuestionCard";
 import QuizSheet from "@/components/QuizSheet";
+import StandardQuizShell from "@/components/StandardQuizShell";
 import { Paper, Question, getPapers } from "@/lib/api";
 
 const SUPABASE_URL = "https://pxzyfiysxzwihjplrfvo.supabase.co";
@@ -281,74 +282,71 @@ export default function ExamsPage() {
     const emoji = pct >= 80 ? "🎉" : pct >= 60 ? "👍" : "💪";
 
     return (
-      <div className="qs-shell">
-        <header className="qs-header">
-          <button type="button" className="qs-icon-btn" onClick={handleCloseQuiz} aria-label="Close">✕</button>
-          <div className="qs-header-center">
-            <span className="qs-title">Keputusan</span>
-            <span className="qs-subtitle">{selectedPaper?.paper_name}</span>
-          </div>
-        </header>
-
-        <div className="qs-scroll">
-          {timedOut && (
-            <div className="exam-timeout-banner">
-              ⏰ Masa tamat! Jawapan anda telah dihantar.
-            </div>
-          )}
-
-          {/* Score card */}
-          <div className="exam-score-card">
-            <div className="exam-score-emoji">{emoji}</div>
-            <div className="exam-score-grade">{grade}</div>
-            <div className="exam-score-fraction">{correct} / {total}</div>
-            <div className="exam-score-pct">{pct}%</div>
-            <div className="exam-score-sub">{attempted < total ? `${total - attempted} tidak dijawab` : "Semua soalan dijawab"}</div>
-          </div>
-
-          {/* Per-question breakdown */}
-          <div className="exam-review-list">
-            {questions.map((q, i) => {
-              const userIdx = answers[q.id];
-              const corrIdx = correctMap[q.id];
-              const answered = userIdx !== undefined;
-              const isCorrect = answered && userIdx === corrIdx;
-              return (
-                <div key={q.id} className={`exam-review-item${isCorrect ? " exam-review-correct" : answered ? " exam-review-wrong" : " exam-review-skipped"}`}>
-                  <div className="exam-review-top">
-                    <span className="exam-review-num">Q{i + 1}</span>
-                    <span className={`exam-review-badge${isCorrect ? " badge-correct" : answered ? " badge-wrong" : " badge-skipped"}`}>
-                      {isCorrect ? "✓ Betul" : answered ? "✗ Salah" : "— Dilangkau"}
-                    </span>
-                  </div>
-                  <p className="exam-review-text">{q.text}</p>
-                  {answered && !isCorrect && (
-                    <p className="exam-review-your">Jawapan anda: <strong>{q.options[userIdx]}</strong></p>
-                  )}
-                  <p className="exam-review-correct-ans">Betul: <strong>{q.options[corrIdx]}</strong></p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="qs-bar">
+      <StandardQuizShell
+        title="Keputusan"
+        subtitle={selectedPaper?.paper_name}
+        progress={total}
+        total={total}
+        onClose={handleCloseQuiz}
+        bar={
           <div className="learn-actions">
-            <button type="button" className="btn-ghost" onClick={handleCloseQuiz}>Kembali</button>
+            <button type="button" className="btn-ghost diag-skip-btn" onClick={handleCloseQuiz}>Kembali</button>
             <button
               type="button"
               className="btn-primary"
-              onClick={() => {
-                setCurrent(0);
-                setAnswers({});
-                setStage("quiz");
-              }}
+              onClick={() => { setCurrent(0); setAnswers({}); setStage("quiz"); }}
             >
               Cuba Semula
             </button>
           </div>
+        }
+      >
+        {timedOut && (
+          <div className="exam-timeout-banner">
+            ⏰ Masa tamat! Jawapan anda telah dihantar.
+          </div>
+        )}
+
+        <div className="card quiz-result-card">
+          <div className="quiz-result-banner">
+            <span className="quiz-result-emoji">{emoji}</span>
+            <div>
+              <p className="quiz-result-score">{correct} / {total}</p>
+              <p className="quiz-result-msg">
+                {attempted < total ? `${total - attempted} tidak dijawab` : "Semua soalan dijawab"}
+              </p>
+            </div>
+            <span className="quiz-result-pct exam-grade-badge">{grade}</span>
+          </div>
         </div>
-      </div>
+
+        <div className="exam-review-list">
+          {questions.map((q, i) => {
+            const userIdx = answers[q.id];
+            const corrIdx = correctMap[q.id];
+            const isAnswered = userIdx !== undefined;
+            const isCorrect = isAnswered && userIdx === corrIdx;
+            return (
+              <div
+                key={q.id}
+                className={`card quiz-review-card exam-review-item${isCorrect ? " exam-review-correct" : isAnswered ? " exam-review-wrong" : " exam-review-skipped"}`}
+              >
+                <div className="quiz-review-row">
+                  <span className="quiz-review-num">S{i + 1}</span>
+                  <span className={`chip${isCorrect ? " chip-correct" : isAnswered ? " chip-wrong" : " chip-muted"}`}>
+                    {isCorrect ? "✓ Betul" : isAnswered ? "✗ Salah" : "— Dilangkau"}
+                  </span>
+                </div>
+                <p className="quiz-review-text">{q.text}</p>
+                {isAnswered && !isCorrect && (
+                  <p className="quiz-review-answer">Jawapan anda: <strong>{q.options[userIdx]}</strong></p>
+                )}
+                <p className="quiz-review-answer">Betul: <strong>{q.options[corrIdx]}</strong></p>
+              </div>
+            );
+          })}
+        </div>
+      </StandardQuizShell>
     );
   }
 

@@ -173,7 +173,15 @@ export default function DiagnosticPage() {
   }
 
   return (
-    <QuizSheet open={step === "quiz"} bar={bar} onClose={handleClose}>
+    <QuizSheet
+      open={step === "quiz"}
+      bar={bar}
+      onClose={handleClose}
+      title="Diagnostik"
+      subtitle="Matematik"
+      progress={answered}
+      total={questions.length}
+    >
       <div className="diag-step-indicator">
         <button
           type="button"
@@ -205,14 +213,6 @@ export default function DiagnosticPage() {
             Soalan {current + 1} daripada {questions.length}
           </span>
           <span className="diag-progress-count">{answered} dijawab</span>
-        </div>
-        <div className="progress-track">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${Math.round((answered / questions.length) * 100)}%`,
-            }}
-          />
         </div>
       </div>
 

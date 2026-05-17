@@ -1,10 +1,14 @@
 "use client";
 
+const LETTERS = ["A", "B", "C", "D", "E"];
+
 interface OptionCardProps {
   text: string;
   selected: boolean;
   onClick: () => void;
   disabled?: boolean;
+  /** 0-based index — used to render the A/B/C/D letter badge */
+  index?: number;
 }
 
 export default function OptionCard({
@@ -12,21 +16,29 @@ export default function OptionCard({
   selected,
   onClick,
   disabled = false,
+  index,
 }: OptionCardProps) {
+  const letter = index !== undefined ? LETTERS[index] : undefined;
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       className={[
-        "w-full text-left px-4 py-3 rounded-2xl border text-sm font-medium transition-colors",
-        selected
-          ? "border-[#1f5eff] bg-[#1f5eff]/5 text-[#1f5eff]"
-          : "border-slate-200 bg-white text-slate-800 hover:border-slate-300",
-        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-      ].join(" ")}
+        "option-card",
+        selected ? "selected" : "",
+        disabled ? "disabled" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      {text}
+      {letter !== undefined && (
+        <span className={`option-letter${selected ? " option-letter-selected" : ""}`}>
+          {letter}
+        </span>
+      )}
+      <span className="option-text">{text}</span>
     </button>
   );
 }
