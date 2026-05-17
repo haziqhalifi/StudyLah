@@ -28,21 +28,21 @@ type Step = "welcome" | "profile" | "quiz" | "analyzing" | "result";
 
 const DIALOGUES: Record<string, string[]> = {
   welcome: [
-    "Hi! I'm Skorrel 🐿️ Think of me as your personal guide to acing SPM Matematik. Let's set up your learning path!",
+    "Hai! Saya Skorrel 🐿️ Anggap saya sebagai pembimbing peribadi anda untuk menguasai Matematik SPM. Jom kita bina laluan pembelajaran anda"
   ],
   profile: [
-    "Fill in your details below so I can set up your perfect learning path. Let's get those A's!",
+    "Isi maklumat anda di bawah supaya saya boleh menetapkan laluan pembelajaran yang sesuai untuk anda. Mari kita dapatkan A's!",
   ],
   analyzing: [
-    "Let me look at your answers... 🔍",
-    "Hmm, interesting results! 🤔",
-    "Analysing with Google AI! 🧮",
-    "Almost there, building your path... 📚",
-    "This looks promising! 🌟",
+    "Biar Skorrel semak jawapan anda dulu...🔍",
+    "Hmm, keputusan yang menarik! 🤔",
+    "Sedang dianalisis dengan Google AI! 🧮",
+    "Hampir siap, Skorrel sedang bina laluan pembelajaran anda...📚",
+    "Nampak macam ada perkembangan yang baik! 🌟",
   ],
   result: [
-    "Your personalised path is ready! 🚀",
-    "Check out your diagnosis! 📊",
+    "Laluan peribadi anda sudah sedia! 🚀",
+    "Periksa diagnosis anda! 📊",
   ],
 };
 
@@ -117,16 +117,29 @@ function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
 function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
   return (
     [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ??
-    "Lessons"
+    "Pelajaran"
   );
 }
 
+function localizeResultText(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(
+      "You've got a baseline in Ubahan! Let's focus next on Matriks with short daily drills, then revise mistakes using worked examples.",
+      "Anda sudah ada asas dalam Ubahan! Seterusnya, fokus pada Matriks dengan latihan ringkas harian, kemudian semak semula kesilapan menggunakan contoh penyelesaian.",
+    )
+    .replace(
+      "Start your personalized lesson path on the weakest topic.",
+      "Mulakan laluan pembelajaran peribadi anda pada topik paling lemah.",
+    );
+}
+
 const ANALYZING_MESSAGES = [
-  "Let me look at your answers... 🔍",
-  "Hmm, interesting results! 🤔",
-  "Analysing with Google AI! 🧮",
-  "Almost there, building your path... 📚",
-  "This looks promising! 🌟",
+  "Biar saya semak jawapan anda... 🔍",
+  "Hmm, keputusan yang menarik! 🤔",
+  "Sedang dianalisis dengan Google AI! 🧮",
+  "Hampir siap, sedang bina laluan anda... 📚",
+  "Nampak sangat memberangsangkan! 🌟",
 ];
 
 function AnalyzingScreen() {
@@ -154,7 +167,7 @@ function AnalyzingScreen() {
       </div>
       <Image
         src="/assets/mascot.webp"
-        alt="Skorrel analysing"
+        alt="Skorrel sedang menganalisis"
         width={120}
         height={120}
         className="ob-analyzing-mascot ob-analyzing-mascot--talking"
@@ -225,7 +238,7 @@ export default function OnboardingPage() {
 
   async function handleStartQuiz() {
     if (!name.trim() || !school.trim()) {
-      setError("Please fill in all fields.");
+      setError("Sila isi semua medan.");
       return;
     }
     setError("");
@@ -261,7 +274,7 @@ export default function OnboardingPage() {
       setStep("quiz");
     } catch {
       setError(
-        "Unable to start onboarding. Check your connection and try again.",
+        "Tidak dapat memulakan onboarding. Semak sambungan anda dan cuba lagi.",
       );
     } finally {
       setLoading(false);
@@ -340,7 +353,7 @@ export default function OnboardingPage() {
       setStep("result");
       showDialogue("result");
     } catch {
-      setError("AI diagnostic failed. Please retry.");
+      setError("Diagnostik AI gagal. Sila cuba semula.");
       setStep("quiz");
     }
   }
@@ -398,7 +411,7 @@ export default function OnboardingPage() {
           setStep("welcome");
           showDialogue("welcome");
         }}
-        title="Diagnostic Quiz"
+        title="Kuiz Diagnostik"
         subtitle={`Soalan ${qIndex + 1} / ${questions.length}`}
         progress={done}
         total={questions.length}
@@ -462,7 +475,7 @@ export default function OnboardingPage() {
             setStep("welcome");
             showDialogue("welcome");
           }}
-          aria-label="Back"
+          aria-label="Kembali"
         >
           ‹
         </button>
@@ -521,7 +534,7 @@ export default function OnboardingPage() {
                 showDialogue("profile");
               }}
             >
-              Let&apos;s Start! 🚀
+               Jom Mula ! 🚀
             </button>
           </div>
         </>
@@ -533,13 +546,13 @@ export default function OnboardingPage() {
           <div className="ob-form">
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-name">
-                Your Name
+                Nama Anda
               </label>
               <input
                 id="ob-name"
                 className="ob-input"
                 type="text"
-                placeholder="e.g. Ahmad Haziq"
+                placeholder="cth. Ahmad Haziq"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="given-name"
@@ -547,13 +560,13 @@ export default function OnboardingPage() {
             </div>
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-school">
-                School
+                Sekolah
               </label>
               <input
                 id="ob-school"
                 className="ob-input"
                 type="text"
-                placeholder="e.g. SMK Taman Desa"
+                placeholder="cth. SMK Taman Desa"
                 value={school}
                 onChange={(e) => setSchool(e.target.value)}
                 autoComplete="organization"
@@ -561,7 +574,7 @@ export default function OnboardingPage() {
             </div>
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-form">
-                Form
+                Tingkatan
               </label>
               <select
                 id="ob-form"
@@ -571,7 +584,7 @@ export default function OnboardingPage() {
               >
                 {[1, 2, 3, 4, 5].map((f) => (
                   <option key={f} value={f}>
-                    Form {f}
+                    Tingkatan {f}
                   </option>
                 ))}
               </select>
@@ -587,7 +600,7 @@ export default function OnboardingPage() {
               onClick={handleStartQuiz}
               disabled={loading}
             >
-              {loading ? "Loading questions..." : "Start Quiz →"}
+              {loading ? "Memuatkan soalan..." : "Mulakan Kuiz →"}
             </button>
           </div>
         </>
@@ -743,9 +756,9 @@ function ResultScreen({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const grade =
-    pct >= 70 ? { label: "Excellent", emoji: "🏆", mod: "high" }
-    : pct >= 45 ? { label: "Good effort", emoji: "💪", mod: "mid" }
-    : { label: "Great start", emoji: "🌱", mod: "low" };
+    pct >= 70 ? { label: "Cemerlang", emoji: "🏆", mod: "high" }
+    : pct >= 45 ? { label: "Usaha yang baik", emoji: "💪", mod: "mid" }
+    : { label: "Permulaan yang baik", emoji: "🌱", mod: "low" };
 
   const sortedTopics = [...result.by_topic].sort((a, b) => a.accuracy - b.accuracy);
   const weakestTopic = sortedTopics[0];
@@ -827,7 +840,7 @@ function ResultScreen({
       {/* ── BODY ── */}
       <div className="ob2-body">
 
-        {/* Topic performance */}
+        {/* Topic perTingkatanance */}
         {result.by_topic.length > 0 && (
           <section className="ob2-section">
             <h3 className="ob2-section-title">
@@ -859,15 +872,15 @@ function ResultScreen({
           </section>
         )}
 
-        {/* AI Diagnosis */}
+        {/* Diagnosa AI */}
         <section className="ob2-section ob-result-fadein">
           <h3 className="ob2-section-title">
             <span className="ob2-section-dot ob2-section-dot--brand" />
-            AI Diagnosis
+            Diagnosa AI
           </h3>
           <div className="ob2-ai-card">
             <span className="ob2-ai-sparkle">✦</span>
-            <p className="ob2-ai-text">{result.recommendation}</p>
+            <p className="ob2-ai-text">{localizeResultText(result.recommendation)}</p>
           </div>
         </section>
 
@@ -896,7 +909,7 @@ function ResultScreen({
                 <span className="ob2-insight-icon">🎯</span>
                 <span className="ob2-insight-label">Langkah Seterusnya</span>
               </div>
-              <p className="ob2-insight-next">{result.next_step}</p>
+              <p className="ob2-insight-next">{localizeResultText(result.next_step)}</p>
             </div>
           )}
         </div>
@@ -904,14 +917,20 @@ function ResultScreen({
         {/* Secondary actions */}
         <div className="ob2-secondary-actions ob-result-fadein">
           <p className="ob2-secondary-label">Pilihan lain:</p>
-          <button type="button" className="ob2-secondary-btn" onClick={onContinue}>
-            Ikut pelan auto →
-          </button>
           <button type="button" className="ob2-secondary-btn ob2-secondary-btn--ghost" onClick={() => window.location.reload()}>
             Ulang buat diagnostik nanti →
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        className="ob2-secondary-btn ob2-floating-plan-btn"
+        onClick={onContinue}
+      >
+        Ikut pelan auto →
+      </button>
     </div>
   );
 }
+
