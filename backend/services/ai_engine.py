@@ -260,19 +260,20 @@ def _enrich_misconceptions_openai(
         })
 
     system = (
-        "You are an expert SPM Math tutor analysing a student's diagnostic results. "
-        "Identify specific misconceptions from wrong answers only. "
-        "Return ONLY valid JSON — no markdown, no explanation."
+        "Anda adalah pakar tutor Matematik SPM yang menganalisis keputusan diagnostik pelajar. "
+        "Kenal pasti salah faham khusus daripada jawapan salah sahaja. "
+        "Tulis semua salah faham dalam Bahasa Melayu. "
+        "Kembalikan SAHAJA JSON yang sah — tiada markdown, tiada penjelasan."
     )
 
-    user = f"""Analyse these quiz attempts and return a JSON object mapping topic_id
-to a list of misconception strings (max 3 per topic, empty list if none).
+    user = f"""Analisis percubaan kuiz ini dan kembalikan objek JSON yang memetakan topic_id
+kepada senarai rentetan salah faham dalam Bahasa Melayu (maksimum 3 per topik, senarai kosong jika tiada).
 
-Attempts:
+Percubaan:
 {json.dumps(attempt_details, separators=(',', ':'))}
 
-Return ONLY this JSON shape (no markdown fences):
-{{"<topic_id>": ["<misconception>", ...], ...}}"""
+Kembalikan SAHAJA bentuk JSON ini (tiada kod markdown):
+{{"<topic_id>": ["<salah faham>", ...], ...}}"""
 
     try:
         response = _client().chat.completions.create(
@@ -509,42 +510,43 @@ def generate_explanation(
 
     style_instruction = {
         "step_by_step": (
-            "Write a numbered step-by-step solution. "
-            "Start each step on its own line as **Step N:** followed by the working. "
-            "Show every calculation clearly."
+            "Tulis penyelesaian langkah demi langkah yang bernombor. "
+            "Mulakan setiap langkah pada baris sendiri sebagai **Langkah N:** diikuti dengan pengiraan. "
+            "Tunjukkan setiap pengiraan dengan jelas."
         ),
         "formula_first": (
-            "Start with a **Formula:** line showing the key formula. "
-            "Then substitute values and simplify step by step."
+            "Mulakan dengan baris **Formula:** yang menunjukkan formula utama. "
+            "Kemudian gantikan nilai dan ringkaskan langkah demi langkah."
         ),
         "shortcut_tips": (
-            "Start with a **Tip:** line giving the key insight the student missed. "
-            "Then show the correct working briefly."
+            "Mulakan dengan baris **Tips:** yang memberikan pandangan utama yang pelajar terlepas. "
+            "Kemudian tunjukkan pengiraan yang betul secara ringkas."
         ),
         "analogy": (
-            "Open with a one-sentence real-world analogy in **bold**. "
-            "Then connect it to the solution steps."
+            "Buka dengan satu ayat analogi kehidupan sebenar dalam **bold**. "
+            "Kemudian hubungkannya dengan langkah-langkah penyelesaian."
         ),
     }[style]
 
     wrong_guidance = (
-        f'\nThe student chose **"{selected_text}"** which is wrong. '
-        "Gently explain why before showing the correct working."
+        f'\nPelajar memilih **"{selected_text}"** yang salah. '
+        "Terangkan dengan lembut mengapa jawapan itu salah sebelum menunjukkan pengiraan yang betul."
         if not attempt.is_correct else ""
     )
 
     system = (
-        "You are a friendly SPM Mathematics tutor. "
-        "Write clear, encouraging explanations using markdown. "
-        "Use **bold** for key terms and formulas. "
-        "Use LaTeX with $...$ for inline math and $$...$$ for display math. "
-        "Keep the total response under 200 words."
+        "Anda adalah tutor Matematik SPM yang mesra. "
+        "Tulis penjelasan yang jelas dan menggalakkan menggunakan markdown dalam Bahasa Melayu. "
+        "Gunakan **bold** untuk istilah dan formula utama. "
+        "Gunakan LaTeX dengan $...$ untuk matematik sebaris dan $$...$$ untuk matematik paparan. "
+        "Pastikan jumlah respons tidak melebihi 200 patah perkataan. "
+        "PENTING: Jawab SEPENUHNYA dalam Bahasa Melayu sahaja."
     )
 
-    user = f"""Question: {question.text}
-Options: {json.dumps(question.options)}
-Correct answer: "{correct_text}"
-Student's answer: "{selected_text}" — {result_word}
+    user = f"""Soalan: {question.text}
+Pilihan: {json.dumps(question.options, ensure_ascii=False)}
+Jawapan betul: "{correct_text}"
+Jawapan pelajar: "{selected_text}" — {result_word}
 {wrong_guidance}
 
 {style_instruction}"""
