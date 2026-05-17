@@ -490,6 +490,11 @@ h3 {
     display: none;
   }
 
+  /* â”€â”€ Top nav â”€â”€ */
+  body.quiz-open .top-nav {
+    display: none;
+  }
+
   .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -4018,6 +4023,63 @@ button.map-node:hover {
 .qs-stat-icon-btn:hover {
   background: var(--border);
 }
+.qs-stat-icon-btn--muted {
+  opacity: 0.4;
+}
+.qs-stat-icon-btn--flagged {
+  color: #ef4444;
+}
+
+/* ── Settings panel ── */
+.qs-settings-panel {
+  flex-shrink: 0;
+  background: var(--card);
+  border-bottom: 1.5px solid var(--border);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.qs-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.qs-settings-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.qs-settings-toggle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.qs-settings-toggle--on {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.qs-settings-close {
+  align-self: flex-end;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--brand);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0;
+}
+.qs-settings-close:hover {
+  text-decoration: underline;
+}
 
 .qs-progress-track {
   flex-shrink: 0;
@@ -4819,6 +4881,37 @@ button.map-node:hover {
   box-shadow: 0 2px 0 #06b6d4;
   color: var(--ink);
   font-weight: 600;
+}
+.qs-shell .option-card.correct {
+  border-color: #16a34a;
+  background: #dcfce7;
+  box-shadow: 0 2px 0 #16a34a;
+  color: #14532d;
+  font-weight: 600;
+  animation: correctPop 0.3s ease both;
+}
+.qs-shell .option-card.wrong {
+  border-color: #dc2626;
+  background: #fee2e2;
+  box-shadow: 0 2px 0 #dc2626;
+  color: #7f1d1d;
+  font-weight: 600;
+  animation: wrongShake 0.35s ease;
+}
+.qs-shell .option-card.dimmed {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+  opacity: 0.5;
+}
+.qs-shell .option-letter-correct {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+.qs-shell .option-letter-wrong {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
 }
 .qs-shell .option-letter {
   width: 34px;

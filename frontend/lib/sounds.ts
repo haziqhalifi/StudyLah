@@ -5,6 +5,11 @@ function ctx(): AudioContext | null {
   return new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
 }
 
+function isMuted(): boolean {
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem("soundMuted") === "1";
+}
+
 function playTone(
   frequencies: number[],
   durations: number[],
@@ -31,16 +36,16 @@ function playTone(
 }
 
 export function playSubmitSound() {
-  // Neutral "click" — short mid-range blip
+  if (isMuted()) return;
   playTone([440], [0.08], "sine", 0.25);
 }
 
 export function playCorrectSound() {
-  // Ascending major triad: C5 → E5 → G5
+  if (isMuted()) return;
   playTone([523, 659, 784], [0.12, 0.12, 0.2], "sine", 0.22);
 }
 
 export function playWrongSound() {
-  // Descending dissonant pair
+  if (isMuted()) return;
   playTone([300, 220], [0.15, 0.25], "sawtooth", 0.12);
 }

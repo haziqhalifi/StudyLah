@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
-import { Question } from "@/lib/api";
+import { Question, submitAnswer as apiSubmitAnswer } from "@/lib/api";
 import { MaterialMcq } from "@/app/materials/ubahan/data";
 import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
 
@@ -84,11 +84,18 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
-  const [streak, setStreak] = useState(0);
+  const [sessionStreak, setSessionStreak] = useState(0);
   const [xp, setXp] = useState(0);
   const [showBuddy, setShowBuddy] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null;
+  useEffect(() => {
+    const uid = sessionStorage.getItem("userId");
+    setUserId(uid);
+
+    const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
+    setXp(isNaN(storedXp) ? 0 : storedXp);
+  }, []);
   const questionSet = useMemo(() => {
     if (materialQuestions && materialQuestions.length > 0) {
       return materialQuestions.map((q) => mapMaterialQuestion(chapter, q));
@@ -107,18 +114,42 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const displayedCorrect = correctCount + (submitted && isCorrect ? 1 : 0);
   const accuracy = done > 0 ? `${Math.round((displayedCorrect / done) * 100)}%` : "-";
 
-  function submitAnswer() {
+  async function handleSubmit() {
     if (selected === null) return;
     playSubmitSound();
-    if (selected === correctIndex) {
+
+    const correct = selected === correctIndex;
+    if (correct) {
       setCorrectCount((prev) => prev + 1);
-      setStreak((prev) => prev + 1);
-      setXp((prev) => prev + 10);
+      setSessionStreak((prev) => prev + 1);
       setTimeout(playCorrectSound, 100);
     } else {
-      setStreak(0);
+      setSessionStreak(0);
       setTimeout(playWrongSound, 100);
     }
+
+    const xpGain = correct ? 10 : 5;
+    setXp((prev) => {
+      const next = prev + xpGain;
+      sessionStorage.setItem("userXp", String(next));
+      return next;
+    });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const lastActiveDay = localStorage.getItem("lastActiveDay");
+    if (lastActiveDay !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const stored = parseInt(localStorage.getItem("dailyStreak") ?? "0", 10);
+      const newDailyStreak = lastActiveDay === yesterday ? (isNaN(stored) ? 1 : stored) + 1 : 1;
+      localStorage.setItem("dailyStreak", String(newDailyStreak));
+      localStorage.setItem("lastActiveDay", today);
+      sessionStorage.setItem("streak", String(newDailyStreak));
+    }
+
+    if (userId) {
+      apiSubmitAnswer(userId, question.id, selected).catch(() => {});
+    }
+
     setSubmitted(true);
   }
 
@@ -131,21 +162,46 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   }
 
   const bar = !submitted ? (
-    <button type="button" className="btn-primary" disabled={selected === null} onClick={submitAnswer}>
+    <button type="button" className="btn-primary" disabled={selected === null} onClick={handleSubmit}>
       Hantar Jawapan
     </button>
-  ) : finalStep ? (
-    <button type="button" className="btn-primary" onClick={onContinue}>
-      Tamat Sesi
-    </button>
   ) : (
-    <button type="button" className="btn-primary" onClick={nextQuestion}>
-      Soalan Seterusnya
-    </button>
+    <div className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+      <div className="qs-feedback-top">
+        <span className="qs-feedback-icon">{isCorrect ? "✓" : "✗"}</span>
+        <div className="qs-feedback-text">
+          <p className="qs-feedback-title">{isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+          {!isCorrect && (
+            <p className="qs-feedback-hint">Semak jawapan betul yang ditunjukkan di atas.</p>
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="qs-feedback-btn"
+        onClick={finalStep ? onContinue : nextQuestion}
+      >
+        {finalStep ? "TAMAT SESI" : "SETERUSNYA"} &rsaquo;
+      </button>
+    </div>
   );
 
+  const chapterLabel = chapter === "ubahan" ? "Ubahan" : chapter === "matriks" ? "Matriks" : "Insurans";
+  const stepTypeLabel = step.type === "Assessment" ? "Penilaian" : "Latihan";
+  const metaLabel = `${chapterLabel} · ${subtopic.title} · ${stepTypeLabel}`;
+
   return (
-    <QuizSheet open bar={bar} onClose={onClose} progress={done} total={total} streak={streak} xp={xp}>
+    <QuizSheet
+      open
+      bar={bar}
+      onClose={onClose}
+      progress={done}
+      total={total}
+      streak={sessionStreak}
+      xp={xp}
+      title={step.title}
+      meta={metaLabel}
+    >
       <div className="learn-stats">
         <div className="learn-stat">
           <div className="learn-stat-label">Selesai</div>

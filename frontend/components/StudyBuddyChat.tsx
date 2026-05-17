@@ -45,14 +45,14 @@ const TOPIC_DISPLAY: Record<string, string> = {
 function buildWelcomeMessage(ctx?: LearningContext): string {
   if (ctx?.currentQuestion) {
     return (
-      `Hi! I'm Skorrel, your study AI partner! 👋 I can see you're working on **${ctx.topicName}**` +
+      `Hai! Saya Skorrel, rakan AI belajar anda! 👋 Saya nampak anda sedang mengerjakan **${ctx.topicName}**` +
       (ctx.chapterName ? ` — ${ctx.chapterName}` : "") +
-      ".\n\nUse the chips below to get instant help, or ask me anything! 🚀"
+      ".\n\nGunakan butang di bawah untuk bantuan segera, atau tanya saya apa sahaja! 🚀"
     );
   }
   return (
-    "Hi! I'm Skorrel, your study AI partner! 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**.\n\n" +
-    "Tap a chip below to get started, or ask me anything! 🚀"
+    "Hai! Saya Skorrel, rakan AI belajar anda! 👋 Saya boleh membantu anda dengan **Ubahan**, **Matriks**, dan **Insurans**.\n\n" +
+    "Ketik butang di bawah untuk bermula, atau tanya saya apa sahaja! 🚀"
   );
 }
 

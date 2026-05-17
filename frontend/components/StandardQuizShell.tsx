@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 interface StandardQuizShellProps {
@@ -40,6 +40,14 @@ export default function StandardQuizShell({
   meta,
 }: StandardQuizShellProps) {
   const fillRef = useRef<HTMLDivElement>(null);
+  const [muted, setMuted] = useState(false);
+  const [flagged, setFlagged] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Sync mute state with sounds lib — store in sessionStorage so sounds.ts can read it
+  useEffect(() => {
+    sessionStorage.setItem("soundMuted", muted ? "1" : "0");
+  }, [muted]);
 
   useEffect(() => {
     if (open) {
@@ -120,9 +128,68 @@ export default function StandardQuizShell({
             <span className="qs-stat-val">{xp} XP</span>
           </span>
           <span className="qs-stats-spacer" />
-          <button type="button" className="qs-stat-icon-btn" aria-label="Bunyi">🔊</button>
-          <button type="button" className="qs-stat-icon-btn" aria-label="Tandakan">🚩</button>
-          <button type="button" className="qs-stat-icon-btn" aria-label="Tetapan">⚙️</button>
+          <button
+            type="button"
+            className={`qs-stat-icon-btn${muted ? " qs-stat-icon-btn--muted" : ""}`}
+            aria-label={muted ? "Hidupkan bunyi" : "Redam bunyi"}
+            title={muted ? "Hidupkan bunyi" : "Redam bunyi"}
+            onClick={() => setMuted((m) => !m)}
+          >
+            {muted ? "🔇" : "🔊"}
+          </button>
+          <button
+            type="button"
+            className={`qs-stat-icon-btn${flagged ? " qs-stat-icon-btn--flagged" : ""}`}
+            aria-label={flagged ? "Nyahbenderakan" : "Tandakan soalan"}
+            title={flagged ? "Nyahbenderakan" : "Tandakan soalan"}
+            onClick={() => setFlagged((f) => !f)}
+          >
+            🚩
+          </button>
+          <button
+            type="button"
+            className="qs-stat-icon-btn"
+            aria-label="Tetapan"
+            title="Tetapan"
+            onClick={() => setShowSettings((s) => !s)}
+          >
+            ⚙️
+          </button>
+        </div>
+      )}
+
+      {/* ── Settings panel ── */}
+      {showSettings && (
+        <div className="qs-settings-panel" role="dialog" aria-label="Tetapan kuiz">
+          <div className="qs-settings-row">
+            <span className="qs-settings-label">Bunyi kesan</span>
+            <button
+              type="button"
+              className={`qs-settings-toggle${muted ? "" : " qs-settings-toggle--on"}`}
+              onClick={() => setMuted((m) => !m)}
+              aria-pressed={muted ? "false" : "true"}
+            >
+              {muted ? "Mati" : "Hidup"}
+            </button>
+          </div>
+          <div className="qs-settings-row">
+            <span className="qs-settings-label">Tandakan soalan ini</span>
+            <button
+              type="button"
+              className={`qs-settings-toggle${flagged ? " qs-settings-toggle--on" : ""}`}
+              onClick={() => setFlagged((f) => !f)}
+              aria-pressed={flagged ? "true" : "false"}
+            >
+              {flagged ? "Ditandakan" : "Tandakan"}
+            </button>
+          </div>
+          <button
+            type="button"
+            className="qs-settings-close"
+            onClick={() => setShowSettings(false)}
+          >
+            Tutup
+          </button>
         </div>
       )}
 

@@ -6,57 +6,57 @@ import type { LearningContext, QuickAction } from "./types";
 
 export const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
   {
-    label: "Ask AI Coach",
+    label: "Tanya Jurulatih AI",
     emoji: "🧑‍🏫",
-    message: "Based on my recent performance, what should I focus on next?",
+    message: "Berdasarkan prestasi terkini saya, apakah yang perlu saya fokuskan seterusnya?",
     actionType: "ask_coach",
   },
   {
-    label: "Flashcards: Ubahan",
+    label: "Kad Imbas: Ubahan",
     emoji: "🃏",
-    message: "Create 8 flashcards for ubahan",
+    message: "Cipta 8 kad imbas untuk ubahan",
     actionType: "generate_flashcards",
   },
   {
-    label: "Flashcards: Matriks",
+    label: "Kad Imbas: Matriks",
     emoji: "🃏",
-    message: "Create 8 flashcards for matriks",
+    message: "Cipta 8 kad imbas untuk matriks",
     actionType: "generate_flashcards",
   },
   {
-    label: "Flashcards: Insurans",
+    label: "Kad Imbas: Insurans",
     emoji: "🃏",
-    message: "Create 8 flashcards for insurans",
+    message: "Cipta 8 kad imbas untuk insurans",
     actionType: "generate_flashcards",
   },
   {
-    label: "Ubahan Quiz",
+    label: "Kuiz Ubahan",
     emoji: "🎯",
-    message: "Generate a personalised Ubahan quiz for me",
+    message: "Jana kuiz Ubahan yang diperibadikan untuk saya",
     actionType: "generate_quiz",
   },
   {
-    label: "Matriks Quiz",
+    label: "Kuiz Matriks",
     emoji: "🔢",
-    message: "Generate a personalised Matriks quiz for me",
+    message: "Jana kuiz Matriks yang diperibadikan untuk saya",
     actionType: "generate_quiz",
   },
   {
-    label: "Insurans Quiz",
+    label: "Kuiz Insurans",
     emoji: "🛡️",
-    message: "Generate a personalised Insurans quiz for me",
+    message: "Jana kuiz Insurans yang diperibadikan untuk saya",
     actionType: "generate_quiz",
   },
   {
-    label: "Review My Mistakes",
+    label: "Semak Kesilapan Saya",
     emoji: "🔄",
-    message: "Show me questions I got wrong recently",
+    message: "Tunjukkan soalan yang saya jawab salah baru-baru ini",
     actionType: "review_mistakes",
   },
   {
-    label: "My Progress",
+    label: "Kemajuan Saya",
     emoji: "📊",
-    message: "How am I doing overall?",
+    message: "Bagaimana prestasi saya secara keseluruhan?",
     actionType: "show_progress",
   },
 ];
@@ -72,9 +72,9 @@ function _topicLabel(topicId: string): string {
 }
 
 const COACH_CHIP: QuickAction = {
-  label: "Ask AI Coach",
+  label: "Tanya Jurulatih AI",
   emoji: "🧑‍🏫",
-  message: "Based on my recent performance, what should I focus on next?",
+  message: "Berdasarkan prestasi terkini saya, apakah yang perlu saya fokuskan seterusnya?",
   actionType: "ask_coach",
 };
 
@@ -82,27 +82,27 @@ const COACH_CHIP: QuickAction = {
 function getWrongAnswerActions(topicId: string): QuickAction[] {
   return [
     {
-      label: "Hint Please",
+      label: "Beri Petunjuk",
       emoji: "💡",
-      message: "Give me a hint for this question without revealing the full answer",
+      message: "Berikan saya petunjuk untuk soalan ini tanpa mendedahkan jawapan penuh",
       actionType: "hint",
     },
     {
-      label: "Step-by-Step",
+      label: "Langkah demi Langkah",
       emoji: "🔍",
-      message: "Explain this question step by step",
+      message: "Terangkan soalan ini langkah demi langkah",
       actionType: "explain_question",
     },
     {
-      label: "Teach Me This",
+      label: "Ajar Saya Ini",
       emoji: "📖",
-      message: "Teach me the concept behind this question",
+      message: "Ajar saya konsep di sebalik soalan ini",
       actionType: "teach_concept",
     },
     {
-      label: "Similar Question",
+      label: "Soalan Serupa",
       emoji: "🔁",
-      message: `Give me a similar ${_topicLabel(topicId)} question to practise`,
+      message: `Berikan saya soalan ${_topicLabel(topicId)} yang serupa untuk berlatih`,
       actionType: "similar_question",
     },
     COACH_CHIP,
@@ -114,27 +114,27 @@ function getCorrectAnswerActions(topicId: string): QuickAction[] {
   const label = _topicLabel(topicId);
   return [
     {
-      label: "Similar Question",
+      label: "Soalan Serupa",
       emoji: "🔁",
-      message: `Give me a similar ${label} question to practise`,
+      message: `Berikan saya soalan ${label} yang serupa untuk berlatih`,
       actionType: "similar_question",
     },
     {
-      label: `${label} Quiz`,
+      label: `Kuiz ${label}`,
       emoji: "🎯",
-      message: `Create a personalised ${label} quiz for me`,
+      message: `Cipta kuiz ${label} yang diperibadikan untuk saya`,
       actionType: "generate_quiz",
     },
     {
-      label: `${label} Flashcards`,
+      label: `Kad Imbas ${label}`,
       emoji: "🃏",
-      message: `Create 8 flashcards for ${topicId}`,
+      message: `Cipta 8 kad imbas untuk ${topicId}`,
       actionType: "generate_flashcards",
     },
     {
-      label: "Step-by-Step",
+      label: "Langkah demi Langkah",
       emoji: "🔍",
-      message: "Explain this question step by step",
+      message: "Terangkan soalan ini langkah demi langkah",
       actionType: "explain_question",
     },
     COACH_CHIP,
@@ -149,27 +149,27 @@ export function getContextualQuickActions(
   const label = _topicLabel(topicId);
   return [
     {
-      label: "Hint Please",
+      label: "Beri Petunjuk",
       emoji: "💡",
-      message: "Give me a hint for this question without revealing the full answer",
+      message: "Berikan saya petunjuk untuk soalan ini tanpa mendedahkan jawapan penuh",
       actionType: "hint",
     },
     {
-      label: "Step-by-Step",
+      label: "Langkah demi Langkah",
       emoji: "🔍",
-      message: "Explain this question step by step",
+      message: "Terangkan soalan ini langkah demi langkah",
       actionType: "explain_question",
     },
     {
-      label: "Practice Quiz",
+      label: "Kuiz Latihan",
       emoji: "🎯",
-      message: `Create a personalised ${label} quiz for me`,
+      message: `Cipta kuiz ${label} yang diperibadikan untuk saya`,
       actionType: "generate_quiz",
     },
     {
-      label: "Teach Me This",
+      label: "Ajar Saya Ini",
       emoji: "📖",
-      message: "Teach me the concept behind this question",
+      message: "Ajar saya konsep di sebalik soalan ini",
       actionType: "teach_concept",
     },
     COACH_CHIP,
