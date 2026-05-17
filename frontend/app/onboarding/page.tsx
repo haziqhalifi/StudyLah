@@ -356,7 +356,7 @@ export default function OnboardingPage() {
       text: currentQ.text,
       options: currentQ.options,
       topic_id: currentQ.topic,
-      difficulty: "sederhana" as const,
+      difficulty: "medium" as const,
       tags: [] as string[],
     };
 
