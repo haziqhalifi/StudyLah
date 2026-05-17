@@ -35,6 +35,11 @@ function normaliseMath(text: string): string {
   // \(...\)  →  $...$   (inline math)
   out = out.replace(/\\\(([\s\S]*?)\\\)/g, (_m, inner) => `$${inner}$`);
 
+  // Bare base-notation subscripts stored without braces, e.g. "123_5" → "123_{5}"
+  // Only applies outside existing $ delimiters to avoid mangling LaTeX already present.
+  // Pattern: one or more digits, underscore, one or more digits (not already brace-wrapped).
+  out = out.replace(/(\d+)_(\d+)(?!\})/g, (_m, base, sub) => `${base}_{${sub}}`);
+
   // Only wrap the whole thing as bare math when:
   //   - no $ delimiters already present
   //   - no markdown headings / bullets / code fences (i.e. it's plain math text)

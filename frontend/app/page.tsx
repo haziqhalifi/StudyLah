@@ -8,12 +8,12 @@ import type { TopicStats } from "@/lib/api";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
 
-const student = {
-  name: "Amir",
-  form: "Form 4",
-  progress: 10,
+const DEFAULT_STUDENT = {
+  name: "Pelajar",
+  form: "Form 5",
+  progress: 0,
   level: 1,
-  xp: 180,
+  xp: 0,
   streak: 1,
 };
 
@@ -111,14 +111,28 @@ function HomeDashboard() {
 }
 
 function StudentHeader() {
+  const [name, setName] = useState(DEFAULT_STUDENT.name);
+  const [xp, setXp] = useState(DEFAULT_STUDENT.xp);
+
+  useEffect(() => {
+    try {
+      const storedName = sessionStorage.getItem("userName");
+      const storedXp = sessionStorage.getItem("userXp");
+      if (storedName) setName(storedName);
+      if (storedXp) setXp(Number(storedXp));
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Hello, {student.name}</h1>
+        <h1>Hello, {name}</h1>
         <div className="student-meta-row">
-          <span>{student.form}</span>
+          <span>{DEFAULT_STUDENT.form}</span>
           <span aria-hidden="true">•</span>
-          <span>{student.xp} XP</span>
+          <span>{xp} XP</span>
         </div>
       </div>
 
@@ -143,21 +157,21 @@ function LevelProgressCard() {
   return (
     <section
       className="level-card"
-      aria-label={`Level ${student.level} progress`}
+      aria-label={`Level ${DEFAULT_STUDENT.level} progress`}
     >
       <div className="level-card-content">
-        <p className="level-eyebrow">Level {student.level}</p>
+        <p className="level-eyebrow">Level {DEFAULT_STUDENT.level}</p>
         <h2>This is your first step to greatness!</h2>
         <div className="level-progress-row">
           <div className="level-progress-track" aria-hidden="true">
             <div
               className="level-progress-fill"
-              style={{ width: `${student.progress}%` }}
+              style={{ width: `${DEFAULT_STUDENT.progress}%` }}
             >
               <span className="level-progress-dot" />
             </div>
           </div>
-          <span>{student.progress}%</span>
+          <span>{DEFAULT_STUDENT.progress}%</span>
         </div>
       </div>
       <div className="level-trophy" aria-hidden="true">

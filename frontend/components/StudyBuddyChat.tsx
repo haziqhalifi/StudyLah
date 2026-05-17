@@ -145,7 +145,7 @@ export default function StudyBuddyChat({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I couldn't reach the server. Please try again." },
+        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
       ]);
       setChipsVisible(true);
     } finally {
@@ -177,7 +177,7 @@ export default function StudyBuddyChat({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I couldn't reach your coach. Please try again." },
+        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
       ]);
       setChipsVisible(true);
     } finally {
