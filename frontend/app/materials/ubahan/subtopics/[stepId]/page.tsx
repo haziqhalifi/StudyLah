@@ -86,7 +86,7 @@ export default function UbahanStepPage() {
       <div className="material-step-page page-enter">
         <section className="material-viewer material-viewer-standalone">
           <div className="material-viewer-top">
-            <button type="button" className="material-close-btn" onClick={() => router.push("/materials/ubahan/subtopics")}>
+            <button type="button" className="material-close-btn" onClick={() => router.push("/learning")}>
               Tutup
             </button>
             <p className="material-viewer-step">Langkah tidak dijumpai</p>
@@ -102,7 +102,7 @@ export default function UbahanStepPage() {
   const isLastPage = pages.length > 0 && pageIndex === pages.length - 1;
 
   function closePage() {
-    router.push("/materials/ubahan/subtopics");
+    router.push("/learning");
   }
 
   function nextPage() {
@@ -115,14 +115,14 @@ export default function UbahanStepPage() {
 
   function continueToMap() {
     if (!step) {
-      router.push("/materials/ubahan/subtopics");
+      router.push("/learning");
       return;
     }
     const raw = localStorage.getItem(COMPLETION_KEY);
     const current = raw ? (JSON.parse(raw) as string[]) : [];
     if (!current.includes(step.id)) current.push(step.id);
     localStorage.setItem(COMPLETION_KEY, JSON.stringify(current));
-    router.push("/materials/ubahan/subtopics");
+    router.push("/learning");
   }
 
   function isMathLine(line: string) {

@@ -188,7 +188,7 @@ export default function ReviewPage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => router.push("/materials")}
+            onClick={() => router.push("/learning")}
           >
             {caughtUp ? "Teruskan Belajar →" : "Pergi Belajar →"}
           </button>
@@ -219,7 +219,7 @@ export default function ReviewPage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() => router.push("/materials")}
+            onClick={() => router.push("/learning")}
           >
             Teruskan Belajar →
           </button>

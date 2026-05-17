@@ -121,7 +121,7 @@ export default function UbahanSubtopicsPage() {
         <div className="material-header-top-row">
           <button
             type="button"
-            onClick={() => router.push("/materials/ubahan")}
+            onClick={() => router.push("/learning")}
             className="material-back-btn"
             aria-label="Kembali ke Ubahan"
           >
