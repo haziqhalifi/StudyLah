@@ -70,8 +70,8 @@ function ProgressHeader({ name }: { name: string; xp: number; level: number }) {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <p className="student-time">Kemajuan</p>
-        <h1>{name || "Pelajar"}</h1>
+        <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Kemajuan</p>
+        <h1 style={{ paddingLeft: "0.5rem" }}>{name || "Pelajar"}</h1>
       </div>
     </header>
   );
