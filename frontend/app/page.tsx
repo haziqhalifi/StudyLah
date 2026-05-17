@@ -227,25 +227,23 @@ function DailyMissionCard() {
     router.push("/learn");
   }
 
+  if (done) return null;
+
   return (
     <button
       type="button"
-      className={`daily-mission-card${done ? " daily-mission-card--done" : ""}`}
+      className="daily-mission-card"
       onClick={handleClaim}
       aria-label="Misi harian"
     >
       <span className="daily-mission-icon" aria-hidden="true">
-        {done ? <CheckCircleIcon /> : <FireIcon />}
+        <FireIcon />
       </span>
       <div className="daily-mission-body">
         <p className="daily-mission-label">Misi Hari Ini</p>
-        <p className="daily-mission-title">
-          {done ? "Misi selesai! Teruskan streak kamu" : "Jawab 5 soalan hari ini"}
-        </p>
+        <p className="daily-mission-title">Jawab 5 soalan hari ini</p>
       </div>
-      {!done && (
-        <span className="daily-mission-badge" aria-hidden="true">+10 XP</span>
-      )}
+      <span className="daily-mission-badge" aria-hidden="true">+10 XP</span>
     </button>
   );
 }
@@ -309,6 +307,7 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
           Lihat kemajuan
         </button>
       </div>
+      <div className="progress-set-list-container">
       <div className="progress-set-list">
         {sorted.map((t, i) => {
           const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id };
@@ -348,6 +347,7 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
             </article>
           );
         })}
+      </div>
       </div>
     </section>
   );
@@ -411,13 +411,13 @@ function QuickFlashcardWidget({ sets }: { sets: FlashcardSetSummary[] }) {
   return (
     <div className="quick-flashcard-widget">
       <div className="quick-flashcard-header">
-        <span className="quick-flashcard-title">🃏 Flashcard Saya</span>
+        <h2 className="quick-flashcard-title">Flashcard Saya</h2>
         <button
           type="button"
           className="quick-flashcard-see-all"
           onClick={() => router.push("/progress")}
         >
-          Lihat semua →
+          Lihat semua
         </button>
       </div>
       <div className="quick-flashcard-list">
@@ -654,15 +654,6 @@ function FireIcon() {
   return (
     <IconBase>
       <path d="M12 2c0 0-5 4-5 9a5 5 0 0 0 10 0c0-2.5-1.5-5-3-6.5 0 2-1 3.5-2 4.5-1-2-1-4.5 0-7Z" />
-    </IconBase>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <IconBase>
-      <circle cx="12" cy="12" r="9" />
-      <path d="m9 12 2 2 4-4" />
     </IconBase>
   );
 }

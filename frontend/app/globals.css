@@ -6896,12 +6896,15 @@ button.map-node:hover {
 
 /* ── Fokus Hari Ini card ────────────────────────────────────── */
 .fokus-card {
+  position: relative;
+  overflow: hidden;
   width: 100%;
-  padding: 1.25rem 1.25rem 1.125rem;
-  border-radius: var(--r-xl);
-  background: #1a1a2e;
-  color: #fff;
-  box-shadow: 0 8px 28px rgba(26, 26, 46, 0.22);
+  padding: 1.125rem 1.125rem 1rem;
+  border-radius: 22px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(142, 120, 255, 0.13);
+  border: 1.5px solid #ede9ff;
 }
 
 .fokus-eyebrow {
@@ -6909,44 +6912,45 @@ button.map-node:hover {
   align-items: center;
   gap: 0.4rem;
   font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #f59e0b;
-  margin: 0 0 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  margin: 0 0 0.5rem;
   text-transform: uppercase;
 }
 
 .fokus-eyebrow-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--brand);
   flex-shrink: 0;
 }
 
 .fokus-title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
   line-height: 1.35;
-  margin: 0 0 0.55rem;
-  color: #fff;
+  margin: 0 0 0.45rem;
+  color: var(--ink);
 }
 
 .fokus-highlight {
-  color: #fbbf24;
+  color: var(--brand);
 }
 
 .fokus-meta {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0 0 0.875rem;
 }
 
 .fokus-meta-sep {
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .fokus-accuracy-dot {
@@ -6961,22 +6965,24 @@ button.map-node:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   width: 100%;
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
   border: 0;
   border-radius: var(--r-lg);
-  background: #f59e0b;
-  color: #1a1a2e;
-  font-size: 0.95rem;
-  font-weight: 700;
+  background: linear-gradient(135deg, #8e78ff 0%, #b26cff 100%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 6px 18px rgba(142, 120, 255, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .fokus-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 24px rgba(142, 120, 255, 0.45);
 }
 
 /* ── Weak Topic card ────────────────────────────────────────── */
@@ -7094,8 +7100,8 @@ button.map-node:hover {
   gap: 0.2rem;
   padding: 0.9rem 0.5rem;
   background: #fff;
-  border-radius: var(--r-lg);
-  box-shadow: 0 4px 16px rgba(78, 67, 145, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
   text-align: center;
 }
 
@@ -7121,7 +7127,7 @@ button.map-node:hover {
 /* Quick flashcard widget */
 .quick-flashcard-widget {
   background: #fff;
-  border-radius: var(--r-xl);
+  border-radius: 22px;
   box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
   overflow: hidden;
 }
@@ -7130,21 +7136,21 @@ button.map-node:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1rem 0.6rem;
+  padding: 0.85rem 1rem 0.75rem;
   border-bottom: 1px solid var(--border);
 }
 
 .quick-flashcard-title {
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 900;
   color: var(--ink);
 }
 
 .quick-flashcard-see-all {
   border: none;
   background: none;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--brand);
   cursor: pointer;
   padding: 0.2rem 0.4rem;
@@ -8740,24 +8746,26 @@ button.map-node:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
 }
 
 .progress-section-title {
   margin: 0;
-  color: #26203f;
+  color: var(--ink);
   font-family: var(--font-body);
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 900;
 }
 
 .progress-see-all {
   border: 0;
   background: transparent;
-  color: #7f65ff;
-  font-size: 0.85rem;
+  color: var(--brand);
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
+  font-family: var(--font-body);
+  padding: 0;
 }
 
 /* History sections (flashcards + quizzes) */
@@ -8856,10 +8864,16 @@ button.map-node:hover {
   flex-direction: column;
 }
 
+.progress-set-list-container {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  overflow: hidden;
+}
+
 .progress-set-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
 .progress-set-card,
@@ -8868,10 +8882,32 @@ button.map-node:hover {
   align-items: center;
   gap: 1rem;
   padding: 0.85rem 1rem;
-  border-radius: 20px;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
   cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.progress-set-card:first-child,
+.progress-resume-card:first-child {
+  border-radius: 22px 22px 0 0;
+}
+
+.progress-set-card:last-child,
+.progress-resume-card:last-child {
+  border-radius: 0 0 22px 22px;
+  border-bottom: none;
+}
+
+.progress-set-card:only-child,
+.progress-resume-card:only-child {
+  border-radius: 22px;
+  border-bottom: none;
+}
+
+.progress-set-card:hover,
+.progress-resume-card:hover {
+  background: var(--surface);
 }
 
 .progress-set-ring-wrap {
