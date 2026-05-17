@@ -6894,6 +6894,91 @@ button.map-node:hover {
   letter-spacing: 0.02em;
 }
 
+/* ── Fokus Hari Ini card ────────────────────────────────────── */
+.fokus-card {
+  width: 100%;
+  padding: 1.25rem 1.25rem 1.125rem;
+  border-radius: var(--r-xl);
+  background: #1a1a2e;
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(26, 26, 46, 0.22);
+}
+
+.fokus-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #f59e0b;
+  margin: 0 0 0.55rem;
+  text-transform: uppercase;
+}
+
+.fokus-eyebrow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  flex-shrink: 0;
+}
+
+.fokus-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0 0 0.55rem;
+  color: #fff;
+}
+
+.fokus-highlight {
+  color: #fbbf24;
+}
+
+.fokus-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 1rem;
+}
+
+.fokus-meta-sep {
+  opacity: 0.5;
+}
+
+.fokus-accuracy-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f87171;
+  flex-shrink: 0;
+}
+
+.fokus-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: #f59e0b;
+  color: #1a1a2e;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fokus-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+}
+
 /* ── Weak Topic card ────────────────────────────────────────── */
 .weak-topic-card {
   display: flex;
