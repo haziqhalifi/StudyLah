@@ -6921,7 +6921,7 @@ button.map-node:hover {
 
 /* ── Inline Chat Bar (icb) ──────────────────────────────────────────────── */
 .icb-wrap {
-  margin-top: 1.25rem;
+  margin-top: 0.15rem;
   border-radius: var(--r-xl);
   background: #fff;
   box-shadow: 0 8px 28px rgba(91, 76, 245, 0.1);
@@ -6963,6 +6963,29 @@ button.map-node:hover {
 
 .icb-expand-btn:hover {
   background: var(--brand-light);
+}
+
+.icb-mid-copy {
+  padding: 0.85rem 1rem 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.icb-mid-copy p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.icb-mid-copy p:first-child {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.icb-mid-copy p:last-child {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 /* Message thread */
