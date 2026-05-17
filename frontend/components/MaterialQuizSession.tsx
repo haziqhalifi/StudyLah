@@ -163,14 +163,16 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
         <StudyBuddyPanel userId={userId} questionContext={question.text} onClose={() => setShowBuddy(false)} />
       )}
 
-      <button
-        type="button"
-        className={`sb-fab ${showBuddy ? "sb-fab-active" : ""}`}
-        onClick={() => setShowBuddy((v) => !v)}
-        aria-label="Tanya StudyBuddy"
-      >
-        {showBuddy ? "x" : "AI"}
-      </button>
+      {!showBuddy && (
+        <button
+          type="button"
+          className="sb-fab"
+          onClick={() => setShowBuddy(true)}
+          aria-label="Ask StudyBuddy"
+        >
+          🤖
+        </button>
+      )}
     </QuizSheet>
   );
 }
