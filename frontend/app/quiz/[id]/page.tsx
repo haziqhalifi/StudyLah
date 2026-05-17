@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import StandardQuizShell from "@/components/StandardQuizShell";
-import OptionCard from "@/components/OptionCard";
+import QuestionCard from "@/components/QuestionCard";
+import StudyBuddyPanel from "@/components/StudyBuddyPanel";
 import {
   QuizDetail,
   QuizSubmitResult,
   fetchQuizDetail,
   submitQuiz,
+  submitAnswer,
+  type Question,
 } from "@/lib/api";
 import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
 
@@ -17,11 +20,22 @@ type QuizState = {
   quiz: QuizDetail | null;
   loading: boolean;
   error: string | null;
-  answers: Record<string, number>;
+  // Per-question state (learn-page style)
   currentIndex: number;
+  selected: number | null;
+  checking: boolean;
+  checked: boolean;
+  isCorrect: boolean | null;
+  correctOptionIndex: number;
+  // Accumulated answers for final submitQuiz
+  answers: Record<string, number>;
+  sessionStreak: number;
+  xp: number;
+  showBuddy: boolean;
+  // Final submission
+  submitting: boolean;
   submitted: boolean;
   result: QuizSubmitResult | null;
-  submitting: boolean;
 };
 
 export default function QuizPage() {
@@ -34,11 +48,19 @@ export default function QuizPage() {
     quiz: null,
     loading: true,
     error: null,
-    answers: {},
     currentIndex: 0,
+    selected: null,
+    checking: false,
+    checked: false,
+    isCorrect: null,
+    correctOptionIndex: -1,
+    answers: {},
+    sessionStreak: 0,
+    xp: 0,
+    showBuddy: false,
+    submitting: false,
     submitted: false,
     result: null,
-    submitting: false,
   });
 
   useEffect(() => {
@@ -47,11 +69,18 @@ export default function QuizPage() {
       router.push("/");
       return;
     }
+    const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
     if (!quizId) {
       setState((prev) => ({ ...prev, loading: false, error: "ID kuiz tidak ditemui." }));
       return;
     }
-    setState((prev) => ({ ...prev, userId: storedUserId, loading: true, error: null }));
+    setState((prev) => ({
+      ...prev,
+      userId: storedUserId,
+      xp: isNaN(storedXp) ? 0 : storedXp,
+      loading: true,
+      error: null,
+    }));
     fetchQuizDetail(quizId)
       .then((quiz) =>
         setState((prev) => ({
@@ -59,6 +88,10 @@ export default function QuizPage() {
           quiz,
           loading: false,
           currentIndex: 0,
+          selected: null,
+          checked: false,
+          isCorrect: null,
+          correctOptionIndex: -1,
           answers: {},
           submitted: false,
           result: null,
@@ -75,9 +108,8 @@ export default function QuizPage() {
 
   const questions = state.quiz?.questions ?? [];
   const currentQuestion = questions[state.currentIndex];
-  const answeredCount = useMemo(() => Object.keys(state.answers).length, [state.answers]);
-  const allAnswered =
-    questions.length > 0 && questions.every((q) => state.answers[q.id] !== undefined);
+  const isFinalQ = state.currentIndex === questions.length - 1;
+  const checkedCount = useMemo(() => Object.keys(state.answers).length, [state.answers]);
 
   const scoreMessage = useMemo(() => {
     if (!state.result) return "";
@@ -86,8 +118,57 @@ export default function QuizPage() {
     return "Tak apa, mari kita semak bersama.";
   }, [state.result]);
 
-  async function handleSubmitQuiz() {
-    if (!state.quiz || state.submitting || !allAnswered) return;
+  // ── Check current answer via submitAnswer (gives immediate is_correct feedback) ──
+  async function handleCheck() {
+    if (state.selected === null || !currentQuestion || state.checking) return;
+    playSubmitSound();
+    setState((prev) => ({ ...prev, checking: true, error: null }));
+    try {
+      const res = await submitAnswer(state.userId, currentQuestion.id, state.selected);
+      const corrIdx = res.is_correct ? state.selected : -1;
+      const xpGain = res.is_correct ? 10 : 5;
+      const newXp = state.xp + xpGain;
+      sessionStorage.setItem("userXp", String(newXp));
+      const newStreak = res.is_correct ? state.sessionStreak + 1 : 0;
+      setTimeout(() => {
+        if (res.is_correct) playCorrectSound();
+        else playWrongSound();
+      }, 100);
+      setState((prev) => ({
+        ...prev,
+        checking: false,
+        checked: true,
+        isCorrect: res.is_correct,
+        correctOptionIndex: corrIdx,
+        answers: { ...prev.answers, [currentQuestion.id]: state.selected! },
+        xp: newXp,
+        sessionStreak: newStreak,
+      }));
+    } catch {
+      setState((prev) => ({
+        ...prev,
+        checking: false,
+        error: "Semakan gagal. Sila cuba lagi.",
+      }));
+    }
+  }
+
+  function handleNext() {
+    setState((prev) => ({
+      ...prev,
+      currentIndex: prev.currentIndex + 1,
+      selected: null,
+      checked: false,
+      isCorrect: null,
+      correctOptionIndex: -1,
+      showBuddy: false,
+      error: null,
+    }));
+  }
+
+  // ── Final submit: calls submitQuiz for consolidated result + explanations ──
+  async function handleFinish() {
+    if (!state.quiz || state.submitting) return;
     playSubmitSound();
     setState((prev) => ({ ...prev, submitting: true, error: null }));
     try {
@@ -96,11 +177,10 @@ export default function QuizPage() {
         state.userId,
         questions.map((q) => ({
           questionId: q.id,
-          selectedOptionIndex: state.answers[q.id],
+          selectedOptionIndex: state.answers[q.id] ?? 0,
         })),
       );
-      setState((prev) => ({ ...prev, submitted: true, result, submitting: false }));
-      // Play correct if passed (≥50%), wrong otherwise
+      setState((prev) => ({ ...prev, submitting: false, submitted: true, result }));
       setTimeout(() => {
         if (result.percentage >= 50) playCorrectSound();
         else playWrongSound();
@@ -117,8 +197,14 @@ export default function QuizPage() {
   function handleTryAgain() {
     setState((prev) => ({
       ...prev,
-      answers: {},
       currentIndex: 0,
+      selected: null,
+      checked: false,
+      isCorrect: null,
+      correctOptionIndex: -1,
+      answers: {},
+      sessionStreak: 0,
+      showBuddy: false,
       submitted: false,
       result: null,
       error: null,
@@ -128,12 +214,7 @@ export default function QuizPage() {
   // ── Loading ──
   if (state.loading) {
     return (
-      <StandardQuizShell
-        title="Memuatkan kuiz…"
-        progress={0}
-        total={1}
-        bar={<div />}
-      >
+      <StandardQuizShell title="Memuatkan kuiz…" progress={0} total={1} bar={<div />}>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="card qcard animate-pulse">
@@ -198,7 +279,6 @@ export default function QuizPage() {
           </div>
         }
       >
-        {/* Score banner */}
         <div className="card quiz-result-card">
           <div className="quiz-result-banner">
             <span className="quiz-result-emoji">{scoreEmoji}</span>
@@ -212,7 +292,6 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Per-question breakdown */}
         <div className="space-y-3">
           {questions.map((q, idx) => {
             const item = state.result?.results[idx];
@@ -221,16 +300,13 @@ export default function QuizPage() {
               <div key={q.id} className="card quiz-review-card">
                 <div className="quiz-review-row">
                   <span className="quiz-review-num">S{idx + 1}</span>
-                  <span
-                    className={`chip ${item.isCorrect ? "chip-correct" : "chip-wrong"}`}
-                  >
+                  <span className={`chip ${item.isCorrect ? "chip-correct" : "chip-wrong"}`}>
                     {item.isCorrect ? "✓ Betul" : "✗ Terlepas"}
                   </span>
                 </div>
                 <p className="quiz-review-text">{q.text}</p>
                 <p className="quiz-review-answer">
-                  Jawapan betul:{" "}
-                  <strong>{q.options[item.correctOptionIndex]}</strong>
+                  Jawapan betul: <strong>{q.options[item.correctOptionIndex]}</strong>
                 </p>
                 <p className="quiz-review-explanation">{item.explanation.text}</p>
               </div>
@@ -242,19 +318,37 @@ export default function QuizPage() {
   }
 
   // ── Question view ──
-  const bar = (
+  const questionForCard: Question = {
+    ...currentQuestion,
+    topic_id: state.quiz.topicId ?? "ubahan",
+  };
+
+  const bar = !state.checked ? (
     <button
       type="button"
       className="btn-primary"
-      disabled={!allAnswered || state.submitting}
-      onClick={handleSubmitQuiz}
+      onClick={handleCheck}
+      disabled={state.selected === null || state.checking}
     >
-      {state.submitting
-        ? "Menghantar…"
-        : allAnswered
-          ? "Hantar Kuiz"
-          : `Hantar (${answeredCount}/${questions.length} dijawab)`}
+      {state.checking ? "Menyemak…" : "Semak"}
     </button>
+  ) : (
+    <div className={`qs-feedback-panel ${state.isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+      <div className="qs-feedback-top">
+        <span className="qs-feedback-icon">{state.isCorrect ? "✓" : "✗"}</span>
+        <div className="qs-feedback-text">
+          <p className="qs-feedback-title">{state.isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="qs-feedback-btn"
+        onClick={isFinalQ ? handleFinish : handleNext}
+        disabled={state.submitting}
+      >
+        {state.submitting ? "Menghantar…" : isFinalQ ? "TAMAT KUIZ" : "SETERUSNYA"} &rsaquo;
+      </button>
+    </div>
   );
 
   return (
@@ -262,64 +356,45 @@ export default function QuizPage() {
       title={state.quiz.title}
       subtitle={`Soalan ${state.currentIndex + 1} / ${questions.length}`}
       label={state.quiz.topicId?.replace(/_/g, " ")}
-      progress={answeredCount}
+      progress={checkedCount}
       total={questions.length}
+      streak={state.sessionStreak}
+      xp={state.xp}
       onClose={() => router.push("/")}
       bar={bar}
     >
-      {/* Question card */}
-      <div className="card qcard">
-        <p className="qcard-question">{currentQuestion.text}</p>
-        <div className="qcard-options">
-          {currentQuestion.options.map((opt, i) => (
-            <OptionCard
-              key={i}
-              index={i}
-              text={opt}
-              selected={state.answers[currentQuestion.id] === i}
-              onClick={() => {
-                playSubmitSound();
-                setState((prev) => ({
-                  ...prev,
-                  answers: { ...prev.answers, [currentQuestion.id]: i },
-                }));
-              }}
-            />
-          ))}
-        </div>
-      </div>
+      <QuestionCard
+        question={questionForCard}
+        selectedOptionIndex={state.selected}
+        onSelectOption={
+          state.checked ? undefined : (i) => setState((prev) => ({ ...prev, selected: i }))
+        }
+        showResult={state.checked}
+        isCorrect={state.isCorrect ?? undefined}
+        correctOptionIndex={state.correctOptionIndex}
+      />
 
       {state.error && <p className="diag-error">{state.error}</p>}
 
-      {/* Prev / Next navigation */}
-      <div className="learn-actions quiz-nav-actions">
+      {/* StudyBuddy: FAB appears after checking; expands into panel */}
+      {state.checked && state.showBuddy && (
+        <StudyBuddyPanel
+          userId={state.userId}
+          questionContext={currentQuestion.text}
+          topicId={state.quiz.topicId}
+          onClose={() => setState((prev) => ({ ...prev, showBuddy: false }))}
+        />
+      )}
+      {state.checked && !state.showBuddy && (
         <button
           type="button"
-          className="btn-ghost diag-skip-btn"
-          onClick={() =>
-            setState((prev) => ({
-              ...prev,
-              currentIndex: Math.max(0, prev.currentIndex - 1),
-            }))
-          }
-          disabled={state.currentIndex === 0}
+          className="sb-fab"
+          onClick={() => setState((prev) => ({ ...prev, showBuddy: true }))}
+          aria-label="Tanya Skorrel"
         >
-          ← Sebelumnya
+          <img src="/assets/mascot.webp" alt="Skorrel" className="sb-fab-img" />
         </button>
-        <button
-          type="button"
-          className="btn-ghost diag-skip-btn"
-          onClick={() =>
-            setState((prev) => ({
-              ...prev,
-              currentIndex: Math.min(questions.length - 1, prev.currentIndex + 1),
-            }))
-          }
-          disabled={state.currentIndex >= questions.length - 1}
-        >
-          Seterusnya →
-        </button>
-      </div>
+      )}
     </StandardQuizShell>
   );
 }

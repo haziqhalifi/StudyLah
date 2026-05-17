@@ -8,6 +8,7 @@ import {
   startOnboarding,
   submitOnboarding,
   submitAnswer as apiSubmitAnswer,
+  createPersonalizedQuiz,
   type OnboardingDiagnosticResponse,
   type OnboardingQuestion,
 } from "@/lib/api";
@@ -20,11 +21,11 @@ import {
   playWrongSound,
 } from "@/lib/sounds";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Types â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 type Step = "welcome" | "profile" | "quiz" | "analyzing" | "result";
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Constants â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const DIALOGUES: Record<string, string[]> = {
   welcome: [
@@ -83,87 +84,51 @@ function TypewriterText({
   return <>{displayed}</>;
 }
 
-function WordTypewriterText({
-  text,
-  speed = 220,
-  startDelay = 500,
-}: {
-  text: string;
-  speed?: number;
-  startDelay?: number;
-}) {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  const [visibleCount, setVisibleCount] = useState(0);
+// ─── Tier helpers (result screen) ─────────────────────────────────────────
 
-  useEffect(() => {
-    setVisibleCount(0);
-    if (!words.length) return;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    const timeoutId = setTimeout(() => {
-      intervalId = setInterval(() => {
-        setVisibleCount((prev) => {
-          if (prev >= words.length) {
-            if (intervalId) clearInterval(intervalId);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, speed);
-    }, startDelay);
-    return () => {
-      clearTimeout(timeoutId);
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [text, speed, startDelay]); // eslint-disable-line react-hooks/exhaustive-deps
+type Tier = "needs-work" | "improving" | "good" | "strong";
 
-  return <>{words.slice(0, visibleCount).join(" ")}</>;
+function getTier(accuracy: number): Tier {
+  if (accuracy <= 0.3) return "needs-work";
+  if (accuracy <= 0.6) return "improving";
+  if (accuracy <= 0.85) return "good";
+  return "strong";
 }
 
-function topicHighlightByRank(
-  index: number,
-  total: number,
-): { label: string; cls: "weak" | "medium" | "strong" } {
-  if (index === 0) return { label: "FOKUS UTAMA KAMU", cls: "weak" };
-  if (index === total - 1) return { label: "MANTAP", cls: "strong" };
-  return { label: "LATIH LAGI", cls: "medium" };
+const TIER_LABEL: Record<Tier, { emoji: string; label: string }> = {
+  "needs-work": { emoji: "🔴", label: "PERLU KERJA" },
+  improving:    { emoji: "🟡", label: "MENINGKAT"  },
+  good:         { emoji: "🟢", label: "BAIK"       },
+  strong:       { emoji: "⭐", label: "KUKUH"      },
+};
+
+function scoreGrade(pct: number): { emoji: string; label: string } {
+  if (pct >= 85) return { emoji: "🏆", label: "Cemerlang!" };
+  if (pct >= 65) return { emoji: "⭐", label: "Bagus!" };
+  if (pct >= 40) return { emoji: "💪", label: "Boleh Improve!" };
+  return { emoji: "🌱", label: "Permulaan Yang Baik!" };
 }
 
-function topicEmoji(topic: string) {
-  if (topic.toLowerCase().includes("ubahan")) return "📐";
-  if (topic.toLowerCase().includes("matriks")) return "🔢";
-  if (topic.toLowerCase().includes("insurans")) return "📋";
-  return "📘";
+function scoreContextLine(pct: number): string {
+  if (pct <= 15) return "Kebanyakan pelajar skor 10–20% pada percubaan pertama — kamu tepat di mana semua orang bermula.";
+  if (pct <= 30) return "Kebanyakan pelajar skor 15–25% pada percubaan pertama — kamu berada di landasan yang betul!";
+  if (pct <= 50) return "Kamu melebihi purata untuk percubaan pertama. Asas yang baik!";
+  if (pct <= 70) return "Percubaan pertama yang mantap! Kamu sudah tahu lebih banyak daripada kebanyakan pelajar baharu.";
+  return "Permulaan yang mengagumkan! Kamu jauh ke hadapan.";
 }
 
-function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
-  const weakest =
-    [...diag.by_topic]
-      .sort((a, b) => a.accuracy - b.accuracy)[0]
-      ?.topic?.toLowerCase() ?? "";
-  if (weakest.includes("ubahan")) return "/learning";
-  if (weakest.includes("matriks")) return "/learning";
-  if (weakest.includes("insurans")) return "/learning";
-  return "/learning";
+function focusHint(tier: Tier): string {
+  if (tier === "needs-work") return "Mulakan dengan 5 soalan asas untuk bina keyakinan";
+  if (tier === "improving")  return "Cuba 8 soalan latihan untuk tingkatkan kefahaman";
+  if (tier === "good")       return "Latih 5 soalan sederhana untuk kekalkan momentum";
+  return "Teruskan dengan soalan SPM sebenar untuk kekal tajam";
 }
 
-function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
-  return (
-    [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ??
-    "Pelajaran"
-  );
-}
-
-function localizeResultText(text: string): string {
-  if (!text) return text;
-  return text
-    .replace(
-      "You've got a baseline in Ubahan! Let's focus next on Matriks with short daily drills, then revise mistakes using worked examples.",
-      "Anda sudah ada asas dalam Ubahan! Seterusnya, fokus pada Matriks dengan latihan ringkas harian, kemudian semak semula kesilapan menggunakan contoh penyelesaian.",
-    )
-    .replace(
-      "Start your personalized lesson path on the weakest topic.",
-      "Mulakan laluan pembelajaran peribadi anda pada topik paling lemah.",
-    );
+function topicNameToId(name: string): "ubahan" | "matriks" | "insurans" {
+  const n = name.toLowerCase();
+  if (n.includes("ubahan")) return "ubahan";
+  if (n.includes("matriks")) return "matriks";
+  return "insurans";
 }
 
 const ANALYZING_MESSAGES = [
@@ -210,7 +175,7 @@ function AnalyzingScreen() {
   );
 }
 
-// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Main Page â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -252,7 +217,7 @@ export default function OnboardingPage() {
     setXp(isNaN(storedXp) ? 0 : storedXp);
   }, []);
 
-  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Helpers â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   function showDialogue(key: string) {
     setDialogue(pick(DIALOGUES[key] ?? DIALOGUES.welcome));
@@ -268,7 +233,7 @@ export default function OnboardingPage() {
     return 100;
   })();
 
-  // â”€â”€ Profile submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Profile submit â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   async function handleStartQuiz() {
     if (!name.trim() || !school.trim()) {
@@ -315,7 +280,7 @@ export default function OnboardingPage() {
     }
   }
 
-  // â”€â”€ Submit answer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Submit answer â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   async function handleSubmit() {
     if (selected === null) return;
@@ -350,7 +315,7 @@ export default function OnboardingPage() {
     setSubmitted(true);
   }
 
-  // â”€â”€ Next question / finish â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Next question / finish â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   function handleNext() {
     const isLast = qIndex === questions.length - 1;
@@ -364,7 +329,7 @@ export default function OnboardingPage() {
     }
   }
 
-  // â”€â”€ Submit quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Submit quiz â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   async function handleFinishQuiz() {
     setStep("analyzing");
@@ -391,11 +356,11 @@ export default function OnboardingPage() {
     }
   }
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ Render â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   const currentQ = questions[qIndex];
 
-  // â”€â”€ QUIZ step â€” identical UI to learn page quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€ QUIZ step â€" identical UI to learn page quiz â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
   if (step === "quiz" && currentQ) {
     const quizQuestion = {
       id: currentQ.id,
@@ -488,8 +453,26 @@ export default function OnboardingPage() {
     );
   }
 
+  // Render result outside ob-page to avoid double padding with dr2-page
+  if (step === "result" && result) {
+    return (
+      <>
+        <div className="ob-progress-track">
+          <div className="ob-progress-fill ob-progress-fill-dynamic" data-pct={progress} />
+        </div>
+        <ProgressFillDriver pct={progress} />
+        <ResultScreen
+          result={result}
+          userName={name}
+          userId={userId ?? ""}
+          onDashboard={() => router.push("/dashboard")}
+        />
+      </>
+    );
+  }
+
   return (
-    <div className={`ob-page ${step === "result" ? "ob-page--result" : ""}`}>
+    <div className="ob-page">
       {/* Fixed progress bar */}
       <div className="ob-progress-track">
         <div
@@ -499,7 +482,7 @@ export default function OnboardingPage() {
       </div>
       <ProgressFillDriver pct={progress} />
 
-      {/* Back button â€” above mascot on profile step */}
+      {/* Back button â€" above mascot on profile step */}
       {step === "profile" && (
         <button
           type="button"
@@ -514,7 +497,7 @@ export default function OnboardingPage() {
         </button>
       )}
 
-      {/* Mascot + dialogue â€” profile step only (side-by-side) */}
+      {/* Mascot + dialogue â€" profile step only (side-by-side) */}
       {step === "profile" && (
         <div className="ob-mascot-row">
           <span className="ob-mascot-flip">
@@ -538,7 +521,7 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {/* â”€â”€ WELCOME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â"€â"€ WELCOME â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
       {step === "welcome" && (
         <>
           <div className="ob-welcome-layout">
@@ -573,7 +556,7 @@ export default function OnboardingPage() {
         </>
       )}
 
-      {/* â”€â”€ PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â"€â"€ PROFILE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
       {step === "profile" && (
         <>
           <div className="ob-form">
@@ -639,24 +622,13 @@ export default function OnboardingPage() {
         </>
       )}
 
-      {/* â”€â”€ ANALYZING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── ANALYZING ────────────────────────────────────────────────────────── */}
       {step === "analyzing" && <AnalyzingScreen />}
-
-      {/* â”€â”€ RESULT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      {step === "result" && result && (
-        <ResultScreen
-          result={result}
-          userName={name}
-          onContinue={() => router.push(getPersonalizedRoute(result))}
-          onDashboard={() => router.push("/dashboard")}
-          weakestTopic={getWeakestTopicName(result)}
-        />
-      )}
     </div>
   );
 }
 
-// â”€â”€â”€ Progress fill driver (avoids inline style on the fill bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Progress fill driver (avoids inline style on the fill bar) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function ProgressFillDriver({ pct }: { pct: number }) {
   useEffect(() => {
@@ -666,167 +638,244 @@ function ProgressFillDriver({ pct }: { pct: number }) {
   return null;
 }
 
-// â”€â”€â”€ Result Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-// â”€â”€â”€ TopicCard â€” compact read-only card with animated fill bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function TopicCard({
-  topic,
-  highlight,
-  index,
-  isWeakest,
-  onPractice,
-}: {
-  topic: string;
-  highlight: { label: string; cls: "weak" | "medium" | "strong" };
-  index: number;
-  isWeakest: boolean;
-  onPractice?: () => void;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const cta = isWeakest ? "Latih sekarang →" : "Ulang kaji →";
-
-  useEffect(() => {
-    if (cardRef.current)
-      cardRef.current.style.animationDelay = `${0.4 + index * 0.15}s`;
-  }, [index]);
-
-  return (
-    <div
-      ref={cardRef}
-      className={`ob2-topic-card ob-result-fadein ob2-topic-card--${highlight.cls}${isWeakest ? " ob2-topic-card--featured" : ""}`}
-    >
-      <div className="ob2-topic-header">
-        <span className="ob2-topic-emoji">{topicEmoji(topic)}</span>
-        <div className="ob2-topic-info">
-          <div className="ob2-topic-name-row">
-            <span className="ob2-topic-name">{topic}</span>
-            <span
-              className={`ob2-recommended-badge ob2-recommended-badge--${highlight.cls}`}
-            >
-              {highlight.label}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="ob2-topic-footer">
-        <button
-          type="button"
-          className="ob2-topic-cta-btn"
-          onClick={onPractice}
-        >
-          {cta}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Result Screen (mirrors diagnostic/result UI) ─────────────────────────
 
 function ResultScreen({
   result,
   userName,
-  weakestTopic: _weakestTopic,
-  onContinue,
+  userId,
   onDashboard,
 }: {
   result: OnboardingDiagnosticResponse;
   userName: string;
-  weakestTopic: string;
-  onContinue: () => void;
+  userId: string;
   onDashboard: () => void;
 }) {
-  const pct = Math.round((result.score / result.total) * 100);
+  const router = useRouter();
+  const [startingTopicId, setStartingTopicId] = useState<string | null>(null);
+  const [quizError, setQuizError] = useState("");
 
-  const grade =
-    pct >= 70
-      ? { label: "Cemerlang", emoji: "🏆", mod: "high" }
-      : pct >= 45
-        ? { label: "Usaha yang baik", emoji: "💪", mod: "mid" }
-        : { label: "Permulaan yang baik", emoji: "🌱", mod: "low" };
+  const pct             = Math.round((result.score / result.total) * 100);
+  const sortedByWeakest  = [...result.by_topic].sort((a, b) => a.accuracy - b.accuracy);
+  const sortedByStrongest = [...result.by_topic].sort((a, b) => b.accuracy - a.accuracy);
+  const weakestTopic   = sortedByWeakest[0];
+  const strongestTopic = sortedByStrongest[0];
+  const bestTopicName  = sortedByStrongest[0]?.topic;
+  const { emoji, label } = scoreGrade(pct);
 
-  const sortedTopics = [...result.by_topic].sort(
-    (a, b) => a.accuracy - b.accuracy,
-  );
-  const visibleTopics = sortedTopics;
-  const weakestTopic = sortedTopics[0];
-  const weakestTopicName = weakestTopic?.topic ?? "";
+  const ringR    = 38;
+  const ringCirc = 2 * Math.PI * ringR;
+  const ringFill = (pct / 100) * ringCirc;
 
-  function getRouteForTopic(topicName: string): string {
-    const t = topicName.toLowerCase();
-    if (t.includes("ubahan")) return "/learning";
-    if (t.includes("matriks")) return "/learning";
-    if (t.includes("insurans")) return "/learning";
-    return "/learning";
+  async function handleStartQuiz(topicName: string) {
+    if (!userId) return;
+    const topicId = topicNameToId(topicName);
+    setStartingTopicId(topicName);
+    setQuizError("");
+    try {
+      const quiz = await createPersonalizedQuiz(userId, topicId, 5);
+      router.push(`/quiz/${quiz.quizId}`);
+    } catch {
+      setStartingTopicId(null);
+      setQuizError("Gagal buat kuiz. Sila cuba lagi.");
+    }
   }
 
-  // suppress unused-variable warning â€” kept to satisfy call-site signature
-  void getRouteForTopic;
-
   return (
-    <div className="ob2-result-page">
-      {/* â”€â”€ HERO â”€â”€ */}
-      <div className={`ob2-hero ob2-hero--${grade.mod}`}>
-        <div className="ob2-hero-noise" aria-hidden="true" />
+    <div className="dr2-page page-enter">
 
-        <div className="ob2-mascot-cloud ob-result-fadein">
-          <WordTypewriterText text={`${grade.label}, ${userName || "pelajar"}!`} />
-        </div>
+      {/* 1 · Hero */}
+      <div className="dr2-hero">
+        <span className="dr2-xp-pill">+50 XP ✨</span>
 
-        <div className="ob2-result-mascot ob-result-fadein" aria-hidden="true">
-          <Image
-            src="/assets/mascot.webp"
-            alt=""
-            width={108}
-            height={108}
-            className="ob2-result-mascot-img"
-            priority
-          />
-        </div>
-
-        <p className="ob2-hero-sub ob-result-fadein">
-          Ini diagnosis awal tahap SPM kamu.
-        </p>
-
-      </div>
-
-      {/* â”€â”€ BODY â”€â”€ */}
-      <div className="ob2-body">
-        {/* Topic perTingkatanance */}
-        {visibleTopics.length > 0 && (
-          <section className="ob2-section">
-            <h3 className="ob2-section-title">
-              <span className="ob2-section-dot" />
-              Prestasi Topik
-            </h3>
-            <div className="ob2-topics-grid">
-              {visibleTopics.map((t, i) => {
-                const highlight = topicHighlightByRank(i, visibleTopics.length);
-                return (
-                  <TopicCard
-                    key={t.topic}
-                    topic={t.topic}
-                    highlight={highlight}
-                    index={i}
-                    isWeakest={t.topic === weakestTopicName}
-                    onPractice={onContinue}
-                  />
-                );
-              })}
+        <div className="dr2-hero-row">
+          <div className="dr2-ring-wrap">
+            <svg width="90" height="90" viewBox="0 0 90 90" className="dr2-ring-svg">
+              <circle cx="45" cy="45" r={ringR} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="8" />
+              <circle
+                cx="45" cy="45" r={ringR}
+                fill="none" stroke="#fff" strokeWidth="8"
+                strokeDasharray={`${ringFill} ${ringCirc}`}
+                strokeLinecap="round"
+                className="dr2-ring-arc"
+              />
+            </svg>
+            <div className="dr2-ring-inner">
+              <span className="dr2-ring-pct">{pct}%</span>
+              <span className="dr2-ring-frac">{result.score}/{result.total}</span>
             </div>
-          </section>
-        )}
+          </div>
 
+          <div className="dr2-hero-copy">
+            <p className="dr2-hero-grade">{emoji} {label}</p>
+            <h1 className="dr2-hero-name">
+              {userName ? `Tahniah, ${userName}!` : "Tahniah!"}
+            </h1>
+            <p className="dr2-hero-sub">Diagnosis peribadi kamu sudah siap.</p>
+          </div>
+        </div>
+
+        <p className="dr2-context-chip">{scoreContextLine(pct)}</p>
+
+        {pct < 30 && (
+          <div className="dr2-encouragement">
+            <span>💪</span>
+            <span>Jangan risau — ini hanya titik permulaan. Laluan kamu kini telah diperibadikan.</span>
+          </div>
+        )}
       </div>
 
-      <button
-        type="button"
-        className="ob2-secondary-btn ob2-floating-plan-btn"
-        onClick={onContinue}
-      >
-        <span className="ob2-hero-cta-main">Belajar {weakestTopicName} sekarang</span>
-      </button>
+      {/* 2 · Insight strip */}
+      {strongestTopic && weakestTopic && strongestTopic.topic !== weakestTopic.topic && (
+        <div className="dr2-insight-row">
+          <div className="dr2-insight-card dr2-insight-strength">
+            <span className="dr2-insight-icon">💡</span>
+            <div>
+              <p className="dr2-insight-label">Kekuatan</p>
+              <p className="dr2-insight-val">{strongestTopic.topic}</p>
+            </div>
+          </div>
+          <div className="dr2-insight-card dr2-insight-next">
+            <span className="dr2-insight-icon">🎯</span>
+            <div>
+              <p className="dr2-insight-label">Fokus Seterusnya</p>
+              <p className="dr2-insight-val">{weakestTopic.topic}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3 · AI Diagnosis */}
+      <div className="dr2-ai-card">
+        <div className="dr2-ai-header">
+          <span className="dr2-ai-icon-box">🤖</span>
+          <div>
+            <p className="dr2-ai-label">AI Diagnosis</p>
+            <p className="dr2-ai-sublabel">dikuasakan oleh Skorrel</p>
+          </div>
+        </div>
+        <p className="dr2-ai-copy">{result.recommendation}</p>
+      </div>
+
+      {/* 4 · Personalized focus path */}
+      <section className="dr2-section">
+        <div className="dr2-section-head">
+          <h2 className="dr2-section-title">Laluan Fokus Kamu</h2>
+          <p className="dr2-section-sub">Disusun mengikut keperluan — mulakan dari atas</p>
+        </div>
+        {sortedByWeakest.map((t, rank) => {
+          const tier       = getTier(t.accuracy);
+          const tpct       = Math.round(t.accuracy * 100);
+          const isPrimary  = rank === 0;
+          const isStarting = startingTopicId === t.topic;
+
+          const priorityLabel =
+            isPrimary && tier === "needs-work" ? "🎯 Utama — Mula di sini"
+            : isPrimary                        ? "🎯 Fokus utama"
+            : tier === "needs-work"            ? "⚡ Penting"
+            : tier === "improving"             ? "📈 Tingkatkan"
+            :                                    "✅ Maintain";
+
+          return (
+            <div key={t.topic} className={`dr2-focus-card${isPrimary ? " dr2-focus-card--primary" : ""}`}>
+              <div className="dr2-focus-top">
+                <span className={`dr2-focus-priority dr2-focus-priority--${tier}${isPrimary ? "-primary" : ""}`}>
+                  {priorityLabel}
+                </span>
+                <span className="dr2-focus-rank">#{rank + 1}</span>
+              </div>
+              <div className="dr2-focus-body">
+                <div className="dr2-focus-info">
+                  <p className="dr2-focus-name">{t.topic}</p>
+                  <p className="dr2-focus-meta">
+                    <span className={`dr2-focus-pct dr2-focus-pct--${t.accuracy === 0 ? "zero" : tier}`}>
+                      {tpct}%
+                    </span>
+                    {" "}ketepatan · {t.total} soalan dijawab
+                  </p>
+                  <p className="dr2-focus-hint">{focusHint(tier)}</p>
+                </div>
+                {isPrimary ? (
+                  <button type="button" className="dr2-focus-btn" disabled={!!startingTopicId} onClick={() => handleStartQuiz(t.topic)}>
+                    {isStarting ? "Sebentar…" : "Mula →"}
+                  </button>
+                ) : (
+                  <button type="button" className="dr2-focus-btn-ghost" disabled={!!startingTopicId} onClick={() => handleStartQuiz(t.topic)}>
+                    {isStarting ? "…" : "Cuba →"}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      {/* 5 · Topic breakdown */}
+      <section className="dr2-section">
+        <div className="dr2-section-head">
+          <h2 className="dr2-section-title">Pecahan Topik</h2>
+        </div>
+        <div className="dr2-topic-list">
+          {result.by_topic.map((t) => {
+            const tier   = getTier(t.accuracy);
+            const tpct   = Math.round(t.accuracy * 100);
+            const isBest = t.topic === bestTopicName;
+            const isZero = t.accuracy === 0;
+            const mr     = 22;
+            const mcirc  = 2 * Math.PI * mr;
+            const arc    = (tpct / 100) * mcirc;
+            const { emoji: tEmoji, label: tLabel } = TIER_LABEL[tier];
+
+            return (
+              <div key={t.topic} className={`dr2-topic-card${isBest ? " dr2-topic-card--best" : ""}`}>
+                {isBest && <span className="dr2-best-tag">⭐ Terbaik setakat ini</span>}
+                <div className="dr2-topic-inner">
+                  <div className="dr2-mini-ring-wrap" data-tier={isZero ? "zero" : tier}>
+                    <svg width="56" height="56" viewBox="0 0 56 56" className="dr2-mini-svg">
+                      <circle cx="28" cy="28" r={mr} fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                      <circle
+                        cx="28" cy="28" r={mr}
+                        fill="none" strokeWidth="5"
+                        strokeDasharray={`${arc} ${mcirc}`}
+                        strokeLinecap="round"
+                        transform="rotate(-90 28 28)"
+                        className="dr2-mini-arc"
+                      />
+                    </svg>
+                    <span className="dr2-mini-pct">{tpct}%</span>
+                  </div>
+                  <div className="dr2-topic-info">
+                    <div className="dr2-topic-name-row">
+                      <span className="dr2-topic-name">{t.topic}</span>
+                      <span className={`dr2-tier-badge dr2-tier-badge--${tier}`}>
+                        {tEmoji} {tLabel}
+                      </span>
+                    </div>
+                    <p className="dr2-topic-meta">
+                      {isZero ? "Tiada jawapan lagi" : `${tpct}% betul`} · {t.total} soalan
+                    </p>
+                    <div className="dr2-bar-track">
+                      <div
+                        className={`dr2-bar-fill dr2-bar-fill--${isZero ? "zero" : tier}`}
+                        style={{ width: isZero ? "4%" : `${tpct}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 6 · Actions */}
+      <div className="dr2-bottom-actions">
+        <button type="button" className="btn-ghost dr2-dashboard-btn" onClick={onDashboard}>
+          Pergi ke Papan Pemuka
+        </button>
+      </div>
+
+      {quizError && <p className="dr2-error">{quizError}</p>}
     </div>
   );
 }
