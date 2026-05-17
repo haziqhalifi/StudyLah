@@ -10,17 +10,19 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#5B4CF5",
-          dark:    "#4338CA",
-          light:   "#EEF2FF",
-          muted:   "#C7D2FE",
+          DEFAULT: "#4F6FAE",
+          dark:    "#3F5B92",
+          light:   "#EDF2FA",
+          muted:   "#C7D4E8",
         },
-        ink:   "#0F0F23",
-        muted: "#6B7280",
-        surface: "#FAFAFA",
+        secondary: "#7A8FB8",
+        accent: "#2F9D8F",
+        ink:   "#1F2937",
+        muted: "#64748B",
+        surface: "#F5F7FB",
         card:    "#FFFFFF",
-        correct: "#059669",
-        wrong:   "#DC2626",
+        correct: "#2E8B57",
+        wrong:   "#C65A5A",
       },
       fontFamily: {
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
@@ -34,7 +36,7 @@ const config: Config = {
       boxShadow: {
         card: "0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06)",
         "card-hover": "0 4px 8px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.10)",
-        brand: "0 4px 20px rgba(91,76,245,0.25)",
+        brand: "0 4px 16px rgba(79,111,174,0.22)",
       },
       animation: {
         "fade-up": "fadeUp 0.3s ease both",

@@ -21,8 +21,8 @@ export default function OptionCard({
       className={[
         "w-full text-left px-4 py-3 rounded-2xl border text-sm font-medium transition-colors",
         selected
-          ? "border-[#1f5eff] bg-[#1f5eff]/5 text-[#1f5eff]"
-          : "border-slate-200 bg-white text-slate-800 hover:border-slate-300",
+          ? "border-[var(--brand)] bg-[var(--brand-light)] text-[var(--brand)]"
+          : "border-[var(--border)] bg-[var(--card)] text-[var(--ink)] hover:border-[var(--brand-muted)]",
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
       ].join(" ")}
     >
@@ -30,3 +30,4 @@ export default function OptionCard({
     </button>
   );
 }
+

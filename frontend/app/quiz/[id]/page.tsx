@@ -158,7 +158,7 @@ export default function QuizPage() {
 
   if (state.error && !state.quiz) {
     return (
-      <div className="min-h-screen bg-[#f6f7fb] pb-24">
+      <div className="min-h-screen bg-[var(--surface)] pb-24">
         <BuddyHeader
           title="Masa kuiz"
           subtitle="Mari bina set latihan diperibadikan anda."
@@ -167,7 +167,7 @@ export default function QuizPage() {
         <div className="max-w-md mx-auto px-4 mt-4">
           <button
             type="button"
-            className="w-full h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
+            className="w-full h-12 rounded-2xl bg-[var(--brand)] text-white font-medium"
             onClick={() => router.push("/")}
           >
             Kembali ke Utama
@@ -183,7 +183,7 @@ export default function QuizPage() {
 
   if (state.submitted && state.result) {
     return (
-      <div className="min-h-screen bg-[#f6f7fb] pb-24">
+      <div className="min-h-screen bg-[var(--surface)] pb-24">
         <BuddyHeader title="Quiz complete" subtitle={state.quiz.title} />
         <BuddyBubble
           emoji={
@@ -264,7 +264,7 @@ export default function QuizPage() {
           </button>
           <button
             type="button"
-            className="h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
+            className="h-12 rounded-2xl bg-[var(--brand)] text-white font-medium"
             onClick={() => router.push("/")}
           >
             Kembali ke Utama
@@ -275,7 +275,7 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] pb-28">
+    <div className="min-h-screen bg-[var(--surface)] pb-28">
       <BuddyHeader
         title={state.quiz.title}
         subtitle="Latihan kuiz diperibadikan"
@@ -301,7 +301,7 @@ export default function QuizPage() {
           </div>
           <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#1f5eff] transition-all"
+              className="h-full rounded-full bg-[var(--brand)] transition-all"
               style={{
                 width: `${Math.max(8, (answeredCount / questions.length) * 100)}%`,
               }}
@@ -385,7 +385,7 @@ export default function QuizPage() {
           <div className="max-w-md mx-auto rounded-[24px] bg-white shadow-lg border border-slate-100 p-3 flex gap-3">
             <button
               type="button"
-              className="flex-1 h-12 rounded-2xl bg-[#1f5eff] text-white font-semibold disabled:bg-slate-300"
+              className="flex-1 h-12 rounded-2xl bg-[var(--brand)] text-white font-semibold disabled:bg-slate-300"
               disabled={!allAnswered || state.submitting}
               onClick={handleSubmitQuiz}
             >
@@ -400,7 +400,7 @@ export default function QuizPage() {
 
 function LoadingState() {
   return (
-    <div className="min-h-screen bg-[#f6f7fb] pb-24">
+    <div className="min-h-screen bg-[var(--surface)] pb-24">
       <BuddyHeader
         title="Memuatkan kuiz"
         subtitle="Membina set diperibadikan anda…"
@@ -426,3 +426,4 @@ function LoadingState() {
     </div>
   );
 }
+

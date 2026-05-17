@@ -14,15 +14,15 @@ function pct(n: number) {
 }
 
 function levelClasses(level: string) {
-  if (level === "strong") return { ring: "border-emerald-500 text-emerald-600", badge: "bg-emerald-100 text-emerald-800" };
-  if (level === "okay") return { ring: "border-amber-500 text-amber-600", badge: "bg-amber-100 text-amber-800" };
-  return { ring: "border-red-500 text-red-600", badge: "bg-red-100 text-red-800" };
+  if (level === "strong") return { ring: "border-[var(--correct)] text-[var(--correct)]", badge: "bg-[var(--correct-bg)] text-[var(--correct)]" };
+  if (level === "okay") return { ring: "border-[var(--warn)] text-[var(--warn)]", badge: "bg-[var(--warn-bg)] text-[var(--warn)]" };
+  return { ring: "border-[var(--wrong)] text-[var(--wrong)]", badge: "bg-[var(--wrong-bg)] text-[var(--wrong)]" };
 }
 
 function QuestionRow({ q }: { q: QuestionAttemptDetail }) {
   return (
     <div className="flex gap-2 items-start py-2 border-b border-gray-100 last:border-0">
-      <span className={`flex-shrink-0 font-bold text-sm mt-0.5 ${q.isCorrect ? "text-emerald-600" : "text-red-500"}`}>
+      <span className={`flex-shrink-0 font-bold text-sm mt-0.5 ${q.isCorrect ? "text-[var(--correct)]" : "text-[var(--wrong)]"}`}>
         {q.isCorrect ? "✓" : "✗"}
       </span>
       <div className="flex-1 min-w-0">
@@ -115,7 +115,7 @@ export default function DiagnosticReportPage() {
       {loading && <p className="text-sm text-gray-400">Memuatkan laporan anda…</p>}
 
       {error && (
-        <div className="bg-red-50 border border-red-300 rounded-xl p-4 mb-6 text-red-700 text-sm">
+        <div className="bg-[var(--wrong-bg)] border border-[var(--wrong-bg)] rounded-xl p-4 mb-6 text-[var(--wrong)] text-sm">
           {error}
         </div>
       )}
@@ -139,3 +139,4 @@ export default function DiagnosticReportPage() {
     </div>
   );
 }
+

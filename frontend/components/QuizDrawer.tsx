@@ -8,9 +8,9 @@ const TOPIC_META: Record<
   QuizDetail["topicId"],
   { label: string; emoji: string; color: string }
 > = {
-  ubahan:   { label: "Ubahan",   emoji: "📐", color: "#5b4cf5" },
-  matriks:  { label: "Matriks",  emoji: "🔢", color: "#d97706" },
-  insurans: { label: "Insurans", emoji: "🛡️", color: "#059669" },
+  ubahan:   { label: "Ubahan",   emoji: "📐", color: "var(--brand)" },
+  matriks:  { label: "Matriks",  emoji: "🔢", color: "var(--brand)" },
+  insurans: { label: "Insurans", emoji: "🛡️", color: "var(--brand)" },
 };
 
 interface QuizDrawerProps {
@@ -125,11 +125,11 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
               {Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-[20px] bg-slate-100 animate-pulse"
+                  className="rounded-[20px] bg-[var(--brand-light)] animate-pulse"
                   style={{ height: 80 }}
                 />
               ))}
-              <p className="text-center text-sm text-slate-400 mt-4">
+              <p className="text-center text-sm text-[var(--muted)] mt-4">
                 Building your personalised quiz…
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
               <p className="text-slate-700 font-medium">{error}</p>
               <button
                 type="button"
-                className="mt-5 px-6 py-2.5 rounded-2xl bg-slate-900 text-white text-sm font-medium"
+                className="mt-5 px-6 py-2.5 rounded-2xl bg-[var(--brand)] text-white text-sm font-medium"
                 onClick={onClose}
               >
                 Back to chat
@@ -166,7 +166,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
                     Q{currentIndex + 1} of {questions.length}
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-2 rounded-full bg-[var(--brand-light)] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -178,7 +178,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
               </div>
 
               {/* Question card */}
-              <div className="rounded-[20px] bg-white border border-slate-100 shadow-sm p-4">
+              <div className="rounded-[20px] bg-white border border-[var(--border)] shadow-sm p-4">
                 <p className="text-base font-semibold text-slate-900 leading-7">
                   {currentQuestion.text}
                 </p>
@@ -201,7 +201,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
                     {currentQuestion.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500"
+                        className="text-xs px-2 py-0.5 rounded-full bg-[var(--brand-light)] text-slate-500"
                       >
                         {tag}
                       </span>
@@ -231,7 +231,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
               </div>
 
               {error && (
-                <p className="text-sm text-rose-600 text-center">{error}</p>
+                <p className="text-sm text-[var(--wrong)] text-center">{error}</p>
               )}
             </div>
           )}
@@ -240,7 +240,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
           {phase === "results" && result && quiz && topicMeta && (
             <div className="space-y-4 pb-4">
               {/* Score banner */}
-              <div className="rounded-[20px] bg-white border border-slate-100 shadow-sm p-5">
+              <div className="rounded-[20px] bg-white border border-[var(--border)] shadow-sm p-5">
                 <div className="flex items-end justify-between gap-4">
                   <div>
                     <p className="text-xs text-slate-500 mb-1">Your score</p>
@@ -265,15 +265,15 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
                 return (
                   <div
                     key={q.id}
-                    className="rounded-[20px] bg-white border border-slate-100 shadow-sm p-4"
+                    className="rounded-[20px] bg-white border border-[var(--border)] shadow-sm p-4"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-slate-400 font-medium">Q{idx + 1}</span>
+                      <span className="text-xs text-[var(--muted)] font-medium">Q{idx + 1}</span>
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           item.isCorrect
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-rose-50 text-rose-700"
+                            ? "bg-[var(--correct-bg)] text-[var(--correct)]"
+                            : "bg-[var(--wrong-bg)] text-[var(--wrong)]"
                         }`}
                       >
                         {item.isCorrect ? "✓ Correct" : "✗ Missed"}
@@ -327,7 +327,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
             <button
               type="button"
               className="w-full h-12 rounded-2xl text-white text-sm font-semibold disabled:opacity-40 transition-opacity"
-              style={{ background: topicMeta?.color ?? "#5b4cf5" }}
+              style={{ background: topicMeta?.color ?? "var(--brand)" }}
               disabled={!allAnswered || submitting}
               onClick={handleSubmit}
             >
@@ -339,3 +339,5 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
     </>
   );
 }
+
+

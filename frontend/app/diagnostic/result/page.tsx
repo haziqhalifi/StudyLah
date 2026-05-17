@@ -15,17 +15,17 @@ import {
 // ---------------------------------------------------------------------------
 
 function levelColor(level: "weak" | "okay" | "strong") {
-  if (level === "strong") return "bg-emerald-500";
-  if (level === "okay") return "bg-amber-500";
-  return "bg-red-500";
+  if (level === "strong") return "bg-[var(--correct)]";
+  if (level === "okay") return "bg-[var(--warn)]";
+  return "bg-[var(--wrong)]";
 }
 
 function levelBadgeClass(level: "weak" | "okay" | "strong") {
   if (level === "strong")
-    return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    return "bg-[var(--correct-bg)] text-[var(--correct)] border border-[var(--correct-bg)]";
   if (level === "okay")
-    return "bg-amber-100 text-amber-800 border border-amber-200";
-  return "bg-red-100 text-red-800 border border-red-200";
+    return "bg-[var(--warn-bg)] text-[var(--warn)] border border-[var(--warn-bg)]";
+  return "bg-[var(--wrong-bg)] text-[var(--wrong)] border border-[var(--wrong-bg)]";
 }
 
 function levelLabel(level: "weak" | "okay" | "strong") {
@@ -506,3 +506,5 @@ export default function DiagnosticResultPage() {
     </div>
   );
 }
+
+

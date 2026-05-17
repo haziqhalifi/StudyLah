@@ -77,9 +77,6 @@ export default function MaterialsHubPage() {
           <h1>Pilih Bab</h1>
           <div className="student-meta-row">
             <span>Matematik Tingkatan 5</span>
-            <span aria-hidden="true">•</span>
-            <span>{BAB_CARDS.length} bab</span>
-            <span>{BAB_CARDS.length} bab</span>
           </div>
         </div>
       </header>

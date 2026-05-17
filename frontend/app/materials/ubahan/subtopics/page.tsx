@@ -133,7 +133,6 @@ export default function UbahanSubtopicsPage() {
           </svg>
           Kembali
         </button>
-        <p className="material-eyebrow">📖 Bab 1</p>
         <h1 className="material-title">
           {currentSubtopic.id} {currentSubtopic.title}
         </h1>

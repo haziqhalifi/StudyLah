@@ -9,9 +9,9 @@ import { fetchFlashcardSet, FlashcardSet, Flashcard } from "@/lib/api";
 // ---------------------------------------------------------------------------
 
 const TOPIC_COLORS: Record<string, string> = {
-  ubahan: "bg-violet-100 text-violet-700",
-  matriks: "bg-blue-100 text-blue-700",
-  insurans: "bg-emerald-100 text-emerald-700",
+  ubahan: "bg-[var(--brand-light)] text-[var(--brand)]",
+  matriks: "bg-[var(--brand-light)] text-[var(--brand)]",
+  insurans: "bg-[var(--brand-light)] text-[var(--brand)]",
 };
 
 const TOPIC_LABELS: Record<string, string> = {
@@ -75,16 +75,16 @@ function CardFace({ card, isFlipped, onFlip }: CardFaceProps) {
 
         {/* Back — Answer */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-indigo-600 shadow-lg p-6"
+          className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-[var(--brand)] shadow-lg p-6"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          <span className="mb-3 text-xs font-semibold uppercase tracking-widest text-indigo-200">
+          <span className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--brand-light)]">
             Jawapan
           </span>
           <p className="text-center text-lg font-semibold text-white leading-snug">
             {card.answer}
           </p>
-          <span className="mt-4 text-xs text-indigo-300">Ketik untuk balik semula</span>
+          <span className="mt-4 text-xs text-[var(--brand-muted)]">Ketik untuk balik semula</span>
         </div>
       </div>
     </div>
@@ -124,7 +124,7 @@ export default function FlashcardStudyPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-[var(--brand)] border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-500 text-sm">Memuatkan kad imbas…</p>
         </div>
       </div>
@@ -135,10 +135,10 @@ export default function FlashcardStudyPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="text-center">
-          <p className="text-red-500 font-medium mb-4">{error ?? "Set tidak dijumpai."}</p>
+          <p className="text-[var(--wrong)] font-medium mb-4">{error ?? "Set tidak dijumpai."}</p>
           <button
             onClick={() => router.back()}
-            className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold"
+            className="px-5 py-2 rounded-xl bg-[var(--brand)] text-white text-sm font-semibold"
           >
             Kembali
           </button>
@@ -195,7 +195,7 @@ export default function FlashcardStudyPage() {
           </div>
           <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+              className="h-full bg-[var(--brand)] rounded-full transition-all duration-300"
               style={{ width: `${((currentIndex + 1) / total) * 100}%` }}
             />
           </div>
@@ -213,7 +213,7 @@ export default function FlashcardStudyPage() {
               key={i}
               onClick={() => { setIsFlipped(false); setTimeout(() => setCurrentIndex(i), 150); }}
               className={`w-2 h-2 rounded-full transition-all ${
-                i === currentIndex ? "bg-indigo-500 w-4" : "bg-gray-300"
+                i === currentIndex ? "bg-[var(--brand)] w-4" : "bg-gray-300"
               }`}
               aria-label={`Pergi ke kad ${i + 1}`}
             />
@@ -225,14 +225,14 @@ export default function FlashcardStudyPage() {
           <button
             onClick={goPrev}
             disabled={currentIndex === 0}
-            className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:border-indigo-300 hover:text-indigo-600"
+            className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:border-[var(--brand-muted)] hover:text-[var(--brand)]"
           >
             ← Previous
           </button>
 
           <button
             onClick={handleFlip}
-            className="px-5 py-3 rounded-2xl bg-indigo-600 text-white font-semibold text-sm shadow-sm hover:bg-indigo-700 transition-colors"
+            className="px-5 py-3 rounded-2xl bg-[var(--brand)] text-white font-semibold text-sm shadow-sm hover:bg-[var(--brand-dark)] transition-colors"
           >
             Balik
           </button>
@@ -240,7 +240,7 @@ export default function FlashcardStudyPage() {
           <button
             onClick={goNext}
             disabled={currentIndex === total - 1}
-            className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:border-indigo-300 hover:text-indigo-600"
+            className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:border-[var(--brand-muted)] hover:text-[var(--brand)]"
           >
             Next →
           </button>
@@ -248,12 +248,12 @@ export default function FlashcardStudyPage() {
 
         {/* Completed state */}
         {currentIndex === total - 1 && (
-          <div className="mt-8 w-full rounded-2xl bg-green-50 border border-green-200 p-5 text-center">
+          <div className="mt-8 w-full rounded-2xl bg-[var(--correct-bg)] border border-[var(--correct-bg)] p-5 text-center">
             <p className="text-2xl mb-1">🎉</p>
-            <p className="font-semibold text-green-800">Anda telah mengulangkaji semua {total} kad!</p>
+            <p className="font-semibold text-[var(--correct)]">Anda telah mengulangkaji semua {total} kad!</p>
             <button
               onClick={() => { setCurrentIndex(0); setIsFlipped(false); }}
-              className="mt-3 px-5 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors"
+              className="mt-3 px-5 py-2 rounded-xl bg-[var(--correct)] text-white text-sm font-semibold hover:bg-[var(--correct)] transition-colors"
             >
               Mula semula
             </button>
@@ -263,3 +263,5 @@ export default function FlashcardStudyPage() {
     </div>
   );
 }
+
+

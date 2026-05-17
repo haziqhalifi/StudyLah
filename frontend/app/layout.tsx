@@ -14,7 +14,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#5B4CF5",
+  themeColor: "#4F6FAE",
 };
 
 export default function RootLayout({
@@ -40,7 +40,7 @@ export default function RootLayout({
             position: "fixed",
             inset: 0,
             zIndex: 9999, // higher than BottomNav's z-index
-            background: "#eef2ff", // match your app's bg color
+            background: "#edf2fa", // match your app's bg color
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

@@ -28,23 +28,23 @@ const TYPE_BADGE: Record<
 > = {
   focus_topic: {
     label: "Focus",
-    className: "bg-red-100 text-red-700",
+    className: "bg-[var(--wrong-bg)] text-[var(--wrong)]",
   },
   do_quiz: {
     label: "Quiz",
-    className: "bg-blue-100 text-blue-700",
+    className: "bg-[var(--info-bg)] text-[var(--info)]",
   },
   do_review: {
     label: "Review",
-    className: "bg-yellow-100 text-yellow-700",
+    className: "bg-[var(--warn-bg)] text-[var(--warn)]",
   },
   celebration: {
     label: "Well done",
-    className: "bg-green-100 text-green-700",
+    className: "bg-[var(--correct-bg)] text-[var(--correct)]",
   },
   consistency_nudge: {
     label: "Come back",
-    className: "bg-purple-100 text-purple-700",
+    className: "bg-[var(--brand-light)] text-[var(--brand)]",
   },
 };
 
@@ -53,9 +53,9 @@ const TYPE_BADGE: Record<
 // ---------------------------------------------------------------------------
 
 function accuracyColor(accuracy: number): string {
-  if (accuracy >= 0.75) return "text-green-600";
-  if (accuracy >= 0.4) return "text-yellow-600";
-  return "text-red-500";
+  if (accuracy >= 0.75) return "text-[var(--correct)]";
+  if (accuracy >= 0.4) return "text-[var(--warn)]";
+  return "text-[var(--wrong)]";
 }
 
 // ---------------------------------------------------------------------------
@@ -88,10 +88,10 @@ function TopicRow({ topic }: { topic: CoachTopicStats }) {
         <div
           className={`h-full rounded-full transition-all ${
             topic.accuracy >= 0.75
-              ? "bg-green-400"
+              ? "bg-[var(--correct)]"
               : topic.accuracy >= 0.4
-              ? "bg-yellow-400"
-              : "bg-red-400"
+              ? "bg-[var(--warn)]"
+              : "bg-[var(--wrong)]"
           }`}
           style={{ width: topic.attempts === 0 ? "2px" : `${pct}%` }}
         />
@@ -148,7 +148,7 @@ function SuggestionCard({
           {badge.label}
         </span>
         {suggestion.priority === "high" && (
-          <span className="text-xs text-red-500 font-medium">● Priority</span>
+          <span className="text-xs text-[var(--wrong)] font-medium">● Priority</span>
         )}
       </div>
 
@@ -162,8 +162,8 @@ function SuggestionCard({
           type="button"
           onClick={handleCta}
           disabled={loading}
-          className="mt-1 w-full rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white
-                     transition hover:bg-indigo-700 active:scale-95 disabled:opacity-60"
+          className="mt-1 w-full rounded-xl bg-[var(--brand)] px-4 py-2 text-xs font-semibold text-white
+                     transition hover:bg-[var(--brand-dark)] active:scale-95 disabled:opacity-60"
         >
           {loading ? "Loading…" : suggestion.cta_label}
         </button>
@@ -193,7 +193,7 @@ export default function CoachPanel({ userId }: CoachPanelProps) {
   // Error state
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
+      <div className="rounded-2xl border border-[var(--wrong-bg)] bg-[var(--wrong-bg)] p-4 text-sm text-[var(--wrong)]">
         <p className="font-semibold">Could not load AI Coach</p>
         <p className="mt-1 text-xs opacity-75">{error}</p>
       </div>
@@ -263,3 +263,4 @@ export default function CoachPanel({ userId }: CoachPanelProps) {
     </section>
   );
 }
+

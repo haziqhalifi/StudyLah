@@ -10,9 +10,9 @@ import { getAssessment, fetchFlashcardSets, fetchUserQuizzes, TopicStats, Flashc
 // ---------------------------------------------------------------------------
 
 const TOPIC_META: Record<string, { name: string; color: string; bg: string; icon: string; learnRoute: string; materialsRoute: string }> = {
-  ubahan:   { name: "Ubahan",   color: "#7f65ff", bg: "linear-gradient(135deg,#8e78ff,#b26cff)", icon: "∝",  learnRoute: "/learn",     materialsRoute: "/materials/ubahan/subtopics" },
-  matriks:  { name: "Matriks",  color: "#ff6b93", bg: "linear-gradient(135deg,#ff8dc0,#ffb0c9)", icon: "⊞",  learnRoute: "/learn",     materialsRoute: "/materials/matriks/subtopics" },
-  insurans: { name: "Insurans", color: "#22c55e", bg: "linear-gradient(135deg,#5bd4bc,#22c55e)", icon: "🛡", learnRoute: "/learn",     materialsRoute: "/materials/insurans/subtopics" },
+  ubahan:   { name: "Ubahan",   color: "var(--brand)", bg: "linear-gradient(135deg,var(--brand),var(--secondary))", icon: "∝",  learnRoute: "/learn",     materialsRoute: "/materials/ubahan/subtopics" },
+  matriks:  { name: "Matriks",  color: "var(--secondary)", bg: "linear-gradient(135deg,var(--secondary),var(--brand-light))", icon: "⊞",  learnRoute: "/learn",     materialsRoute: "/materials/matriks/subtopics" },
+  insurans: { name: "Insurans", color: "var(--accent)", bg: "linear-gradient(135deg,var(--accent),var(--secondary))", icon: "🛡", learnRoute: "/learn",     materialsRoute: "/materials/insurans/subtopics" },
 };
 
 const WEEK_DAYS = ["Ah", "Is", "Se", "Ra", "Kh", "Ju", "Sa"];
@@ -280,7 +280,7 @@ function SetProgressSection({ topics }: { topics: TopicStats[] }) {
       </div>
       <div className="progress-set-list">
         {topics.map((t) => {
-          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "#7f65ff", bg: "" };
+          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id, color: "var(--brand)", bg: "" };
           const pct = Math.round(t.accuracy * 100);
           return (
             <article
@@ -408,7 +408,7 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
   const first = sorted[0];
   if (!first) return null;
 
-  const meta = TOPIC_META[first.topic_id] ?? { name: first.topic_id, color: "#7f65ff", bg: "" };
+  const meta = TOPIC_META[first.topic_id] ?? { name: first.topic_id, color: "var(--brand)", bg: "" };
   const pct = Math.round(first.accuracy * 100);
 
   return (
@@ -561,3 +561,4 @@ export default function ProgressPage() {
     </section>
   );
 }
+
