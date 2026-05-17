@@ -61,7 +61,7 @@ export default function QuizPage() {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: "Missing quiz ID.",
+        error: "ID kuiz tidak ditemui.",
       }));
       return;
     }
@@ -89,7 +89,7 @@ export default function QuizPage() {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: "I couldn't load this quiz. Please try again.",
+          error: "Kuiz tidak dapat dimuatkan. Sila cuba lagi.",
         }));
       });
   }, [quizId, router]);
@@ -108,10 +108,10 @@ export default function QuizPage() {
   const scoreMessage = useMemo(() => {
     if (!state.result) return "";
     if (state.result.percentage >= 80)
-      return "Amazing! You're getting really strong at this.";
+      return "Hebat! Anda semakin mahir dalam topik ini.";
     if (state.result.percentage >= 50)
-      return "Good effort! Let's review the ones you missed.";
-    return "No worries, let's go through this together.";
+      return "Usaha yang baik! Mari ulang kaji soalan yang terlepas.";
+    return "Tak apa, mari kita semak bersama.";
   }, [state.result]);
 
   async function handleSubmitQuiz() {
@@ -136,7 +136,7 @@ export default function QuizPage() {
       setState((prev) => ({
         ...prev,
         submitting: false,
-        error: "I couldn't submit your quiz. Please try again.",
+        error: "Kuiz tidak dapat dihantar. Sila cuba lagi.",
       }));
     }
   }
@@ -160,8 +160,8 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-[#f6f7fb] pb-24">
         <BuddyHeader
-          title="Quiz time"
-          subtitle="Let's build your personalised practice set."
+          title="Masa kuiz"
+          subtitle="Mari bina set latihan diperibadikan anda."
         />
         <BuddyBubble emoji="😕">{state.error}</BuddyBubble>
         <div className="max-w-md mx-auto px-4 mt-4">
@@ -170,7 +170,7 @@ export default function QuizPage() {
             className="w-full h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
             onClick={() => router.push("/")}
           >
-            Back to Home
+            Kembali ke Utama
           </button>
         </div>
       </div>
@@ -201,7 +201,7 @@ export default function QuizPage() {
           <div className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-5">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-500">Your score</p>
+                <p className="text-sm text-slate-500">Markah anda</p>
                 <div className="text-4xl font-semibold text-slate-900 mt-1">
                   {state.result.score} / {state.result.total}
                 </div>
@@ -231,14 +231,14 @@ export default function QuizPage() {
                   <div
                     className={`text-xs px-2 py-1 rounded-full ${item.isCorrect ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
                   >
-                    {item.isCorrect ? "✓ Correct" : "✗ Missed"}
+                    {item.isCorrect ? "✓ Betul" : "✗ Terlepas"}
                   </div>
                 </div>
                 <h3 className="text-base font-medium text-slate-900">
                   {question.text}
                 </h3>
                 <div className="mt-3 text-sm text-slate-600">
-                  Correct answer:{" "}
+                  Jawapan betul:{" "}
                   <span className="font-semibold text-slate-900">
                     {correctAnswer}
                   </span>
@@ -260,14 +260,14 @@ export default function QuizPage() {
             className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium"
             onClick={handleTryAgain}
           >
-            Try again
+            Cuba Semula
           </button>
           <button
             type="button"
             className="h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
             onClick={() => router.push("/")}
           >
-            Back to Home
+            Kembali ke Utama
           </button>
         </div>
       </div>

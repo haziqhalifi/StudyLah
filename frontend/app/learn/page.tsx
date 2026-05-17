@@ -160,7 +160,7 @@ export default function LearnPage() {
       setPrevDiff(firstQ.difficulty);
       setView("practice");
     } catch {
-      setStartError("Could not load questions for this subject. Try another.");
+      setStartError("Tidak dapat memuatkan soalan untuk mata pelajaran ini. Cuba yang lain.");
     } finally {
       setStarting(false);
     }
@@ -240,14 +240,14 @@ export default function LearnPage() {
       <section className="home-dashboard-shell page-enter" aria-label="Learning hub">
         <header className="student-header">
           <div className="student-header-copy">
-            <p className="student-time">Adaptive Practice</p>
-            <h1>What do you want to practise?</h1>
+            <p className="student-time">Latihan Adaptif</p>
+            <h1>Apa yang anda mahu latih?</h1>
             <div className="student-meta-row">
               <span>Matematik Tingkatan 5</span>
               <span aria-hidden="true">•</span>
-              <span>{MATH_F5_TOPICS.length} topics</span>
+              <span>{MATH_F5_TOPICS.length} topik</span>
               <span aria-hidden="true">•</span>
-              <span>{loadingPapers ? "Loading" : `${papers.length} trial papers`}</span>
+              <span>{loadingPapers ? "Memuatkan" : `${papers.length} kertas percubaan`}</span>
             </div>
           </div>
 
@@ -255,7 +255,7 @@ export default function LearnPage() {
 
         <section className="level-card" aria-label="Choose a topic to practise">
           <div className="level-card-content">
-            <p className="level-eyebrow">Learning Path</p>
+            <p className="level-eyebrow">Laluan Pembelajaran</p>
             {(() => {
               const totalNodes = MATH_F5_TOPICS.reduce((s, t) => s + t.steps.length, 0);
               const doneNodes = Object.values(nodeProgress).reduce((s, v) => s + v.done, 0);
@@ -263,14 +263,14 @@ export default function LearnPage() {
               const hasStarted = doneNodes > 0;
               return (
                 <>
-                  <h2>{hasStarted ? `${doneNodes} of ${totalNodes} nodes unlocked` : "Start from a chapter and move into the subtopic map."}</h2>
+                  <h2>{hasStarted ? `${doneNodes} daripada ${totalNodes} nod dibuka` : "Mulakan dari bab dan masuk ke peta subtopik."}</h2>
                   <div className="level-progress-row">
                     <div className="level-progress-track" aria-hidden="true">
                       <div className="level-progress-fill" style={{ width: `${pct}%` }}>
                         <span className="level-progress-dot" />
                       </div>
                     </div>
-                    <span>{hasStarted ? `${pct}%` : `${MATH_F5_TOPICS.length} available`}</span>
+                    <span>{hasStarted ? `${pct}%` : `${MATH_F5_TOPICS.length} tersedia`}</span>
                   </div>
                 </>
               );
@@ -312,7 +312,7 @@ export default function LearnPage() {
                         <div className="learn-topic-progress-fill" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="learn-topic-progress-label">
-                        {np.done}/{np.total} nodes{level ? ` · ${level}` : ""}
+                        {np.done}/{np.total} nod{level ? ` · ${level}` : ""}
                       </span>
                     </div>
                   </div>
@@ -341,8 +341,8 @@ export default function LearnPage() {
                 ↺
               </span>
               <span>
-                <span className="home-action-label">Resume previous session</span>
-                <span className="home-action-sub">Continue where you left off</span>
+                <span className="home-action-label">Sambung sesi sebelumnya</span>
+                <span className="home-action-sub">Teruskan dari tempat anda berhenti</span>
               </span>
               <span className="home-action-arrow" aria-hidden="true">→</span>
             </button>
@@ -353,7 +353,7 @@ export default function LearnPage() {
   }
 
   if (!question)
-    return <div className="page-enter diag-sub">Loading question…</div>;
+    return <div className="page-enter diag-sub">Memuatkan soalan…</div>;
 
   const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
 const isReview = question.tags?.includes("review") ?? false;
@@ -365,11 +365,11 @@ const isReview = question.tags?.includes("review") ?? false;
       onClick={handleSubmit}
       disabled={selected === null || submitting}
     >
-      {submitting ? "Checking…" : "Submit Answer"}
+      {submitting ? "Menyemak…" : "Hantar Jawapan"}
     </button>
   ) : (
     <button type="button" className="btn-primary" onClick={handleNext}>
-      Next Question →
+      Soalan Seterusnya →
     </button>
   );
 
@@ -386,15 +386,15 @@ const isReview = question.tags?.includes("review") ?? false;
     >
       <div className="learn-stats">
         <div className="learn-stat">
-          <div className="learn-stat-label">Done</div>
+          <div className="learn-stat-label">Selesai</div>
           <div className="learn-stat-value">{count}</div>
         </div>
         <div className="learn-stat">
-          <div className="learn-stat-label">Correct</div>
+          <div className="learn-stat-label">Betul</div>
           <div className="learn-stat-value green">{correct}</div>
         </div>
         <div className="learn-stat">
-          <div className="learn-stat-label">Accuracy</div>
+          <div className="learn-stat-label">Ketepatan</div>
           <div
             className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}
           >
@@ -403,7 +403,7 @@ const isReview = question.tags?.includes("review") ?? false;
         </div>
         {result?.skill_summary && (
           <div className="learn-stat">
-            <div className="learn-stat-label">Level</div>
+            <div className="learn-stat-label">Tahap</div>
             <div className="learn-stat-value brand">
               {result.skill_summary.level}
             </div>
@@ -426,7 +426,7 @@ const isReview = question.tags?.includes("review") ?? false;
           className="btn-primary"
           onClick={() => router.push("/assessment")}
         >
-          View Your Progress
+          Lihat Kemajuan Anda
         </button>
       </div>
 

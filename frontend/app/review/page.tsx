@@ -20,31 +20,31 @@ import type { LearningContext } from "@/lib/types";
 // ── Buddy message copy ────────────────────────────────────────────
 const REASON_BUDDY: Record<string, string> = {
   low_accuracy:
-    "Heads up — accuracy was low on this one last time. Let's nail it together! 💪",
+    "Perhatian — ketepatan rendah pada kali lepas. Kita boleh buat lebih baik! 💪",
   not_seen_recently:
-    "You haven't seen this in a while. A quick refresh keeps it locked in! 🔄",
-  weak_topic: "This topic needs a bit of love. We've got this! 🌱",
-  new: "Fresh question — let's see how you go! 🆕",
-  overdue: "This one's been waiting — great that you're reviewing it now! ⏰",
-  due_for_review: "Right on schedule! Let's keep that memory sharp. 🎯",
-  learning: "Let's work on this together and nail it! 📖",
+    "Anda belum lihat ini sejak lama. Ulangkaji pantas untuk kekalkan ingatan! 🔄",
+  weak_topic: "Topik ini perlu sedikit perhatian. Kita boleh! 🌱",
+  new: "Soalan baru — mari lihat bagaimana anda! 🆕",
+  overdue: "Yang ini sudah lama menunggu — bagus anda mengulangkajinya sekarang! ⏰",
+  due_for_review: "Tepat pada masanya! Mari kekalkan ingatan anda. 🎯",
+  learning: "Mari kerjakan ini bersama! 📖",
 };
 
 const REASON_LABEL: Record<string, string> = {
-  low_accuracy: "Low accuracy",
-  not_seen_recently: "Not seen recently",
-  weak_topic: "Weak topic",
-  new: "New question",
-  overdue: "Overdue",
-  due_for_review: "Scheduled review",
-  learning: "Still learning",
+  low_accuracy: "Ketepatan rendah",
+  not_seen_recently: "Lama tidak dilihat",
+  weak_topic: "Topik lemah",
+  new: "Soalan baru",
+  overdue: "Tertunggak",
+  due_for_review: "Ulangkaji berjadual",
+  learning: "Masih belajar",
 };
 
 // ── Spaced-rep status badges ──────────────────────────────────────
 const STATUS_BADGE: Record<ReviewStatus, { label: string; cls: string }> = {
-  learning:  { label: "Learning",  cls: "chip chip-warn"    },
-  reviewing: { label: "Reviewing", cls: "chip chip-brand"   },
-  mastered:  { label: "Mastered",  cls: "chip chip-correct" },
+  learning:  { label: "Belajar",    cls: "chip chip-warn"    },
+  reviewing: { label: "Mengulang",  cls: "chip chip-brand"   },
+  mastered:  { label: "Dikuasai",   cls: "chip chip-correct" },
 };
 
 // Tags that get a coloured chip under the question header
@@ -52,13 +52,13 @@ const TAG_CHIP: Record<string, { label: string; cls: string }> = {
   ubahan:   { label: "Ubahan",   cls: "chip chip-brand"   },
   matriks:  { label: "Matriks",  cls: "chip chip-warn"    },
   insurans: { label: "Insurans", cls: "chip chip-correct" },
-  review:   { label: "↺ Review", cls: "chip chip-brand"   },
+  review:   { label: "↺ Ulang Kaji", cls: "chip chip-brand"   },
 };
 
 function formatIntervalDays(days: number): string {
-  if (days < 1) return "later today";
-  if (Math.round(days) === 1) return "tomorrow";
-  return `${Math.round(days)} days`;
+  if (days < 1) return "lewat hari ini";
+  if (Math.round(days) === 1) return "esok";
+  return `${Math.round(days)} hari`;
 }
 
 // ── Page ─────────────────────────────────────────────────────────
@@ -155,15 +155,14 @@ export default function ReviewPage() {
       <div className="review-done page-enter">
         <div className="review-done-emoji">😬</div>
         <p className="review-done-sub review-done-sub-spaced">
-          I couldn&apos;t load your review questions right now. Give it another
-          shot!
+          Soalan ulang kaji tidak dapat dimuatkan. Cuba lagi!
         </p>
         <button
           type="button"
           className="btn-primary review-done-button"
           onClick={() => userId && loadReview(userId)}
         >
-          Try again
+          Cuba lagi
         </button>
       </div>
     );
@@ -174,12 +173,12 @@ export default function ReviewPage() {
       <div className="review-done page-enter">
         <div className="review-done-emoji">✅</div>
         <h2 className="font-display review-done-title">
-          {caughtUp ? "You're all caught up!" : "Nothing to review yet!"}
+          {caughtUp ? "Anda sudah selesai!" : "Tiada yang perlu diulang kaji lagi!"}
         </h2>
         <p className="review-done-sub">
           {caughtUp
-            ? "You've completed today's scheduled revision. I'll bring things back at the perfect moment to keep your memory fresh — that's spaced repetition at work."
-            : "Keep practising and I'll surface your weak spots here once you've answered some questions."}
+            ? "Anda telah selesai ulangkaji berjadual hari ini. Saya akan bawa kembali soalan pada masa yang sesuai untuk kekalkan ingatan anda — itulah pengulangan jarak."
+            : "Teruskan berlatih dan saya akan tunjukkan titik lemah anda di sini setelah anda menjawab beberapa soalan."}
         </p>
         <div className="review-done-actions">
           <button
@@ -187,7 +186,7 @@ export default function ReviewPage() {
             className="btn-primary"
             onClick={() => router.push("/materials")}
           >
-            {caughtUp ? "Keep Learning →" : "Go Learn →"}
+            {caughtUp ? "Teruskan Belajar →" : "Pergi Belajar →"}
           </button>
           {caughtUp && (
             <button
@@ -195,7 +194,7 @@ export default function ReviewPage() {
               className="btn-ghost diag-skip-btn"
               onClick={() => router.push("/assessment")}
             >
-              Progress ▤
+              Kemajuan ▤
             </button>
           )}
         </div>
@@ -207,10 +206,9 @@ export default function ReviewPage() {
     return (
       <div className="review-done page-enter">
         <div className="review-done-emoji">🎉</div>
-        <h2 className="font-display review-done-title">Review complete!</h2>
+        <h2 className="font-display review-done-title">Ulang kaji selesai!</h2>
         <p className="review-done-sub">
-          Nice! You&apos;ve cleared today&apos;s review. I&apos;ll schedule the
-          next session at the right moment to keep everything locked in.
+          Bagus! Anda telah selesai ulangkaji hari ini. Saya akan jadualkan sesi seterusnya pada masa yang sesuai.
         </p>
         <div className="review-done-actions">
           <button
@@ -218,14 +216,14 @@ export default function ReviewPage() {
             className="btn-primary"
             onClick={() => router.push("/materials")}
           >
-            Continue Learning →
+            Teruskan Belajar →
           </button>
           <button
             type="button"
             className="btn-ghost diag-skip-btn"
             onClick={() => router.push("/assessment")}
           >
-            Progress ▤
+            Kemajuan ▤
           </button>
         </div>
       </div>
@@ -247,7 +245,7 @@ export default function ReviewPage() {
         onClick={handleSubmit}
         disabled={selected === null || submitting}
       >
-        {submitting ? "Checking…" : "Check answer"}
+        {submitting ? "Menyemak…" : "Semak jawapan"}
       </button>
       <button
         type="button"
@@ -255,13 +253,13 @@ export default function ReviewPage() {
         onClick={handleSkip}
         disabled={submitting}
       >
-        Skip
+        Langkau
       </button>
     </div>
   ) : (
     <div className="review-next-stack">
       <button type="button" className="btn-primary" onClick={handleNext}>
-        {idx + 1 < items.length ? "Next review question →" : "Finish Review →"}
+        {idx + 1 < items.length ? "Soalan ulang kaji seterusnya →" : "Selesai Ulang Kaji →"}
       </button>
 
       {/* Spaced-rep feedback after submit */}
@@ -269,18 +267,17 @@ export default function ReviewPage() {
         <p className="review-next-hint">
           {result.review_state.status === "mastered" ? (
             <>
-              Question <strong>mastered</strong> — I&apos;ll hold it back until
-              the perfect moment. 🏆
+              Soalan <strong>dikuasai</strong> — saya akan simpan sehingga masa yang sesuai. 🏆
             </>
           ) : (
             <>
-              Next review in{" "}
+              Ulang kaji seterusnya dalam{" "}
               <strong>
                 {formatIntervalDays(result.review_state.interval_days)}
               </strong>
               {result.review_state.status === "learning"
-                ? " — keep practising, you'll get there!"
-                : " — great progress!"}
+                ? " — teruskan berlatih, anda pasti berjaya!"
+                : " — kemajuan yang hebat!"}
             </>
           )}
         </p>
@@ -295,15 +292,15 @@ export default function ReviewPage() {
         <div className="review-banner-reason">
           {REASON_LABEL[item.reason] ?? item.reason}
         </div>
-        <h1 className="font-display review-banner-title">Review time 😉</h1>
+        <h1 className="font-display review-banner-title">Masa ulang kaji 😉</h1>
         <p className="review-banner-sub">
-          I&apos;m bringing back things you might forget.
+          Saya membawa kembali perkara yang mungkin anda lupa.
         </p>
       </div>
 
       {/* ── Progress ── */}
       <div className="review-progress-row">
-        <span className="review-progress-label">Spaced repetition</span>
+        <span className="review-progress-label">Pengulangan jarak</span>
         <span className="review-progress-frac">
           {idx + 1} / {items.length}
         </span>
@@ -322,7 +319,7 @@ export default function ReviewPage() {
         <span className="buddy-bubble-avatar">🤖</span>
         <p className="buddy-bubble-text">
           {REASON_BUDDY[item.reason] ??
-            "Let's revisit this one together. You've got this!"}
+            "Mari ulang kaji ini bersama. Anda boleh!"}
         </p>
       </div>
 
@@ -338,8 +335,8 @@ export default function ReviewPage() {
         )}
         {/* Overdue flag — shown when question missed its scheduled window */}
         {item.is_overdue && (
-          <span className="chip chip-warn" title="This was overdue — good that you're reviewing it now!">
-            Overdue
+          <span className="chip chip-warn" title="Ini sudah tertunggak — bagus anda mengulangkajinya sekarang!">
+            Tertunggak
           </span>
         )}
         {tagChips.map((chip, i) => (
@@ -352,7 +349,7 @@ export default function ReviewPage() {
       {/* ── Overdue context note ── */}
       {item.is_overdue && (
         <p className="review-overdue-note">
-          This was overdue — great that you&apos;re reviewing it now!
+          Ini sudah tertunggak — bagus anda mengulangkajinya sekarang!
         </p>
       )}
 
@@ -418,7 +415,7 @@ export default function ReviewPage() {
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Ask StudyBuddy"
+          aria-label="Tanya StudyBuddy"
         >
           🤖
         </button>
