@@ -408,6 +408,19 @@ function normalizeCreateQuizResponse(raw: any): CreateQuizResponse {
   };
 }
 
+export type QuizSummary = {
+  quiz_id: string;
+  topic_id: "ubahan" | "matriks" | "insurans";
+  title: string;
+  question_count: number;
+  created_at: string;
+};
+
+/** List all quizzes created by a user. */
+export async function fetchUserQuizzes(userId: string): Promise<QuizSummary[]> {
+  return get("/api/quizzes", { userId });
+}
+
 /** Fetch a previously-created personalised quiz by ID. */
 export async function fetchQuizDetail(quizId: string): Promise<QuizDetail> {
   const raw = await get<any>(`/api/quizzes/${quizId}`);

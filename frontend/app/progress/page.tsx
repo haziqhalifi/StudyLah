@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { getAssessment, TopicStats } from "@/lib/api";
+import { getAssessment, fetchFlashcardSets, fetchUserQuizzes, TopicStats, FlashcardSetSummary, QuizSummary } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
 // Static / mock data
@@ -293,6 +293,76 @@ function LeaderboardSection() {
 }
 
 // ---------------------------------------------------------------------------
+// My Flashcards section
+// ---------------------------------------------------------------------------
+
+function MyFlashcardsSection({ sets }: { sets: FlashcardSetSummary[] }) {
+  const router = useRouter();
+  if (sets.length === 0) return null;
+
+  return (
+    <section className="progress-history-section" aria-label="Kad imbas saya">
+      <div className="progress-section-header">
+        <h2 className="progress-section-title">Kad Imbas Saya</h2>
+        <span className="progress-history-count">{sets.length} set</span>
+      </div>
+      <div className="progress-history-list">
+        {sets.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            className={`progress-history-card progress-history-card--flash topic-${s.topic_id}`}
+            onClick={() => router.push(`/flashcards/${s.id}`)}
+          >
+            <span className="progress-history-icon">🃏</span>
+            <div className="progress-history-body">
+              <p className="progress-history-title">{s.title}</p>
+              <p className="progress-history-sub">{s.card_count} kad · {TOPIC_META[s.topic_id]?.name ?? s.topic_id}</p>
+            </div>
+            <ArrowRightIcon />
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// My Quizzes section
+// ---------------------------------------------------------------------------
+
+function MyQuizzesSection({ quizzes }: { quizzes: QuizSummary[] }) {
+  const router = useRouter();
+  if (quizzes.length === 0) return null;
+
+  return (
+    <section className="progress-history-section" aria-label="Kuiz saya">
+      <div className="progress-section-header">
+        <h2 className="progress-section-title">Kuiz Saya</h2>
+        <span className="progress-history-count">{quizzes.length} kuiz</span>
+      </div>
+      <div className="progress-history-list">
+        {quizzes.map((q) => (
+          <button
+            key={q.quiz_id}
+            type="button"
+            className={`progress-history-card progress-history-card--quiz topic-${q.topic_id}`}
+            onClick={() => router.push(`/quiz/${q.quiz_id}`)}
+          >
+            <span className="progress-history-icon">📝</span>
+            <div className="progress-history-body">
+              <p className="progress-history-title">{q.title}</p>
+              <p className="progress-history-sub">{q.question_count} soalan · {TOPIC_META[q.topic_id]?.name ?? q.topic_id}</p>
+            </div>
+            <ArrowRightIcon />
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Resume learning section (matches home "continue" pattern)
 // ---------------------------------------------------------------------------
 
@@ -372,6 +442,8 @@ function LoadingShell() {
 export default function ProgressPage() {
   const router = useRouter();
   const [topics, setTopics] = useState<TopicStats[]>([]);
+  const [flashcardSets, setFlashcardSets] = useState<FlashcardSetSummary[]>([]);
+  const [quizzes, setQuizzes] = useState<QuizSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const streak = 1;
@@ -389,12 +461,16 @@ export default function ProgressPage() {
       return;
     }
 
-    getAssessment(userId)
-      .then((res) => {
-        setTopics(res.topics.length === 0 ? MOCK_TOPICS : res.topics);
-      })
-      .catch(() => setTopics(MOCK_TOPICS))
-      .finally(() => setLoading(false));
+    Promise.all([
+      getAssessment(userId).catch(() => ({ topics: MOCK_TOPICS })),
+      fetchFlashcardSets(userId).catch(() => []),
+      fetchUserQuizzes(userId).catch(() => []),
+    ]).then(([assessment, sets, qs]) => {
+      setTopics(assessment.topics.length === 0 ? MOCK_TOPICS : assessment.topics);
+      setFlashcardSets(sets);
+      setQuizzes(qs);
+      setLoading(false);
+    });
   }, [router]);
 
   if (loading) return <LoadingShell />;
@@ -405,6 +481,8 @@ export default function ProgressPage() {
       <XPProgressCard xp={xp} level={level} />
       <StreakCard streak={streak} />
       <ResumeLearningSection topics={topics} />
+      <MyFlashcardsSection sets={flashcardSets} />
+      <MyQuizzesSection quizzes={quizzes} />
       <SetProgressSection topics={topics} />
       <LeaderboardSection />
     </section>

@@ -5624,6 +5624,92 @@ button.map-node:hover {
   cursor: pointer;
 }
 
+/* History sections (flashcards + quizzes) */
+.progress-history-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progress-history-section .progress-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progress-history-count {
+  font-size: 0.78rem;
+  color: var(--ink-muted, #6b7280);
+  font-weight: 500;
+}
+
+.progress-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-history-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  width: 100%;
+}
+
+.progress-history-card:hover {
+  box-shadow: 0 4px 16px rgba(127, 101, 255, 0.12);
+  border-color: var(--brand, #7f65ff);
+}
+
+.progress-history-card--flash {
+  border-left: 4px solid #7f65ff;
+}
+
+.progress-history-card--quiz {
+  border-left: 4px solid #ff6b93;
+}
+
+.progress-history-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.progress-history-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.progress-history-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink, #1e1b4b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.progress-history-sub {
+  font-size: 0.78rem;
+  color: var(--ink-muted, #6b7280);
+  margin: 2px 0 0;
+}
+
+.progress-history-card .progress-svg-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke: var(--ink-muted, #9ca3af);
+  stroke-width: 2;
+}
+
 /* Set progress */
 .progress-set-section,
 .progress-resume-section,

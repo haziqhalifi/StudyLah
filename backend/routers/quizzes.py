@@ -2,6 +2,7 @@
 Quiz endpoints.
 
 POST /api/quizzes/personalized  — create a personalised quiz for a user/topic
+GET  /api/quizzes               — list all quizzes for a user
 GET  /api/quizzes/{quiz_id}     — fetch a quiz's questions (safe: no correct answers)
 """
 
@@ -10,13 +11,14 @@ from __future__ import annotations
 import logging
 from typing import List, Literal, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 try:
     from backend.services.quiz_service import (
         create_personalized_quiz,
         get_quiz,
+        list_user_quizzes,
         SUPPORTED_TOPICS,
         TOPIC_NAMES,
     )
@@ -25,6 +27,7 @@ except ModuleNotFoundError:
     from services.quiz_service import (  # type: ignore
         create_personalized_quiz,
         get_quiz,
+        list_user_quizzes,
         SUPPORTED_TOPICS,
         TOPIC_NAMES,
     )
@@ -78,6 +81,30 @@ class QuizDetailResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
+class QuizSummary(BaseModel):
+    quiz_id: str
+    topic_id: str
+    title: str
+    question_count: int
+    created_at: str  # ISO datetime
+
+
+@router.get("", response_model=list[QuizSummary])
+def list_quizzes(userId: str = Query(..., description="User ID")) -> list[QuizSummary]:
+    """Return all quizzes created by a user (summary only)."""
+    quizzes = list_user_quizzes(userId)
+    return [
+        QuizSummary(
+            quiz_id=q.id,
+            topic_id=q.topic_id,
+            title=q.title,
+            question_count=q.question_count,
+            created_at=q.created_at.isoformat(),
+        )
+        for q in quizzes
+    ]
 
 
 @router.post("/personalized", response_model=CreateQuizResponse)
