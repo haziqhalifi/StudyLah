@@ -7,7 +7,6 @@ import StandardQuizShell from "@/components/StandardQuizShell";
 import QuestionCard from "@/components/QuestionCard";
 import { Paper, Question, getPapers } from "@/lib/api";
 
-
 const SUPABASE_URL = "https://pxzyfiysxzwihjplrfvo.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4enlmaXlzeHp3aWhqcGxyZnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTU2OTQsImV4cCI6MjA4OTA5MTY5NH0.NjUwwYGELfBI7MzaAmV_L26n45MVWrrpa2okuxA8VJM";
@@ -39,7 +38,9 @@ function mapQuestion(raw: RawQuestion): Question {
   };
 }
 
-async function getQuestionsByPaper(paperId: number): Promise<{ questions: Question[]; correctMap: Record<string, number> }> {
+async function getQuestionsByPaper(
+  paperId: number,
+): Promise<{ questions: Question[]; correctMap: Record<string, number> }> {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/questions?select=id,question,question_ms,options,correct_index,difficulty,topic&paper_id=eq.${paperId}&order=question_number`,
     {
@@ -53,7 +54,9 @@ async function getQuestionsByPaper(paperId: number): Promise<{ questions: Questi
   const rows: RawQuestionWithCorrect[] = await res.json();
   const questions = rows.map(mapQuestion);
   const correctMap: Record<string, number> = {};
-  rows.forEach((r) => { correctMap[String(r.id)] = r.correct_index; });
+  rows.forEach((r) => {
+    correctMap[String(r.id)] = r.correct_index;
+  });
   return { questions, correctMap };
 }
 
@@ -70,7 +73,8 @@ function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  if (h > 0)
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
@@ -88,13 +92,15 @@ function ExamsPageInner() {
   const [correctMap, setCorrectMap] = useState<Record<string, number>>({});
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [completedPaperIds, setCompletedPaperIds] = useState<Set<number>>(new Set());
+  const [completedPaperIds, setCompletedPaperIds] = useState<Set<number>>(
+    new Set(),
+  );
   const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
 
   function toggleFlag() {
     const id = questions[current]?.id;
     if (!id) return;
-    setFlaggedIds(prev => {
+    setFlaggedIds((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -114,13 +120,19 @@ function ExamsPageInner() {
         // Auto-start if paperId param is present (from examination page)
         const paramId = searchParams.get("paperId");
         if (paramId && !cancelled) {
-          const paper = res.papers.find(p => String(p.id) === paramId);
+          const paper = res.papers.find((p) => String(p.id) === paramId);
           if (paper) handlePickPaper(paper, 0);
         }
       })
-      .catch(() => { if (!cancelled) setError("Gagal memuatkan kertas."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setError("Gagal memuatkan kertas.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Start/stop timer when quiz stage changes
@@ -167,16 +179,21 @@ function ExamsPageInner() {
     setLoadingPaperId(paper.id);
     setError("");
     try {
-      const { questions: qs, correctMap: cm } = await getQuestionsByPaper(paper.id);
-      if (qs.length === 0) throw new Error("Tiada soalan dijumpai untuk kertas ini.");
-  setSelectedPaper(paper);
+      const { questions: qs, correctMap: cm } = await getQuestionsByPaper(
+        paper.id,
+      );
+      if (qs.length === 0)
+        throw new Error("Tiada soalan dijumpai untuk kertas ini.");
+      setSelectedPaper(paper);
       setQuestions(qs);
       setCorrectMap(cm);
       setCurrent(0);
       setAnswers({});
       setStage("quiz");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Tidak dapat memuatkan soalan.");
+      setError(
+        e instanceof Error ? e.message : "Tidak dapat memuatkan soalan.",
+      );
     } finally {
       setLoadingPaperId(null);
     }
@@ -210,7 +227,17 @@ function ExamsPageInner() {
   // ── Auto-loading from examination page ────────────────────────────
   if (autoId && stage === "quiz" && questions.length === 0) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60dvh", gap: "1rem", color: "var(--muted)" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60dvh",
+          gap: "1rem",
+          color: "var(--muted)",
+        }}
+      >
         <div className="onboard-loader" />
         <p style={{ fontSize: "0.9rem", fontWeight: 600 }}>Memuatkan soalan…</p>
       </div>
@@ -220,13 +247,22 @@ function ExamsPageInner() {
   // ── Pick stage ─────────────────────────────────────────────────────
   if (stage === "pick") {
     return (
-      <section className="home-dashboard-shell page-enter" aria-label="Exams hub">
+      <section
+        className="home-dashboard-shell page-enter"
+        aria-label="Exams hub"
+      >
         <header className="student-header">
           <div className="student-header-copy">
-            <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Kertas Percubaan</p>
-            <h1 style={{ paddingLeft: "0.5rem" }}>Pilih Kertas Percubaan Matematik</h1>
+            <p className="student-time" style={{ paddingLeft: "0.5rem" }}>
+              Kertas Percubaan
+            </p>
+            <h1 style={{ paddingLeft: "0.5rem" }}>
+              Pilih Kertas Percubaan Matematik
+            </h1>
             <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
-              <span>{loading ? "Memuatkan…" : `${trialPapers.length} kertas`}</span>
+              <span>
+                {loading ? "Memuatkan…" : `${trialPapers.length} kertas`}
+              </span>
               <span aria-hidden="true">•</span>
               <span>Matematik</span>
               <span aria-hidden="true">•</span>
@@ -241,17 +277,29 @@ function ExamsPageInner() {
             {(() => {
               const completedCount = completedPaperIds.size;
               const total = trialPapers.length;
-              const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+              const pct =
+                total > 0 ? Math.round((completedCount / total) * 100) : 0;
               return (
                 <>
-                  <h2>{completedCount === 0 ? "Ketik kertas untuk mula peperiksaan dengan segera." : `${completedCount} daripada ${total} kertas selesai`}</h2>
+                  <h2>
+                    {completedCount === 0
+                      ? "Ketik kertas untuk mula peperiksaan dengan segera."
+                      : `${completedCount} daripada ${total} kertas selesai`}
+                  </h2>
                   <div className="level-progress-row">
                     <div className="level-progress-track" aria-hidden="true">
-                      <div className="level-progress-fill" style={{ width: `${pct}%` }}>
+                      <div
+                        className="level-progress-fill"
+                        style={{ width: `${pct}%` }}
+                      >
                         <span className="level-progress-dot" />
                       </div>
                     </div>
-                    <span>{completedCount === 0 ? `${total} tersedia` : `${pct}% selesai`}</span>
+                    <span>
+                      {completedCount === 0
+                        ? `${total} tersedia`
+                        : `${pct}% selesai`}
+                    </span>
                   </div>
                 </>
               );
@@ -267,8 +315,15 @@ function ExamsPageInner() {
             const isLoading = loadingPaperId === paper.id;
             const unlocked = isPaperUnlocked(index);
             const completed = completedPaperIds.has(paper.id);
-            const tone = index % 3 === 0 ? "lesson" : index % 3 === 1 ? "game" : "path";
-            const statusLabel = isLoading ? "Memuatkan soalan…" : !unlocked ? "Selesaikan kertas sebelum untuk buka kunci" : completed ? "Selesai — ketik untuk cuba semula" : "Ketik untuk mula";
+            const tone =
+              index % 3 === 0 ? "lesson" : index % 3 === 1 ? "game" : "path";
+            const statusLabel = isLoading
+              ? "Memuatkan soalan…"
+              : !unlocked
+                ? "Selesaikan kertas sebelum untuk buka kunci"
+                : completed
+                  ? "Selesai — ketik untuk cuba semula"
+                  : "Ketik untuk mula";
             return (
               <button
                 key={paper.id}
@@ -278,7 +333,9 @@ function ExamsPageInner() {
                 disabled={loadingPaperId !== null || !unlocked}
               >
                 <div>
-                  <p className="learning-feature-kicker">{paper.year} · {paper.paper_type}</p>
+                  <p className="learning-feature-kicker">
+                    {paper.year} · {paper.paper_type}
+                  </p>
                   <h2>{paper.state ?? "SPM"}</h2>
                   <p>{paper.paper_name}</p>
                   <p className="study-select-subtitle">{statusLabel}</p>
@@ -296,7 +353,9 @@ function ExamsPageInner() {
 
           {!loading && trialPapers.length === 0 && (
             <div className="ai-assistant-card">
-              <div className="ai-assistant-avatar" aria-hidden="true">!</div>
+              <div className="ai-assistant-avatar" aria-hidden="true">
+                !
+              </div>
               <div>
                 <h2>Tiada kertas percubaan matematik dijumpai</h2>
                 <p>Semak sambungan Supabase anda.</p>
@@ -314,9 +373,22 @@ function ExamsPageInner() {
   if (stage === "results") {
     const total = questions.length;
     const attempted = Object.keys(answers).length;
-    const correct = questions.filter((q) => answers[q.id] !== undefined && answers[q.id] === correctMap[q.id]).length;
+    const correct = questions.filter(
+      (q) => answers[q.id] !== undefined && answers[q.id] === correctMap[q.id],
+    ).length;
     const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
-    const grade = pct >= 90 ? "A+" : pct >= 80 ? "A" : pct >= 70 ? "B" : pct >= 60 ? "C" : pct >= 50 ? "D" : "E";
+    const grade =
+      pct >= 90
+        ? "A+"
+        : pct >= 80
+          ? "A"
+          : pct >= 70
+            ? "B"
+            : pct >= 60
+              ? "C"
+              : pct >= 50
+                ? "D"
+                : "E";
     const emoji = pct >= 80 ? "🎉" : pct >= 60 ? "👍" : "💪";
 
     return (
@@ -329,11 +401,21 @@ function ExamsPageInner() {
         showStats={false}
         bar={
           <div className="learn-actions">
-            <button type="button" className="btn-ghost diag-skip-btn" onClick={handleCloseQuiz}>Kembali</button>
+            <button
+              type="button"
+              className="btn-ghost diag-skip-btn"
+              onClick={handleCloseQuiz}
+            >
+              Kembali
+            </button>
             <button
               type="button"
               className="btn-primary"
-              onClick={() => { setCurrent(0); setAnswers({}); setStage("quiz"); }}
+              onClick={() => {
+                setCurrent(0);
+                setAnswers({});
+                setStage("quiz");
+              }}
             >
               Cuba Semula
             </button>
@@ -350,9 +432,13 @@ function ExamsPageInner() {
           <div className="quiz-result-banner">
             <span className="quiz-result-emoji">{emoji}</span>
             <div>
-              <p className="quiz-result-score">{correct} / {total}</p>
+              <p className="quiz-result-score">
+                {correct} / {total}
+              </p>
               <p className="quiz-result-msg">
-                {attempted < total ? `${total - attempted} tidak dijawab` : "Semua soalan dijawab"}
+                {attempted < total
+                  ? `${total - attempted} tidak dijawab`
+                  : "Semua soalan dijawab"}
               </p>
             </div>
             <span className="quiz-result-pct exam-grade-badge">{grade}</span>
@@ -372,15 +458,25 @@ function ExamsPageInner() {
               >
                 <div className="quiz-review-row">
                   <span className="quiz-review-num">S{i + 1}</span>
-                  <span className={`chip${isCorrect ? " chip-correct" : isAnswered ? " chip-wrong" : " chip-muted"}`}>
-                    {isCorrect ? "✓ Betul" : isAnswered ? "✗ Salah" : "— Dilangkau"}
+                  <span
+                    className={`chip${isCorrect ? " chip-correct" : isAnswered ? " chip-wrong" : " chip-muted"}`}
+                  >
+                    {isCorrect
+                      ? "✓ Betul"
+                      : isAnswered
+                        ? "✗ Salah"
+                        : "— Dilangkau"}
                   </span>
                 </div>
                 <p className="quiz-review-text">{q.text}</p>
                 {isAnswered && !isCorrect && (
-                  <p className="quiz-review-answer">Jawapan anda: <strong>{q.options[userIdx]}</strong></p>
+                  <p className="quiz-review-answer">
+                    Jawapan anda: <strong>{q.options[userIdx]}</strong>
+                  </p>
                 )}
-                <p className="quiz-review-answer">Betul: <strong>{q.options[corrIdx]}</strong></p>
+                <p className="quiz-review-answer">
+                  Betul: <strong>{q.options[corrIdx]}</strong>
+                </p>
               </div>
             );
           })}
@@ -390,9 +486,9 @@ function ExamsPageInner() {
   }
 
   // ── Quiz stage — same design as Kuiz Diagnostik ──────────────────
-  const question   = questions[current];
-  const isLast     = current === questions.length - 1;
-  const isWarning  = timeLeft <= 300;
+  const question = questions[current];
+  const isLast = current === questions.length - 1;
+  const isWarning = timeLeft <= 300;
   const isCritical = timeLeft <= 60;
 
   const bar = (
@@ -401,13 +497,18 @@ function ExamsPageInner() {
         type="button"
         className="btn-ghost"
         style={{ flex: 1, width: "auto" }}
-        onClick={() => setCurrent(c => Math.max(0, c - 1))}
+        onClick={() => setCurrent((c) => Math.max(0, c - 1))}
         disabled={current === 0}
       >
         ← Lepas
       </button>
       {isLast ? (
-        <button type="button" className="btn-primary" style={{ flex: 2, width: "auto" }} onClick={handleSubmit}>
+        <button
+          type="button"
+          className="btn-primary"
+          style={{ flex: 2, width: "auto" }}
+          onClick={handleSubmit}
+        >
           Hantar Peperiksaan
         </button>
       ) : (
@@ -415,7 +516,9 @@ function ExamsPageInner() {
           type="button"
           className="btn-primary"
           style={{ flex: 2, width: "auto" }}
-          onClick={() => setCurrent(c => Math.min(questions.length - 1, c + 1))}
+          onClick={() =>
+            setCurrent((c) => Math.min(questions.length - 1, c + 1))
+          }
         >
           Seterusnya →
         </button>
@@ -427,7 +530,9 @@ function ExamsPageInner() {
     <QuizSheet
       open={stage === "quiz"}
       onClose={handleCloseQuiz}
-      title={[selectedPaper?.state, selectedPaper?.year].filter(Boolean).join(" · ")}
+      title={[selectedPaper?.state, selectedPaper?.year]
+        .filter(Boolean)
+        .join(" · ")}
       subtitle={selectedPaper?.paper_name ?? ""}
       statsLabel={`Soalan ${current + 1} / ${questions.length}`}
       progress={current + 1}
@@ -437,7 +542,9 @@ function ExamsPageInner() {
       showStreakXp={false}
       bar={bar}
       timer={
-        <span className={`exam-ob-timer${isWarning ? " exam-ob-timer--warn" : ""}${isCritical ? " exam-ob-timer--critical" : ""}`}>
+        <span
+          className={`exam-ob-timer${isWarning ? " exam-ob-timer--warn" : ""}${isCritical ? " exam-ob-timer--critical" : ""}`}
+        >
           ⏱ {formatTime(timeLeft)}
         </span>
       }
@@ -450,19 +557,33 @@ function ExamsPageInner() {
           onSelectOption={(idx) => selectOption(question.id, idx)}
         />
       )}
-      {error && <p style={{ color: "var(--wrong)", fontSize: "0.85rem" }}>{error}</p>}
+      {error && (
+        <p style={{ color: "var(--wrong)", fontSize: "0.85rem" }}>{error}</p>
+      )}
     </QuizSheet>
   );
 }
 
 export default function ExamsPage() {
   return (
-    <Suspense fallback={
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60dvh", gap: "1rem", color: "var(--muted)" }}>
-        <div className="onboard-loader" />
-        <p style={{ fontSize: "0.9rem", fontWeight: 600 }}>Memuatkan…</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60dvh",
+            gap: "1rem",
+            color: "var(--muted)",
+          }}
+        >
+          <div className="onboard-loader" />
+          <p style={{ fontSize: "0.9rem", fontWeight: 600 }}>Memuatkan…</p>
+        </div>
+      }
+    >
       <ExamsPageInner />
     </Suspense>
   );
