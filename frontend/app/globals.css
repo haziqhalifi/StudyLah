@@ -1128,6 +1128,36 @@ h3 {
 .learn-stat-value.brand {
   color: var(--brand);
 }
+.learn-stat-value.streak {
+  color: #f97316;
+}
+
+/* ── XP toast ── */
+.xp-toast {
+  position: fixed;
+  top: 4.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  z-index: 999;
+  pointer-events: none;
+  animation: xp-toast-in 0.25s ease, xp-toast-out 0.3s ease 1.7s forwards;
+  white-space: nowrap;
+}
+@keyframes xp-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes xp-toast-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 .learn-topic-progress-row {
   display: flex;
   align-items: center;

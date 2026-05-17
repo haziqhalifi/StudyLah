@@ -119,6 +119,13 @@ export default function LearnPage() {
   >([]);
   const [correctOptionIndex, setCorrectOptionIndex] = useState<number>(-1);
 
+  // XP & streak state
+  const [xp, setXp] = useState(0);
+  const [sessionStreak, setSessionStreak] = useState(0); // consecutive correct in this session
+  const [dailyStreak, setDailyStreak] = useState(0);     // days in a row with activity
+  const [xpToast, setXpToast] = useState<{ gain: number; label: string } | null>(null);
+  const xpToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
     const qRaw = sessionStorage.getItem("currentQuestion");
@@ -127,6 +134,24 @@ export default function LearnPage() {
       return;
     }
     setUserId(uid);
+
+    // Load persisted XP
+    const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
+    setXp(isNaN(storedXp) ? 0 : storedXp);
+
+    // Load & validate daily streak from localStorage
+    const today = new Date().toISOString().slice(0, 10);
+    const lastActiveDay = localStorage.getItem("lastActiveDay");
+    const storedStreak = parseInt(localStorage.getItem("dailyStreak") ?? "0", 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (lastActiveDay === today) {
+      setDailyStreak(isNaN(storedStreak) ? 1 : storedStreak);
+    } else if (lastActiveDay === yesterday) {
+      setDailyStreak(isNaN(storedStreak) ? 1 : storedStreak);
+    } else {
+      // streak broken — reset
+      setDailyStreak(0);
+    }
 
     if (qRaw) {
       const q = JSON.parse(qRaw) as Question;
@@ -177,6 +202,7 @@ export default function LearnPage() {
       setDiffShift(null);
       setRecentAttempts([]);
       setCorrectOptionIndex(-1);
+      setSessionStreak(0);
       setView("practice");
     } catch {
       setStartError("Tidak dapat memuatkan soalan. Cuba lagi.");
@@ -208,6 +234,38 @@ export default function LearnPage() {
       } else {
         setDiffShift(null);
       }
+
+      // ── XP & streak ────────────────────────────────────────────────
+      const xpGain = res.is_correct ? 10 : 5;
+
+      setXp((prev) => {
+        const next = prev + xpGain;
+        sessionStorage.setItem("userXp", String(next));
+        return next;
+      });
+
+      const newSessionStreak = res.is_correct ? sessionStreak + 1 : 0;
+      setSessionStreak(newSessionStreak);
+
+      // Update daily streak — mark today active
+      const today = new Date().toISOString().slice(0, 10);
+      const lastActiveDay = localStorage.getItem("lastActiveDay");
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      if (lastActiveDay !== today) {
+        const newDailyStreak = lastActiveDay === yesterday ? dailyStreak + 1 : 1;
+        setDailyStreak(newDailyStreak);
+        localStorage.setItem("dailyStreak", String(newDailyStreak));
+        localStorage.setItem("lastActiveDay", today);
+        sessionStorage.setItem("streak", String(newDailyStreak));
+      }
+
+      // Show XP toast
+      const toastLabel = res.is_correct && newSessionStreak >= 3
+        ? `+${xpGain} XP · ${newSessionStreak} berturut-turut!`
+        : `+${xpGain} XP`;
+      if (xpToastTimer.current) clearTimeout(xpToastTimer.current);
+      setXpToast({ gain: xpGain, label: toastLabel });
+      xpToastTimer.current = setTimeout(() => setXpToast(null), 2000);
     } catch {
       alert("Penghantaran gagal. Sila cuba lagi.");
     } finally {
@@ -431,6 +489,13 @@ export default function LearnPage() {
         setShowBuddy(false);
       }}
     >
+      {/* ── XP toast ── */}
+      {xpToast && (
+        <div className="xp-toast" aria-live="polite">
+          {xpToast.label}
+        </div>
+      )}
+
       {/* ── Session stats strip ── */}
       <div className="learn-stats">
         <div className="learn-stat">
@@ -447,6 +512,16 @@ export default function LearnPage() {
             {count > 0 ? `${accuracy}%` : "—"}
           </div>
         </div>
+        <div className="learn-stat">
+          <div className="learn-stat-label">XP</div>
+          <div className="learn-stat-value brand">{xp}</div>
+        </div>
+        {sessionStreak >= 2 && (
+          <div className="learn-stat">
+            <div className="learn-stat-label">Rentetan</div>
+            <div className="learn-stat-value streak">{sessionStreak} 🔥</div>
+          </div>
+        )}
         {result?.skill_summary && (
           <div className="learn-stat">
             <div className="learn-stat-label">Tahap</div>
