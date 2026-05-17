@@ -301,7 +301,7 @@ export default function DiagnosticResultPage() {
       router.push(`/quiz/${quiz.quizId}`);
     } catch {
       setStartingTopicId(null);
-      setError("Failed to create quiz. Please try again.");
+      setError("Gagal mencipta kuiz. Sila cuba lagi.");
     }
   }
 
@@ -340,13 +340,13 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.5rem",
           }}
         >
-          Something went wrong
+          Ada masalah berlaku
         </h2>
         <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-          {error || "I couldn't load your diagnostic results. Please try again."}
+          {error || "Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi."}
         </p>
         <button type="button" className="btn-primary" onClick={load}>
-          Try again
+          Cuba lagi
         </button>
       </div>
     );
@@ -377,14 +377,14 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.5rem",
           }}
         >
-          Diagnostic complete
+          Diagnostik selesai
         </h1>
         <p style={{ color: "var(--ink-2)", fontSize: "0.95rem", marginBottom: "0.3rem" }}>
-          You got{" "}
+          Anda mendapat{" "}
           <strong>
-            {result.correctQuestions} out of {result.totalQuestions}
+            {result.correctQuestions} daripada {result.totalQuestions}
           </strong>{" "}
-          questions correct ({pctCorrect}%).
+          soalan betul ({pctCorrect}%).
         </p>
         <p style={{ color: "var(--muted)", fontSize: "0.88rem", lineHeight: 1.5 }}>
           {summaryInterpretation(result.overallAccuracy, result.topics)}
@@ -403,7 +403,7 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.75rem",
           }}
         >
-          Your topic results
+          Keputusan topik anda
         </h2>
         {result.topics.map((topic) => (
           <TopicCard key={topic.topicId} topic={topic} />
@@ -422,7 +422,7 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.75rem",
           }}
         >
-          Personalised next steps
+          Langkah seterusnya yang diperibadikan
         </h2>
 
         <RecommendationCard
@@ -461,7 +461,7 @@ export default function DiagnosticResultPage() {
           disabled={!!startingTopicId}
           onClick={() => handleStartQuiz(result.mainRecommendation.topicId)}
         >
-          {isStartingMain ? "Creating quiz…" : "Start personalised practice →"}
+          {isStartingMain ? "Mencipta kuiz…" : "Mula latihan diperibadikan →"}
         </button>
 
         <button
@@ -470,7 +470,7 @@ export default function DiagnosticResultPage() {
           onClick={() => router.push("/dashboard")}
           style={{ textAlign: "center" }}
         >
-          Go to dashboard
+          Pergi ke papan pemuka
         </button>
 
         <button
@@ -487,7 +487,7 @@ export default function DiagnosticResultPage() {
             padding: "0.25rem",
           }}
         >
-          View detailed breakdown →
+          Lihat pecahan terperinci →
         </button>
       </div>
 

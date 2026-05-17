@@ -510,6 +510,7 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [xp, setXp] = useState(0);
+  const [streak, setStreak] = useState(1);
 
   useEffect(() => {
     const userId = sessionStorage.getItem("userId");
@@ -517,6 +518,7 @@ export default function ProgressPage() {
     const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
     setName(n || "Pelajar");
     setXp(storedXp);
+    setStreak(parseInt(sessionStorage.getItem("streak") ?? "1", 10));
 
     if (!userId) {
       setLoading(false);
@@ -536,7 +538,6 @@ export default function ProgressPage() {
   }, []);
 
   const level = levelFromXP(xp);
-  const streak = parseInt(sessionStorage.getItem("streak") ?? "1", 10);
 
   if (loading) return <LoadingShell />;
 
