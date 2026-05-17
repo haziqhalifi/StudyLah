@@ -604,6 +604,18 @@ h3 {
   color: var(--ink);
   margin-bottom: 1.25rem;
   letter-spacing: -0.01em;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  overflow-x: hidden;
+}
+.qcard-question .math-text-responsive,
+.qcard-question .katex-display {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.math-text-responsive {
+  max-width: 100%;
+  overflow-x: auto;
 }
 .qcard-options {
   display: flex;

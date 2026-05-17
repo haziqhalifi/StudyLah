@@ -8,14 +8,11 @@ import {
   startOnboarding,
   submitOnboarding,
   submitAnswer as apiSubmitAnswer,
-  generateExplanation,
-  type Explanation,
   type OnboardingDiagnosticResponse,
   type OnboardingQuestion,
 } from "@/lib/api";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
-import ExplanationBlock from "@/components/ExplanationBlock";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
 import {
   playSubmitSound,
@@ -192,8 +189,6 @@ export default function OnboardingPage() {
   const [score, setScore] = useState(0);
   const [sessionStreak, setSessionStreak] = useState(0);
   const [xp, setXp] = useState(0);
-  const [explanation, setExplanation] = useState<Explanation | null>(null);
-  const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
   const [showBuddy, setShowBuddy] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const answersRef = useRef<Record<string, number>>({});
@@ -308,19 +303,6 @@ export default function OnboardingPage() {
     setSubmitted(true);
   }
 
-  async function handleGenerateExplanation() {
-    const q = questions[qIndex];
-    if (!userId || selected === null || !q) return;
-    setIsGeneratingExplanation(true);
-    try {
-      const exp = await generateExplanation(userId, q.id, selected);
-      setExplanation(exp);
-    } catch {
-      // silently ignore
-    } finally {
-      setIsGeneratingExplanation(false);
-    }
-  }
 
   // ── Next question / finish ─────────────────────────────────────────────────
 
@@ -332,7 +314,6 @@ export default function OnboardingPage() {
       setQIndex((i) => i + 1);
       setSelected(null);
       setSubmitted(false);
-      setExplanation(null);
       setShowBuddy(false);
     }
   }
@@ -390,7 +371,7 @@ export default function OnboardingPage() {
         disabled={selected === null}
         onClick={handleSubmit}
       >
-        Hantar Jawapan
+        Semak
       </button>
     ) : (
       <div
@@ -433,15 +414,6 @@ export default function OnboardingPage() {
           isCorrect={isCorrect}
           correctOptionIndex={currentQ.correct_index}
         />
-
-        {submitted && (
-          <ExplanationBlock
-            explanation={explanation}
-            isCorrect={isCorrect}
-            onGenerateExplanation={handleGenerateExplanation}
-            isGenerating={isGeneratingExplanation}
-          />
-        )}
 
         {submitted && showBuddy && userId && (
           <StudyBuddyPanel

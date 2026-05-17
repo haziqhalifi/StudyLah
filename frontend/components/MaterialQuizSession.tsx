@@ -243,7 +243,7 @@ export default function MaterialQuizSession({
       disabled={selected === null}
       onClick={handleSubmit}
     >
-      Hantar Jawapan
+      Semak
     </button>
   ) : (
     <div

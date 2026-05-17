@@ -528,7 +528,7 @@ export default function LearnPage() {
       onClick={handleSubmit}
       disabled={selected === null || submitting}
     >
-      {submitting ? "Menyemak…" : "Hantar Jawapan"}
+      {submitting ? "Menyemak…" : "Semak"}
     </button>
   ) : (
     <div className={`qs-feedback-panel ${result.is_correct ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
