@@ -17,10 +17,23 @@ from backend.supabase_client import supabase
 #                 topic→topic_id, subject→subject, difficulty→difficulty
 # ---------------------------------------------------------------------------
 
+_CHAPTER_ID_TO_TOPIC: dict = {
+    87: "ubahan",
+    88: "matriks",
+    89: "insurans",
+}
+
 def _row_to_question(row: dict) -> Question:
+    chapter_id = row.get("chapter_id")
+    topic_id = (
+        _CHAPTER_ID_TO_TOPIC.get(chapter_id)
+        or row.get("topic")
+        or row.get("subject")
+        or "general"
+    )
     return Question(
         id=str(row["id"]),
-        topic_id=row.get("topic") or row.get("subject") or "general",
+        topic_id=topic_id,
         text=row.get("question_ms") or row.get("question") or "",
         options=row["options"] if isinstance(row["options"], list) else list(row["options"]),
         correct_option_index=row["correct_index"],
@@ -60,7 +73,7 @@ def get_question_by_id(question_id: str) -> Optional[Question]:
         return None
     response = (
         supabase.table("questions")
-        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject")
+        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject, chapter_id")
         .eq("id", int_id)
         .eq("approval_status", "approved")
         .maybe_single()
@@ -98,7 +111,7 @@ def get_questions_by_ids(ids: List[str]) -> List[Question]:
     if int_ids:
         response = (
             supabase.table("questions")
-            .select("id, question, question_ms, options, correct_index, difficulty, topic, subject")
+            .select("id, question, question_ms, options, correct_index, difficulty, topic, subject, chapter_id")
             .in_("id", int_ids)
             .eq("approval_status", "approved")
             .execute()
@@ -113,7 +126,7 @@ def get_questions_by_ids(ids: List[str]) -> List[Question]:
 def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
     response = (
         supabase.table("questions")
-        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject")
+        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject, chapter_id")
         .eq("paper_id", paper_id)
         .eq("approval_status", "approved")
         .not_.is_("question", "null")
