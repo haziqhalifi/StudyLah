@@ -17,7 +17,11 @@ import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
-import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
+import {
+  playSubmitSound,
+  playCorrectSound,
+  playWrongSound,
+} from "@/lib/sounds";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,7 +147,9 @@ export default function OnboardingPage() {
   const answersRef = useRef<Record<string, number>>({});
 
   // Result
-  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(null);
+  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(
+    null,
+  );
 
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
@@ -184,12 +190,17 @@ export default function OnboardingPage() {
           ? crypto.randomUUID()
           : `user-${Date.now()}`);
       sessionStorage.setItem("userId", uid);
+      sessionStorage.setItem("userName", name.trim());
       sessionStorage.setItem("onboardingName", name.trim());
       sessionStorage.setItem("onboardingSchool", school.trim());
       sessionStorage.setItem("onboardingForm", form);
 
       await createUser(uid, name.trim());
-      const res = await startOnboarding(name.trim(), school.trim(), Number(form));
+      const res = await startOnboarding(
+        name.trim(),
+        school.trim(),
+        Number(form),
+      );
 
       setSessionId(res.session_id);
       setQuestions(res.questions);
@@ -202,7 +213,9 @@ export default function OnboardingPage() {
       setUserId(uid);
       setStep("quiz");
     } catch {
-      setError("Unable to start onboarding. Check your connection and try again.");
+      setError(
+        "Unable to start onboarding. Check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -285,7 +298,10 @@ export default function OnboardingPage() {
     }));
 
     try {
-      const [res] = await Promise.all([submitOnboarding(sessionId, payload), minDelay]);
+      const [res] = await Promise.all([
+        submitOnboarding(sessionId, payload),
+        minDelay,
+      ]);
       localStorage.setItem("onboardingDiagnosticShown", "1");
       setResult(res);
       setStep("result");
@@ -325,13 +341,19 @@ export default function OnboardingPage() {
         Hantar Jawapan
       </button>
     ) : (
-      <div className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+      <div
+        className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}
+      >
         <div className="qs-feedback-top">
           <span className="qs-feedback-icon">{isCorrect ? "✓" : "✗"}</span>
           <div className="qs-feedback-text">
-            <p className="qs-feedback-title">{isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+            <p className="qs-feedback-title">
+              {isCorrect ? "Betul!" : "Jawapan Salah"}
+            </p>
             {!isCorrect && (
-              <p className="qs-feedback-hint">Semak jawapan betul yang ditunjukkan di atas.</p>
+              <p className="qs-feedback-hint">
+                Semak jawapan betul yang ditunjukkan di atas.
+              </p>
             )}
           </div>
         </div>
@@ -350,7 +372,6 @@ export default function OnboardingPage() {
         }}
         title="Diagnostic Quiz"
         subtitle={`Soalan ${qIndex + 1} / ${questions.length}`}
-
         progress={done}
         total={questions.length}
         streak={sessionStreak}
