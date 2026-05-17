@@ -121,6 +121,19 @@ function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
   );
 }
 
+function localizeResultText(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(
+      "You've got a baseline in Ubahan! Let's focus next on Matriks with short daily drills, then revise mistakes using worked examples.",
+      "Anda sudah ada asas dalam Ubahan! Seterusnya, fokus pada Matriks dengan latihan ringkas harian, kemudian semak semula kesilapan menggunakan contoh penyelesaian.",
+    )
+    .replace(
+      "Start your personalized lesson path on the weakest topic.",
+      "Mulakan laluan pembelajaran peribadi anda pada topik paling lemah.",
+    );
+}
+
 const ANALYZING_MESSAGES = [
   "Biar saya semak jawapan anda... 🔍",
   "Hmm, keputusan yang menarik! 🤔",
@@ -867,7 +880,7 @@ function ResultScreen({
           </h3>
           <div className="ob2-ai-card">
             <span className="ob2-ai-sparkle">✦</span>
-            <p className="ob2-ai-text">{result.recommendation}</p>
+            <p className="ob2-ai-text">{localizeResultText(result.recommendation)}</p>
           </div>
         </section>
 
@@ -896,7 +909,7 @@ function ResultScreen({
                 <span className="ob2-insight-icon">🎯</span>
                 <span className="ob2-insight-label">Langkah Seterusnya</span>
               </div>
-              <p className="ob2-insight-next">{result.next_step}</p>
+              <p className="ob2-insight-next">{localizeResultText(result.next_step)}</p>
             </div>
           )}
         </div>
@@ -904,14 +917,19 @@ function ResultScreen({
         {/* Secondary actions */}
         <div className="ob2-secondary-actions ob-result-fadein">
           <p className="ob2-secondary-label">Pilihan lain:</p>
-          <button type="button" className="ob2-secondary-btn" onClick={onContinue}>
-            Ikut pelan auto →
-          </button>
           <button type="button" className="ob2-secondary-btn ob2-secondary-btn--ghost" onClick={() => window.location.reload()}>
             Ulang buat diagnostik nanti →
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        className="ob2-secondary-btn ob2-floating-plan-btn"
+        onClick={onContinue}
+      >
+        Ikut pelan auto →
+      </button>
     </div>
   );
 }

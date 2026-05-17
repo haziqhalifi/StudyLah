@@ -12996,6 +12996,28 @@ button.map-node:hover {
   border-color: transparent;
 }
 
+.ob2-result-page {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+}
+
+.ob2-floating-plan-btn {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(calc(100vw - 1.5rem), 430px);
+  z-index: 120;
+  background: linear-gradient(135deg, #6f56ff, #8f64ff);
+  color: #fff;
+  border-color: rgba(111, 86, 255, 0.55);
+  box-shadow: 0 16px 34px rgba(63, 42, 161, 0.3);
+}
+
+.ob2-floating-plan-btn:hover {
+  background: linear-gradient(135deg, #664cef, #845bf3);
+  border-color: rgba(102, 76, 239, 0.65);
+}
+
 /* ── Responsive ── */
 @media (max-width: 360px) {
   .ob2-two-col { grid-template-columns: 1fr; }
