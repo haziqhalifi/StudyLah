@@ -6,7 +6,6 @@ import {
   submitAnswer,
   generateExplanation,
   startDiagnostic,
-  submitDiagnostic,
   getPapers,
   getAssessment,
   postStudyBuddyMessage,
@@ -18,45 +17,64 @@ import {
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
-import AiBadge from "@/components/AiBadge";
 import QuizSheet from "@/components/QuizSheet";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import MathText from "@/components/MathText";
 import type { LearningContext, QuickAction } from "@/lib/types";
 import { getChipsForContext } from "@/lib/quickActions";
-import { UBAHAN_STEPS } from "@/app/materials/ubahan/data";
-import { MATRIKS_STEPS } from "@/app/materials/matriks/data";
-import { INSURANS_STEPS } from "@/app/materials/insurans/data";
+import { UBAHAN_STEPS, UBAHAN_SUBTOPICS } from "@/app/materials/ubahan/data";
+import { MATRIKS_STEPS, MATRIKS_SUBTOPICS } from "@/app/materials/matriks/data";
+import {
+  INSURANS_STEPS,
+  INSURANS_SUBTOPICS,
+} from "@/app/materials/insurans/data";
 
-type View = "topics" | "practice";
+type View = "topics" | "subtopics" | "practice";
+
+interface SubtopicOption {
+  id: string;
+  title: string;
+}
 
 const MATH_F5_TOPICS = [
   {
     id: "ubahan",
+    bab: "Bab 1",
     name: "Ubahan",
-    subtitle: "Variation",
     icon: "∝",
-    desc: "Direct, inverse, joint & partial variation",
+    desc: "Ubahan langsung, songsang, bergabung & separa",
+    difficulty: "Mudah",
+    estimatedTime: "~20 min",
     steps: UBAHAN_STEPS,
+    subtopics: UBAHAN_SUBTOPICS as SubtopicOption[],
     completionKey: "ubahan_completed_steps_v1",
+    tone: "lesson" as const,
   },
   {
     id: "matriks",
+    bab: "Bab 2",
     name: "Matriks",
-    subtitle: "Matrices",
     icon: "⊞",
-    desc: "Matrix operations & simultaneous equations",
+    desc: "Operasi matriks & persamaan serentak",
+    difficulty: "Sederhana",
+    estimatedTime: "~30 min",
     steps: MATRIKS_STEPS,
+    subtopics: MATRIKS_SUBTOPICS as SubtopicOption[],
     completionKey: "matriks_completed_steps_v1",
+    tone: "game" as const,
   },
   {
     id: "insurans",
-    name: "Insurans",
-    subtitle: "Insurance",
+    bab: "Bab 3",
+    name: "Matematik Pengguna: Insurans",
     icon: "🛡",
-    desc: "Premiums, policies & claims",
+    desc: "Premium, polisi & tuntutan pampasan",
+    difficulty: "Mudah",
+    estimatedTime: "~25 min",
     steps: INSURANS_STEPS,
+    subtopics: INSURANS_SUBTOPICS as SubtopicOption[],
     completionKey: "insurans_completed_steps_v1",
+    tone: "path" as const,
   },
 ];
 
@@ -75,7 +93,7 @@ export default function LearnPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [view, setView] = useState<View>("topics");
 
-  // Topic picker state
+  // Picker state
   const [topicStats, setTopicStats] = useState<TopicStats[]>([]);
   const [nodeProgress, setNodeProgress] = useState<
     Record<string, { done: number; total: number }>
@@ -84,6 +102,13 @@ export default function LearnPage() {
   const [loadingPapers, setLoadingPapers] = useState(true);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
+
+  // Which topic the user drilled into
+  const [activeTopic, setActiveTopic] = useState<
+    (typeof MATH_F5_TOPICS)[number] | null
+  >(null);
+  // Which subtopic was selected (null = "all")
+  const [activeSubtopicId, setActiveSubtopicId] = useState<string | null>(null);
 
   // Practice state
   const [question, setQuestion] = useState<Question | null>(null);
@@ -99,8 +124,6 @@ export default function LearnPage() {
   const [recentAttempts, setRecentAttempts] = useState<
     Array<{ questionId: string; isCorrect: boolean; topicId: string }>
   >([]);
-  // correctOptionIndex is tracked separately because SubmitAnswerResponse
-  // doesn't return it; we infer it from the answer when correct, else -1.
   const [correctOptionIndex, setCorrectOptionIndex] = useState<number>(-1);
 
   useEffect(() => {
@@ -112,12 +135,12 @@ export default function LearnPage() {
     }
     setUserId(uid);
 
-    // If coming from diagnostic, go straight to practice
     if (qRaw) {
       const q = JSON.parse(qRaw) as Question;
       setQuestion(q);
       setPrevDiff(q.difficulty);
-      setView("practice");
+      // Don't auto-open quiz — user sees chapter list first,
+      // then can resume via the "Sambung sesi" banner.
     }
 
     getAssessment(uid)
@@ -133,7 +156,6 @@ export default function LearnPage() {
 
     getPapers()
       .then((res) => {
-        // Limit to only 'matematik' subject for now (case-insensitive)
         const filtered = res.papers.filter(
           (p) => (p.subject || "").toLowerCase() === "matematik",
         );
@@ -142,29 +164,31 @@ export default function LearnPage() {
       .finally(() => setLoadingPapers(false));
   }, [router]);
 
-  async function handlePickSubject(subj: string) {
+  async function handleStartPractice(topicId: string) {
     if (!userId) return;
     setStarting(true);
     setStartError("");
     try {
-      // Pick the first available paper for this subject
-      const subjectPapers = papers.filter((p) => p.subject === subj);
+      const subjectPapers = papers.filter((p) => p.subject === "Matematik");
       if (!subjectPapers.length) throw new Error("No papers");
       const paper = subjectPapers[0];
 
-      const diagRes = await startDiagnostic(userId, subj, paper.id);
-      const answers = diagRes.questions.map((q) => ({
-        question_id: q.id,
-        selected_option_index: 0,
-      }));
-      // Use first question directly — skip full diagnostic, just get a question
+      const diagRes = await startDiagnostic(userId, topicId, paper.id);
       const firstQ = diagRes.questions[0];
       sessionStorage.setItem("currentQuestion", JSON.stringify(firstQ));
       setQuestion(firstQ);
       setPrevDiff(firstQ.difficulty);
+      // Reset session stats for a fresh session
+      setCount(0);
+      setCorrect(0);
+      setSelected(null);
+      setResult(null);
+      setDiffShift(null);
+      setRecentAttempts([]);
+      setCorrectOptionIndex(-1);
       setView("practice");
     } catch {
-      setStartError("Could not load questions for this subject. Try another.");
+      setStartError("Tidak dapat memuatkan soalan. Cuba lagi.");
     } finally {
       setStarting(false);
     }
@@ -179,9 +203,6 @@ export default function LearnPage() {
       setCount((c) => c + 1);
       if (res.is_correct) setCorrect((c) => c + 1);
 
-      // Track attempt for learning context sent to StudyBuddy.
-      // correctOptionIndex: if answer was correct we know it; otherwise -1
-      // (the API doesn't return it, so StudyBuddy will infer from question text).
       const inferredCorrect = res.is_correct ? selected : -1;
       setCorrectOptionIndex(inferredCorrect);
       setRecentAttempts((prev) => [
@@ -201,7 +222,7 @@ export default function LearnPage() {
         setDiffShift(null);
       }
     } catch {
-      alert("Failed to submit. Please try again.");
+      alert("Penghantaran gagal. Sila cuba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -227,142 +248,84 @@ export default function LearnPage() {
         question.id,
         selected,
       );
-      // Update the result with the generated explanation
-      setResult({
-        ...result,
-        explanation,
-      });
+      setResult({ ...result, explanation });
     } catch {
-      alert("Failed to generate explanation. Please try again.");
+      alert("Gagal menjana penerangan. Sila cuba lagi.");
     } finally {
       setGeneratingExplanation(false);
     }
   }
 
+  // ── VIEW: Chapter picker ────────────────────────────────────────────
   if (view === "topics") {
     return (
       <section
         className="home-dashboard-shell page-enter"
-        aria-label="Learning hub"
+        aria-label="Latih — pilih bab"
       >
         <header className="student-header">
           <div className="student-header-copy">
-            <p className="student-time">Adaptive Practice</p>
-            <h1>What do you want to practise?</h1>
+            <p className="student-time">Latihan Adaptif</p>
+            <h1>Pilih Bab</h1>
             <div className="student-meta-row">
               <span>Matematik Tingkatan 5</span>
               <span aria-hidden="true">•</span>
-              <span>{MATH_F5_TOPICS.length} topics</span>
-              <span aria-hidden="true">•</span>
-              <span>
-                {loadingPapers ? "Loading" : `${papers.length} trial papers`}
-              </span>
+              <span>{MATH_F5_TOPICS.length} bab</span>
             </div>
           </div>
         </header>
 
-        <section className="level-card" aria-label="Choose a topic to practise">
-          <div className="level-card-content">
-            <p className="level-eyebrow">Learning Path</p>
-            {(() => {
-              const totalNodes = MATH_F5_TOPICS.reduce(
-                (s, t) => s + t.steps.length,
-                0,
-              );
-              const doneNodes = Object.values(nodeProgress).reduce(
-                (s, v) => s + v.done,
-                0,
-              );
-              const pct =
-                totalNodes > 0 ? Math.round((doneNodes / totalNodes) * 100) : 0;
-              const hasStarted = doneNodes > 0;
-              return (
-                <>
-                  <h2>
-                    {hasStarted
-                      ? `${doneNodes} of ${totalNodes} nodes unlocked`
-                      : "Start from a chapter and move into the subtopic map."}
-                  </h2>
-                  <div className="level-progress-row">
-                    <div className="level-progress-track" aria-hidden="true">
-                      <div
-                        className="level-progress-fill"
-                        style={{ width: `${pct}%` }}
-                      >
-                        <span className="level-progress-dot" />
-                      </div>
-                    </div>
-                    <span>
-                      {hasStarted
-                        ? `${pct}%`
-                        : `${MATH_F5_TOPICS.length} available`}
+        {/* Chapter list */}
+        <div className="lp-chapter-list">
+          {MATH_F5_TOPICS.map((topic) => {
+            const np = nodeProgress[topic.id] ?? {
+              done: 0,
+              total: topic.steps.length,
+            };
+            const pct =
+              np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+            return (
+              <button
+                key={topic.id}
+                type="button"
+                className={`lp-chapter-card lp-chapter-${topic.tone}`}
+                onClick={() => {
+                  setActiveTopic(topic);
+                  setView("subtopics");
+                }}
+              >
+                <div className="lp-chapter-left">
+                  <p className="lp-chapter-bab">{topic.bab}</p>
+                  <h2 className="lp-chapter-name">{topic.name}</h2>
+                  <p className="lp-chapter-desc">{topic.desc}</p>
+                  <div className="lp-chapter-tags">
+                    <span className="lp-tag">{topic.difficulty}</span>
+                    <span className="lp-tag">{topic.estimatedTime}</span>
+                    <span className="lp-tag">
+                      {topic.subtopics.length} subtopik
                     </span>
                   </div>
-                </>
-              );
-            })()}
-          </div>
-          <div className="level-trophy" aria-hidden="true">
-            <span className="learn-hub-chip">AI</span>
-          </div>
-        </section>
-
-        {loadingPapers ? (
-          <div className="home-learning-stack">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton-card skeleton-topic-card" />
-            ))}
-          </div>
-        ) : (
-          <div className="home-learning-stack">
-            {MATH_F5_TOPICS.map((topic, index) => {
-              const tone =
-                index === 0 ? "lesson" : index === 1 ? "game" : "path";
-              const np = nodeProgress[topic.id] ?? {
-                done: 0,
-                total: topic.steps.length,
-              };
-              const pct =
-                np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
-              const stat = topicStats.find((t) => t.topic_id === topic.id);
-              const level = stat?.level ?? null;
-              return (
-                <button
-                  key={topic.id}
-                  type="button"
-                  className={`learning-feature-card learning-feature-${tone} study-select-card`}
-                  onClick={() => handlePickSubject("Matematik")}
-                  disabled={starting}
-                >
-                  <div>
-                    <p className="learning-feature-kicker">
-                      Matematik Tingkatan 5
-                    </p>
-                    <h2>{topic.name}</h2>
-                    <p>{topic.desc}</p>
-                    <div className="learn-topic-progress-row">
-                      <div className="learn-topic-progress-track">
-                        <div
-                          className="learn-topic-progress-fill"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="learn-topic-progress-label">
-                        {np.done}/{np.total} nodes{level ? ` · ${level}` : ""}
-                      </span>
+                  <div className="lp-chapter-progress-row">
+                    <div className="lp-chapter-track">
+                      <div
+                        className="lp-chapter-fill"
+                        style={{ "--pct": `${pct}%` } as React.CSSProperties}
+                      />
                     </div>
+                    {pct === 0 ? (
+                      <span className="lp-chapter-cta">Mula →</span>
+                    ) : (
+                      <span className="lp-chapter-pct">{pct}%</span>
+                    )}
                   </div>
-
-                  <div className="feature-visual" aria-hidden="true">
-                    <div className="feature-blob feature-blob-large" />
-                    <div className="feature-blob feature-blob-small" />
-                    <div className="feature-mini-card">{topic.icon}</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
+                </div>
+                <div className="lp-chapter-icon" aria-hidden="true">
+                  {topic.icon}
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
         {startError && <p className="diag-error">{startError}</p>}
 
@@ -381,14 +344,11 @@ export default function LearnPage() {
               </span>
               <span>
                 <span className="home-action-label">
-                  Resume previous session
+                  Sambung sesi sebelumnya
                 </span>
                 <span className="home-action-sub">
-                  Continue where you left off
+                  Teruskan dari tempat anda berhenti
                 </span>
-              </span>
-              <span className="home-action-arrow" aria-hidden="true">
-                →
               </span>
             </button>
           </div>
@@ -397,11 +357,128 @@ export default function LearnPage() {
     );
   }
 
+  // ── VIEW: Subtopic picker ───────────────────────────────────────────
+  if (view === "subtopics" && activeTopic) {
+    return (
+      <section
+        className="home-dashboard-shell page-enter"
+        aria-label="Pilih subtopik"
+      >
+        <header className="student-header">
+          <div className="student-header-copy">
+            <button
+              type="button"
+              className="learn-back-btn"
+              onClick={() => setView("topics")}
+            >
+              ← Kembali
+            </button>
+            <p className="student-time">{activeTopic.bab}</p>
+            <h1>{activeTopic.name}</h1>
+            <div className="student-meta-row">
+              <span>{activeTopic.subtopics.length} subtopik</span>
+              <span aria-hidden="true">•</span>
+              <span>{activeTopic.difficulty}</span>
+              <span aria-hidden="true">•</span>
+              <span>{activeTopic.estimatedTime}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Practice all subtopics */}
+        <button
+          type="button"
+          className="lp-all-card"
+          onClick={() => {
+            setActiveSubtopicId(null);
+            handleStartPractice(activeTopic.id);
+          }}
+          disabled={starting}
+        >
+          <span className="lp-all-icon" aria-hidden="true">
+            ⚡
+          </span>
+          <div className="lp-all-body">
+            <p className="lp-all-title">Semua Subtopik</p>
+            <p className="lp-all-sub">
+              AI pilih soalan dari semua bahagian {activeTopic.name}
+            </p>
+          </div>
+          <span className="lp-arrow" aria-hidden="true">
+            →
+          </span>
+        </button>
+
+        <p className="lp-section-label">Atau pilih subtopik tertentu</p>
+
+        {/* Individual subtopics */}
+        <div className="lp-subtopic-list">
+          {activeTopic.subtopics.map((sub, idx) => (
+            <button
+              key={sub.id}
+              type="button"
+              className="lp-subtopic-row"
+              onClick={() => {
+                setActiveSubtopicId(sub.id);
+                handleStartPractice(activeTopic.id);
+              }}
+              disabled={starting}
+            >
+              <span className="lp-subtopic-num" aria-hidden="true">
+                {idx + 1}
+              </span>
+              <div className="lp-subtopic-body">
+                <p className="lp-subtopic-title">{sub.title}</p>
+                <p className="lp-subtopic-id">{sub.id}</p>
+              </div>
+              <span className="lp-arrow" aria-hidden="true">
+                →
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {startError && <p className="diag-error">{startError}</p>}
+        {starting && <p className="diag-sub">Memuatkan soalan…</p>}
+      </section>
+    );
+  }
+
+  // ── VIEW: Practice ──────────────────────────────────────────────────
   if (!question)
-    return <div className="page-enter diag-sub">Loading question…</div>;
+    return <div className="page-enter diag-sub">Memuatkan soalan…</div>;
 
   const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
-  const isReview = question.tags?.includes("review") ?? false;
+  const diff = question.difficulty ?? "easy";
+  const diffLabel: Record<string, string> = {
+    easy: "Mudah",
+    medium: "Sederhana",
+    hard: "Sukar",
+  };
+  const diffClass: Record<string, string> = {
+    easy: "learn-diff-easy",
+    medium: "learn-diff-medium",
+    hard: "learn-diff-hard",
+  };
+  const topicLabel =
+    question.topic_id === "matriks"
+      ? "Matriks"
+      : question.topic_id === "insurans"
+        ? "Insurans"
+        : "Ubahan";
+
+  // Show selected subtopic name if one was picked
+  const activeSubtopicTitle = activeSubtopicId
+    ? (activeTopic?.subtopics.find((s) => s.id === activeSubtopicId)?.title ??
+      null)
+    : null;
+
+  const topicDisplayName =
+    question.topic_id === "matriks"
+      ? "Matriks (Matrices)"
+      : question.topic_id === "insurans"
+        ? "Insurans (Insurance)"
+        : "Ubahan (Variation)";
 
   const bar = !result ? (
     <button
@@ -410,11 +487,11 @@ export default function LearnPage() {
       onClick={handleSubmit}
       disabled={selected === null || submitting}
     >
-      {submitting ? "Checking…" : "Submit Answer"}
+      {submitting ? "Menyemak…" : "Hantar Jawapan"}
     </button>
   ) : (
     <button type="button" className="btn-primary" onClick={handleNext}>
-      Next Question →
+      Soalan Seterusnya →
     </button>
   );
 
@@ -423,32 +500,33 @@ export default function LearnPage() {
       open={view === "practice"}
       bar={bar}
       onClose={() => {
-        setView("topics");
+        setView("subtopics");
         setResult(null);
         setSelected(null);
         setShowBuddy(false);
       }}
     >
+      {/* ── Session stats strip ── */}
       <div className="learn-stats">
         <div className="learn-stat">
-          <div className="learn-stat-label">Done</div>
+          <div className="learn-stat-label">Selesai</div>
           <div className="learn-stat-value">{count}</div>
         </div>
         <div className="learn-stat">
-          <div className="learn-stat-label">Correct</div>
+          <div className="learn-stat-label">Betul</div>
           <div className="learn-stat-value green">{correct}</div>
         </div>
         <div className="learn-stat">
-          <div className="learn-stat-label">Accuracy</div>
+          <div className="learn-stat-label">Ketepatan</div>
           <div
-            className={`learn-stat-value ${accuracy >= 60 ? "green" : "red"}`}
+            className={`learn-stat-value ${count === 0 ? "" : accuracy >= 60 ? "green" : "red"}`}
           >
             {count > 0 ? `${accuracy}%` : "—"}
           </div>
         </div>
         {result?.skill_summary && (
           <div className="learn-stat">
-            <div className="learn-stat-label">Level</div>
+            <div className="learn-stat-label">Tahap</div>
             <div className="learn-stat-value brand">
               {result.skill_summary.level}
             </div>
@@ -456,25 +534,27 @@ export default function LearnPage() {
         )}
       </div>
 
-      <div className="learn-ai-cues">
-        {diffShift && <AiBadge variant={diffShift} />}
-        {isReview && <AiBadge variant="review" />}
-        {result?.explanation && (
-          <AiBadge
-            variant="style"
-            label={`Explanation: ${result.explanation.style.replace(/_/g, " ")}`}
-          />
+      {/* ── Question context row ── */}
+      <div className="learn-meta-row">
+        <span className="learn-meta-topic">
+          {activeSubtopicTitle ?? topicLabel}
+        </span>
+        <span className="learn-meta-sep" aria-hidden="true">
+          ·
+        </span>
+        <span
+          className={`learn-meta-diff ${diffClass[diff] ?? diffClass.easy}`}
+        >
+          {diffLabel[diff] ?? diff}
+        </span>
+        {diffShift && (
+          <span className="learn-meta-shift">
+            {diffShift === "up" ? "↑ Naik tahap" : "↓ Turun tahap"}
+          </span>
         )}
       </div>
-      <div className="learn-actions">
-        <button
-          className="btn-primary"
-          onClick={() => router.push("/assessment")}
-        >
-          View Your Progress
-        </button>
-      </div>
 
+      {/* ── Question card ── */}
       <QuestionCard
         question={question}
         selectedOptionIndex={selected}
@@ -482,9 +562,10 @@ export default function LearnPage() {
         showResult={result !== null}
         isCorrect={result?.is_correct}
         correctOptionIndex={result ? 0 : undefined}
-        isReview={isReview}
+        isReview={false}
       />
 
+      {/* ── Explanation shown after answering ── */}
       {result && (
         <ExplanationBlock
           explanation={result.explanation}
@@ -494,19 +575,14 @@ export default function LearnPage() {
         />
       )}
 
-      {/* Inline AI chat bar — always visible below the question */}
+      {/* ── Inline AI chat ── */}
       {userId && (
         <InlineChatBar
           userId={userId}
           learningContext={{
             topicId: (question.topic_id ??
               "ubahan") as LearningContext["topicId"],
-            topicName:
-              question.topic_id === "matriks"
-                ? "Matriks (Matrices)"
-                : question.topic_id === "insurans"
-                  ? "Insurans (Insurance)"
-                  : "Ubahan (Variation)",
+            topicName: topicDisplayName,
             currentQuestion: {
               id: question.id,
               text: question.text,
@@ -527,7 +603,7 @@ export default function LearnPage() {
         />
       )}
 
-      {/* Full-screen drawer */}
+      {/* ── Full-screen StudyBuddy drawer ── */}
       {userId && (
         <StudyBuddyChat
           userId={userId}
@@ -536,12 +612,7 @@ export default function LearnPage() {
           learningContext={{
             topicId: (question.topic_id ??
               "ubahan") as LearningContext["topicId"],
-            topicName:
-              question.topic_id === "matriks"
-                ? "Matriks (Matrices)"
-                : question.topic_id === "insurans"
-                  ? "Insurans (Insurance)"
-                  : "Ubahan (Variation)",
+            topicName: topicDisplayName,
             currentQuestion: {
               id: question.id,
               text: question.text,
@@ -565,7 +636,7 @@ export default function LearnPage() {
 }
 
 // ---------------------------------------------------------------------------
-// InlineChatBar — embedded AI chat panel shown inside the quiz view
+// InlineChatBar
 // ---------------------------------------------------------------------------
 
 interface InlineChatBarProps {
@@ -588,7 +659,6 @@ function InlineChatBar({
   const chips = getChipsForContext(learningContext);
 
   useEffect(() => {
-    // Reset conversation when question changes
     setMessages([]);
     setInput("");
   }, [learningContext.currentQuestion?.id]);
@@ -641,7 +711,6 @@ function InlineChatBar({
 
   return (
     <div className="icb-wrap">
-      {/* Header */}
       <div className="icb-header">
         <span className="icb-avatar" aria-hidden="true">
           🤖
@@ -657,7 +726,6 @@ function InlineChatBar({
         </button>
       </div>
 
-      {/* Message thread — only shown once there are messages */}
       {messages.length > 0 && (
         <div className="icb-messages">
           {messages.map((m, i) => (
@@ -682,7 +750,6 @@ function InlineChatBar({
         </div>
       )}
 
-      {/* Input */}
       <div className="icb-input-wrap">
         <textarea
           ref={inputRef}
@@ -712,7 +779,6 @@ function InlineChatBar({
         </button>
       </div>
 
-      {/* Chips */}
       <div className="icb-chips">
         {chips.map((chip) => (
           <button

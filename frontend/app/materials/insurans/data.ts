@@ -1,4 +1,4 @@
-export type StepType = "Content" | "Exercise" | "Assessment";
+﻿export type StepType = "Content" | "Exercise" | "Assessment";
 
 export type Subtopic = {
   id: string;
@@ -26,18 +26,18 @@ export const INSURANS_SUBTOPICS: Subtopic[] = [
     id: "3.1",
     title: "Risiko dan Perlindungan Insurans",
     meaning:
-      "Bab ini memfokuskan kepada pengurusan risiko dan perlindungan kewangan melalui insurans.",
-    relation: "Risiko ialah kemungkinan berlakunya musibah yang melibatkan kerugian kewangan.",
+      "Subtopik ini menerangkan pengurusan risiko dan perlindungan kewangan melalui insurans.",
+    relation: "Risiko ialah kemungkinan berlakunya musibah yang menyebabkan kerugian kewangan.",
     equation:
-      "Konsep utama: Risiko dipindahkan daripada individu kepada syarikat insurans melalui kontrak polisi.",
+      "Konsep utama: risiko dipindahkan daripada individu kepada syarikat insurans melalui kontrak polisi.",
   },
   {
     id: "3.2",
     title: "Jenis Insurans",
     meaning:
-      "Insurans hayat memberi manfaat kewangan sekiranya berlaku kematian, hilang upaya, atau penyakit kritikal.",
+      "Insurans hayat memberi manfaat kewangan apabila berlaku kematian, hilang upaya, atau penyakit kritikal.",
     relation:
-      "Insurans am melindungi daripada kerugian harta benda dan liabiliti.",
+      "Insurans am melindungi kerugian melibatkan harta benda dan liabiliti.",
     generalForm:
       "Contoh insurans am: insurans motor, kebakaran, perubatan dan kesihatan, kemalangan diri, dan perjalanan.",
   },
@@ -47,13 +47,19 @@ export const INSURANS_SUBTOPICS: Subtopic[] = [
     meaning:
       "Premium ialah jumlah wang yang dibayar untuk mendapatkan perlindungan insurans.",
     equation:
-      "Formula premium: Premium = (Nilai Muka ÷ RM x) × Kadar Premium bagi setiap RM x.",
+      "Formula premium: $$\\text{Premium} = \\left(\\frac{\\text{Nilai Muka}}{\\text{RM }x}\\right) \\times \\text{Kadar Premium bagi setiap RM }x$$.",
     relation:
       "Deduktibel ialah amaun yang ditanggung sendiri sebelum pampasan dibayar oleh syarikat insurans.",
     generalForm:
       "Ko-insurans ialah perkongsian kos kerugian antara syarikat insurans dan pemegang polisi mengikut peratusan tertentu.",
   },
 ];
+
+function labelJenis(type: StepType): string {
+  if (type === "Content") return "Kandungan";
+  if (type === "Exercise") return "Latihan";
+  return "Pentaksiran";
+}
 
 export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopic, index) => {
   const baseNo = index * 4;
@@ -63,7 +69,7 @@ export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopi
       no: baseNo + 1,
       subtopicId: subtopic.id,
       type: "Content",
-      title: `Learning content subtopic ${subtopic.id}`,
+      title: `${labelJenis("Content")} ${subtopic.id}`,
       prompt: `Baca dan fahami konsep ${subtopic.title}.`,
     },
     {
@@ -71,9 +77,9 @@ export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopi
       no: baseNo + 2,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `Exercise subtopic ${subtopic.id}`,
+      title: `${labelJenis("Exercise")} ${subtopic.id}`,
       prompt: `Kenal pasti konsep utama bagi ${subtopic.title}.`,
-      task: "Tentukan maksud, fungsi, atau tujuan insurans berdasarkan subtopic ini.",
+      task: "Nyatakan maksud, fungsi, atau tujuan insurans berdasarkan subtopik ini.",
       answer: "Semak definisi dan kaitan konsep dengan pengurusan risiko kewangan.",
     },
     {
@@ -81,20 +87,20 @@ export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopi
       no: baseNo + 3,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `Exercise subtopic ${subtopic.id}`,
+      title: `${labelJenis("Exercise")} ${subtopic.id}`,
       prompt: `Gunakan kaedah ${subtopic.title} untuk menyelesaikan soalan.`,
-      task: "Laksanakan langkah pengiraan atau pemilihan jenis insurans yang sesuai mengikut situasi.",
-      answer: "Pastikan formula, istilah, dan justifikasi pilihan digunakan dengan tepat.",
+      task: "Laksanakan pengiraan atau pilih jenis insurans yang sesuai berdasarkan situasi diberi.",
+      answer: "Pastikan formula, istilah, dan alasan pilihan digunakan dengan tepat.",
     },
     {
       id: `${subtopic.id}-assessment`,
       no: baseNo + 4,
       subtopicId: subtopic.id,
       type: "Assessment",
-      title: `Assessment subtopic ${subtopic.id}`,
-      prompt: `Uji penguasaan ${subtopic.title}.`,
-      task: "Jawab set soalan campuran konsep, jenis insurans, dan pengiraan.",
-      answer: "Fokus pada ketepatan istilah, formula premium, serta tafsiran deduktibel dan ko-insurans.",
+      title: `${labelJenis("Assessment")} ${subtopic.id}`,
+      prompt: `Uji penguasaan anda bagi ${subtopic.title}.`,
+      task: "Jawab soalan campuran konsep, jenis insurans, dan pengiraan.",
+      answer: "Tumpukan pada ketepatan istilah, formula premium, serta tafsiran deduktibel dan ko-insurans.",
     },
   ];
 });

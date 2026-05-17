@@ -10,7 +10,7 @@ import type { LearningContext } from "@/lib/types";
 
 const DEFAULT_STUDENT = {
   name: "Pelajar",
-  form: "Form 5",
+  form: "Tingkatan 5",
   streak: 1,
 };
 
@@ -88,7 +88,7 @@ function HomeDashboard() {
     <>
       <section
         className="home-dashboard-shell page-enter"
-        aria-label="Student home dashboard"
+        aria-label="Papan pemuka pelajar"
       >
         <StudentHeader />
         <LevelProgressCard />
@@ -139,7 +139,7 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Hello, {name}</h1>
+        <h1>Helo, {name}</h1>
         <div className="student-meta-row">
           <span>{DEFAULT_STUDENT.form}</span>
           <span aria-hidden="true">•</span>
@@ -151,14 +151,21 @@ function StudentHeader() {
         <button
           className="notification-button"
           type="button"
-          aria-label="Open notifications"
+          aria-label="Buka notifikasi"
         >
           <BellIcon />
           <span
             className="notification-dot"
-            aria-label="Unread notifications"
+            aria-label="Notifikasi belum dibaca"
           />
         </button>
+        <a
+          href="/profile"
+          className="profile-avatar-btn"
+          aria-label="Profil saya"
+        >
+          <ProfileIcon />
+        </a>
       </div>
     </header>
   );
@@ -168,15 +175,15 @@ function LevelProgressCard() {
   const xp = useXpState();
   const level = xpToLevel(xp);
   const progress = xpProgress(xp);
-  const levelLabel = progress === 0 && xp === 0 ? "This is your first step to greatness!" : `${XP_PER_LEVEL - (xp % XP_PER_LEVEL)} XP to Level ${level + 1}`;
+  const levelLabel = progress === 0 && xp === 0 ? "Ini langkah pertama kamu menuju kejayaan!" : `${XP_PER_LEVEL - (xp % XP_PER_LEVEL)} XP ke Tahap ${level + 1}`;
 
   return (
     <section
       className="level-card"
-      aria-label={`Level ${level} progress`}
+      aria-label={`Kemajuan Tahap ${level}`}
     >
       <div className="level-card-content">
-        <p className="level-eyebrow">Level {level}</p>
+        <p className="level-eyebrow">Tahap {level}</p>
         <h2>{levelLabel}</h2>
         <div className="level-progress-row">
           <div className="level-progress-track" aria-hidden="true">
@@ -531,6 +538,14 @@ function BellIcon() {
     <IconBase>
       <path d="M18 10.5a6 6 0 0 0-12 0v2.8L4.8 16h14.4L18 13.3v-2.8Z" />
       <path d="M10 18a2 2 0 0 0 4 0" />
+    </IconBase>
+  );
+}
+
+function ProfileIcon() {
+  return (
+    <IconBase>
+      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </IconBase>
   );
 }

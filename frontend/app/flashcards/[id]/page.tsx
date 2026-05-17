@@ -46,7 +46,7 @@ function CardFace({ card, isFlipped, onFlip }: CardFaceProps) {
       style={{ perspective: "1200px" }}
       onClick={onFlip}
       role="button"
-      aria-label={isFlipped ? "Show question" : "Reveal answer"}
+      aria-label={isFlipped ? "Tunjuk soalan" : "Dedahkan jawapan"}
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onFlip()}
     >
@@ -65,12 +65,12 @@ function CardFace({ card, isFlipped, onFlip }: CardFaceProps) {
           style={{ backfaceVisibility: "hidden" }}
         >
           <span className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">
-            Question
+            Soalan
           </span>
           <p className="text-center text-lg font-medium text-gray-800 leading-snug">
             {card.question}
           </p>
-          <span className="mt-4 text-xs text-gray-400">Tap to reveal answer</span>
+          <span className="mt-4 text-xs text-gray-400">Ketik untuk dedahkan jawapan</span>
         </div>
 
         {/* Back — Answer */}
@@ -79,12 +79,12 @@ function CardFace({ card, isFlipped, onFlip }: CardFaceProps) {
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <span className="mb-3 text-xs font-semibold uppercase tracking-widest text-indigo-200">
-            Answer
+            Jawapan
           </span>
           <p className="text-center text-lg font-semibold text-white leading-snug">
             {card.answer}
           </p>
-          <span className="mt-4 text-xs text-indigo-300">Tap to flip back</span>
+          <span className="mt-4 text-xs text-indigo-300">Ketik untuk balik semula</span>
         </div>
       </div>
     </div>
@@ -115,7 +115,7 @@ export default function FlashcardStudyPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError("Could not load flashcards. Please try again.");
+        setError("Tidak dapat memuatkan kad imbas. Sila cuba lagi.");
         setLoading(false);
       });
   }, [setId]);
@@ -125,7 +125,7 @@ export default function FlashcardStudyPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Loading flashcards…</p>
+          <p className="text-gray-500 text-sm">Memuatkan kad imbas…</p>
         </div>
       </div>
     );
@@ -135,12 +135,12 @@ export default function FlashcardStudyPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="text-center">
-          <p className="text-red-500 font-medium mb-4">{error ?? "Set not found."}</p>
+          <p className="text-red-500 font-medium mb-4">{error ?? "Set tidak dijumpai."}</p>
           <button
             onClick={() => router.back()}
             className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold"
           >
-            Go back
+            Kembali
           </button>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function FlashcardStudyPage() {
         <button
           onClick={() => router.back()}
           className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-          aria-label="Back"
+          aria-label="Kembali"
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -180,7 +180,7 @@ export default function FlashcardStudyPage() {
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-bold text-gray-900 truncate">{flashcardSet.title}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">{total} cards</p>
+          <p className="text-xs text-gray-400 mt-0.5">{total} kad</p>
         </div>
         <TopicChip topicId={flashcardSet.topic_id} />
       </header>
@@ -190,7 +190,7 @@ export default function FlashcardStudyPage() {
         {/* Progress bar */}
         <div className="w-full mb-6">
           <div className="flex justify-between text-xs text-gray-400 mb-1">
-            <span>Card {currentIndex + 1} of {total}</span>
+            <span>Kad {currentIndex + 1} daripada {total}</span>
             <span>{Math.round(((currentIndex + 1) / total) * 100)}%</span>
           </div>
           <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -215,7 +215,7 @@ export default function FlashcardStudyPage() {
               className={`w-2 h-2 rounded-full transition-all ${
                 i === currentIndex ? "bg-indigo-500 w-4" : "bg-gray-300"
               }`}
-              aria-label={`Go to card ${i + 1}`}
+              aria-label={`Pergi ke kad ${i + 1}`}
             />
           ))}
         </div>
@@ -234,7 +234,7 @@ export default function FlashcardStudyPage() {
             onClick={handleFlip}
             className="px-5 py-3 rounded-2xl bg-indigo-600 text-white font-semibold text-sm shadow-sm hover:bg-indigo-700 transition-colors"
           >
-            Flip
+            Balik
           </button>
 
           <button
@@ -250,12 +250,12 @@ export default function FlashcardStudyPage() {
         {currentIndex === total - 1 && (
           <div className="mt-8 w-full rounded-2xl bg-green-50 border border-green-200 p-5 text-center">
             <p className="text-2xl mb-1">🎉</p>
-            <p className="font-semibold text-green-800">You've reviewed all {total} cards!</p>
+            <p className="font-semibold text-green-800">Anda telah mengulangkaji semua {total} kad!</p>
             <button
               onClick={() => { setCurrentIndex(0); setIsFlipped(false); }}
               className="mt-3 px-5 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors"
             >
-              Start over
+              Mula semula
             </button>
           </div>
         )}

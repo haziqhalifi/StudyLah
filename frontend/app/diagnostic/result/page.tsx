@@ -29,9 +29,9 @@ function levelBadgeClass(level: "weak" | "okay" | "strong") {
 }
 
 function levelLabel(level: "weak" | "okay" | "strong") {
-  if (level === "strong") return "Strong";
-  if (level === "okay") return "Okay";
-  return "Needs work";
+  if (level === "strong") return "Kukuh";
+  if (level === "okay") return "Sederhana";
+  return "Perlu usaha";
 }
 
 function summaryInterpretation(overallAccuracy: number, topics: TopicDiagnostic[]) {
@@ -39,23 +39,23 @@ function summaryInterpretation(overallAccuracy: number, topics: TopicDiagnostic[
   const okayTopics = topics.filter((t) => t.level === "okay").map((t) => t.topicName);
   const strongTopics = topics.filter((t) => t.level === "strong").map((t) => t.topicName);
 
-  if (strongTopics.length === topics.length) return "You're off to a great start across all topics!";
+  if (strongTopics.length === topics.length) return "Hebat! Anda mula dengan baik dalam semua topik!";
   if (weakTopics.length === 0 && okayTopics.length > 0)
-    return `You're doing well — focus on polishing ${okayTopics.join(" and ")} to level up.`;
+    return `Bagus! Fokus pada ${okayTopics.join(" dan ")} untuk naik tahap.`;
   if (weakTopics.length > 0 && okayTopics.length === 0 && strongTopics.length === 0)
-    return `We'll focus on building your basics in ${weakTopics.join(", ")}.`;
+    return `Kita akan fokus membina asas anda dalam ${weakTopics.join(", ")}.`;
 
   const parts: string[] = [];
-  if (strongTopics.length > 0) parts.push(`strong in ${strongTopics.join(", ")}`);
-  if (okayTopics.length > 0) parts.push(`okay in ${okayTopics.join(", ")}`);
-  if (weakTopics.length > 0) parts.push(`${weakTopics.join(" and ")} need more practice`);
-  return `You're ${parts.join(", but ")}.`;
+  if (strongTopics.length > 0) parts.push(`kukuh dalam ${strongTopics.join(", ")}`);
+  if (okayTopics.length > 0) parts.push(`sederhana dalam ${okayTopics.join(", ")}`);
+  if (weakTopics.length > 0) parts.push(`${weakTopics.join(" dan ")} perlu lebih latihan`);
+  return `Anda ${parts.join(", tetapi ")}.`;
 }
 
 function friendlyHeadline(overallAccuracy: number) {
-  if (overallAccuracy >= 0.8) return "Excellent work! Here's your starting point.";
-  if (overallAccuracy >= 0.5) return "Good job! Here's your starting point.";
-  return "Nice effort! Here's your starting point.";
+  if (overallAccuracy >= 0.8) return "Kerja yang cemerlang! Inilah titik permulaan anda.";
+  if (overallAccuracy >= 0.5) return "Bagus! Inilah titik permulaan anda.";
+  return "Usaha yang baik! Inilah titik permulaan anda.";
 }
 
 // ---------------------------------------------------------------------------
@@ -129,12 +129,12 @@ function TopicCard({ topic }: { topic: TopicDiagnostic }) {
                   letterSpacing: "0.03em",
                 }}
               >
-                High priority
+                Keutamaan tinggi
               </span>
             )}
           </div>
           <p style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "0.6rem" }}>
-            {pct}% correct &middot; {topic.attempts} question{topic.attempts !== 1 ? "s" : ""}
+            {pct}% betul &middot; {topic.attempts} soalan
           </p>
           {/* Accuracy bar */}
           <div
@@ -223,7 +223,7 @@ function RecommendationCard({
           marginBottom: "0.3rem",
         }}
       >
-        {isPrimary ? "Coach recommends" : "Then try"}
+        {isPrimary ? "Jurulatih cadangkan" : "Cuba juga"}
       </p>
       <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--ink)", marginBottom: "0.4rem" }}>
         {rec.title}
@@ -239,10 +239,10 @@ function RecommendationCard({
         style={{ width: "100%" }}
       >
         {starting
-          ? "Creating quiz…"
+          ? "Mencipta kuiz…"
           : isPrimary
-          ? `Start ${topicName} quiz now →`
-          : `Do ${topicName} later`}
+          ? `Mula kuiz ${topicName} sekarang →`
+          : `Buat ${topicName} kemudian`}
       </button>
     </div>
   );
@@ -273,7 +273,7 @@ export default function DiagnosticResultPage() {
       const data = await fetchDiagnosticResult(userId);
       setResult(data);
     } catch {
-      setError("I couldn't load your diagnostic results. Please try again.");
+      setError("Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi.");
     } finally {
       setLoading(false);
     }
@@ -301,7 +301,7 @@ export default function DiagnosticResultPage() {
       router.push(`/quiz/${quiz.quizId}`);
     } catch {
       setStartingTopicId(null);
-      setError("Failed to create quiz. Please try again.");
+      setError("Gagal mencipta kuiz. Sila cuba lagi.");
     }
   }
 
@@ -340,13 +340,13 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.5rem",
           }}
         >
-          Something went wrong
+          Ada masalah berlaku
         </h2>
         <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-          {error || "I couldn't load your diagnostic results. Please try again."}
+          {error || "Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi."}
         </p>
         <button type="button" className="btn-primary" onClick={load}>
-          Try again
+          Cuba lagi
         </button>
       </div>
     );
@@ -377,14 +377,14 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.5rem",
           }}
         >
-          Diagnostic complete
+          Diagnostik selesai
         </h1>
         <p style={{ color: "var(--ink-2)", fontSize: "0.95rem", marginBottom: "0.3rem" }}>
-          You got{" "}
+          Anda mendapat{" "}
           <strong>
-            {result.correctQuestions} out of {result.totalQuestions}
+            {result.correctQuestions} daripada {result.totalQuestions}
           </strong>{" "}
-          questions correct ({pctCorrect}%).
+          soalan betul ({pctCorrect}%).
         </p>
         <p style={{ color: "var(--muted)", fontSize: "0.88rem", lineHeight: 1.5 }}>
           {summaryInterpretation(result.overallAccuracy, result.topics)}
@@ -403,7 +403,7 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.75rem",
           }}
         >
-          Your topic results
+          Keputusan topik anda
         </h2>
         {result.topics.map((topic) => (
           <TopicCard key={topic.topicId} topic={topic} />
@@ -422,7 +422,7 @@ export default function DiagnosticResultPage() {
             marginBottom: "0.75rem",
           }}
         >
-          Personalised next steps
+          Langkah seterusnya yang diperibadikan
         </h2>
 
         <RecommendationCard
@@ -461,7 +461,7 @@ export default function DiagnosticResultPage() {
           disabled={!!startingTopicId}
           onClick={() => handleStartQuiz(result.mainRecommendation.topicId)}
         >
-          {isStartingMain ? "Creating quiz…" : "Start personalised practice →"}
+          {isStartingMain ? "Mencipta kuiz…" : "Mula latihan diperibadikan →"}
         </button>
 
         <button
@@ -470,7 +470,7 @@ export default function DiagnosticResultPage() {
           onClick={() => router.push("/dashboard")}
           style={{ textAlign: "center" }}
         >
-          Go to dashboard
+          Pergi ke papan pemuka
         </button>
 
         <button
@@ -487,7 +487,7 @@ export default function DiagnosticResultPage() {
             padding: "0.25rem",
           }}
         >
-          View detailed breakdown →
+          Lihat pecahan terperinci →
         </button>
       </div>
 

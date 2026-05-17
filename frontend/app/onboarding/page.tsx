@@ -28,14 +28,35 @@ const LETTERS = ["A", "B", "C", "D"];
 const FEEDBACK_MS = 1500;
 
 const DIALOGUES: Record<string, string[]> = {
-  welcome:       ["Hi! I'm Lah, your study buddy! 🦉", "Let's see what you already know!"],
-  profile:       ["Tell me about yourself!", "I'll make your lessons extra personal 😊"],
-  quiz_start:    ["First question — let's go! 🚀"],
-  quiz_correct:  ["Amazing! You got it! 🎉", "Correct! You're on fire! 🔥", "Yes! Keep it up! ⭐", "Brilliant work! 💪"],
-  quiz_wrong:    ["Oops! No worries, keep going! 💪", "Not quite — but that's how we learn! 📚", "Mistakes make us stronger! 🌱"],
-  quiz_mid:      ["Halfway there! 🎯", "Almost done! Keep the momentum! ⚡"],
-  analyzing:     ["Let me look at your answers... 🔍", "Analysing with Google AI! 🧮"],
-  result:        ["Your personalised path is ready! 🚀", "Check out your diagnosis! 📊"],
+  welcome: [
+    "Hi! I'm Lah, your study buddy! 🦉",
+    "Let's see what you already know!",
+  ],
+  profile: [
+    "Tell me about yourself!",
+    "I'll make your lessons extra personal 😊",
+  ],
+  quiz_start: ["First question — let's go! 🚀"],
+  quiz_correct: [
+    "Amazing! You got it! 🎉",
+    "Correct! You're on fire! 🔥",
+    "Yes! Keep it up! ⭐",
+    "Brilliant work! 💪",
+  ],
+  quiz_wrong: [
+    "Oops! No worries, keep going! 💪",
+    "Not quite — but that's how we learn! 📚",
+    "Mistakes make us stronger! 🌱",
+  ],
+  quiz_mid: ["Halfway there! 🎯", "Almost done! Keep the momentum! ⚡"],
+  analyzing: [
+    "Let me look at your answers... 🔍",
+    "Analysing with Google AI! 🧮",
+  ],
+  result: [
+    "Your personalised path is ready! 🚀",
+    "Check out your diagnosis! 📊",
+  ],
 };
 
 function pick(arr: string[]) {
@@ -43,28 +64,34 @@ function pick(arr: string[]) {
 }
 
 function topicTier(accuracy: number): { label: string; cls: string } {
-  if (accuracy >= 0.75) return { label: "✓ MASTERED",      cls: "strong" };
-  if (accuracy >= 0.5)  return { label: "○ GETTING THERE", cls: "medium" };
-  return                       { label: "↑ NEEDS WORK",    cls: "weak"   };
+  if (accuracy >= 0.75) return { label: "✓ MASTERED", cls: "strong" };
+  if (accuracy >= 0.5) return { label: "○ GETTING THERE", cls: "medium" };
+  return { label: "↑ NEEDS WORK", cls: "weak" };
 }
 
 function topicEmoji(topic: string) {
-  if (topic.toLowerCase().includes("ubahan"))  return "📐";
+  if (topic.toLowerCase().includes("ubahan")) return "📐";
   if (topic.toLowerCase().includes("matriks")) return "🔢";
   if (topic.toLowerCase().includes("insurans")) return "📋";
   return "📘";
 }
 
 function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
-  const weakest = [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic?.toLowerCase() ?? "";
-  if (weakest.includes("ubahan"))  return "/materials/ubahan/subtopics";
+  const weakest =
+    [...diag.by_topic]
+      .sort((a, b) => a.accuracy - b.accuracy)[0]
+      ?.topic?.toLowerCase() ?? "";
+  if (weakest.includes("ubahan")) return "/materials/ubahan/subtopics";
   if (weakest.includes("matriks")) return "/materials/matriks/subtopics";
   if (weakest.includes("insurans")) return "/materials/insurans/subtopics";
   return "/materials";
 }
 
 function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
-  return [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ?? "Lessons";
+  return (
+    [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ??
+    "Lessons"
+  );
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -72,28 +99,30 @@ function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
 export default function OnboardingPage() {
   const router = useRouter();
 
-  const [step, setStep]       = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>("welcome");
   const [dialogue, setDialogue] = useState(pick(DIALOGUES.welcome));
   const [dialogueKey, setDialogueKey] = useState(0);
 
   // Profile
-  const [name, setName]     = useState("");
+  const [name, setName] = useState("");
   const [school, setSchool] = useState("");
-  const [form, setForm]     = useState("4");
-  const [error, setError]   = useState("");
+  const [form, setForm] = useState("4");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Quiz
-  const [sessionId, setSessionId]   = useState("");
-  const [questions, setQuestions]   = useState<OnboardingQuestion[]>([]);
-  const [qIndex, setQIndex]         = useState(0);
-  const [qKey, setQKey]             = useState(0);
+  const [sessionId, setSessionId] = useState("");
+  const [questions, setQuestions] = useState<OnboardingQuestion[]>([]);
+  const [qIndex, setQIndex] = useState(0);
+  const [qKey, setQKey] = useState(0);
   const [slotStates, setSlotStates] = useState<Record<number, SlotState>>({});
-  const [score, setScore]           = useState(0);
+  const [score, setScore] = useState(0);
   const answersRef = useRef<Record<string, number>>({});
 
   // Result
-  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(null);
+  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(
+    null,
+  );
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -103,9 +132,10 @@ export default function OnboardingPage() {
   }
 
   const progress = (() => {
-    if (step === "welcome")   return 0;
-    if (step === "profile")   return 4;
-    if (step === "quiz")      return 8 + Math.round((qIndex / (questions.length || 10)) * 88);
+    if (step === "welcome") return 0;
+    if (step === "profile") return 4;
+    if (step === "quiz")
+      return 8 + Math.round((qIndex / (questions.length || 10)) * 88);
     if (step === "analyzing") return 98;
     return 100;
   })();
@@ -131,7 +161,11 @@ export default function OnboardingPage() {
       sessionStorage.setItem("onboardingForm", form);
 
       await createUser(userId, name.trim());
-      const res = await startOnboarding(name.trim(), school.trim(), Number(form));
+      const res = await startOnboarding(
+        name.trim(),
+        school.trim(),
+        Number(form),
+      );
 
       setSessionId(res.session_id);
       setQuestions(res.questions);
@@ -143,7 +177,9 @@ export default function OnboardingPage() {
       setStep("quiz");
       showDialogue("quiz_start");
     } catch {
-      setError("Unable to start onboarding. Check your connection and try again.");
+      setError(
+        "Unable to start onboarding. Check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -173,7 +209,13 @@ export default function OnboardingPage() {
         const next = qIndex + 1;
         setQIndex(next);
         setQKey((k) => k + 1);
-        showDialogue(next === Math.floor(questions.length / 2) ? "quiz_mid" : (isCorrect ? "quiz_correct" : "quiz_wrong"));
+        showDialogue(
+          next === Math.floor(questions.length / 2)
+            ? "quiz_mid"
+            : isCorrect
+              ? "quiz_correct"
+              : "quiz_wrong",
+        );
       }
     }, FEEDBACK_MS);
   }
@@ -207,13 +249,14 @@ export default function OnboardingPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const currentQ     = questions[qIndex];
-  const currentSlot  = slotStates[qIndex];
+  const currentQ = questions[qIndex];
+  const currentSlot = slotStates[qIndex];
 
   function optionClass(idx: number) {
     if (!currentSlot?.revealed) return "ob-option";
-    if (idx === currentQ?.correct_index)                          return "ob-option ob-correct";
-    if (idx === currentSlot.selected && !currentSlot.isCorrect)   return "ob-option ob-wrong";
+    if (idx === currentQ?.correct_index) return "ob-option ob-correct";
+    if (idx === currentSlot.selected && !currentSlot.isCorrect)
+      return "ob-option ob-wrong";
     return "ob-option ob-dimmed";
   }
 
@@ -244,22 +287,42 @@ export default function OnboardingPage() {
       {/* ── WELCOME ────────────────────────────────────────────────────────── */}
       {step === "welcome" && (
         <>
-          <h1 className="ob-welcome-title">Let&apos;s find out what you know! 🎓</h1>
+          <h1 className="ob-welcome-title">
+            Let&apos;s find out what you know! 🎓
+          </h1>
           <p className="ob-welcome-sub">
             Answer 10 quick questions so we can personalise your SPM Matematik
             learning journey. It only takes a few minutes!
           </p>
 
           {/* Topic preview chips */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "2rem", alignSelf: "flex-start" }}>
-            {[["Ubahan", "📐"], ["Matriks", "🔢"], ["Insurans", "📋"]].map(([label, emoji]) => (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.5rem",
+              marginBottom: "2rem",
+              alignSelf: "flex-start",
+            }}
+          >
+            {[
+              ["Ubahan", "📐"],
+              ["Matriks", "🔢"],
+              ["Insurans", "📋"],
+            ].map(([label, emoji]) => (
               <span
                 key={label}
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                  background: "white", border: "1.5px solid var(--brand-muted)",
-                  borderRadius: "999px", padding: "0.3rem 0.85rem",
-                  fontSize: "0.82rem", fontWeight: 600, color: "var(--ink-2)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.3rem",
+                  background: "white",
+                  border: "1.5px solid var(--brand-muted)",
+                  borderRadius: "999px",
+                  padding: "0.3rem 0.85rem",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  color: "var(--ink-2)",
                 }}
               >
                 {emoji} {label}
@@ -268,7 +331,14 @@ export default function OnboardingPage() {
           </div>
 
           <div className="ob-sticky-cta">
-            <button type="button" className="btn-primary" onClick={() => { setStep("profile"); showDialogue("profile"); }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setStep("profile");
+                showDialogue("profile");
+              }}
+            >
               Let&apos;s Start! 🚀
             </button>
           </div>
@@ -279,11 +349,15 @@ export default function OnboardingPage() {
       {step === "profile" && (
         <>
           <h2 className="ob-section-title">Tell us about yourself</h2>
-          <p className="ob-section-sub">We&apos;ll personalise your experience just for you.</p>
+          <p className="ob-section-sub">
+            We&apos;ll personalise your experience just for you.
+          </p>
 
           <div className="ob-form">
             <div className="ob-field">
-              <label className="ob-label" htmlFor="ob-name">Your Name</label>
+              <label className="ob-label" htmlFor="ob-name">
+                Your Name
+              </label>
               <input
                 id="ob-name"
                 className="ob-input"
@@ -295,7 +369,9 @@ export default function OnboardingPage() {
               />
             </div>
             <div className="ob-field">
-              <label className="ob-label" htmlFor="ob-school">School</label>
+              <label className="ob-label" htmlFor="ob-school">
+                School
+              </label>
               <input
                 id="ob-school"
                 className="ob-input"
@@ -307,7 +383,9 @@ export default function OnboardingPage() {
               />
             </div>
             <div className="ob-field">
-              <label className="ob-label" htmlFor="ob-form">Form</label>
+              <label className="ob-label" htmlFor="ob-form">
+                Form
+              </label>
               <select
                 id="ob-form"
                 className="ob-input ob-select"
@@ -315,13 +393,22 @@ export default function OnboardingPage() {
                 onChange={(e) => setForm(e.target.value)}
               >
                 {[1, 2, 3, 4, 5].map((f) => (
-                  <option key={f} value={f}>Form {f}</option>
+                  <option key={f} value={f}>
+                    Form {f}
+                  </option>
                 ))}
               </select>
             </div>
 
             {error && (
-              <p style={{ color: "var(--wrong)", fontSize: "0.85rem", fontWeight: 600, margin: 0 }}>
+              <p
+                style={{
+                  color: "var(--wrong)",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  margin: 0,
+                }}
+              >
                 {error}
               </p>
             )}
@@ -345,7 +432,9 @@ export default function OnboardingPage() {
         <>
           {/* Counter + score */}
           <div className="ob-quiz-header">
-            <span className="ob-q-counter">Question {qIndex + 1} / {questions.length}</span>
+            <span className="ob-q-counter">
+              Question {qIndex + 1} / {questions.length}
+            </span>
             <span className="ob-score-chip">⭐ {score} correct</span>
           </div>
 
@@ -360,10 +449,13 @@ export default function OnboardingPage() {
                     width: i === qIndex ? 20 : 8,
                     height: 8,
                     borderRadius: 4,
-                    background:
-                      slot
-                        ? slot.isCorrect ? "var(--correct)" : "var(--wrong)"
-                        : i === qIndex ? "var(--brand)" : "var(--border)",
+                    background: slot
+                      ? slot.isCorrect
+                        ? "var(--correct)"
+                        : "var(--wrong)"
+                      : i === qIndex
+                        ? "var(--brand)"
+                        : "var(--border)",
                     transition: "width 0.25s, background 0.25s",
                   }}
                 />
@@ -372,7 +464,11 @@ export default function OnboardingPage() {
           </div>
 
           {/* Question card — keyed so slide animation re-fires on advance */}
-          <div className="ob-question-enter" key={qKey} style={{ width: "100%" }}>
+          <div
+            className="ob-question-enter"
+            key={qKey}
+            style={{ width: "100%" }}
+          >
             <div className="ob-topic-tag">
               {topicEmoji(currentQ.topic)} {currentQ.topic}
             </div>
@@ -395,17 +491,30 @@ export default function OnboardingPage() {
                     <MathText inline>{opt}</MathText>
                   </span>
                   {currentSlot?.revealed && idx === currentQ.correct_index && (
-                    <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>✓</span>
+                    <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>
+                      ✓
+                    </span>
                   )}
-                  {currentSlot?.revealed && idx === currentSlot.selected && !currentSlot.isCorrect && (
-                    <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>✗</span>
-                  )}
+                  {currentSlot?.revealed &&
+                    idx === currentSlot.selected &&
+                    !currentSlot.isCorrect && (
+                      <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>
+                        ✗
+                      </span>
+                    )}
                 </button>
               ))}
             </div>
 
             {currentSlot?.revealed && (
-              <p style={{ marginTop: "1rem", fontSize: "0.82rem", color: "var(--muted)", textAlign: "center" }}>
+              <p
+                style={{
+                  marginTop: "1rem",
+                  fontSize: "0.82rem",
+                  color: "var(--muted)",
+                  textAlign: "center",
+                }}
+              >
                 {currentSlot.isCorrect
                   ? "Correct! Next question loading…"
                   : `The correct answer was ${LETTERS[currentQ.correct_index]}. Moving on…`}
@@ -414,7 +523,14 @@ export default function OnboardingPage() {
           </div>
 
           {error && (
-            <p style={{ color: "var(--wrong)", fontSize: "0.85rem", fontWeight: 600, marginTop: "1rem" }}>
+            <p
+              style={{
+                color: "var(--wrong)",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                marginTop: "1rem",
+              }}
+            >
               {error}
             </p>
           )}
@@ -433,7 +549,9 @@ export default function OnboardingPage() {
           />
           <h2 className="ob-analyzing-title">Analysing your results…</h2>
           <p className="ob-analyzing-sub">
-            Google AI is building your personalised<br />SPM learning path 🗺️
+            Google AI is building your personalised
+            <br />
+            SPM learning path 🗺️
           </p>
           <div className="ob-spinner" />
           <div className="ob-bounce-dots">
@@ -463,7 +581,10 @@ const RING_R = 52;
 const CIRCUMFERENCE = 2 * Math.PI * RING_R;
 
 function ResultScreen({
-  result, userName, weakestTopic, onContinue,
+  result,
+  userName,
+  weakestTopic,
+  onContinue,
 }: {
   result: OnboardingDiagnosticResponse;
   userName: string;
@@ -489,7 +610,8 @@ function ResultScreen({
     return () => cancelAnimationFrame(raf);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const ringColor = pct >= 70 ? "var(--correct)" : pct >= 45 ? "#f59e0b" : "var(--wrong)";
+  const ringColor =
+    pct >= 70 ? "var(--correct)" : pct >= 45 ? "#f59e0b" : "var(--wrong)";
   const ringOffset = CIRCUMFERENCE - (CIRCUMFERENCE * displayPct) / 100;
 
   return (
@@ -497,62 +619,102 @@ function ResultScreen({
       {/* Score hero */}
       <div className="ob-result-hero">
         <div className="ob-score-ring-wrap">
-          <svg className="ob-score-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <svg
+            className="ob-score-svg"
+            viewBox="0 0 120 120"
+            aria-hidden="true"
+          >
             <circle className="ob-score-svg-track" cx="60" cy="60" r={RING_R} />
             <circle
               className="ob-score-svg-fill"
-              cx="60" cy="60" r={RING_R}
+              cx="60"
+              cy="60"
+              r={RING_R}
               style={{ stroke: ringColor, strokeDashoffset: ringOffset }}
             />
           </svg>
           <div className="ob-score-circle" style={{ borderColor: ringColor }}>
             <span className="ob-score-number">
               {displayScore}
-              <span style={{ fontSize: "1rem", fontWeight: 700 }}>/{result.total}</span>
+              <span style={{ fontSize: "1rem", fontWeight: 700 }}>
+                /{result.total}
+              </span>
             </span>
             <span className="ob-score-denom">{displayPct}%</span>
           </div>
         </div>
-        <p className="ob-xp-line ob-result-fadein" style={{ animationDelay: "0.2s" }}>
+        <p
+          className="ob-xp-line ob-result-fadein"
+          style={{ animationDelay: "0.2s" }}
+        >
           +50 XP earned for completing your diagnosis!
         </p>
-        <h2 className="ob-result-title ob-result-fadein" style={{ animationDelay: "0.35s" }}>
+        <h2
+          className="ob-result-title ob-result-fadein"
+          style={{ animationDelay: "0.35s" }}
+        >
           {pct >= 70 ? "Excellent" : pct >= 45 ? "Good effort" : "Great start"},{" "}
           {userName || "student"}! 🎉
         </h2>
-        <p className="ob-result-sub ob-result-fadein" style={{ animationDelay: "0.5s" }}>Your personalised diagnosis is ready</p>
+        <p
+          className="ob-result-sub ob-result-fadein"
+          style={{ animationDelay: "0.5s" }}
+        >
+          Your personalised diagnosis is ready
+        </p>
       </div>
 
       {/* Topic breakdown */}
       {result.by_topic.length > 0 && (
         <section style={{ width: "100%", marginBottom: "0.25rem" }}>
-          <p style={{ fontSize: "0.75rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", margin: "0 0 0.55rem" }}>
+          <p
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--muted)",
+              margin: "0 0 0.55rem",
+            }}
+          >
             Topic Breakdown
           </p>
           {result.by_topic.map((t, i) => {
             const tier = topicTier(t.accuracy);
             return (
-            <div key={t.topic} className="ob-topic-card" style={{ animationDelay: `${0.6 + i * 0.12}s` }}>
-              <div className="ob-topic-row">
-                <span className="ob-topic-name">{topicEmoji(t.topic)} {t.topic}</span>
-                <span className={`ob-topic-badge ${tier.cls}`}>{tier.label}</span>
+              <div
+                key={t.topic}
+                className="ob-topic-card"
+                style={{ animationDelay: `${0.6 + i * 0.12}s` }}
+              >
+                <div className="ob-topic-row">
+                  <span className="ob-topic-name">
+                    {topicEmoji(t.topic)} {t.topic}
+                  </span>
+                  <span className={`ob-topic-badge ${tier.cls}`}>
+                    {tier.label}
+                  </span>
+                </div>
+                <p className="ob-topic-score">
+                  {t.correct}/{t.total} correct
+                </p>
+                <div className="ob-topic-bar-track">
+                  <div
+                    className={`ob-topic-bar-fill ${tier.cls}`}
+                    style={{ width: `${Math.round(t.accuracy * 100)}%` }}
+                  />
+                </div>
               </div>
-              <p className="ob-topic-score">{t.correct}/{t.total} correct</p>
-              <div className="ob-topic-bar-track">
-                <div
-                  className={`ob-topic-bar-fill ${tier.cls}`}
-                  style={{ width: `${Math.round(t.accuracy * 100)}%` }}
-                />
-              </div>
-            </div>
-          );
+            );
           })}
         </section>
       )}
 
       {/* AI Recommendation */}
       <div className="ob-ai-card">
-        <div className="ob-ai-label"><span>✦</span> AI Diagnosis</div>
+        <div className="ob-ai-label">
+          <span>✦</span> AI Diagnosis
+        </div>
         <p className="ob-ai-text">{result.recommendation}</p>
       </div>
 
