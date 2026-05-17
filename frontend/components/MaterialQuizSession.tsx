@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
-import { Question } from "@/lib/api";
+import { Question, Explanation, submitAnswer as apiSubmitAnswer, generateExplanation } from "@/lib/api";
 import { MaterialMcq } from "@/app/materials/ubahan/data";
+import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
+import ExplanationBlock from "@/components/ExplanationBlock";
 
 type ChapterKey = "ubahan" | "matriks" | "insurans";
 
@@ -82,9 +85,23 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [sessionStreak, setSessionStreak] = useState(0);
+  const [xp, setXp] = useState(0);
   const [showBuddy, setShowBuddy] = useState(false);
+  const [explanation, setExplanation] = useState<Explanation | null>(null);
+  const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [flaggedIndices, setFlaggedIndices] = useState<Set<number>>(new Set());
+  const [reviewMode, setReviewMode] = useState(false);
+  const [reviewIndex, setReviewIndex] = useState(0);
 
-  const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null;
+  useEffect(() => {
+    const uid = sessionStorage.getItem("userId");
+    setUserId(uid);
+
+    const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
+    setXp(isNaN(storedXp) ? 0 : storedXp);
+  }, []);
   const questionSet = useMemo(() => {
     if (materialQuestions && materialQuestions.length > 0) {
       return materialQuestions.map((q) => mapMaterialQuestion(chapter, q));
@@ -100,13 +117,57 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const done = currentIndex + (submitted ? 1 : 0);
   const total = questionSet.length;
   const finalStep = submitted && currentIndex === total - 1;
-  const displayedCorrect = correctCount + (submitted && isCorrect ? 1 : 0);
-  const accuracy = done > 0 ? `${Math.round((displayedCorrect / done) * 100)}%` : "-";
 
-  function submitAnswer() {
+  async function handleSubmit() {
     if (selected === null) return;
-    if (selected === correctIndex) setCorrectCount((prev) => prev + 1);
+    playSubmitSound();
+
+    const correct = selected === correctIndex;
+    if (correct) {
+      setCorrectCount((prev) => prev + 1);
+      setSessionStreak((prev) => prev + 1);
+      setTimeout(playCorrectSound, 100);
+    } else {
+      setSessionStreak(0);
+      setTimeout(playWrongSound, 100);
+    }
+
+    const xpGain = correct ? 10 : 5;
+    setXp((prev) => {
+      const next = prev + xpGain;
+      sessionStorage.setItem("userXp", String(next));
+      return next;
+    });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const lastActiveDay = localStorage.getItem("lastActiveDay");
+    if (lastActiveDay !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const stored = parseInt(localStorage.getItem("dailyStreak") ?? "0", 10);
+      const newDailyStreak = lastActiveDay === yesterday ? (isNaN(stored) ? 1 : stored) + 1 : 1;
+      localStorage.setItem("dailyStreak", String(newDailyStreak));
+      localStorage.setItem("lastActiveDay", today);
+      sessionStorage.setItem("streak", String(newDailyStreak));
+    }
+
+    if (userId) {
+      apiSubmitAnswer(userId, question.id, selected).catch(() => {});
+    }
+
     setSubmitted(true);
+  }
+
+  async function handleGenerateExplanation() {
+    if (!userId || selected === null) return;
+    setIsGeneratingExplanation(true);
+    try {
+      const exp = await generateExplanation(userId, question.id, selected);
+      setExplanation(exp);
+    } catch {
+      // silently ignore — user can retry
+    } finally {
+      setIsGeneratingExplanation(false);
+    }
   }
 
   function nextQuestion() {
@@ -114,44 +175,114 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
     setCurrentIndex((prev) => prev + 1);
     setSelected(null);
     setSubmitted(false);
+    setShowBuddy(false);
+    setExplanation(null);
+  }
+
+  function toggleFlag() {
+    setFlaggedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(currentIndex)) next.delete(currentIndex);
+      else next.add(currentIndex);
+      return next;
+    });
+  }
+
+  function handleFinish() {
+    const flaggedList = Array.from(flaggedIndices);
+    if (flaggedList.length > 0) {
+      setReviewIndex(0);
+      setReviewMode(true);
+    } else {
+      onContinue();
+    }
   }
 
   const bar = !submitted ? (
-    <button type="button" className="btn-primary" disabled={selected === null} onClick={submitAnswer}>
+    <button type="button" className="btn-primary" disabled={selected === null} onClick={handleSubmit}>
       Hantar Jawapan
     </button>
-  ) : finalStep ? (
-    <button type="button" className="btn-primary" onClick={onContinue}>
-      Tamat Sesi
-    </button>
   ) : (
-    <button type="button" className="btn-primary" onClick={nextQuestion}>
-      Soalan Seterusnya
-    </button>
-  );
-
-  return (
-    <QuizSheet open bar={bar} onClose={onClose} progress={done} total={total}>
-      <div className="learn-stats">
-        <div className="learn-stat">
-          <div className="learn-stat-label">Selesai</div>
-          <div className="learn-stat-value">{done}</div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">Betul</div>
-          <div className="learn-stat-value green">{displayedCorrect}</div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">Ketepatan</div>
-          <div className={`learn-stat-value ${submitted && !isCorrect ? "red" : submitted ? "green" : "red"}`}>{accuracy}</div>
+    <div className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+      <div className="qs-feedback-top">
+        <span className="qs-feedback-icon">{isCorrect ? "✓" : "✗"}</span>
+        <div className="qs-feedback-text">
+          <p className="qs-feedback-title">{isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+          {!isCorrect && (
+            <p className="qs-feedback-hint">Semak jawapan betul yang ditunjukkan di atas.</p>
+          )}
         </div>
       </div>
+      <button
+        type="button"
+        className="qs-feedback-btn"
+        onClick={finalStep ? handleFinish : nextQuestion}
+      >
+        {finalStep ? "TAMAT SESI" : "SETERUSNYA"} &rsaquo;
+      </button>
+    </div>
+  );
 
-      <div className="learn-ai-cues" />
+  const flaggedList = Array.from(flaggedIndices);
 
+  if (reviewMode) {
+    const reviewQ = questionSet[flaggedList[reviewIndex]];
+    const isLast = reviewIndex === flaggedList.length - 1;
+    const reviewBar = (
+      <div className="qs-feedback-panel qs-feedback-correct">
+        <div className="qs-feedback-top">
+          <span className="qs-feedback-icon">🚩</span>
+          <div className="qs-feedback-text">
+            <p className="qs-feedback-title">Semakan soalan ditandakan</p>
+            <p className="qs-feedback-hint">{reviewIndex + 1} / {flaggedList.length}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="qs-feedback-btn"
+          onClick={isLast ? onContinue : () => setReviewIndex((i) => i + 1)}
+        >
+          {isLast ? "SELESAI" : "SETERUSNYA"} &rsaquo;
+        </button>
+      </div>
+    );
+    return (
+      <QuizSheet
+        open
+        bar={reviewBar}
+        onClose={onClose}
+        progress={reviewIndex + 1}
+        total={flaggedList.length}
+        streak={sessionStreak}
+        xp={xp}
+        title={`Semakan: ${step.title}`}
+        meta={`${flaggedList.length} soalan ditandakan`}
+      >
+        <QuestionCard
+          question={reviewQ.question}
+          selectedOptionIndex={reviewQ.correctIndex}
+          showResult
+          isCorrect
+          correctOptionIndex={reviewQ.correctIndex}
+        />
+      </QuizSheet>
+    );
+  }
+
+  return (
+    <QuizSheet
+      open
+      bar={bar}
+      onClose={onClose}
+      progress={done}
+      total={total}
+      streak={sessionStreak}
+      xp={xp}
+      flagged={flaggedIndices.has(currentIndex)}
+      onToggleFlag={toggleFlag}
+    >
       <QuestionCard
         question={question}
-        questionNumber={currentIndex + 1}
         selectedOptionIndex={selected}
         onSelectOption={submitted ? undefined : setSelected}
         showResult={submitted}
@@ -159,18 +290,27 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
         correctOptionIndex={correctIndex}
       />
 
-      {showBuddy && userId && (
+      {submitted && (
+        <ExplanationBlock
+          explanation={explanation}
+          isCorrect={isCorrect}
+          onGenerateExplanation={handleGenerateExplanation}
+          isGenerating={isGeneratingExplanation}
+        />
+      )}
+
+      {submitted && showBuddy && userId && (
         <StudyBuddyPanel userId={userId} questionContext={question.text} onClose={() => setShowBuddy(false)} />
       )}
 
-      {!showBuddy && (
+      {submitted && !showBuddy && (
         <button
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Ask StudyBuddy"
+          aria-label="Ask Skorrel"
         >
-          🤖
+          <Image src="/assets/mascot.webp" alt="Skorrel" width={30} height={30} />
         </button>
       )}
     </QuizSheet>

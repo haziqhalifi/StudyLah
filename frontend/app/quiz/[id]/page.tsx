@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import BuddyHeader from "@/components/BuddyHeader";
-import BuddyBubble from "@/components/BuddyBubble";
+import StandardQuizShell from "@/components/StandardQuizShell";
 import OptionCard from "@/components/OptionCard";
 import {
   QuizDetail,
@@ -11,15 +10,7 @@ import {
   fetchQuizDetail,
   submitQuiz,
 } from "@/lib/api";
-
-const TOPIC_META: Record<
-  QuizDetail["topicId"],
-  { label: string; chip: string; emoji: string }
-> = {
-  ubahan: { label: "Ubahan", chip: "chip chip-brand", emoji: "📐" },
-  matriks: { label: "Matriks", chip: "chip chip-warn", emoji: "🔢" },
-  insurans: { label: "Insurans", chip: "chip chip-correct", emoji: "🛡️" },
-};
+import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
 
 type QuizState = {
   userId: string;
@@ -56,25 +47,13 @@ export default function QuizPage() {
       router.push("/");
       return;
     }
-
     if (!quizId) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: "ID kuiz tidak ditemui.",
-      }));
+      setState((prev) => ({ ...prev, loading: false, error: "ID kuiz tidak ditemui." }));
       return;
     }
-
-    setState((prev) => ({
-      ...prev,
-      userId: storedUserId,
-      loading: true,
-      error: null,
-    }));
-
+    setState((prev) => ({ ...prev, userId: storedUserId, loading: true, error: null }));
     fetchQuizDetail(quizId)
-      .then((quiz) => {
+      .then((quiz) =>
         setState((prev) => ({
           ...prev,
           quiz,
@@ -83,55 +62,49 @@ export default function QuizPage() {
           answers: {},
           submitted: false,
           result: null,
-        }));
-      })
-      .catch(() => {
+        })),
+      )
+      .catch(() =>
         setState((prev) => ({
           ...prev,
           loading: false,
           error: "Kuiz tidak dapat dimuatkan. Sila cuba lagi.",
-        }));
-      });
+        })),
+      );
   }, [quizId, router]);
 
-  const topicMeta = state.quiz ? TOPIC_META[state.quiz.topicId] : null;
   const questions = state.quiz?.questions ?? [];
   const currentQuestion = questions[state.currentIndex];
-  const answeredCount = useMemo(
-    () => Object.keys(state.answers).length,
-    [state.answers],
-  );
+  const answeredCount = useMemo(() => Object.keys(state.answers).length, [state.answers]);
   const allAnswered =
-    questions.length > 0 &&
-    questions.every((question) => state.answers[question.id] !== undefined);
+    questions.length > 0 && questions.every((q) => state.answers[q.id] !== undefined);
 
   const scoreMessage = useMemo(() => {
     if (!state.result) return "";
-    if (state.result.percentage >= 80)
-      return "Hebat! Anda semakin mahir dalam topik ini.";
-    if (state.result.percentage >= 50)
-      return "Usaha yang baik! Mari ulang kaji soalan yang terlepas.";
+    if (state.result.percentage >= 80) return "Hebat! Anda semakin mahir dalam topik ini.";
+    if (state.result.percentage >= 50) return "Usaha yang baik! Mari ulang kaji soalan yang terlepas.";
     return "Tak apa, mari kita semak bersama.";
   }, [state.result]);
 
   async function handleSubmitQuiz() {
     if (!state.quiz || state.submitting || !allAnswered) return;
+    playSubmitSound();
     setState((prev) => ({ ...prev, submitting: true, error: null }));
     try {
       const result = await submitQuiz(
         state.quiz.quizId,
         state.userId,
-        questions.map((question) => ({
-          questionId: question.id,
-          selectedOptionIndex: state.answers[question.id],
+        questions.map((q) => ({
+          questionId: q.id,
+          selectedOptionIndex: state.answers[q.id],
         })),
       );
-      setState((prev) => ({
-        ...prev,
-        submitted: true,
-        result,
-        submitting: false,
-      }));
+      setState((prev) => ({ ...prev, submitted: true, result, submitting: false }));
+      // Play correct if passed (≥50%), wrong otherwise
+      setTimeout(() => {
+        if (result.percentage >= 50) playCorrectSound();
+        else playWrongSound();
+      }, 300);
     } catch {
       setState((prev) => ({
         ...prev,
@@ -152,277 +125,201 @@ export default function QuizPage() {
     }));
   }
 
+  // ── Loading ──
   if (state.loading) {
-    return <LoadingState />;
-  }
-
-  if (state.error && !state.quiz) {
     return (
-      <div className="min-h-screen bg-[#f6f7fb] pb-24">
-        <BuddyHeader
-          title="Masa kuiz"
-          subtitle="Mari bina set latihan diperibadikan anda."
-        />
-        <BuddyBubble emoji="😕">{state.error}</BuddyBubble>
-        <div className="max-w-md mx-auto px-4 mt-4">
-          <button
-            type="button"
-            className="w-full h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
-            onClick={() => router.push("/")}
-          >
-            Kembali ke Utama
-          </button>
+      <StandardQuizShell
+        title="Memuatkan kuiz…"
+        progress={0}
+        total={1}
+        bar={<div />}
+      >
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="card qcard animate-pulse">
+              <div className="h-4 w-24 bg-slate-100 rounded-full mb-4" />
+              <div className="h-6 w-4/5 bg-slate-100 rounded-full mb-4" />
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((__, j) => (
+                  <div key={j} className="h-12 bg-slate-100 rounded-2xl" />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      </StandardQuizShell>
     );
   }
 
-  if (!state.quiz || !currentQuestion || !topicMeta) {
-    return null;
+  // ── Error (no quiz loaded) ──
+  if (state.error && !state.quiz) {
+    return (
+      <StandardQuizShell
+        title="Kuiz"
+        progress={0}
+        total={1}
+        onClose={() => router.push("/")}
+        bar={
+          <button type="button" className="btn-primary" onClick={() => router.push("/")}>
+            Kembali ke Utama
+          </button>
+        }
+      >
+        <div className="qs-empty-state">
+          <p className="qs-empty-emoji">😕</p>
+          <p className="qs-empty-text">{state.error}</p>
+        </div>
+      </StandardQuizShell>
+    );
   }
 
-  if (state.submitted && state.result) {
-    return (
-      <div className="min-h-screen bg-[#f6f7fb] pb-24">
-        <BuddyHeader title="Quiz complete" subtitle={state.quiz.title} />
-        <BuddyBubble
-          emoji={
-            state.result.percentage >= 80
-              ? "🎉"
-              : state.result.percentage >= 50
-                ? "💪"
-                : "📘"
-          }
-        >
-          {scoreMessage}
-        </BuddyBubble>
+  if (!state.quiz || !currentQuestion) return null;
 
-        <div className="max-w-md mx-auto px-4 mt-4">
-          <div className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-5">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-sm text-slate-500">Markah anda</p>
-                <div className="text-4xl font-semibold text-slate-900 mt-1">
-                  {state.result.score} / {state.result.total}
-                </div>
-              </div>
-              <div className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-medium">
-                {state.result.percentage}%
-              </div>
+  // ── Results ──
+  if (state.submitted && state.result) {
+    const scoreEmoji =
+      state.result.percentage >= 80 ? "🎉" : state.result.percentage >= 50 ? "💪" : "📘";
+
+    return (
+      <StandardQuizShell
+        title="Keputusan Kuiz"
+        subtitle={state.quiz.title}
+        progress={questions.length}
+        total={questions.length}
+        onClose={() => router.push("/")}
+        bar={
+          <div className="learn-actions">
+            <button type="button" className="btn-ghost diag-skip-btn" onClick={handleTryAgain}>
+              Cuba Semula
+            </button>
+            <button type="button" className="btn-primary" onClick={() => router.push("/")}>
+              Kembali ke Utama
+            </button>
+          </div>
+        }
+      >
+        {/* Score banner */}
+        <div className="card quiz-result-card">
+          <div className="quiz-result-banner">
+            <span className="quiz-result-emoji">{scoreEmoji}</span>
+            <div>
+              <p className="quiz-result-score">
+                {state.result.score} / {state.result.total}
+              </p>
+              <p className="quiz-result-msg">{scoreMessage}</p>
             </div>
+            <span className="quiz-result-pct">{state.result.percentage}%</span>
           </div>
         </div>
 
-        <div className="max-w-md mx-auto px-4 mt-4 space-y-3">
-          {questions.map((question, index) => {
-            const item = state.result?.results[index];
+        {/* Per-question breakdown */}
+        <div className="space-y-3">
+          {questions.map((q, idx) => {
+            const item = state.result?.results[idx];
             if (!item) return null;
-            const correctAnswer =
-              question.options[item.correctOptionIndex] ?? "";
             return (
-              <div
-                key={question.id}
-                className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4"
-              >
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="text-sm font-medium text-slate-500">
-                    Q{index + 1}
-                  </div>
-                  <div
-                    className={`text-xs px-2 py-1 rounded-full ${item.isCorrect ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
+              <div key={q.id} className="card quiz-review-card">
+                <div className="quiz-review-row">
+                  <span className="quiz-review-num">S{idx + 1}</span>
+                  <span
+                    className={`chip ${item.isCorrect ? "chip-correct" : "chip-wrong"}`}
                   >
                     {item.isCorrect ? "✓ Betul" : "✗ Terlepas"}
-                  </div>
-                </div>
-                <h3 className="text-base font-medium text-slate-900">
-                  {question.text}
-                </h3>
-                <div className="mt-3 text-sm text-slate-600">
-                  Jawapan betul:{" "}
-                  <span className="font-semibold text-slate-900">
-                    {correctAnswer}
                   </span>
                 </div>
-                <div className="mt-2 text-xs uppercase tracking-wide text-slate-400">
-                  {item.explanation.style.replaceAll("_", " ")}
-                </div>
-                <p className="mt-2 text-sm text-slate-700 leading-6">
-                  {item.explanation.text}
+                <p className="quiz-review-text">{q.text}</p>
+                <p className="quiz-review-answer">
+                  Jawapan betul:{" "}
+                  <strong>{q.options[item.correctOptionIndex]}</strong>
                 </p>
+                <p className="quiz-review-explanation">{item.explanation.text}</p>
               </div>
             );
           })}
         </div>
-
-        <div className="max-w-md mx-auto px-4 mt-5 grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium"
-            onClick={handleTryAgain}
-          >
-            Cuba Semula
-          </button>
-          <button
-            type="button"
-            className="h-12 rounded-2xl bg-[#1f5eff] text-white font-medium"
-            onClick={() => router.push("/")}
-          >
-            Kembali ke Utama
-          </button>
-        </div>
-      </div>
+      </StandardQuizShell>
     );
   }
 
+  // ── Question view ──
+  const bar = (
+    <button
+      type="button"
+      className="btn-primary"
+      disabled={!allAnswered || state.submitting}
+      onClick={handleSubmitQuiz}
+    >
+      {state.submitting
+        ? "Menghantar…"
+        : allAnswered
+          ? "Hantar Kuiz"
+          : `Hantar (${answeredCount}/${questions.length} dijawab)`}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-[#f6f7fb] pb-28">
-      <BuddyHeader
-        title={state.quiz.title}
-        subtitle="Latihan kuiz diperibadikan"
-      />
-
-      <BuddyBubble emoji={topicMeta.emoji}>
-        <div>
-          <div>Kuiz {topicMeta.label} sudah sedia.</div>
-          <div className="mt-1">
-            Soalan {state.currentIndex + 1} daripada {questions.length}. Jawab semua
-            soalan sebelum menghantar.
-          </div>
-        </div>
-      </BuddyBubble>
-
-      <div className="max-w-md mx-auto px-4 mt-4">
-        <div className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4">
-          <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
-            <span className={topicMeta.chip}>{topicMeta.label}</span>
-            <span>
-              Q{state.currentIndex + 1} of {questions.length}
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[#1f5eff] transition-all"
-              style={{
-                width: `${Math.max(8, (answeredCount / questions.length) * 100)}%`,
+    <StandardQuizShell
+      title={state.quiz.title}
+      subtitle={`Soalan ${state.currentIndex + 1} / ${questions.length}`}
+      label={currentQuestion.topic_id?.replace(/_/g, " ")}
+      progress={answeredCount}
+      total={questions.length}
+      onClose={() => router.push("/")}
+      bar={bar}
+    >
+      {/* Question card */}
+      <div className="card qcard">
+        <p className="qcard-question">{currentQuestion.text}</p>
+        <div className="qcard-options">
+          {currentQuestion.options.map((opt, i) => (
+            <OptionCard
+              key={i}
+              index={i}
+              text={opt}
+              selected={state.answers[currentQuestion.id] === i}
+              onClick={() => {
+                playSubmitSound();
+                setState((prev) => ({
+                  ...prev,
+                  answers: { ...prev.answers, [currentQuestion.id]: i },
+                }));
               }}
             />
-          </div>
-
-          <div className="mt-5 text-base font-semibold text-slate-900 leading-7">
-            {currentQuestion.text}
-          </div>
-
-          <div className="mt-4 space-y-2">
-            {currentQuestion.options.map((option, optionIndex) => (
-              <OptionCard
-                key={optionIndex}
-                text={option}
-                selected={state.answers[currentQuestion.id] === optionIndex}
-                onClick={() =>
-                  setState((prev) => ({
-                    ...prev,
-                    answers: {
-                      ...prev.answers,
-                      [currentQuestion.id]: optionIndex,
-                    },
-                  }))
-                }
-              />
-            ))}
-          </div>
-
-          {currentQuestion.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {currentQuestion.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {state.error && (
-          <p className="mt-3 text-sm text-rose-600">{state.error}</p>
-        )}
-
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <button
-            type="button"
-            className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium disabled:opacity-40"
-            onClick={() =>
-              setState((prev) => ({
-                ...prev,
-                currentIndex: Math.max(0, prev.currentIndex - 1),
-              }))
-            }
-            disabled={state.currentIndex === 0}
-          >
-            Sebelumnya
-          </button>
-          <button
-            type="button"
-            className="h-12 rounded-2xl border border-slate-200 bg-white text-slate-800 font-medium disabled:opacity-40"
-            onClick={() =>
-              setState((prev) => ({
-                ...prev,
-                currentIndex: Math.min(
-                  questions.length - 1,
-                  prev.currentIndex + 1,
-                ),
-              }))
-            }
-            disabled={state.currentIndex >= questions.length - 1}
-          >
-            Seterusnya
-          </button>
-        </div>
-
-        <div className="fixed inset-x-0 bottom-4 px-4">
-          <div className="max-w-md mx-auto rounded-[24px] bg-white shadow-lg border border-slate-100 p-3 flex gap-3">
-            <button
-              type="button"
-              className="flex-1 h-12 rounded-2xl bg-[#1f5eff] text-white font-semibold disabled:bg-slate-300"
-              disabled={!allAnswered || state.submitting}
-              onClick={handleSubmitQuiz}
-            >
-              {state.submitting ? "Menghantar…" : "Hantar Kuiz"}
-            </button>
-          </div>
+          ))}
         </div>
       </div>
-    </div>
-  );
-}
 
-function LoadingState() {
-  return (
-    <div className="min-h-screen bg-[#f6f7fb] pb-24">
-      <BuddyHeader
-        title="Memuatkan kuiz"
-        subtitle="Membina set diperibadikan anda…"
-      />
-      <BuddyBubble>Tunggu sebentar — saya sedang menyediakan soalan anda.</BuddyBubble>
-      <div className="max-w-md mx-auto px-4 mt-4 space-y-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-[28px] bg-white shadow-sm border border-slate-100 p-4 animate-pulse"
-          >
-            <div className="h-4 w-24 bg-slate-100 rounded-full" />
-            <div className="mt-4 h-6 w-4/5 bg-slate-100 rounded-full" />
-            <div className="mt-4 space-y-2">
-              <div className="h-12 bg-slate-100 rounded-2xl" />
-              <div className="h-12 bg-slate-100 rounded-2xl" />
-              <div className="h-12 bg-slate-100 rounded-2xl" />
-              <div className="h-12 bg-slate-100 rounded-2xl" />
-            </div>
-          </div>
-        ))}
+      {state.error && <p className="diag-error">{state.error}</p>}
+
+      {/* Prev / Next navigation */}
+      <div className="learn-actions quiz-nav-actions">
+        <button
+          type="button"
+          className="btn-ghost diag-skip-btn"
+          onClick={() =>
+            setState((prev) => ({
+              ...prev,
+              currentIndex: Math.max(0, prev.currentIndex - 1),
+            }))
+          }
+          disabled={state.currentIndex === 0}
+        >
+          ← Sebelumnya
+        </button>
+        <button
+          type="button"
+          className="btn-ghost diag-skip-btn"
+          onClick={() =>
+            setState((prev) => ({
+              ...prev,
+              currentIndex: Math.min(questions.length - 1, prev.currentIndex + 1),
+            }))
+          }
+          disabled={state.currentIndex >= questions.length - 1}
+        >
+          Seterusnya →
+        </button>
       </div>
-    </div>
+    </StandardQuizShell>
   );
 }

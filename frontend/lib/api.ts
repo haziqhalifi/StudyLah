@@ -226,11 +226,13 @@ export async function startDiagnostic(
   userId: string,
   topicId: string,
   paperId?: number,
+  subtopicId?: string,
 ): Promise<StartDiagnosticResponse> {
   return post("/api/session/start_diagnostic", {
     user_id: userId,
     topic_id: topicId,
     ...(paperId !== undefined && { paper_id: paperId }),
+    ...(subtopicId !== undefined && { subtopic_id: subtopicId }),
   });
 }
 
