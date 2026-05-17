@@ -97,6 +97,7 @@ function HomeDashboard() {
         <StudentHeader />
         <LevelProgressCard />
         <DailyMissionCard />
+        <FokusHariIni topics={topics} />
         <QuickStatsRow topics={topics} />
         <ResumeLearningSection topics={topics} />
         <QuickFlashcardWidget sets={flashcardSets} />
@@ -246,6 +247,51 @@ function DailyMissionCard() {
         <span className="daily-mission-badge" aria-hidden="true">+10 XP</span>
       )}
     </button>
+  );
+}
+
+const TOPIC_SUBJECT: Record<string, string> = {
+  ubahan: "Matematik",
+  matriks: "Matematik",
+  insurans: "Matematik",
+};
+
+function FokusHariIni({ topics }: { topics: TopicStats[] }) {
+  const router = useRouter();
+
+  if (topics.length === 0) return null;
+
+  const weakest = [...topics].sort((a, b) => a.accuracy - b.accuracy)[0];
+  const meta = TOPIC_META[weakest.topic_id] ?? { name: weakest.topic_id };
+  const pct = Math.round(weakest.accuracy * 100);
+  const subject = TOPIC_SUBJECT[weakest.topic_id] ?? "Matematik";
+
+  return (
+    <section className="fokus-card" aria-label="Fokus Hari Ini">
+      <p className="fokus-eyebrow">
+        <span className="fokus-eyebrow-dot" aria-hidden="true" />
+        FOKUS HARI INI
+      </p>
+      <h2 className="fokus-title">
+        Ulang kaji dan latih{" "}
+        <span className="fokus-highlight">{meta.name}</span>
+      </h2>
+      <p className="fokus-meta">
+        {subject}
+        <span className="fokus-meta-sep" aria-hidden="true">·</span>
+        <span className="fokus-accuracy-dot" aria-hidden="true" />
+        {pct}% ketepatan
+      </p>
+      <button
+        type="button"
+        className="fokus-cta"
+        onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+        aria-label={`Mula ulang kaji ${meta.name}`}
+      >
+        <span aria-hidden="true">⚡</span>
+        Mula Ulang Kaji →
+      </button>
+    </section>
   );
 }
 

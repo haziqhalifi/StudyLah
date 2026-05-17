@@ -67,84 +67,122 @@ export default function MaterialsHubPage() {
   const totalNodes = BAB_CARDS.reduce((s, c) => s + c.steps.length, 0);
   const doneNodes = Object.values(nodeProgress).reduce((s, v) => s + v.done, 0);
   const overallPct = totalNodes > 0 ? Math.round((doneNodes / totalNodes) * 100) : 0;
-  const hasStarted = doneNodes > 0;
+
+  // Recommended chapter: lowest completion % (first untouched wins ties)
+  const cardPcts = BAB_CARDS.map((card) => {
+    const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
+    return { card, pct: np.total > 0 ? Math.round((np.done / np.total) * 100) : 0 };
+  });
+  const recommendedId = cardPcts.reduce((best, cur) =>
+    cur.pct < best.pct ? cur : best
+  ).card.id;
+
+  const firstCard = BAB_CARDS[0];
+  const firstNp = nodeProgress[firstCard.id] ?? { done: 0, total: firstCard.steps.length };
+  const firstPct = firstNp.total > 0 ? Math.round((firstNp.done / firstNp.total) * 100) : 0;
+  const recommendedCard = BAB_CARDS.find((c) => c.id === recommendedId) ?? firstCard;
 
   return (
-    <section className="home-dashboard-shell page-enter" aria-label="Hab bahan pembelajaran">
+    <section className="home-dashboard-shell page-enter" aria-label="Pilih Bab">
+      {/* ── Header ── */}
       <header className="student-header">
         <div className="student-header-copy">
           <p className="student-time">Bahan Pembelajaran</p>
           <h1>Pilih Bab</h1>
           <div className="student-meta-row">
             <span>Matematik Tingkatan 5</span>
+            <span aria-hidden="true">·</span>
+            <span>{BAB_CARDS.length} bab</span>
+            <span aria-hidden="true">·</span>
+            <span>{totalNodes} subtopik</span>
           </div>
         </div>
       </header>
 
-      <section className="level-card" aria-label="Pilih satu bab">
-        <div className="level-card-content">
-          <p className="level-eyebrow">Laluan Pembelajaran</p>
-          <h2>Mulakan dengan satu bab dan teruskan ke peta subtopik.</h2>
-          <div className="level-progress-row">
-            <div className="w-full h-1.5 rounded-full bg-white/20" aria-hidden="true">
-              <div
-                className="h-1.5 rounded-full bg-white transition-all duration-500"
-                style={{ width: `${overallPct}%` }}
-              />
-            </div>
-            <span>{BAB_CARDS.length} tersedia</span>
-          </div>
-        </div>
-        {/* Labeled subtopik badge */}
-        <div className="level-trophy" aria-hidden="true">
-          <span className="learn-hub-chip text-white/80 text-sm font-medium px-3 py-1 rounded-full bg-white/20">
-            {totalNodes} subtopik
-          </span>
-        </div>
-      </section>
+      {/* ── Laluan Pembelajaran card ── */}
+      <div className="lp-path-card">
+        <div className="lp-path-badge">✦ Laluan Pembelajaran</div>
+        <p className="lp-path-copy">
+          Kami pilih urutan bab terbaik untuk kamu — ikut sahaja, kamu akan cover semua topik penting SPM.
+        </p>
 
-      {/* Chapter cards â€” scrollable with bottom peek affordance */}
-      <div className="home-learning-stack pb-32 overflow-y-auto">
+        <div className="lp-path-progress-row">
+          <div className="lp-path-track">
+            <div
+              className="lp-path-fill"
+              style={{ "--pct": `${overallPct}%` } as React.CSSProperties}
+            />
+          </div>
+          <span className="lp-path-pct">{overallPct}%</span>
+        </div>
+        <p className="lp-path-progress-label">
+          {doneNodes} subtopik siap daripada {totalNodes}
+        </p>
+
+        <button
+          type="button"
+          className="lp-path-cta-btn"
+          onClick={() => router.push(recommendedCard.href)}
+        >
+          {firstPct === 0
+            ? `Mulakan Laluan → ${firstCard.title} (${firstCard.estimatedTime})`
+            : `Sambung Laluan → ${recommendedCard.title}`}
+        </button>
+      </div>
+
+      {/* ── Hint ── */}
+      <p className="lp-section-hint">
+        💡 Kami syorkan habiskan 1 bab dahulu sebelum lompat ke bab lain.
+      </p>
+
+      {/* ── Chapter cards ── */}
+      <div className="lp-chapter-list">
         {BAB_CARDS.map((card) => {
           const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
           const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+          const isRecommended = card.id === recommendedId;
+          const isInProgress = pct > 0 && pct < 100;
+
           return (
             <button
               key={card.id}
               type="button"
-              className={`learning-feature-card learning-feature-${card.tone} study-select-card`}
+              className={`lp-chapter-card lp-chapter-${card.tone}${isRecommended ? " lp-chapter-recommended" : ""}`}
               onClick={() => router.push(card.href)}
             >
-              <div>
-                <h2>{card.title}</h2>
-                <p>{card.subtitle}</p>
+              <div className="lp-chapter-left">
+                {isRecommended && (
+                  <div className="lp-recommended-badge">⭐ Disyorkan hari ini</div>
+                )}
+                <p className="lp-chapter-bab">{card.title.split(":")[0]}</p>
+                <h2 className="lp-chapter-name">{card.title.split(": ").slice(1).join(": ")}</h2>
+                <p className="lp-chapter-desc">{card.subtitle}</p>
 
-                {/* Difficulty + estimated time tags */}
-                <div className="flex gap-2 mt-2 mb-3">
-                  <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                <div className="lp-chapter-tags">
+                  <span className={`lp-tag lp-tag-diff-${card.difficulty.toLowerCase()}`}>
                     {card.difficulty}
                   </span>
-                  <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                    {card.estimatedTime}
-                  </span>
+                  <span className="lp-tag lp-tag-time">⏱ {card.estimatedTime}</span>
                 </div>
 
-                {/* Always-visible progress track */}
-                <div className="learn-topic-progress-row">
-                  <div className="w-full h-1.5 rounded-full bg-white/20">
+                <div className="lp-chapter-progress-row">
+                  <div className="lp-chapter-track">
                     <div
-                      className="h-1.5 rounded-full bg-white transition-all duration-500"
-                      style={{ width: `${pct}%` }}
+                      className="lp-chapter-fill"
+                      style={{ "--pct": `${pct}%` } as React.CSSProperties}
                     />
                   </div>
-                  {pct === 0 ? (
-                    <span className="text-white/70 text-xs font-medium whitespace-nowrap ml-2">Mula sekarang â†’</span>
-                  ) : (
-                    <span className="learn-topic-progress-label">{pct}%</span>
-                  )}
+                  <span className="lp-chapter-pct">{pct}%</span>
                 </div>
+
+                <p className="lp-chapter-next-cta">
+                  {pct === 100
+                    ? "✓ Siap! Ulangkaji untuk kukuhkan lagi →"
+                    : isInProgress
+                    ? "Sambung subtopik seterusnya →"
+                    : "Mulakan dengan contoh mudah →"}
+                </p>
               </div>
-              {/* Floating number badge removed â€” chapter number is in title text */}
             </button>
           );
         })}
