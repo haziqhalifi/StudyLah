@@ -78,10 +78,6 @@ def get_gemini_engine():
     return _gemini_engine
 
 
-def _gemini_enabled() -> bool:
-    """True only when explicitly opted-in AND the API key is present."""
-    return settings.adaptive_engine == "gemini" and bool(settings.gemini_api_key)
-
 
 def _call_claude(prompt: str, max_tokens: int = 1024) -> Optional[str]:
     """Send a single-turn prompt to OpenAI and return the text response.
@@ -225,7 +221,7 @@ def _analyze_diagnostic_rule_based(
     questions: List[Question],
     attempts: List[Attempt],
 ) -> SkillProfile:
-    """Rule-based fallback: tally accuracy per topic, enrich via Claude."""
+    """Tally accuracy per topic — no AI calls here."""
     question_map: Dict[str, Question] = {q.id: q for q in questions}
     profile: SkillProfile = {}
 
@@ -238,45 +234,63 @@ def _analyze_diagnostic_rule_based(
             profile[tid] = SkillStats(topic_id=tid)
         profile[tid].update(attempt.is_correct)
 
-    # --- Claude: infer deeper misconceptions from answer patterns ----------
-    if profile:
-        attempt_details = []
-        for attempt in attempts:
-            q = question_map.get(attempt.question_id)
-            if q is None:
-                continue
-            attempt_details.append({
-                "topic_id": q.topic_id,
-                "question": q.text,
-                "options": q.options,
-                "correct_option_index": q.correct_option_index,
-                "selected_option_index": attempt.selected_option_index,
-                "is_correct": attempt.is_correct,
-            })
-
-        prompt = f"""You are an expert tutor analysing a student's diagnostic quiz results.
-
-Below is a list of question attempts. For each topic, identify specific misconceptions or error patterns the student shows based on WRONG answers only. Be concise and precise.
-
-Attempts (JSON):
-{json.dumps(attempt_details, indent=2)}
-
-Return ONLY a JSON object mapping topic_id to a list of misconception strings (max 3 per topic). Example:
-{{"algebra": ["confuses expanding brackets with factorising"], "geometry": []}}
-
-If a topic has no wrong answers, return an empty list for it. Return only the JSON, no explanation."""
-
-        raw = _call_claude(prompt, max_tokens=512)
-        if raw:
-            try:
-                misconception_map: Dict[str, List[str]] = json.loads(raw)
-                for tid, labels in misconception_map.items():
-                    if tid in profile and isinstance(labels, list):
-                        profile[tid].misconceptions = [str(l) for l in labels]
-            except (json.JSONDecodeError, TypeError, ValueError) as exc:
-                logger.warning("Could not parse misconception response: %s", exc)
-
     return profile
+
+
+def _enrich_misconceptions_openai(
+    profile: SkillProfile,
+    questions: List[Question],
+    attempts: List[Attempt],
+) -> None:
+    """Use OpenAI to identify misconceptions and write them into profile in-place."""
+    question_map: Dict[str, Question] = {q.id: q for q in questions}
+
+    attempt_details = []
+    for attempt in attempts:
+        q = question_map.get(attempt.question_id)
+        if q is None:
+            continue
+        attempt_details.append({
+            "topic_id": q.topic_id,
+            "question": q.text[:120],
+            "options": q.options,
+            "correct_option_index": q.correct_option_index,
+            "selected_option_index": attempt.selected_option_index,
+            "is_correct": attempt.is_correct,
+        })
+
+    system = (
+        "You are an expert SPM Math tutor analysing a student's diagnostic results. "
+        "Identify specific misconceptions from wrong answers only. "
+        "Return ONLY valid JSON — no markdown, no explanation."
+    )
+
+    user = f"""Analyse these quiz attempts and return a JSON object mapping topic_id
+to a list of misconception strings (max 3 per topic, empty list if none).
+
+Attempts:
+{json.dumps(attempt_details, separators=(',', ':'))}
+
+Return ONLY this JSON shape (no markdown fences):
+{{"<topic_id>": ["<misconception>", ...], ...}}"""
+
+    try:
+        response = _client().chat.completions.create(
+            model="gpt-4o-mini",
+            max_tokens=512,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+        )
+        raw = (response.choices[0].message.content or "").strip()
+        if raw:
+            misconception_map: Dict[str, List[str]] = json.loads(raw)
+            for tid, labels in misconception_map.items():
+                if tid in profile and isinstance(labels, list):
+                    profile[tid].misconceptions = [str(m) for m in labels]
+    except Exception as exc:
+        logger.warning("OpenAI misconception enrichment failed: %s", exc)
 
 
 def analyze_diagnostic(
@@ -285,22 +299,13 @@ def analyze_diagnostic(
 ) -> SkillProfile:
     """Build a SkillProfile from diagnostic session attempts.
 
-    Routes to Gemini when ADAPTIVE_ENGINE=gemini, otherwise uses rule-based
-    heuristics (with Claude misconception enrichment as a secondary call).
-    Falls back to rule-based on any Gemini error.
+    Always runs rule-based accuracy tallying first, then enriches misconceptions
+    via OpenAI. Falls back to empty misconceptions if OpenAI is unavailable.
     """
-    # ── Rule-based first pass (always needed to compute accuracy/level) ────
     profile = _analyze_diagnostic_rule_based(questions, attempts)
 
-    # ── Gemini: overwrite misconceptions with richer analysis ──────────────
-    if _gemini_enabled():
-        try:
-            misconception_map = get_gemini_engine().analyze_diagnostic_gemini(questions, attempts)
-            for tid, labels in misconception_map.items():
-                if tid in profile:
-                    profile[tid].misconceptions = labels
-        except Exception as exc:
-            logger.exception("Gemini analyze_diagnostic failed, using rule-based misconceptions", exc_info=exc)
+    if profile:
+        _enrich_misconceptions_openai(profile, questions, attempts)
 
     return profile
 
