@@ -194,11 +194,6 @@ export default function LearningPage() {
         style={{ borderColor: currentChapter.color + "40" }}
       >
         <div className="material-header-top-row">
-          <button type="button" className="material-back-btn" onClick={() => router.back()} aria-label="Kembali">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
           <p className="material-eyebrow">📖 Matematik</p>
         </div>
         <h1 className="material-title lp-banner-title" style={{ color: currentChapter.color }}>
@@ -252,13 +247,6 @@ export default function LearningPage() {
                       ref={el => { nodeRefs.current[`${chapter.id}-${stepIdx}`] = el; }}
                       style={{ transform: `translateX(${offset}px)` }}
                     >
-                      {/* START label on active node */}
-                      {active && (
-                        <div className="lp-start-label" style={{ borderColor: chapter.color, color: chapter.color }}>
-                          MULA
-                          <div className="lp-start-arrow" style={{ borderTopColor: chapter.color }} />
-                        </div>
-                      )}
 
                       {/* 3D node circle */}
                       <button

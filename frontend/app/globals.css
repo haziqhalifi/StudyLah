@@ -4892,6 +4892,580 @@ button.map-node:hover {
   margin-bottom: 1.5rem;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   DR2 — Diagnostic Result v2  (matches homepage visual language)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Page shell — mirrors home-dashboard-shell */
+.dr2-page {
+  width: min(100%, 430px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1.1rem 1rem 6rem;
+}
+
+/* Skeleton — same shimmer palette as homepage */
+.dr2-skeleton {
+  border-radius: 22px;
+  background: #ede9ff;
+  animation: dr2-shimmer 1.5s ease-in-out infinite;
+}
+.dr2-skel-header { height: 10rem; width: 100%; }
+.dr2-skel-row    { height: 4.5rem; width: 100%; border-radius: 16px; }
+.dr2-skel-tall   { height: 8rem; width: 100%; border-radius: 16px; }
+.dr2-skel-btn    { height: 3rem; width: 100%; border-radius: 16px; }
+
+@keyframes dr2-shimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ── Hero — mirrors level-card gradient + radial highlight ──── */
+.dr2-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 1.25rem 1.125rem 1.125rem;
+  background:
+    radial-gradient(circle at 88% 16%, rgba(255,255,255,0.38) 0 13%, transparent 14%),
+    linear-gradient(135deg, #8e78ff 0%, #b26cff 52%, #ff8dc0 100%);
+  color: #fff;
+  box-shadow: 0 22px 42px rgba(151, 109, 255, 0.28);
+}
+
+.dr2-xp-pill {
+  position: absolute;
+  top: 0.875rem;
+  right: 0.875rem;
+  background: rgba(255,255,255,0.22);
+  border-radius: 100px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.dr2-hero-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.875rem;
+}
+
+/* Ring — identical to progress-set-ring-wrap sizing but larger */
+.dr2-ring-wrap {
+  flex-shrink: 0;
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.dr2-ring-svg  { transform: rotate(-90deg); }
+.dr2-ring-arc  { transition: stroke-dasharray 0.9s ease; }
+
+.dr2-ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dr2-ring-pct  { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+.dr2-ring-frac { font-size: 0.65rem; opacity: 0.75; margin-top: 2px; font-weight: 700; }
+
+.dr2-hero-copy { flex: 1; }
+
+.dr2-hero-grade {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin: 0 0 0.2rem;
+}
+
+/* Mirrors .student-header h1 weight, DM Sans body font */
+.dr2-hero-name {
+  font-family: var(--font-body);
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin: 0 0 0.2rem;
+}
+
+.dr2-hero-sub {
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0.82;
+  margin: 0;
+}
+
+/* Context chip — mirrors daily-mission-badge pill */
+.dr2-context-chip {
+  background: rgba(255,255,255,0.18);
+  border-radius: 100px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+  display: inline-block;
+}
+
+.dr2-encouragement {
+  margin-top: 0.75rem;
+  background: rgba(255,255,255,0.14);
+  border-radius: 14px;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.5;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+/* ── Insight strip — mirrors quick-stat-card grid ────────────── */
+.dr2-insight-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.dr2-insight-card {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Coloured left accent — matches fokus-card border */
+.dr2-insight-strength { border-left: 3px solid #5bd4bc; }
+.dr2-insight-next     { border-left: 3px solid #7f65ff; }
+.dr2-insight-icon     { font-size: 1.2rem; flex-shrink: 0; }
+
+.dr2-insight-label {
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #766f91;
+  margin: 0 0 0.1rem;
+}
+
+.dr2-insight-val {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #26203f;
+  margin: 0;
+}
+
+/* ── AI Diagnosis — mirrors fokus-card white card with brand border ── */
+.dr2-ai-card {
+  background: #fff;
+  border-radius: 22px;
+  border: 1.5px solid #ede9ff;
+  box-shadow: 0 8px 24px rgba(142, 120, 255, 0.13);
+  padding: 1rem 1.125rem;
+}
+
+.dr2-ai-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Icon box — mirrors daily-mission-icon rounded box */
+.dr2-ai-icon-box {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8e78ff 0%, #b26cff 100%);
+  border-radius: 14px;
+  font-size: 1.2rem;
+}
+
+.dr2-ai-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7f65ff;
+  margin: 0 0 0.1rem;
+}
+
+.dr2-ai-sublabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #766f91;
+  margin: 0;
+}
+
+.dr2-ai-copy {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Section headers — mirrors progress-section-header ───────── */
+.dr2-section      { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.dr2-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.dr2-section-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #26203f;
+  margin: 0;
+}
+
+.dr2-section-sub {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #766f91;
+  margin: 0;
+}
+
+/* ── Focus path cards — primary mirrors fokus-card; others mirror weak-topic-card ── */
+.dr2-focus-card {
+  background: #fff;
+  border-radius: 22px;
+  border: 1.5px solid #f0edff;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  padding: 1rem 1.125rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dr2-focus-card--primary {
+  border: 1.5px solid #c4b5fd;
+  background: linear-gradient(135deg, #faf8ff 0%, #f5f0ff 100%);
+  box-shadow: 0 12px 32px rgba(142, 120, 255, 0.18);
+}
+
+.dr2-focus-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.625rem;
+}
+
+/* Priority badge — mirrors fokus-eyebrow uppercase pill */
+.dr2-focus-priority {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 2px 10px;
+}
+
+.dr2-focus-priority--needs-work-primary { background: #fef2f2; color: #b91c1c; }
+.dr2-focus-priority--needs-work         { background: #fff7ed; color: #c2410c; }
+.dr2-focus-priority--improving          { background: #ecfdf5; color: #065f46; }
+.dr2-focus-priority--good-primary,
+.dr2-focus-priority--good               { background: #eef2ff; color: #4338ca; }
+.dr2-focus-priority--strong-primary,
+.dr2-focus-priority--strong             { background: #ede9fe; color: #4c1d95; }
+
+.dr2-focus-rank { font-size: 0.68rem; font-weight: 700; color: #9ca3af; }
+
+.dr2-focus-body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.dr2-focus-info { flex: 1; min-width: 0; }
+
+/* Topic name — mirrors progress-set-name */
+.dr2-focus-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #26203f;
+  margin: 0 0 0.2rem;
+}
+
+.dr2-focus-meta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0 0 0.4rem;
+}
+
+.dr2-focus-pct           { font-weight: 800; }
+.dr2-focus-pct--zero     { color: #f87171; }
+.dr2-focus-pct--needs-work { color: #ef4444; }
+.dr2-focus-pct--improving  { color: #f59e0b; }
+.dr2-focus-pct--good       { color: #10b981; }
+.dr2-focus-pct--strong     { color: #7c3aed; }
+
+/* Action hint — mirrors fokus-meta */
+.dr2-focus-hint {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #766f91;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Primary CTA — mirrors fokus-cta gradient button */
+.dr2-focus-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #8e78ff 0%, #b26cff 100%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(142, 120, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.dr2-focus-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(142, 120, 255, 0.45); }
+.dr2-focus-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Secondary CTA — plain outlined */
+.dr2-focus-btn-ghost {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 0.5rem 0.875rem;
+  border: 1.5px solid #c4b5fd;
+  border-radius: 14px;
+  background: transparent;
+  color: #7f65ff;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.dr2-focus-btn-ghost:hover    { background: #f5f0ff; border-color: #a78bfa; }
+.dr2-focus-btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Topic breakdown — mirrors progress-set-card list style ──── */
+.dr2-topic-list {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  overflow: hidden;
+}
+
+.dr2-topic-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #f0edff;
+  position: relative;
+}
+
+.dr2-topic-card:first-child  { border-radius: 22px 22px 0 0; }
+.dr2-topic-card:last-child   { border-radius: 0 0 22px 22px; border-bottom: none; }
+.dr2-topic-card:only-child   { border-radius: 22px; border-bottom: none; }
+
+.dr2-topic-card--best { background: #faf8ff; }
+
+.dr2-best-tag {
+  position: absolute;
+  top: -9px;
+  left: 0.875rem;
+  background: #8e78ff;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 900;
+  border-radius: 100px;
+  padding: 2px 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dr2-topic-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+}
+
+/* Mini ring — mirrors progress-set-ring-wrap exactly */
+.dr2-mini-ring-wrap {
+  flex-shrink: 0;
+  position: relative;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dr2-mini-arc { transition: stroke-dasharray 0.7s ease; }
+
+.dr2-mini-ring-wrap[data-tier="zero"]       .dr2-mini-arc { stroke: #fca5a5; }
+.dr2-mini-ring-wrap[data-tier="needs-work"] .dr2-mini-arc { stroke: #ef4444; }
+.dr2-mini-ring-wrap[data-tier="improving"]  .dr2-mini-arc { stroke: #f59e0b; }
+.dr2-mini-ring-wrap[data-tier="good"]       .dr2-mini-arc { stroke: #10b981; }
+.dr2-mini-ring-wrap[data-tier="strong"]     .dr2-mini-arc { stroke: #7f65ff; }
+
+/* Pct label inside ring — mirrors progress-set-ring-pct */
+.dr2-mini-pct {
+  position: absolute;
+  font-size: 0.7rem;
+  font-weight: 900;
+  z-index: 1;
+}
+
+.dr2-mini-ring-wrap[data-tier="zero"]       .dr2-mini-pct { color: #f87171; }
+.dr2-mini-ring-wrap[data-tier="needs-work"] .dr2-mini-pct { color: #ef4444; }
+.dr2-mini-ring-wrap[data-tier="improving"]  .dr2-mini-pct { color: #f59e0b; }
+.dr2-mini-ring-wrap[data-tier="good"]       .dr2-mini-pct { color: #10b981; }
+.dr2-mini-ring-wrap[data-tier="strong"]     .dr2-mini-pct { color: #7f65ff; }
+
+.dr2-topic-info { flex: 1; min-width: 0; }
+
+.dr2-topic-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+
+/* Mirrors progress-set-name */
+.dr2-topic-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #26203f;
+  margin: 0;
+}
+
+.dr2-tier-badge {
+  font-size: 0.6rem;
+  font-weight: 900;
+  border-radius: 100px;
+  padding: 2px 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dr2-tier-badge--needs-work { background: #fef2f2; color: #b91c1c; }
+.dr2-tier-badge--improving  { background: #fffbeb; color: #92400e; }
+.dr2-tier-badge--good       { background: #ecfdf5; color: #065f46; }
+.dr2-tier-badge--strong     { background: #ede9fe; color: #5b21b6; }
+
+/* Mirrors progress-set-sub */
+.dr2-topic-meta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0 0 0.4rem;
+}
+
+/* Progress bar — mirrors level-progress-track */
+.dr2-bar-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 100px;
+  background: rgba(142, 120, 255, 0.12);
+  overflow: hidden;
+}
+
+.dr2-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+}
+
+.dr2-bar-fill--zero       { background: #fca5a5; opacity: 0.6; }
+.dr2-bar-fill--needs-work { background: linear-gradient(90deg, #f87171, #ef4444); }
+.dr2-bar-fill--improving  { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.dr2-bar-fill--good       { background: linear-gradient(90deg, #34d399, #10b981); }
+.dr2-bar-fill--strong     { background: linear-gradient(90deg, #a78bfa, #7f65ff); }
+
+/* ── Bottom actions ───────────────────────────────────────────── */
+.dr2-bottom-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+.dr2-dashboard-btn { text-align: center; width: 100%; }
+
+.dr2-link-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7f65ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.25rem;
+}
+
+.dr2-error {
+  margin-top: 0.5rem;
+  color: #ef4444;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* ── Error page ───────────────────────────────────────────────── */
+.dr2-error-page {
+  padding: 2rem 1.25rem;
+  max-width: 430px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.dr2-error-emoji { font-size: 2.5rem; margin-bottom: 1rem; }
+
+.dr2-error-title {
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #26203f;
+  margin-bottom: 0.5rem;
+}
+
+.dr2-error-body {
+  color: #766f91;
+  font-size: 0.88rem;
+  margin-bottom: 1.5rem;
+}
+
 /* â”€â”€ Option cards inside qs-shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qs-shell .option-card {
   border-radius: var(--r-xl);
