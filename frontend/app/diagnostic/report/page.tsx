@@ -30,7 +30,7 @@ function QuestionRow({ q }: { q: QuestionAttemptDetail }) {
         <p className="text-xs text-gray-400">
           {q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}
           {!q.isCorrect && (
-            <> &middot; Correct: option {q.correctOptionIndex + 1} &middot; You chose: option {q.selectedOptionIndex + 1}</>
+            <> &middot; Betul: pilihan {q.correctOptionIndex + 1} &middot; Anda pilih: pilihan {q.selectedOptionIndex + 1}</>
           )}
         </p>
       </div>
@@ -55,7 +55,7 @@ function TopicSection({ topic }: { topic: TopicReport }) {
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm text-gray-900 m-0">{topic.topicName}</p>
           <p className="text-xs text-gray-500 m-0">
-            {topic.correct}/{topic.attempts} correct &middot;{" "}
+            {topic.correct}/{topic.attempts} betul &middot;{" "}
             <span className={`inline-block px-1.5 py-0.5 rounded-full text-xs font-semibold ${cls.badge}`}>
               {topic.level.toUpperCase()}
             </span>
@@ -67,7 +67,7 @@ function TopicSection({ topic }: { topic: TopicReport }) {
       {expanded && (
         <div className="border-t border-gray-200 px-5 pt-3 pb-4">
           {topic.questions.length === 0 ? (
-            <p className="text-sm text-gray-400">No questions recorded.</p>
+            <p className="text-sm text-gray-400">Tiada soalan direkod.</p>
           ) : (
             topic.questions.map((q, idx) => (
               <QuestionRow key={`${q.questionId}-${idx}`} q={q} />
@@ -88,13 +88,13 @@ export default function DiagnosticReportPage() {
   useEffect(() => {
     const userId = localStorage.getItem("studylah_user_id");
     if (!userId) {
-      setError("No user session found. Please complete the diagnostic first.");
+      setError("Tiada sesi pengguna. Sila selesaikan diagnostik dahulu.");
       setLoading(false);
       return;
     }
     fetchDiagnosticReport(userId)
       .then(setReport)
-      .catch((e: Error) => setError(e?.message ?? "Failed to load report."))
+      .catch((e: Error) => setError(e?.message ?? "Gagal memuatkan laporan."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -103,16 +103,16 @@ export default function DiagnosticReportPage() {
       <div className="mb-7">
         <div className="text-4xl mb-2">📋</div>
         <h1 className="font-extrabold text-2xl leading-tight mb-1" style={{ fontFamily: "var(--font-display)" }}>
-          Detailed Report
+          Laporan Terperinci
         </h1>
         {report && (
           <p className="text-sm text-gray-500 leading-relaxed">
-            {report.correctQuestions}/{report.totalQuestions} correct overall &mdash; {pct(report.overallAccuracy)} accuracy
+            {report.correctQuestions}/{report.totalQuestions} betul keseluruhan &mdash; {pct(report.overallAccuracy)} ketepatan
           </p>
         )}
       </div>
 
-      {loading && <p className="text-sm text-gray-400">Loading your report…</p>}
+      {loading && <p className="text-sm text-gray-400">Memuatkan laporan anda…</p>}
 
       {error && (
         <div className="bg-red-50 border border-red-300 rounded-xl p-4 mb-6 text-red-700 text-sm">
@@ -130,10 +130,10 @@ export default function DiagnosticReportPage() {
 
       <div className="flex flex-col gap-3">
         <button type="button" className="btn-primary" onClick={() => router.push("/diagnostic/result")}>
-          ← Back to results
+          ← Kembali ke keputusan
         </button>
         <button type="button" className="btn-ghost" onClick={() => router.push("/")}>
-          Go to dashboard
+          Pergi ke papan pemuka
         </button>
       </div>
     </div>
