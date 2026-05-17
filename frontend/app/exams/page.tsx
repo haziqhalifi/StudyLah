@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import QuizSheet from "@/components/QuizSheet";
 import StandardQuizShell from "@/components/StandardQuizShell";
@@ -74,7 +74,7 @@ function formatTime(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export default function ExamsPage() {
+function ExamsPageInner() {
   const searchParams = useSearchParams();
   const autoId = searchParams.get("paperId");
   const [stage, setStage] = useState<Stage>(autoId ? "quiz" : "pick");
@@ -452,5 +452,18 @@ export default function ExamsPage() {
       )}
       {error && <p style={{ color: "var(--wrong)", fontSize: "0.85rem" }}>{error}</p>}
     </QuizSheet>
+  );
+}
+
+export default function ExamsPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60dvh", gap: "1rem", color: "var(--muted)" }}>
+        <div className="onboard-loader" />
+        <p style={{ fontSize: "0.9rem", fontWeight: 600 }}>Memuatkan…</p>
+      </div>
+    }>
+      <ExamsPageInner />
+    </Suspense>
   );
 }
