@@ -169,10 +169,11 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
           aria-label="Ask StudyBuddy"
-        >
-          🤖
-        </button>
+        >{"\uD83E\uDD16"}</button>
       )}
     </QuizSheet>
   );
 }
+
+
+

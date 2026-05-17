@@ -316,7 +316,7 @@ export default function ReviewPage() {
 
       {/* ── Buddy bubble ── */}
       <div className="buddy-bubble page-enter">
-        <span className="buddy-bubble-avatar">🤖</span>
+        <span className="buddy-bubble-avatar">{"\uD83E\uDD16"}</span>
         <p className="buddy-bubble-text">
           {REASON_BUDDY[item.reason] ??
             "Mari ulang kaji ini bersama. Anda boleh!"}
@@ -415,10 +415,8 @@ export default function ReviewPage() {
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Tanya StudyBuddy"
-        >
-          🤖
-        </button>
+          aria-label="Ask StudyBuddy"
+        >{"\uD83E\uDD16"}</button>
       )}
     </QuizSheet>
   );
@@ -434,3 +432,6 @@ function LoadingShell() {
     </div>
   );
 }
+
+
+

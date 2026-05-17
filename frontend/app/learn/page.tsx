@@ -134,11 +134,11 @@ export default function LearnPage() {
   const xpToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const uid = sessionStorage.getItem("userId");
+    let uid = sessionStorage.getItem("userId");
     const qRaw = sessionStorage.getItem("currentQuestion");
     if (!uid) {
-      router.push("/");
-      return;
+      uid = `guest_${Date.now()}`;
+      sessionStorage.setItem("userId", uid);
     }
     setUserId(uid);
 
