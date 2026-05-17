@@ -212,22 +212,103 @@ def get_diagnostic_result(userId: str = Query(..., description="User ID")) -> Di
 
 
 # ---------------------------------------------------------------------------
-# Endpoint: GET /api/diagnostic/report  (stub)
+# Endpoint: GET /api/diagnostic/report
 # ---------------------------------------------------------------------------
 
 
-@router.get("/report")
-def get_diagnostic_report(userId: str = Query(..., description="User ID")):
-    # TODO: implement detailed analytics — per-question breakdown, time trends,
-    # misconception heatmap. Currently returns a stub "coming_soon" placeholder.
-    """Stub endpoint for future detailed analytics."""
-    return {
-        "userId": userId,
-        "status": "coming_soon",
-        "message": "Detailed diagnostic report is under construction.",
-        "sections": [
-            {"title": "Topic Breakdown", "available": False},
-            {"title": "Question-level Analysis", "available": False},
-            {"title": "Time Trends", "available": False},
-        ],
-    }
+class QuestionAttemptDetail(BaseModel):
+    questionId: str
+    questionText: str
+    selectedOptionIndex: int
+    correctOptionIndex: int
+    isCorrect: bool
+    difficulty: str
+    attemptedAt: str
+
+
+class TopicReport(BaseModel):
+    topicId: str
+    topicName: str
+    accuracy: float
+    attempts: int
+    correct: int
+    level: Literal["weak", "okay", "strong"]
+    questions: List[QuestionAttemptDetail]
+
+
+class DiagnosticReport(BaseModel):
+    userId: str
+    totalQuestions: int
+    correctQuestions: int
+    overallAccuracy: float
+    topics: List[TopicReport]
+
+
+@router.get("/report", response_model=DiagnosticReport)
+def get_diagnostic_report(userId: str = Query(..., description="User ID")) -> DiagnosticReport:
+    """Per-topic breakdown with question-level attempt detail."""
+    all_attempts = db.get_user_attempts(userId)
+    if not all_attempts:
+        raise HTTPException(
+            status_code=404,
+            detail="No diagnostic attempts found for this user. Complete the diagnostic first.",
+        )
+
+    question_ids = list({a.question_id for a in all_attempts})
+    questions = db.get_questions_by_ids(question_ids)
+    question_map = {q.id: q for q in questions}
+
+    all_questions = db.get_all_questions()
+    ai_profile = ai_engine.analyze_diagnostic(all_questions, all_attempts)
+
+    # Build per-topic reports with question-level detail
+    topic_reports: List[TopicReport] = []
+    for topic_id, name in _TOPIC_NAMES.items():
+        if topic_id not in ai_profile:
+            continue
+        stats = ai_profile[topic_id]
+
+        question_details: List[QuestionAttemptDetail] = []
+        for attempt in all_attempts:
+            q = question_map.get(attempt.question_id)
+            if not q or q.topic_id != topic_id:
+                continue
+            ts = attempt.timestamp
+            if isinstance(ts, str):
+                attempted_at = ts
+            else:
+                attempted_at = ts.isoformat()
+            question_details.append(QuestionAttemptDetail(
+                questionId=q.id,
+                questionText=q.text,
+                selectedOptionIndex=attempt.selected_option_index,
+                correctOptionIndex=q.correct_option_index,
+                isCorrect=attempt.is_correct,
+                difficulty=q.difficulty,
+                attemptedAt=attempted_at,
+            ))
+
+        topic_correct = sum(1 for d in question_details if d.isCorrect)
+        topic_attempts = len(question_details)
+
+        topic_reports.append(TopicReport(
+            topicId=topic_id,
+            topicName=name,
+            accuracy=stats.accuracy,
+            attempts=topic_attempts,
+            correct=topic_correct,
+            level=_engine_level_to_result(stats.estimated_level),
+            questions=question_details,
+        ))
+
+    total_questions = len(all_attempts)
+    correct_questions = sum(1 for a in all_attempts if a.is_correct)
+    overall_accuracy = round(correct_questions / total_questions, 4) if total_questions else 0.0
+
+    return DiagnosticReport(
+        userId=userId,
+        totalQuestions=total_questions,
+        correctQuestions=correct_questions,
+        overallAccuracy=overall_accuracy,
+        topics=sorted(topic_reports, key=lambda t: t.accuracy),
+    )

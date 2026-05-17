@@ -55,7 +55,6 @@ class LearningSnapshot(BaseModel):
     total_questions_answered: int
     questions_answered_this_week: int
     last_active_at: Optional[datetime] = None
-    # TODO: populate from user profile when exam-date feature lands
     upcoming_exam_date: Optional[datetime] = None
 
 
@@ -285,9 +284,6 @@ class AICoach:
         Rewrite suggestion titles and messages in a friendly SPM-student tone.
         Falls back to the original rule-based text if OpenAI fails.
 
-        TODO: Localise to full Bahasa Melayu by adjusting the system prompt below.
-        TODO: Inject upcoming_exam_date (e.g. "SPM in 45 days") for urgency cues.
-        TODO: Inject school name from user profile when available.
         """
         if not suggestions:
             return suggestions
@@ -383,9 +379,6 @@ class AICoach:
 
         The reply references specific numbers from the student's snapshot so it
         feels data-driven rather than generic.
-
-        TODO: Add more BM phrases when targeting fully Malay-medium students.
-        TODO: Inject upcoming_exam_date from user profile once that feature lands.
         """
         snapshot = self.build_learning_snapshot(user_id)
         suggestions = self.generate_raw_recommendations(snapshot)

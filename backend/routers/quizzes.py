@@ -18,18 +18,16 @@ try:
     from backend.services.quiz_service import (
         create_personalized_quiz,
         get_quiz,
+        get_quiz_questions,
         list_user_quizzes,
-        SUPPORTED_TOPICS,
-        TOPIC_NAMES,
     )
     from backend.schemas.question import QuestionPublic
 except ModuleNotFoundError:
     from services.quiz_service import (  # type: ignore
         create_personalized_quiz,
         get_quiz,
+        get_quiz_questions,
         list_user_quizzes,
-        SUPPORTED_TOPICS,
-        TOPIC_NAMES,
     )
     from schemas.question import QuestionPublic  # type: ignore
 
@@ -112,13 +110,15 @@ def create_quiz(body: CreateQuizRequest) -> CreateQuizResponse:
     """
     Create a personalised quiz for a user and topic.
 
-    Selects questions from the seed bank based on the user's skill profile
-    (rule-based for now; Gemini personalisation is a TODO).
+    Selects questions from the seed bank based on the user's skill profile.
     """
     try:
+        from backend.db import get_or_create_profile
+        skill_profile = get_or_create_profile(body.user_id)
         quiz = create_personalized_quiz(
             user_id=body.user_id,
             topic_id=body.topic_id,
+            skill_profile=skill_profile,
             num_questions=body.num_questions,
         )
     except ValueError as exc:
@@ -152,5 +152,5 @@ def get_quiz_detail(quiz_id: str) -> QuizDetailResponse:
         topic_id=quiz.topic_id,
         title=quiz.title,
         created_at=quiz.created_at.isoformat(),
-        questions=[q.to_public() for q in quiz.questions],
+        questions=[q.to_public() for q in get_quiz_questions(quiz_id)],
     )

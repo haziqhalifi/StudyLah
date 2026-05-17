@@ -570,6 +570,40 @@ export async function fetchDiagnosticResult(
   return get("/api/diagnostic/result", { userId });
 }
 
+export type QuestionAttemptDetail = {
+  questionId: string;
+  questionText: string;
+  selectedOptionIndex: number;
+  correctOptionIndex: number;
+  isCorrect: boolean;
+  difficulty: Difficulty;
+  attemptedAt: string;
+};
+
+export type TopicReport = {
+  topicId: DiagnosticTopicId;
+  topicName: string;
+  accuracy: number;
+  attempts: number;
+  correct: number;
+  level: "weak" | "okay" | "strong";
+  questions: QuestionAttemptDetail[];
+};
+
+export type DiagnosticReport = {
+  userId: string;
+  totalQuestions: number;
+  correctQuestions: number;
+  overallAccuracy: number;
+  topics: TopicReport[];
+};
+
+export async function fetchDiagnosticReport(
+  userId: string,
+): Promise<DiagnosticReport> {
+  return get("/api/diagnostic/report", { userId });
+}
+
 // ---------------------------------------------------------------------------
 // Flashcards
 // ---------------------------------------------------------------------------
