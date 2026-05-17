@@ -28,7 +28,7 @@ export default function RootLayout({
       <head>
         <link
           rel="preload"
-          href="/assets/mascot.webp"
+          href="/assets/logo.webp"
           as="image"
           type="image/webp"
         />
@@ -49,10 +49,10 @@ export default function RootLayout({
         >
           {/* your logo/spinner here */}
           <img
-            src="/assets/mascot.webp"
+            src="/assets/logo.webp"
             alt="StudyLah Logo"
-            width={200}
-            height={200}
+            width={250}
+            height={250}
             loading="eager"
             decoding="sync"
             style={{ objectFit: "contain" }}

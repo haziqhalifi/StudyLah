@@ -64,23 +64,10 @@ export default function MaterialsHubPage() {
     setNodeProgress(progress);
   }, []);
 
-  const totalNodes = BAB_CARDS.reduce((s, c) => s + c.steps.length, 0);
-  const doneNodes = Object.values(nodeProgress).reduce((s, v) => s + v.done, 0);
-  const overallPct = totalNodes > 0 ? Math.round((doneNodes / totalNodes) * 100) : 0;
-
-  // Recommended chapter: lowest completion % (first untouched wins ties)
-  const cardPcts = BAB_CARDS.map((card) => {
+  const recommendedId = BAB_CARDS.map((card) => {
     const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
     return { card, pct: np.total > 0 ? Math.round((np.done / np.total) * 100) : 0 };
-  });
-  const recommendedId = cardPcts.reduce((best, cur) =>
-    cur.pct < best.pct ? cur : best
-  ).card.id;
-
-  const firstCard = BAB_CARDS[0];
-  const firstNp = nodeProgress[firstCard.id] ?? { done: 0, total: firstCard.steps.length };
-  const firstPct = firstNp.total > 0 ? Math.round((firstNp.done / firstNp.total) * 100) : 0;
-  const recommendedCard = BAB_CARDS.find((c) => c.id === recommendedId) ?? firstCard;
+  }).reduce((best, cur) => (cur.pct < best.pct ? cur : best)).card.id;
 
   return (
     <section className="home-dashboard-shell page-enter" aria-label="Pilih Bab">
@@ -94,46 +81,10 @@ export default function MaterialsHubPage() {
             <span aria-hidden="true">·</span>
             <span>{BAB_CARDS.length} bab</span>
             <span aria-hidden="true">·</span>
-            <span>{totalNodes} subtopik</span>
+            <span>{BAB_CARDS.reduce((s, c) => s + c.steps.length, 0)} subtopik</span>
           </div>
         </div>
       </header>
-
-      {/* ── Laluan Pembelajaran card ── */}
-      <div className="lp-path-card">
-        <div className="lp-path-badge">✦ Laluan Pembelajaran</div>
-        <p className="lp-path-copy">
-          Kami pilih urutan bab terbaik untuk kamu — ikut sahaja, kamu akan cover semua topik penting SPM.
-        </p>
-
-        <div className="lp-path-progress-row">
-          <div className="lp-path-track">
-            <div
-              className="lp-path-fill"
-              style={{ "--pct": `${overallPct}%` } as React.CSSProperties}
-            />
-          </div>
-          <span className="lp-path-pct">{overallPct}%</span>
-        </div>
-        <p className="lp-path-progress-label">
-          {doneNodes} subtopik siap daripada {totalNodes}
-        </p>
-
-        <button
-          type="button"
-          className="lp-path-cta-btn"
-          onClick={() => router.push(recommendedCard.href)}
-        >
-          {firstPct === 0
-            ? `Mulakan Laluan → ${firstCard.title} (${firstCard.estimatedTime})`
-            : `Sambung Laluan → ${recommendedCard.title}`}
-        </button>
-      </div>
-
-      {/* ── Hint ── */}
-      <p className="lp-section-hint">
-        💡 Kami syorkan habiskan 1 bab dahulu sebelum lompat ke bab lain.
-      </p>
 
       {/* ── Chapter cards ── */}
       <div className="lp-chapter-list">
