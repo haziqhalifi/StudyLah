@@ -19,6 +19,7 @@ interface StudyBuddyChatProps {
   learningContext?: LearningContext;
   isOpen: boolean;
   onClose: () => void;
+  initialMessage?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -63,6 +64,7 @@ export default function StudyBuddyChat({
   learningContext,
   isOpen,
   onClose,
+  initialMessage,
 }: StudyBuddyChatProps) {
   const [messages, setMessages] = useState<DisplayMessage[]>(() => [
     { role: "assistant", content: buildWelcomeMessage(learningContext) },
@@ -70,8 +72,8 @@ export default function StudyBuddyChat({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  // "expanded" = chips visible above input; "collapsed" = chips hidden
   const [chipsVisible, setChipsVisible] = useState(true);
+  const sentInitial = useRef(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -94,15 +96,21 @@ export default function StudyBuddyChat({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Focus input when opened
+  // Focus input when opened; auto-send initialMessage once
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
+    if (!isOpen) return;
+    setTimeout(() => inputRef.current?.focus(), 50);
+    if (initialMessage && !sentInitial.current) {
+      sentInitial.current = true;
+      // Small delay so the drawer is fully rendered before sending
+      setTimeout(() => sendMessage(initialMessage), 120);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Re-generate welcome message if context changes (e.g. user moves to next Q)
   useEffect(() => {
+    sentInitial.current = false;
     setMessages([{ role: "assistant", content: buildWelcomeMessage(learningContext) }]);
     setChipsVisible(true);
   }, [learningContext?.currentQuestion?.id]);

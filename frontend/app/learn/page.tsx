@@ -618,22 +618,6 @@ function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarPro
         </div>
       )}
 
-      {/* Chips */}
-      <div className="icb-chips">
-        {chips.map((chip) => (
-          <button
-            key={chip.actionType + chip.label}
-            type="button"
-            className="icb-chip"
-            onClick={() => handleChip(chip)}
-            disabled={loading}
-          >
-            <span aria-hidden="true">{chip.emoji}</span>
-            {chip.label}
-          </button>
-        ))}
-      </div>
-
       {/* Input */}
       <div className="icb-input-wrap">
         <textarea
@@ -657,6 +641,22 @@ function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarPro
             <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
           </svg>
         </button>
+      </div>
+
+      {/* Chips */}
+      <div className="icb-chips">
+        {chips.map((chip) => (
+          <button
+            key={chip.actionType + chip.label}
+            type="button"
+            className="icb-chip"
+            onClick={() => handleChip(chip)}
+            disabled={loading}
+          >
+            <span aria-hidden="true">{chip.emoji}</span>
+            {chip.label}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { getAssessment, getPapers } from "@/lib/api";
+import { getAssessment } from "@/lib/api";
 import type { TopicStats } from "@/lib/api";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
@@ -45,6 +45,7 @@ function HomeDashboard() {
   const router = useRouter();
   const [userId, setUserId] = useState("guest");
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatInitialMsg, setChatInitialMsg] = useState<string | undefined>();
   const [topics, setTopics] = useState<TopicStats[]>([]);
   const [chatContext, setChatContext] = useState<LearningContext>({
     topicId: "ubahan",
@@ -77,17 +78,8 @@ function HomeDashboard() {
       topicId,
       topicName: TOPIC_DISPLAY_NAMES[topicKey] ?? "Ubahan (Variation)",
       pageContext: "general",
-      ...(initialMsg
-        ? {
-            currentQuestion: {
-              id: "home-context",
-              text: initialMsg,
-              options: [],
-              difficulty: "medium" as const,
-            },
-          }
-        : {}),
     });
+    setChatInitialMsg(initialMsg);
     setChatOpen(true);
   }
 
@@ -102,13 +94,13 @@ function HomeDashboard() {
         <DailyMissionCard />
         <WeakTopicCard topics={topics} />
         <AIChatCard onOpen={openChat} />
-        <RecentSessionCard />
       </section>
       <StudyBuddyChat
         userId={userId}
         isOpen={chatOpen}
-        onClose={() => setChatOpen(false)}
+        onClose={() => { setChatOpen(false); setChatInitialMsg(undefined); }}
         learningContext={chatContext}
+        initialMessage={chatInitialMsg}
       />
     </>
   );
@@ -257,14 +249,14 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
     <button
       type="button"
       className="weak-topic-card"
-      onClick={() => router.push("/learn")}
-      aria-label={`Topik lemah: ${name}`}
+      onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+      aria-label={`Fokus hari ini: ${name}`}
     >
       <span className="weak-topic-icon" aria-hidden="true">
         <TargetIcon />
       </span>
       <div className="weak-topic-body">
-        <p className="weak-topic-label">Topik Paling Lemah</p>
+        <p className="weak-topic-label">Fokus Hari Ini</p>
         <p className="weak-topic-title">{name}</p>
         <div className="weak-topic-bar-wrap" aria-hidden="true">
           <div className="weak-topic-bar">
@@ -273,7 +265,7 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
           <span className="weak-topic-pct">{pct}% tepat</span>
         </div>
       </div>
-      <span className="weak-topic-cta">Ulangkaji &rsaquo;</span>
+      <span className="weak-topic-cta">Ulangkaji sekarang — +10 XP</span>
     </button>
   );
 }
@@ -297,6 +289,7 @@ type TopicKey = keyof typeof TOPICS;
 
 
 function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => void }) {
+  const [expanded, setExpanded] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -328,25 +321,49 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
     e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
   }
 
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        className="ai-chat-collapsed"
+        onClick={() => setExpanded(true)}
+        aria-label="Buka Cikgu AI"
+      >
+        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+        <div className="ai-chat-collapsed-text">
+          <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
+          <p className="ai-chat-collapsed-sub">Cikgu AI sedia membantu</p>
+        </div>
+        <span className="ai-chat-collapsed-arrow" aria-hidden="true">›</span>
+      </button>
+    );
+  }
+
   return (
     <section className="ai-chat-card" aria-label="AI tutor chat">
-      {/* Header */}
       <div className="ai-chat-header">
         <div className="ai-chat-avatar" aria-hidden="true">AI</div>
         <div className="ai-chat-header-text">
           <h2>Tanya Tutor AI</h2>
           <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
         </div>
+        <button
+          type="button"
+          className="ai-chat-collapse-btn"
+          onClick={() => setExpanded(false)}
+          aria-label="Tutup Cikgu AI"
+        >
+          ✕
+        </button>
       </div>
 
-      {/* Topic tabs */}
       <div className="ai-topic-tabs" role="tablist" aria-label="Pilih topik">
         {(Object.keys(TOPICS) as TopicKey[]).map((key) => (
           <button
             key={key}
             type="button"
             role="tab"
-            aria-selected={selectedTopic === key ? "true" : "false"}
+            aria-selected={selectedTopic === key}
             className={`ai-topic-tab${selectedTopic === key ? " active" : ""}`}
             onClick={() => setSelectedTopic(key)}
           >
@@ -355,7 +372,6 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
         ))}
       </div>
 
-      {/* Subtopic chips */}
       <div className="ai-chat-suggestions">
         {topicChips.map((chip) => (
           <button
@@ -369,7 +385,6 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
         ))}
       </div>
 
-      {/* Inline input */}
       <div className="ai-chat-input-wrap">
         <textarea
           ref={inputRef}
@@ -403,104 +418,6 @@ const TOPIC_META: Record<string, { name: string }> = {
   insurans: { name: "Insurans" },
 };
 
-function RecentSessionCard() {
-  const router = useRouter();
-  const [topics, setTopics] = useState<TopicStats[]>([]);
-  const [paperCount, setPaperCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    const userId =
-      (typeof window !== "undefined" && sessionStorage.getItem("userId")) ||
-      "guest";
-    getAssessment(userId)
-      .then((res) => setTopics(res.topics))
-      .catch(() => {});
-    getPapers()
-      .then((res) => setPaperCount(res.papers.length))
-      .catch(() => {});
-  }, []);
-
-  const totalAttempts = topics.reduce((s, t) => s + t.attempts, 0);
-  const avgAccuracy =
-    topics.length > 0
-      ? Math.round(
-          (topics.reduce((s, t) => s + t.accuracy, 0) / topics.length) * 100,
-        )
-      : null;
-
-  const weakestTopic = topics.length > 0
-    ? topics.reduce((a, b) => (a.accuracy < b.accuracy ? a : b))
-    : null;
-
-  return (
-    <section className="sambung-section" aria-label="Sambung semula">
-      <h2 className="sambung-heading">Sambung semula</h2>
-      <div className="sambung-cards">
-        {/* Learning progress card */}
-        <button
-          type="button"
-          className="sambung-card sambung-card--learn"
-          onClick={() => router.push("/progress")}
-          aria-label="Lihat kemajuan pembelajaran"
-        >
-          <div className="sambung-card-icon" aria-hidden="true">
-            <ProgressIcon />
-          </div>
-          <div className="sambung-card-body">
-            <p className="sambung-card-label">Pembelajaran</p>
-            <p className="sambung-card-title">
-              {weakestTopic
-                ? `Fokus: ${TOPIC_META[weakestTopic.topic_id]?.name ?? weakestTopic.topic_id}`
-                : "Topik SPM"}
-            </p>
-            <div className="sambung-card-meta">
-              {avgAccuracy !== null ? (
-                <>
-                  <span className="sambung-pill">{avgAccuracy}%</span>
-                  <span>purata tepat</span>
-                </>
-              ) : (
-                <span className="sambung-pill-muted">Mulakan diagnostik</span>
-              )}
-            </div>
-          </div>
-          <span className="sambung-card-arrow" aria-hidden="true">
-            <ArrowIcon />
-          </span>
-        </button>
-
-        {/* Exams card */}
-        <button
-          type="button"
-          className="sambung-card sambung-card--exam"
-          onClick={() => router.push("/exams")}
-          aria-label="Sambung soalan peperiksaan"
-        >
-          <div className="sambung-card-icon" aria-hidden="true">
-            <QuizIcon />
-          </div>
-          <div className="sambung-card-body">
-            <p className="sambung-card-label">Peperiksaan</p>
-            <p className="sambung-card-title">Soalan SPM Lepas</p>
-            <div className="sambung-card-meta">
-              {paperCount !== null ? (
-                <>
-                  <span className="sambung-pill">{paperCount}</span>
-                  <span>kertas tersedia</span>
-                </>
-              ) : (
-                <span className="sambung-pill-muted">{totalAttempts > 0 ? `${totalAttempts} soalan dijawab` : "Mula latihan"}</span>
-              )}
-            </div>
-          </div>
-          <span className="sambung-card-arrow" aria-hidden="true">
-            <ArrowIcon />
-          </span>
-        </button>
-      </div>
-    </section>
-  );
-}
 
 function IconBase({ children }: { children: ReactNode }) {
   return (
@@ -537,24 +454,6 @@ function TargetIcon() {
   );
 }
 
-function QuizIcon() {
-  return (
-    <IconBase>
-      <path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2Z" />
-      <path d="m9 14 2 2 4-4" />
-    </IconBase>
-  );
-}
-
-function ProgressIcon() {
-  return (
-    <IconBase>
-      <path d="M5 19V9M12 19V5M19 19v-7" />
-    </IconBase>
-  );
-}
-
 function TrophyIcon() {
   return (
     <IconBase>
@@ -573,11 +472,4 @@ function BellIcon() {
   );
 }
 
-function ArrowIcon() {
-  return (
-    <IconBase>
-      <path d="M8 12h8M13 8l4 4-4 4" />
-    </IconBase>
-  );
-}
 
