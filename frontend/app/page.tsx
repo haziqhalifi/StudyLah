@@ -166,8 +166,8 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Hai, {name}</h1>
-        <div className="student-meta-row">
+        <h1 style={{ paddingLeft: "0.5rem" }}>Hai, {name}</h1>
+        <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
           <span>{DEFAULT_STUDENT.form}</span>
         </div>
       </div>
