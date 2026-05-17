@@ -415,31 +415,6 @@ export default function LearnPage() {
         </div>
 
         {startError && <p className="diag-error">{startError}</p>}
-
-        {question && (
-          <div className="home-actions">
-            <button
-              type="button"
-              className="home-action-primary"
-              onClick={() => setView("practice")}
-            >
-              <span
-                className="home-action-icon home-action-icon-light"
-                aria-hidden="true"
-              >
-                ↺
-              </span>
-              <span>
-                <span className="home-action-label">
-                  Sambung sesi sebelumnya
-                </span>
-                <span className="home-action-sub">
-                  Teruskan dari tempat anda berhenti
-                </span>
-              </span>
-            </button>
-          </div>
-        )}
       </section>
     );
   }
