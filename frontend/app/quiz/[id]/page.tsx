@@ -278,15 +278,15 @@ export default function QuizPage() {
     <div className="min-h-screen bg-[#f6f7fb] pb-28">
       <BuddyHeader
         title={state.quiz.title}
-        subtitle="Personalised quiz practice"
+        subtitle="Latihan kuiz diperibadikan"
       />
 
       <BuddyBubble emoji={topicMeta.emoji}>
         <div>
-          <div>{topicMeta.label} quiz is ready.</div>
+          <div>Kuiz {topicMeta.label} sudah sedia.</div>
           <div className="mt-1">
-            Question {state.currentIndex + 1} of {questions.length}. Answer all
-            questions before submitting.
+            Soalan {state.currentIndex + 1} daripada {questions.length}. Jawab semua
+            soalan sebelum menghantar.
           </div>
         </div>
       </BuddyBubble>
@@ -361,7 +361,7 @@ export default function QuizPage() {
             }
             disabled={state.currentIndex === 0}
           >
-            Previous
+            Sebelumnya
           </button>
           <button
             type="button"
@@ -377,7 +377,7 @@ export default function QuizPage() {
             }
             disabled={state.currentIndex >= questions.length - 1}
           >
-            Next
+            Seterusnya
           </button>
         </div>
 
@@ -389,7 +389,7 @@ export default function QuizPage() {
               disabled={!allAnswered || state.submitting}
               onClick={handleSubmitQuiz}
             >
-              {state.submitting ? "Submitting…" : "Submit Quiz"}
+              {state.submitting ? "Menghantar…" : "Hantar Kuiz"}
             </button>
           </div>
         </div>
@@ -402,10 +402,10 @@ function LoadingState() {
   return (
     <div className="min-h-screen bg-[#f6f7fb] pb-24">
       <BuddyHeader
-        title="Loading quiz"
-        subtitle="Building your personalised set…"
+        title="Memuatkan kuiz"
+        subtitle="Membina set diperibadikan anda…"
       />
-      <BuddyBubble>Hang tight — I’m preparing your questions.</BuddyBubble>
+      <BuddyBubble>Tunggu sebentar — saya sedang menyediakan soalan anda.</BuddyBubble>
       <div className="max-w-md mx-auto px-4 mt-4 space-y-3">
         {Array.from({ length: 3 }).map((_, index) => (
           <div

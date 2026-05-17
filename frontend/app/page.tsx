@@ -10,7 +10,7 @@ import type { LearningContext } from "@/lib/types";
 
 const DEFAULT_STUDENT = {
   name: "Pelajar",
-  form: "Form 5",
+  form: "Tingkatan 5",
   streak: 1,
 };
 
@@ -159,6 +159,13 @@ function StudentHeader() {
             aria-label="Notifikasi belum dibaca"
           />
         </button>
+        <a
+          href="/profile"
+          className="profile-avatar-btn"
+          aria-label="Profil saya"
+        >
+          <ProfileIcon />
+        </a>
       </div>
     </header>
   );
@@ -531,6 +538,14 @@ function BellIcon() {
     <IconBase>
       <path d="M18 10.5a6 6 0 0 0-12 0v2.8L4.8 16h14.4L18 13.3v-2.8Z" />
       <path d="M10 18a2 2 0 0 0 4 0" />
+    </IconBase>
+  );
+}
+
+function ProfileIcon() {
+  return (
+    <IconBase>
+      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </IconBase>
   );
 }

@@ -6,8 +6,8 @@ import type { ReactNode } from "react";
 
 const DEFAULT_STUDENT = {
   name: "Pelajar",
-  form: "Form 5",
-  stream: "Science Stream",
+  form: "Tingkatan 5",
+  stream: "Aliran Sains",
   targetExam: "SPM 2026",
   level: 1,
   progress: 0,

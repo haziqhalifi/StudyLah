@@ -6,10 +6,10 @@ import type { ReactNode } from "react";
 
 const NAV_ITEMS = [
   { href: "/", icon: HomeIcon, label: "Utama" },
-  { href: "/materials", icon: BookIcon, label: "Pelajaran" },
-  { href: "/exams", icon: PathIcon, label: "Peperiksaan" },
+  { href: "/materials", icon: BookIcon, label: "Belajar" },
+  { href: "/learn", icon: PencilIcon, label: "Latih" },
+  { href: "/exams", icon: ExamIcon, label: "Peperiksaan" },
   { href: "/progress", icon: ProgressIcon, label: "Kemajuan" },
-  { href: "/profile", icon: ProfileIcon, label: "Profil" },
 ];
 
 export default function BottomNav() {
@@ -64,10 +64,19 @@ function BookIcon() {
   );
 }
 
-function PathIcon() {
+function PencilIcon() {
   return (
     <IconBase>
-      <path d="M6 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 5h4.5A3.5 3.5 0 0 1 16 8.5v0A3.5 3.5 0 0 1 12.5 12H11a3 3 0 0 0 0 6h5" />
+      <path d="M4 20h4l9.5-9.5-4-4L4 16v4ZM16.5 5.5l2 2a1 1 0 0 1 0 1.4l-1.5 1.5-4-4 1.5-1.5a1 1 0 0 1 1.4 0l.6.6Z" />
+    </IconBase>
+  );
+}
+
+function ExamIcon() {
+  return (
+    <IconBase>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
     </IconBase>
   );
 }
@@ -76,14 +85,6 @@ function ProgressIcon() {
   return (
     <IconBase>
       <path d="M5 19V9M12 19V5M19 19v-7" />
-    </IconBase>
-  );
-}
-
-function ProfileIcon() {
-  return (
-    <IconBase>
-      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </IconBase>
   );
 }
