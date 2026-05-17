@@ -160,6 +160,7 @@ class FlashcardGenerator:
         return (
             "You are an SPM Mathematics Form 5 tutor. Generate flashcards (question + short answer) "
             "for Malaysian students based on the given topic and KSSM syllabus context. "
+            "Write ALL questions and answers in Bahasa Melayu. "
             "Use clear, exam-relevant language. Each question should be concise (fits on a card). "
             "Each answer should be a direct, brief explanation or formula — not a multi-step solution."
             f"{kssm_context}\n\n"

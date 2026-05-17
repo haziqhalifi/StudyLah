@@ -64,90 +64,76 @@ export default function MaterialsHubPage() {
     setNodeProgress(progress);
   }, []);
 
-  const totalNodes = BAB_CARDS.reduce((s, c) => s + c.steps.length, 0);
-  const doneNodes = Object.values(nodeProgress).reduce((s, v) => s + v.done, 0);
-  const overallPct = totalNodes > 0 ? Math.round((doneNodes / totalNodes) * 100) : 0;
-  const hasStarted = doneNodes > 0;
+  const recommendedId = BAB_CARDS.map((card) => {
+    const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
+    return { card, pct: np.total > 0 ? Math.round((np.done / np.total) * 100) : 0 };
+  }).reduce((best, cur) => (cur.pct < best.pct ? cur : best)).card.id;
 
   return (
-    <section className="home-dashboard-shell page-enter" aria-label="Hab bahan pembelajaran">
+    <section className="home-dashboard-shell page-enter" aria-label="Pilih Bab">
+      {/* ── Header ── */}
       <header className="student-header">
         <div className="student-header-copy">
           <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Bahan</p>
           <h1 style={{ paddingLeft: "0.5rem" }}>Pilih Bab</h1>
           <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
             <span>Matematik Tingkatan 5</span>
-            <span aria-hidden="true">•</span>
+            <span aria-hidden="true">·</span>
             <span>{BAB_CARDS.length} bab</span>
-            <span>{BAB_CARDS.length} bab</span>
+            <span aria-hidden="true">·</span>
+            <span>{BAB_CARDS.reduce((s, c) => s + c.steps.length, 0)} subtopik</span>
           </div>
         </div>
       </header>
 
-      <section className="level-card" aria-label="Pilih satu bab">
-        <div className="level-card-content">
-          <p className="level-eyebrow">Laluan Pembelajaran</p>
-          <h2>Mulakan dengan satu bab dan teruskan ke peta subtopik.</h2>
-          <div className="level-progress-row">
-            <div className="w-full h-1.5 rounded-full bg-white/20" aria-hidden="true">
-              <div
-                className="h-1.5 rounded-full bg-white transition-all duration-500"
-                style={{ width: `${overallPct}%` }}
-              />
-            </div>
-            <span>{BAB_CARDS.length} tersedia</span>
-          </div>
-        </div>
-        {/* Labeled subtopik badge */}
-        <div className="level-trophy" aria-hidden="true">
-          <span className="learn-hub-chip text-white/80 text-sm font-medium px-3 py-1 rounded-full bg-white/20">
-            {totalNodes} subtopik
-          </span>
-        </div>
-      </section>
-
-      {/* Chapter cards — scrollable with bottom peek affordance */}
-      <div className="home-learning-stack pb-32 overflow-y-auto">
+      {/* ── Chapter cards ── */}
+      <div className="lp-chapter-list">
         {BAB_CARDS.map((card) => {
           const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
           const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+          const isRecommended = card.id === recommendedId;
+          const isInProgress = pct > 0 && pct < 100;
+
           return (
             <button
               key={card.id}
               type="button"
-              className={`learning-feature-card learning-feature-${card.tone} study-select-card`}
+              className={`lp-chapter-card lp-chapter-${card.tone}${isRecommended ? " lp-chapter-recommended" : ""}`}
               onClick={() => router.push(card.href)}
             >
-              <div>
-                <h2>{card.title}</h2>
-                <p>{card.subtitle}</p>
+              <div className="lp-chapter-left">
+                {isRecommended && (
+                  <div className="lp-recommended-badge">⭐ Disyorkan hari ini</div>
+                )}
+                <p className="lp-chapter-bab">{card.title.split(":")[0]}</p>
+                <h2 className="lp-chapter-name">{card.title.split(": ").slice(1).join(": ")}</h2>
+                <p className="lp-chapter-desc">{card.subtitle}</p>
 
-                {/* Difficulty + estimated time tags */}
-                <div className="flex gap-2 mt-2 mb-3">
-                  <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                <div className="lp-chapter-tags">
+                  <span className={`lp-tag lp-tag-diff-${card.difficulty.toLowerCase()}`}>
                     {card.difficulty}
                   </span>
-                  <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                    {card.estimatedTime}
-                  </span>
+                  <span className="lp-tag lp-tag-time">⏱ {card.estimatedTime}</span>
                 </div>
 
-                {/* Always-visible progress track */}
-                <div className="learn-topic-progress-row">
-                  <div className="w-full h-1.5 rounded-full bg-white/20">
+                <div className="lp-chapter-progress-row">
+                  <div className="lp-chapter-track">
                     <div
-                      className="h-1.5 rounded-full bg-white transition-all duration-500"
-                      style={{ width: `${pct}%` }}
+                      className="lp-chapter-fill"
+                      style={{ "--pct": `${pct}%` } as React.CSSProperties}
                     />
                   </div>
-                  {pct === 0 ? (
-                    <span className="text-white/70 text-xs font-medium whitespace-nowrap ml-2">Mula sekarang →</span>
-                  ) : (
-                    <span className="learn-topic-progress-label">{pct}%</span>
-                  )}
+                  <span className="lp-chapter-pct">{pct}%</span>
                 </div>
+
+                <p className="lp-chapter-next-cta">
+                  {pct === 100
+                    ? "✓ Siap! Ulangkaji untuk kukuhkan lagi →"
+                    : isInProgress
+                    ? "Sambung subtopik seterusnya →"
+                    : "Mulakan dengan contoh mudah →"}
+                </p>
               </div>
-              {/* Floating number badge removed — chapter number is in title text */}
             </button>
           );
         })}
