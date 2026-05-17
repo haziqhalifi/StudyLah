@@ -25,7 +25,7 @@ function buildPages(step: (typeof MATRIKS_STEPS)[number], subtopic: (typeof MATR
   return [
     {
       title: `No.${step.no} ${step.title}`,
-      lines: [step.prompt],
+      lines: [step.prompt].filter((l): l is string => !!l),
     },
     {
       title: `${subtopic.id} ${subtopic.title}`,
