@@ -107,9 +107,13 @@ def _fetch_form5_questions(limit: int = 220) -> List[dict]:
 
 def _fallback_recommendation(by_topic: List[TopicSummary]) -> str:
     weakest = sorted(by_topic, key=lambda t: t.accuracy)[0]
-    strongest = sorted(by_topic, key=lambda t: t.accuracy, reverse=True)[0]
+    best = sorted(by_topic, key=lambda t: t.accuracy, reverse=True)[0]
+    if best.accuracy >= 0.7:
+        opener = f"You are strongest in {best.topic}."
+    else:
+        opener = f"You've got a baseline in {best.topic}!"
     return (
-        f"You are strongest in {strongest.topic}. Focus next on {weakest.topic} with short daily drills, "
+        f"{opener} Let's focus next on {weakest.topic} with short daily drills, "
         f"then revise mistakes using worked examples."
     )
 
@@ -132,6 +136,8 @@ def _run_google_studio_diagnostic(payload: dict) -> Optional[dict]:
         "You are an SPM Mathematics diagnostic coach. "
         "Given the student's onboarding quiz performance, produce JSON only with keys: "
         "strengths (string array), weaknesses (string array), recommendation (string), next_step (string). "
+        "Rules for recommendation: NEVER call a topic the student's 'strongest' if their accuracy on it is below 70%. "
+        "Instead say they 'have a baseline in' that topic. "
         "Keep strengths and weaknesses concise, subtopic-oriented, no markdown.\n\n"
         f"Data:\n{json.dumps(payload, indent=2)}"
     )
