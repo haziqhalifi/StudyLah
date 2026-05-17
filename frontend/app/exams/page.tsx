@@ -288,6 +288,7 @@ export default function ExamsPage() {
         progress={total}
         total={total}
         onClose={handleCloseQuiz}
+        showStats={false}
         bar={
           <div className="learn-actions">
             <button type="button" className="btn-ghost diag-skip-btn" onClick={handleCloseQuiz}>Kembali</button>
@@ -406,8 +407,10 @@ export default function ExamsPage() {
       onClose={handleCloseQuiz}
       title="Matematik"
       subtitle={paperSubtitle}
+      label={`Soalan ${current + 1} / ${questions.length}`}
       progress={current + 1}
       total={questions.length}
+      showStats={false}
       timer={
         <span className={`exam-timer${isWarning ? " exam-timer-warn" : ""}${isCritical ? " exam-timer-critical" : ""}`}>
           ⏱ {formatTime(timeLeft)}
@@ -418,7 +421,6 @@ export default function ExamsPage() {
         <QuestionCard
           key={question.id}
           question={question}
-          questionNumber={current + 1}
           selectedOptionIndex={answers[question.id] ?? null}
           onSelectOption={(idx) => selectOption(question.id, idx)}
         />

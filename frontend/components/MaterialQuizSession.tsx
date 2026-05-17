@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
 import { Question } from "@/lib/api";
 import { MaterialMcq } from "@/app/materials/ubahan/data";
+import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
 
 type ChapterKey = "ubahan" | "matriks" | "insurans";
 
@@ -82,6 +84,8 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [xp, setXp] = useState(0);
   const [showBuddy, setShowBuddy] = useState(false);
 
   const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null;
@@ -105,7 +109,16 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
 
   function submitAnswer() {
     if (selected === null) return;
-    if (selected === correctIndex) setCorrectCount((prev) => prev + 1);
+    playSubmitSound();
+    if (selected === correctIndex) {
+      setCorrectCount((prev) => prev + 1);
+      setStreak((prev) => prev + 1);
+      setXp((prev) => prev + 10);
+      setTimeout(playCorrectSound, 100);
+    } else {
+      setStreak(0);
+      setTimeout(playWrongSound, 100);
+    }
     setSubmitted(true);
   }
 
@@ -114,6 +127,7 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
     setCurrentIndex((prev) => prev + 1);
     setSelected(null);
     setSubmitted(false);
+    setShowBuddy(false);
   }
 
   const bar = !submitted ? (
@@ -131,7 +145,7 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   );
 
   return (
-    <QuizSheet open bar={bar} onClose={onClose} progress={done} total={total}>
+    <QuizSheet open bar={bar} onClose={onClose} progress={done} total={total} streak={streak} xp={xp}>
       <div className="learn-stats">
         <div className="learn-stat">
           <div className="learn-stat-label">Selesai</div>
@@ -151,7 +165,6 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
 
       <QuestionCard
         question={question}
-        questionNumber={currentIndex + 1}
         selectedOptionIndex={selected}
         onSelectOption={submitted ? undefined : setSelected}
         showResult={submitted}
@@ -159,18 +172,18 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
         correctOptionIndex={correctIndex}
       />
 
-      {showBuddy && userId && (
+      {submitted && showBuddy && userId && (
         <StudyBuddyPanel userId={userId} questionContext={question.text} onClose={() => setShowBuddy(false)} />
       )}
 
-      {!showBuddy && (
+      {submitted && !showBuddy && (
         <button
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Ask StudyBuddy"
+          aria-label="Ask Skorrel"
         >
-          🤖
+          <Image src="/assets/mascot.webp" alt="Skorrel" width={30} height={30} />
         </button>
       )}
     </QuizSheet>

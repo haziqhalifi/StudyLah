@@ -12,12 +12,13 @@ interface QuizSheetProps {
   progress?: number;
   total?: number;
   timer?: React.ReactNode;
+  showStats?: boolean;
+  label?: string;
+  streak?: number;
+  xp?: number;
+  meta?: string;
 }
 
-/**
- * Thin wrapper kept for backward compatibility with MaterialQuizSession,
- * diagnostic, exam, and review pages. Delegates to StandardQuizShell.
- */
 export default function QuizSheet({
   open,
   children,
@@ -28,6 +29,11 @@ export default function QuizSheet({
   progress = 0,
   total = 1,
   timer,
+  showStats,
+  label,
+  streak,
+  xp,
+  meta,
 }: QuizSheetProps) {
   return (
     <StandardQuizShell
@@ -39,6 +45,11 @@ export default function QuizSheet({
       onClose={onClose}
       headerRight={timer}
       bar={bar}
+      showStats={showStats}
+      label={label}
+      streak={streak}
+      xp={xp}
+      meta={meta}
     >
       {children}
     </StandardQuizShell>

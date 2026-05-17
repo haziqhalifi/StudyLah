@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   getReview,
@@ -292,6 +293,7 @@ export default function ReviewPage() {
       onClose={() => router.push("/")}
       title="Ulang Kaji"
       subtitle={`${idx + 1} / ${items.length} soalan`}
+      label={item.question.topic_id?.replace(/_/g, " ")}
       progress={idx}
       total={items.length}
     >
@@ -370,7 +372,6 @@ export default function ReviewPage() {
           showResult={result !== null}
           isCorrect={result?.is_correct}
           correctOptionIndex={result ? result.correct_option_index : undefined}
-          isReview
         />
       </div>
 
@@ -423,9 +424,9 @@ export default function ReviewPage() {
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Tanya StudyBuddy"
+          aria-label="Tanya Skorrel"
         >
-          🤖
+          <Image src="/assets/mascot.webp" alt="Skorrel" width={30} height={30} />
         </button>
       )}
     </QuizSheet>

@@ -1,33 +1,28 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 
 interface StandardQuizShellProps {
-  /** Page title shown in header center */
   title: string;
-  /** Optional subtitle shown below title */
   subtitle?: string;
-  /** Number of questions answered / completed so far */
   progress: number;
-  /** Total questions */
   total: number;
-  /** Close / back handler — renders ✕ button when provided */
   onClose?: () => void;
-  /** Optional right-side element (e.g. timer) */
   headerRight?: React.ReactNode;
-  /** Scrollable body */
   children: React.ReactNode;
-  /** Sticky bottom action bar */
   bar: React.ReactNode;
-  /** Whether the shell is visible (false = render nothing) */
   open?: boolean;
+  showStats?: boolean;
+  label?: string;
+  /** Live session streak (consecutive correct answers) */
+  streak?: number;
+  /** Live XP total for this session */
+  xp?: number;
+  /** Quiz metadata shown next to mascot, e.g. "Ubahan · Mudah" */
+  meta?: string;
 }
 
-/**
- * Single unified quiz shell used by all quiz flows.
- * Matches the reference screenshot: light background, branded progress bar,
- * centered title header, scrollable body, sticky bottom bar.
- */
 export default function StandardQuizShell({
   title,
   subtitle,
@@ -38,6 +33,11 @@ export default function StandardQuizShell({
   children,
   bar,
   open = true,
+  showStats = true,
+  label,
+  streak = 0,
+  xp = 0,
+  meta,
 }: StandardQuizShellProps) {
   const fillRef = useRef<HTMLDivElement>(null);
 
@@ -66,24 +66,41 @@ export default function StandardQuizShell({
 
   return (
     <div className="qs-shell">
-      {/* ── Header ── */}
+      {/* ── Header row 1: close | mascot + meta | timer ── */}
       <header className="qs-header">
-        {onClose ? (
-          <button
-            type="button"
-            className="qs-icon-btn"
-            onClick={onClose}
-            aria-label="Tutup"
-          >
-            ✕
-          </button>
-        ) : (
-          <div className="qs-icon-placeholder" />
-        )}
+        <div className="qs-header-left">
+          {onClose ? (
+            <button
+              type="button"
+              className="qs-icon-btn"
+              onClick={onClose}
+              aria-label="Tutup"
+            >
+              ✕
+            </button>
+          ) : (
+            <div className="qs-icon-placeholder" />
+          )}
+          {label && (
+            <div className="qs-label-stack">
+              <span className="qs-label-topic">{label}</span>
+            </div>
+          )}
+        </div>
 
         <div className="qs-header-center">
-          <span className="qs-title">{title}</span>
-          {subtitle && <span className="qs-subtitle">{subtitle}</span>}
+          <Image
+            src="/assets/mascot.webp"
+            alt="Skorrel"
+            width={28}
+            height={28}
+            className="qs-mascot-icon"
+          />
+          <div className="qs-header-meta">
+            <span className="qs-title">{title}</span>
+            {meta && <span className="qs-meta-tag">{meta}</span>}
+            {subtitle && <span className="qs-subtitle">{subtitle}</span>}
+          </div>
         </div>
 
         <div className="qs-header-timer">
@@ -91,14 +108,32 @@ export default function StandardQuizShell({
         </div>
       </header>
 
+      {/* ── Header row 2: live streak + XP ── */}
+      {showStats && (
+        <div className="qs-stats-bar">
+          <span className={`qs-stat qs-stat-streak${streak >= 2 ? " qs-stat-streak--active" : ""}`}>
+            <span className="qs-stat-icon">🔥</span>
+            <span className="qs-stat-val">{streak}</span>
+          </span>
+          <span className="qs-stat qs-stat-xp">
+            <span className="qs-stat-icon">⚡</span>
+            <span className="qs-stat-val">{xp} XP</span>
+          </span>
+          <span className="qs-stats-spacer" />
+          <button type="button" className="qs-stat-icon-btn" aria-label="Bunyi">🔊</button>
+          <button type="button" className="qs-stat-icon-btn" aria-label="Tandakan">🚩</button>
+          <button type="button" className="qs-stat-icon-btn" aria-label="Tetapan">⚙️</button>
+        </div>
+      )}
+
       {/* ── Progress bar ── */}
       <div
         className="qs-progress-track"
         role="progressbar"
         aria-label={`${total > 0 ? Math.round((progress / total) * 100) : 0}% selesai`}
       >
-        <div className="qs-progress-fill" ref={fillRef}>
-          <span className="qs-progress-dot" />
+        <div className="qs-progress-track-inner">
+          <div className="qs-progress-fill" ref={fillRef} />
         </div>
       </div>
 

@@ -5,26 +5,22 @@ import MathText from "@/components/MathText";
 
 interface Props {
   question: Question;
-  questionNumber?: number;
   selectedOptionIndex: number | null;
   onSelectOption?: (index: number) => void;
   showResult?: boolean;
   isCorrect?: boolean;
   correctOptionIndex?: number;
-  isReview?: boolean;
 }
 
 const LETTERS = ["A", "B", "C", "D"];
 
 export default function QuestionCard({
   question,
-  questionNumber,
   selectedOptionIndex,
   onSelectOption,
   showResult = false,
   isCorrect,
   correctOptionIndex,
-  isReview = false,
 }: Props) {
   const category = question.tags
     ?.find((tag) => tag.startsWith("kategori:"))
@@ -61,24 +57,13 @@ export default function QuestionCard({
 
   return (
     <div className={cardClass}>
-      <div className="qcard-header">
-        <span className="qcard-label">
-          {questionNumber
-            ? `Question ${questionNumber}`
-            : question.topic_id.replace(/_/g, " ")}
-          {isReview && (
-            <span className="chip chip-brand chip-ml">↺ Review</span>
-          )}
-        </span>
-      </div>
-
       {category && (
         <div className="qcard-category-row">
           <span className="qcard-category">Kategori: {category}</span>
         </div>
       )}
 
-      <div className="font-display qcard-question">
+      <div className="qcard-question">
         <MathText>{question.text}</MathText>
       </div>
 

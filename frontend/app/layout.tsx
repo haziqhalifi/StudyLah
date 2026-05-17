@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import BottomNav from "@/components/BottomNav";
+import TopNav from "@/components/TopNav";
 import "./responsive-math.css";
 import SplashScreen from "@/components/SplashScreen";
 
@@ -59,6 +60,7 @@ export default function RootLayout({
         </div>
 
         <div className="app-shell">
+          <TopNav />
           <main className="app-main">{children}</main>
         </div>
 

@@ -10,6 +10,7 @@ import {
   fetchQuizDetail,
   submitQuiz,
 } from "@/lib/api";
+import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
 
 type QuizState = {
   userId: string;
@@ -87,6 +88,7 @@ export default function QuizPage() {
 
   async function handleSubmitQuiz() {
     if (!state.quiz || state.submitting || !allAnswered) return;
+    playSubmitSound();
     setState((prev) => ({ ...prev, submitting: true, error: null }));
     try {
       const result = await submitQuiz(
@@ -98,6 +100,11 @@ export default function QuizPage() {
         })),
       );
       setState((prev) => ({ ...prev, submitted: true, result, submitting: false }));
+      // Play correct if passed (≥50%), wrong otherwise
+      setTimeout(() => {
+        if (result.percentage >= 50) playCorrectSound();
+        else playWrongSound();
+      }, 300);
     } catch {
       setState((prev) => ({
         ...prev,
@@ -254,6 +261,7 @@ export default function QuizPage() {
     <StandardQuizShell
       title={state.quiz.title}
       subtitle={`Soalan ${state.currentIndex + 1} / ${questions.length}`}
+      label={currentQuestion.topic_id?.replace(/_/g, " ")}
       progress={answeredCount}
       total={questions.length}
       onClose={() => router.push("/")}
@@ -261,10 +269,7 @@ export default function QuizPage() {
     >
       {/* Question card */}
       <div className="card qcard">
-        <div className="qcard-header">
-          <span className="qcard-label">Soalan {state.currentIndex + 1}</span>
-        </div>
-        <p className="font-display qcard-question">{currentQuestion.text}</p>
+        <p className="qcard-question">{currentQuestion.text}</p>
         <div className="qcard-options">
           {currentQuestion.options.map((opt, i) => (
             <OptionCard
@@ -272,12 +277,13 @@ export default function QuizPage() {
               index={i}
               text={opt}
               selected={state.answers[currentQuestion.id] === i}
-              onClick={() =>
+              onClick={() => {
+                playSubmitSound();
                 setState((prev) => ({
                   ...prev,
                   answers: { ...prev.answers, [currentQuestion.id]: i },
-                }))
-              }
+                }));
+              }}
             />
           ))}
         </div>

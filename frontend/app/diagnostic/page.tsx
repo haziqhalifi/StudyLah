@@ -178,49 +178,16 @@ export default function DiagnosticPage() {
       bar={bar}
       onClose={handleClose}
       title="Diagnostik"
-      subtitle="Matematik"
+      subtitle={`Soalan ${current + 1} / ${questions.length}`}
+      label="Matematik"
       progress={answered}
       total={questions.length}
     >
-      <div className="diag-step-indicator">
-        <button
-          type="button"
-          className="quiz-sheet-back"
-          onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-          disabled={current === 0}
-          aria-label="Soalan sebelumnya"
-        >
-          ←
-        </button>
-        {questions.map((_, i) => (
-          <button
-            type="button"
-            key={i}
-            className={`diag-step-dot ${i === current ? "active" : answers[questions[i]?.id] !== undefined ? "completed" : ""}`}
-            onClick={() => setCurrent(i)}
-            aria-label={`Pergi ke soalan ${i + 1}`}
-          />
-        ))}
-      </div>
-
-      <div className="diag-header page-enter">
-        <h1 className="font-display diag-title">Diagnostik</h1>
-        <p className="diag-sub">
-          Jawab untuk menyesuaikan laluan pembelajaran anda — buat yang terbaik!
-        </p>
-        <div className="diag-progress-row">
-          <span className="diag-progress-label">
-            Soalan {current + 1} daripada {questions.length}
-          </span>
-          <span className="diag-progress-count">{answered} dijawab</span>
-        </div>
-      </div>
 
       {q && (
         <QuestionCard
           key={q.id}
           question={q}
-          questionNumber={current + 1}
           selectedOptionIndex={answers[q.id] ?? null}
           onSelectOption={(idx) => selectOption(q.id, idx)}
         />

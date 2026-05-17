@@ -216,7 +216,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
         <div className="qcard-header">
           <span className="qcard-label">Soalan {currentIndex + 1}</span>
         </div>
-        <p className="font-display qcard-question">{currentQuestion.text}</p>
+        <p className="qcard-question">{currentQuestion.text}</p>
         <div className="qcard-options">
           {currentQuestion.options.map((opt, i) => (
             <OptionCard
