@@ -13148,6 +13148,18 @@ button.map-node:hover {
   white-space: nowrap;
 }
 
+.ob2-recommended-badge--weak {
+  background: var(--wrong);
+}
+
+.ob2-recommended-badge--medium {
+  background: #f59e0b;
+}
+
+.ob2-recommended-badge--strong {
+  background: #16a34a;
+}
+
 /* ── Topic card footer with label + CTA ── */
 .ob2-topic-footer {
   display: flex;
@@ -13172,6 +13184,8 @@ button.map-node:hover {
   font-weight: 600;
   color: var(--brand);
   white-space: nowrap;
+  margin-left: auto;
+  justify-content: flex-end;
   transition:
     color 0.15s,
     gap 0.15s;
@@ -14648,6 +14662,46 @@ button.map-node:hover {
     0 10px 26px rgba(21, 38, 78, 0.24);
 }
 
+.ob2-result-page .ob2-result-mascot {
+  display: flex;
+  justify-content: center;
+  margin: -0.2rem 0 0.4rem;
+}
+
+.ob2-result-page .ob2-mascot-cloud {
+  position: relative;
+  max-width: 280px;
+  margin: 0 auto 0.5rem;
+  padding: 0.52rem 0.78rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d1f6a;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(25, 38, 82, 0.18);
+}
+
+.ob2-result-page .ob2-mascot-cloud::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 14px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.ob2-result-page .ob2-result-mascot-img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(49, 36, 115, 0.28));
+}
+
 .ob2-result-page .ob2-ring-track {
   stroke: rgba(255, 255, 255, 0.25);
 }
@@ -14690,6 +14744,18 @@ button.map-node:hover {
   line-height: 1.45;
   color: rgba(239, 247, 255, 0.9);
   text-align: center;
+}
+
+@media (min-width: 480px) {
+  .ob2-result-page .ob2-mascot-cloud {
+    max-width: 320px;
+    font-size: 1.08rem;
+  }
+
+  .ob2-result-page .ob2-result-mascot-img {
+    width: 108px;
+    height: 108px;
+  }
 }
 
 .ob2-result-page .ob2-hero-cta {
@@ -14882,6 +14948,14 @@ button.map-node:hover {
 
 .ob2-result-page .ob2-recommended-badge {
   background: linear-gradient(90deg, var(--brand) 0%, #a78bfa 100%);
+}
+
+.ob2-result-page .ob2-recommended-badge--medium {
+  background: #f59e0b;
+}
+
+.ob2-result-page .ob2-recommended-badge--strong {
+  background: #16a34a;
 }
 
 .ob2-result-page .ob2-topic-cta-btn {
