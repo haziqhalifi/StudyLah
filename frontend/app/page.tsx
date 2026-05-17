@@ -131,6 +131,14 @@ const NOTIFICATIONS = [
   },
 ];
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Selamat Pagi";
+  if (hour < 15) return "Selamat Tengah Hari";
+  if (hour < 19) return "Selamat Petang";
+  return "Selamat Malam";
+}
+
 function StudentHeader() {
   const [name, setName] = useState(DEFAULT_STUDENT.name);
   const [notiOpen, setNotiOpen] = useState(false);
@@ -166,7 +174,7 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Hai, {name}</h1>
+        <h1>{getGreeting()}, {name}!</h1>
         <div className="student-meta-row">
           <span>{DEFAULT_STUDENT.form}</span>
         </div>
