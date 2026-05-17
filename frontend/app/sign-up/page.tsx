@@ -1,59 +1,28 @@
 "use client";
 
-import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) return;
-    router.push("/onboarding");
-  }
 
   return (
-    <section className="auth-shell page-enter" aria-label="Sign up">
-      <div className="auth-hero">
-        <p className="auth-kicker">Mulakan perjalanan</p>
-        <h1>Cipta Akaun StudyLah Anda</h1>
-        <p className="auth-subtext">Sediakan profil anda dan mulakan perjalanan pembelajaran SPM adaptif.</p>
-      </div>
+    <main className="signup-showcase">
+      <section className="signup-card" aria-label="Sign up welcome">
+        <div className="signup-mascot-row">
+          <div className="signup-bubble" role="note" aria-label="Welcome message">
+            <p>
+              <span className="signup-typing-text">Hai saya Skorrel. Selamat Datang ke StudyLah</span>
+            </p>
+            <span className="signup-bubble-tail" aria-hidden="true" />
+          </div>
+          <Image src="/assets/mascot.webp" alt="Mascot Skorrel" width={190} height={190} priority />
+        </div>
 
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <label className="auth-field">
-          <span>E-mel</span>
-          <input
-            type="email"
-            placeholder="anda@contoh.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </label>
-
-        <label className="auth-field">
-          <span>Kata Laluan</span>
-          <input
-            type="password"
-            placeholder="Cipta kata laluan"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-
-        <button className="auth-submit" type="submit">
+        <button className="signup-cta" type="button" onClick={() => router.push("/onboarding")}>
           Daftar Akaun
         </button>
-      </form>
-
-      <p className="auth-switch">
-        Sudah ada akaun? <Link href="/sign-in">Log masuk</Link>
-      </p>
-    </section>
+      </section>
+    </main>
   );
 }
