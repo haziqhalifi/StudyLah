@@ -5154,6 +5154,14 @@ button.map-node:hover {
   margin: 0;
 }
 
+.dr2-insight-guide {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0.15rem 0 0;
+  line-height: 1.3;
+}
+
 /* ── AI Diagnosis — mirrors fokus-card white card with brand border ── */
 .dr2-ai-card {
   background: #fff;
@@ -5170,17 +5178,13 @@ button.map-node:hover {
   margin-bottom: 0.6rem;
 }
 
-/* Icon box — mirrors daily-mission-icon rounded box */
-.dr2-ai-icon-box {
-  width: 40px;
-  height: 40px;
+/* Mascot image replacing the icon box */
+.dr2-ai-mascot {
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #8e78ff 0%, #b26cff 100%);
   border-radius: 14px;
-  font-size: 1.2rem;
+  object-fit: cover;
 }
 
 .dr2-ai-label {
@@ -5205,6 +5209,32 @@ button.map-node:hover {
   color: #374151;
   line-height: 1.65;
   margin: 0;
+}
+
+.dr2-ai-misconceptions-intro {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #374151;
+  margin: 0.6rem 0 0.35rem;
+}
+
+.dr2-ai-misconceptions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dr2-ai-misconception-item {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #4b5563;
+  line-height: 1.55;
+  padding: 0.35rem 0.5rem;
+  background: #f9f8ff;
+  border-radius: 10px;
 }
 
 /* ── Section headers — mirrors progress-section-header ───────── */
@@ -5619,6 +5649,77 @@ button.map-node:hover {
 }
 .dr2-bar-fill--strong {
   background: linear-gradient(90deg, #a78bfa, #7f65ff);
+}
+
+.dr2-topic-guide {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #9ca3af;
+  margin: 0.3rem 0 0;
+  line-height: 1.4;
+}
+
+/* ── Social proof nudge ────────────────────────────────────────── */
+.dr2-social-proof {
+  background: #f5f0ff;
+  border: 1px solid #ede9ff;
+  border-radius: 16px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.dr2-social-proof-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dr2-social-proof-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #5b4ea5;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── 3 Next Steps ──────────────────────────────────────────────── */
+.dr2-next-steps {
+  background: #fff;
+  border-radius: 22px;
+  border: 1.5px solid #f0edff;
+  box-shadow: 0 8px 24px rgba(78, 67, 145, 0.09);
+  padding: 1rem 1.125rem;
+}
+
+.dr2-next-steps-title {
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #766f91;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.65rem;
+}
+
+.dr2-next-steps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  counter-reset: steps;
+}
+
+.dr2-next-steps-list li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.5;
 }
 
 /* ── Bottom actions ───────────────────────────────────────────── */
