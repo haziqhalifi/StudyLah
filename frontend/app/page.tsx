@@ -98,7 +98,7 @@ function HomeDashboard() {
         <LevelProgressCard />
         <DailyMissionCard />
         <QuickStatsRow topics={topics} />
-        <WeakTopicCard topics={topics} />
+        <ResumeLearningSection topics={topics} />
         <QuickFlashcardWidget sets={flashcardSets} />
       </section>
       <FloatingAIButton onClick={() => setAiSheetOpen(true)} />
@@ -251,40 +251,62 @@ function DailyMissionCard() {
   );
 }
 
-function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
+function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
   const router = useRouter();
 
-  const weakest = topics.length > 0
-    ? topics.reduce((a, b) => (a.accuracy < b.accuracy ? a : b))
-    : null;
-
-  if (!weakest) return null;
-
-  const name = TOPIC_META[weakest.topic_id]?.name ?? weakest.topic_id;
-  const pct = Math.round(weakest.accuracy * 100);
+  const sorted = [...topics].sort((a, b) => a.accuracy - b.accuracy);
+  if (sorted.length === 0) return null;
 
   return (
-    <button
-      type="button"
-      className="weak-topic-card"
-      onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
-      aria-label={`Fokus hari ini: ${name}`}
-    >
-      <span className="weak-topic-icon" aria-hidden="true">
-        <TargetIcon />
-      </span>
-      <div className="weak-topic-body">
-        <p className="weak-topic-label">Fokus Hari Ini</p>
-        <p className="weak-topic-title">{name}</p>
-        <div className="weak-topic-bar-wrap" aria-hidden="true">
-          <div className="weak-topic-bar">
-            <div className="weak-topic-bar-fill" style={{ "--fill": `${pct}%` } as React.CSSProperties} />
-          </div>
-          <span className="weak-topic-pct">{pct}% tepat</span>
-        </div>
-        <span className="weak-topic-cta">Ulangkaji sekarang → +10 XP</span>
+    <section className="progress-resume-section" aria-label="Sambung semula">
+      <div className="progress-section-header">
+        <h2 className="progress-section-title">Sambung semula</h2>
+        <button type="button" className="progress-see-all" onClick={() => router.push("/progress")}>
+          Lihat kemajuan
+        </button>
       </div>
-    </button>
+      <div className="progress-set-list">
+        {sorted.map((t, i) => {
+          const meta = TOPIC_META[t.topic_id] ?? { name: t.topic_id };
+          const pct = Math.round(t.accuracy * 100);
+          return (
+            <article
+              key={t.topic_id}
+              className={`progress-set-card page-enter topic-${t.topic_id}`}
+              role="button"
+              tabIndex={0}
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push(`/materials/${t.topic_id}/subtopics`)}
+              onKeyDown={(e) => e.key === "Enter" && router.push(`/materials/${t.topic_id}/subtopics`)}
+              aria-label={`${meta.name} – ${pct}%`}
+            >
+              <div className="progress-set-ring-wrap">
+                <svg className="progress-set-ring" viewBox="0 0 56 56" aria-hidden="true">
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                  <circle
+                    cx="28" cy="28" r="22" fill="none"
+                    className="progress-ring-arc"
+                    strokeWidth="5"
+                    strokeDasharray={`${2 * Math.PI * 22}`}
+                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 28 28)"
+                  />
+                </svg>
+                <span className="progress-set-ring-pct">{pct}%</span>
+              </div>
+              <div className="progress-set-info">
+                <p className="progress-set-name">{meta.name}</p>
+                <p className="progress-set-sub">
+                  {i === 0 ? "Perlukan perhatian" : `${t.correct} / ${t.attempts} betul`}
+                </p>
+              </div>
+              <span className="progress-set-arrow">›</span>
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -602,7 +624,7 @@ function CheckCircleIcon() {
   );
 }
 
-function TargetIcon() {
+function _TargetIcon_unused() {
   return (
     <IconBase>
       <circle cx="12" cy="12" r="9" />
