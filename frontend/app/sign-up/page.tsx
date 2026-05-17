@@ -12,7 +12,7 @@ export default function SignUpPage() {
         <div className="signup-mascot-row">
           <div className="signup-bubble" role="note" aria-label="Welcome message">
             <p>
-              <span className="signup-typing-text">Hai saya Skorrel. Selamat Datang ke StudyLah</span>
+              <span className="signup-typing-text">Selamat Datang ke StudyLah. Mulakan langkah menggapai "A" anda hari ini!</span>
             </p>
             <span className="signup-bubble-tail" aria-hidden="true" />
           </div>
