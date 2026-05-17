@@ -16,7 +16,7 @@ export type JourneyStep = {
   subtopicId: string;
   type: StepType;
   title: string;
-  prompt: string;
+  prompt?: string;
   task?: string;
   answer?: string;
 };
@@ -60,30 +60,23 @@ export const MATRIKS_SUBTOPICS: Subtopic[] = [
   },
 ];
 
-function labelJenis(type: StepType): string {
-  if (type === "Content") return "Kandungan";
-  if (type === "Exercise") return "Latihan";
-  return "Pentaksiran";
-}
-
 export const MATRIKS_STEPS: JourneyStep[] = MATRIKS_SUBTOPICS.flatMap((subtopic, index) => {
   const baseNo = index * 4;
+  const title = `${subtopic.id} ${subtopic.title}`;
   return [
     {
       id: `${subtopic.id}-content`,
       no: baseNo + 1,
       subtopicId: subtopic.id,
       type: "Content",
-      title: `${labelJenis("Content")} ${subtopic.id}`,
-      prompt: `Baca dan fahami konsep ${subtopic.title}.`,
+      title,
     },
     {
       id: `${subtopic.id}-exercise-1`,
       no: baseNo + 2,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `${labelJenis("Exercise")} ${subtopic.id}`,
-      prompt: `Kenal pasti konsep utama bagi ${subtopic.title}.`,
+      title,
       task: "Nyatakan definisi, syarat operasi, atau hubungan penting bagi subtopik ini.",
       answer: "Semak semula peringkat matriks, unsur sepadan, dan syarat operasi yang betul.",
     },
@@ -92,8 +85,7 @@ export const MATRIKS_STEPS: JourneyStep[] = MATRIKS_SUBTOPICS.flatMap((subtopic,
       no: baseNo + 3,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `${labelJenis("Exercise")} ${subtopic.id}`,
-      prompt: `Gunakan kaedah ${subtopic.title} untuk menyelesaikan soalan.`,
+      title,
       task: "Lakukan pengiraan langkah demi langkah dan pastikan bentuk matriks akhir tepat.",
       answer: "Pastikan dimensi matriks serasi dan setiap operasi dibuat pada unsur yang betul.",
     },
@@ -102,8 +94,7 @@ export const MATRIKS_STEPS: JourneyStep[] = MATRIKS_SUBTOPICS.flatMap((subtopic,
       no: baseNo + 4,
       subtopicId: subtopic.id,
       type: "Assessment",
-      title: `${labelJenis("Assessment")} ${subtopic.id}`,
-      prompt: `Uji penguasaan anda bagi ${subtopic.title}.`,
+      title,
       task: "Selesaikan soalan campuran konsep dan pengiraan untuk subtopik ini.",
       answer: "Tumpukan pada syarat operasi, formula tepat, dan ketelitian susunan baris-lajur.",
     },
