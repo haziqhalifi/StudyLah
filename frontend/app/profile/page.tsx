@@ -1,24 +1,69 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
-const DEFAULT_STUDENT = {
+// ── Thresholds for feature unlock ──────────────────────────────────────────
+const LEADERBOARD_UNLOCK_QUESTIONS = 5;
+const ANALYTICS_UNLOCK_QUESTIONS = 10;
+const STREAK_SHOW_FROM_DAY = 2;
+
+interface StudentData {
+  name: string;
+  form: string;
+  stream: string;
+  targetExam: string;
+  level: number;
+  xpProgress: number; // 0–100 (% to next level)
+  xpToNextLevel: number;
+  xp: number;
+  questionsAnswered: number;
+  topicsCompleted: number;
+  weakTopic: string | null;
+  strongTopic: string | null;
+  streak: number;
+  rank: number | null;
+  totalRanked: number;
+  badges: BadgeData[];
+  lastSession: string | null; // ISO date string
+}
+
+interface BadgeData {
+  id: string;
+  label: string;
+  desc: string;
+  unlockAt: string;
+  earned: boolean;
+}
+
+const ALL_BADGES: BadgeData[] = [
+  { id: "first-q", label: "Soalan Pertama", desc: "Jawab soalan pertama anda", unlockAt: "Jawab 1 soalan", earned: false },
+  { id: "streak-3", label: "3 Hari Berturut", desc: "Belajar 3 hari berturut-turut", unlockAt: "Capai rentetan 3 hari", earned: false },
+  { id: "topic-1", label: "Topik Pertama", desc: "Siapkan 1 topik penuh", unlockAt: "Siapkan 1 topik", earned: false },
+  { id: "ten-q", label: "Pelajar Tekun", desc: "Jawab 10 soalan", unlockAt: "Jawab 10 soalan", earned: false },
+  { id: "streak-7", label: "Seminggu Penuh", desc: "Belajar 7 hari berturut-turut", unlockAt: "Capai rentetan 7 hari", earned: false },
+  { id: "top10", label: "Top 10", desc: "Masuk 10 teratas papan kedudukan", unlockAt: "Capai kedudukan top 10", earned: false },
+];
+
+const DEFAULT_STUDENT: StudentData = {
   name: "Pelajar",
   form: "Tingkatan 5",
   stream: "Aliran Sains",
   targetExam: "SPM 2026",
   level: 1,
-  progress: 0,
+  xpProgress: 0,
+  xpToNextLevel: 100,
   xp: 0,
-  completedLessons: 0,
-  totalLessons: 15,
-  weakTopic: "—",
-  strongTopic: "—",
+  questionsAnswered: 0,
+  topicsCompleted: 0,
+  weakTopic: null,
+  strongTopic: null,
   streak: 0,
-  rank: "—",
-  badges: [] as string[],
+  rank: null,
+  totalRanked: 0,
+  badges: ALL_BADGES,
+  lastSession: null,
 };
 
 const tabs = ["Ringkasan", "Statistik", "Lencana"] as const;
@@ -26,35 +71,59 @@ type ProfileTab = (typeof tabs)[number];
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("Ringkasan");
-  const [name, setName] = useState(DEFAULT_STUDENT.name);
-  const [xp, setXp] = useState(DEFAULT_STUDENT.xp);
+  const [student, setStudent] = useState<StudentData>(DEFAULT_STUDENT);
 
   useEffect(() => {
     try {
       const storedName = sessionStorage.getItem("userName");
       const storedXp = sessionStorage.getItem("userXp");
-      if (storedName) setName(storedName);
-      if (storedXp) setXp(Number(storedXp));
+      const storedAnswered = sessionStorage.getItem("questionsAnswered");
+      const storedTopics = sessionStorage.getItem("topicsCompleted");
+      const storedStreak = sessionStorage.getItem("streak");
+
+      setStudent((prev) => ({
+        ...prev,
+        name: storedName ?? prev.name,
+        xp: storedXp ? Number(storedXp) : prev.xp,
+        questionsAnswered: storedAnswered ? Number(storedAnswered) : prev.questionsAnswered,
+        topicsCompleted: storedTopics ? Number(storedTopics) : prev.topicsCompleted,
+        streak: storedStreak ? Number(storedStreak) : prev.streak,
+      }));
     } catch {
       // ignore storage errors
     }
   }, []);
 
+  const isNewUser = student.questionsAnswered === 0;
+  const canSeeLeaderboard = student.questionsAnswered >= LEADERBOARD_UNLOCK_QUESTIONS;
+  const canSeeAnalytics = student.questionsAnswered >= ANALYTICS_UNLOCK_QUESTIONS;
+
   return (
     <section className="profile-page page-enter" aria-label="Profil pelajar">
       <ProfileTopBar />
-      <ProfileHeader name={name} xp={xp} />
-      <ProfileActionButtons />
+      <ProfileHeader student={student} />
+      <ProfileActionButtons isNewUser={isNewUser} />
       <ProfileTabs activeTab={activeTab} onSelect={setActiveTab} />
 
       <div className="profile-tab-panel">
-        {activeTab === "Ringkasan" && <OverviewTab xp={xp} />}
-        {activeTab === "Statistik" && <StatisticsTab xp={xp} />}
-        {activeTab === "Lencana" && <BadgesTab />}
+        {activeTab === "Ringkasan" && (
+          <OverviewTab
+            student={student}
+            isNewUser={isNewUser}
+            canSeeLeaderboard={canSeeLeaderboard}
+            canSeeAnalytics={canSeeAnalytics}
+          />
+        )}
+        {activeTab === "Statistik" && (
+          <StatisticsTab student={student} canSeeAnalytics={canSeeAnalytics} />
+        )}
+        {activeTab === "Lencana" && <BadgesTab badges={student.badges} />}
       </div>
     </section>
   );
 }
+
+// ── Top bar ─────────────────────────────────────────────────────────────────
 
 function ProfileTopBar() {
   const router = useRouter();
@@ -74,9 +143,6 @@ function ProfileTopBar() {
         <button type="button" className="profile-icon-button profile-reward-button" aria-label="Lihat ganjaran">
           <GiftIcon />
         </button>
-        <button type="button" className="profile-icon-button" aria-label="Cari">
-          <SearchIcon />
-        </button>
         <button type="button" className="profile-icon-button" aria-label="Notifikasi">
           <BellIcon />
           <span className="profile-notification-dot" />
@@ -89,39 +155,96 @@ function ProfileTopBar() {
   );
 }
 
-function ProfileHeader({ name, xp }: { name: string; xp: number }) {
+// ── Profile header ───────────────────────────────────────────────────────────
+
+function ProfileHeader({ student }: { student: StudentData }) {
+  const levelLabel = `Tahap ${student.level}`;
+  const xpLabel = `${student.xp} XP`;
+
   return (
     <section className="profile-header-card" aria-label="Maklumat pelajar">
       <div className="profile-identity">
         <div className="profile-avatar" aria-hidden="true">
-          {name.charAt(0).toUpperCase()}
+          {student.name.charAt(0).toUpperCase()}
         </div>
         <div>
           <p className="profile-kicker">Profil Pelajar</p>
-          <h1>{name}</h1>
+          <h1>{student.name}</h1>
           <p className="profile-school-line">
-            {DEFAULT_STUDENT.stream} · {DEFAULT_STUDENT.form}
+            {student.stream} · {student.form}
           </p>
-          <p className="profile-exam-line">Calon {DEFAULT_STUDENT.targetExam}</p>
+          <p className="profile-exam-line">Calon {student.targetExam}</p>
         </div>
       </div>
 
+      {/* Redesigned stats row — clear, meaningful labels */}
       <div className="profile-learning-stats" aria-label="Statistik kemajuan pembelajaran">
-        <ProfileStatCard label="siap" value={String(DEFAULT_STUDENT.completedLessons)} />
-        <ProfileStatCard label="jumlah" value={String(DEFAULT_STUDENT.totalLessons)} />
-        <ProfileStatCard label="XP" value={String(xp)} />
+        <ProfileStatPill
+          value={String(student.questionsAnswered)}
+          label="Soalan Dijawab"
+          accent={student.questionsAnswered > 0}
+        />
+        <ProfileStatPill
+          value={String(student.topicsCompleted)}
+          label="Topik Selesai"
+          accent={student.topicsCompleted > 0}
+        />
+        <ProfileStatPill
+          value={xpLabel}
+          label={levelLabel}
+          accent={student.xp > 0}
+          highlight
+        />
       </div>
     </section>
   );
 }
 
-function ProfileActionButtons() {
+function ProfileStatPill({
+  value,
+  label,
+  accent = false,
+  highlight = false,
+}: {
+  value: string;
+  label: string;
+  accent?: boolean;
+  highlight?: boolean;
+}) {
+  return (
+    <div className={`profile-stat-card${highlight ? " profile-stat-card--xp" : ""}${accent || highlight ? " profile-stat-card--accent" : ""}`}>
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+// ── Action buttons ───────────────────────────────────────────────────────────
+
+function ProfileActionButtons({ isNewUser }: { isNewUser: boolean }) {
+  const router = useRouter();
+
   return (
     <div className="profile-actions">
-      <button type="button" className="profile-primary-action" onClick={() => console.log("Cari Rakan diklik")}>
-        <UserPlusIcon />
-        Cari Rakan
-      </button>
+      {isNewUser ? (
+        <button
+          type="button"
+          className="profile-primary-action"
+          onClick={() => router.push("/learn")}
+        >
+          <ZapIcon />
+          Mulakan Latihan Pertama
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="profile-primary-action"
+          onClick={() => router.push("/learn")}
+        >
+          <ZapIcon />
+          Sambung Belajar
+        </button>
+      )}
       <button
         type="button"
         className="profile-action-icon"
@@ -141,6 +264,8 @@ function ProfileActionButtons() {
     </div>
   );
 }
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
 
 function ProfileTabs({
   activeTab,
@@ -166,123 +291,330 @@ function ProfileTabs({
   );
 }
 
-function OverviewTab({ xp }: { xp: number }) {
+// ── Overview tab ─────────────────────────────────────────────────────────────
+
+function OverviewTab({
+  student,
+  isNewUser,
+  canSeeLeaderboard,
+  canSeeAnalytics,
+}: {
+  student: StudentData;
+  isNewUser: boolean;
+  canSeeLeaderboard: boolean;
+  canSeeAnalytics: boolean;
+}) {
+  const router = useRouter();
+
   return (
     <div className="profile-tab-stack">
-      <section className="profile-invite-card">
-        <div>
-          <p className="profile-card-label">Bonus XP</p>
-          <h2>Jemput rakan dan belajar bersama</h2>
-          <p>Dapatkan bonus XP apabila rakan anda menamatkan pelajaran pertama mereka.</p>
-        </div>
-        <button type="button" className="profile-small-action" onClick={() => console.log("Jemput Rakan diklik")}>
-          Jemput Rakan
-        </button>
-      </section>
+      {/* ── Continue / Start card ── */}
+      {isNewUser ? (
+        <section className="profile-start-card">
+          <div className="profile-start-card-icon" aria-hidden="true">🚀</div>
+          <div className="profile-start-card-body">
+            <p className="profile-card-label">Mula Sekarang</p>
+            <h2>Selamat datang ke StudyLah!</h2>
+            <p>Jawab soalan pertama anda dan mula bina momentum untuk SPM.</p>
+          </div>
+          <button
+            type="button"
+            className="profile-cta-btn"
+            onClick={() => router.push("/learn")}
+          >
+            Mula →
+          </button>
+        </section>
+      ) : (
+        <section className="profile-continue-card">
+          <div className="profile-continue-left">
+            <p className="profile-card-label">Teruskan</p>
+            <h2>Sambung Sesi Terdahulu</h2>
+            <p>{student.questionsAnswered} soalan dijawab setakat ini</p>
+          </div>
+          <button
+            type="button"
+            className="profile-cta-btn profile-cta-btn--outline"
+            onClick={() => router.push("/learn")}
+          >
+            Sambung →
+          </button>
+        </section>
+      )}
 
+      {/* ── Leaderboard ── */}
       <section className="profile-leaderboard-card">
         <div>
           <p className="profile-card-label">Papan Kedudukan</p>
           <h2>Kedudukan Saya</h2>
-          <p>Kedudukan {DEFAULT_STUDENT.rank}</p>
-          <span>{DEFAULT_STUDENT.form}</span>
+          {canSeeLeaderboard ? (
+            <>
+              <p className="profile-rank-value">
+                {student.rank != null ? `#${student.rank}` : "Belum diranking"}
+              </p>
+              <span>{student.form} · Minggu ini</span>
+            </>
+          ) : (
+            <>
+              <p className="profile-rank-locked">🔒 Belum dibuka</p>
+              <span className="profile-rank-hint">
+                Jawab lagi {LEADERBOARD_UNLOCK_QUESTIONS - student.questionsAnswered} soalan untuk masuk papan kedudukan
+              </span>
+            </>
+          )}
         </div>
-        <button type="button" className="profile-floating-action" aria-label="Buka papan kedudukan">
-          <PlusIcon />
-        </button>
+        <div className="profile-leaderboard-visual" aria-hidden="true">
+          {canSeeLeaderboard ? <TrophyIcon /> : <LockIcon />}
+        </div>
       </section>
 
+      {/* ── Learning summary ── */}
       <section className="profile-summary-card">
-        <p className="profile-card-label">Ringkasan Pembelajaran</p>
-        <div className="profile-summary-grid">
-          <ProfileStatCard label="Tahap semasa" value={`Tahap ${DEFAULT_STUDENT.level}`} />
-          <ProfileStatCard label="XP" value={`${xp} XP`} />
-          <ProfileStatCard label="Topik lemah" value={DEFAULT_STUDENT.weakTopic} />
-          <ProfileStatCard label="Topik kuat" value={DEFAULT_STUDENT.strongTopic} />
+        <p className="profile-card-label">Analisis Pembelajaran</p>
+        {canSeeAnalytics ? (
+          <div className="profile-summary-grid">
+            <ProfileStatPill label="Tahap Semasa" value={`Tahap ${student.level}`} />
+            <ProfileStatPill label="Jumlah XP" value={`${student.xp} XP`} accent />
+            <ProfileStatPill
+              label="Topik Paling Lemah"
+              value={student.weakTopic ?? "—"}
+            />
+            <ProfileStatPill
+              label="Topik Paling Kuat"
+              value={student.strongTopic ?? "—"}
+            />
+          </div>
+        ) : (
+          <div className="profile-analytics-gate">
+            <p className="profile-analytics-gate-icon" aria-hidden="true">📊</p>
+            <p className="profile-analytics-gate-title">Analisis belum tersedia</p>
+            <p className="profile-analytics-gate-sub">
+              Jawab {ANALYTICS_UNLOCK_QUESTIONS - student.questionsAnswered} lagi soalan untuk buka analisis topik kuat &amp; lemah anda.
+            </p>
+            <div className="profile-gate-track">
+              <div
+                className="profile-gate-fill"
+                style={{ "--pct": `${Math.min(100, (student.questionsAnswered / ANALYTICS_UNLOCK_QUESTIONS) * 100)}%` } as React.CSSProperties}
+              />
+            </div>
+            <p className="profile-gate-count">
+              {student.questionsAnswered} / {ANALYTICS_UNLOCK_QUESTIONS} soalan
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* ── Referral — placed AFTER progress, not at top ── */}
+      <section className="profile-invite-card">
+        <div>
+          <p className="profile-card-label">Bonus XP</p>
+          <h2>Jemput rakan, belajar bersama</h2>
+          <p>Dapat +50 XP apabila rakan anda siapkan pelajaran pertama mereka.</p>
         </div>
+        <button
+          type="button"
+          className="profile-small-action"
+          onClick={() => console.log("Jemput Rakan diklik")}
+        >
+          Jemput
+        </button>
       </section>
     </div>
   );
 }
 
-function StatisticsTab({ xp }: { xp: number }) {
+// ── Statistics tab ───────────────────────────────────────────────────────────
+
+function StatisticsTab({
+  student,
+  canSeeAnalytics,
+}: {
+  student: StudentData;
+  canSeeAnalytics: boolean;
+}) {
+  const showStreak = student.streak >= STREAK_SHOW_FROM_DAY;
+
   return (
     <div className="profile-tab-stack">
+      {/* Level + XP grid */}
       <div className="profile-stat-grid">
         <section className="profile-metric-card">
-          <p className="profile-card-label">Kad Tahap</p>
-          <h2>Tahap {DEFAULT_STUDENT.level}</h2>
-          <span>Permulaan · 0 XP diperlukan ke tahap seterusnya</span>
-          <div className="profile-progress-track" aria-hidden="true">
-            <div style={{ width: `${DEFAULT_STUDENT.progress}%` }} />
+          <p className="profile-card-label">Tahap</p>
+          <h2>Tahap {student.level}</h2>
+          <span>
+            {student.xpProgress} / {student.xpToNextLevel} XP ke Tahap {student.level + 1}
+          </span>
+          <div className="profile-progress-track" aria-label={`${student.xpProgress} daripada ${student.xpToNextLevel} XP`}>
+            <div style={{ "--pct": `${(student.xpProgress / Math.max(1, student.xpToNextLevel)) * 100}%` } as React.CSSProperties} />
           </div>
         </section>
 
         <section className="profile-metric-card">
-          <p className="profile-card-label">Kad XP</p>
-          <h2>{xp} XP</h2>
-          <span>Mata pembelajaran</span>
+          <p className="profile-card-label">Mata XP</p>
+          <h2>{student.xp} XP</h2>
+          <span>Dikumpulkan sejak mula</span>
+          {student.xp === 0 && (
+            <p className="profile-metric-hint">Jawab soalan untuk mulakan kiraan XP</p>
+          )}
         </section>
       </div>
 
-      <section className="profile-growth-card">
-        <p className="profile-card-label">Perkembangan Semasa</p>
-        <h2>Rentetan Belajar</h2>
-        <strong>{DEFAULT_STUDENT.streak} hari</strong>
-        <p>Teruskan usaha untuk panjangkan rentetan anda!</p>
-      </section>
-
+      {/* Activity summary */}
       <section className="profile-info-card">
-        <p className="profile-card-label">Prestasi Topik</p>
+        <p className="profile-card-label">Aktiviti Pembelajaran</p>
         <div className="profile-performance-list">
-          <ProfileStatCard label="Topik terkuat" value={DEFAULT_STUDENT.strongTopic} />
-          <ProfileStatCard label="Topik perlu dibaiki" value={DEFAULT_STUDENT.weakTopic} />
-          <ProfileStatCard label="Pelajaran selesai" value={`${DEFAULT_STUDENT.completedLessons} / ${DEFAULT_STUDENT.totalLessons}`} />
+          <ProfileStatRow
+            label="Soalan dijawab"
+            value={`${student.questionsAnswered} soalan`}
+            empty={student.questionsAnswered === 0}
+            emptyHint="Belum ada soalan dijawab"
+          />
+          <ProfileStatRow
+            label="Topik diselesaikan"
+            value={`${student.topicsCompleted} topik`}
+            empty={student.topicsCompleted === 0}
+            emptyHint="Siapkan 1 topik untuk mula kira"
+          />
         </div>
       </section>
+
+      {/* Streak */}
+      {showStreak ? (
+        <section className="profile-growth-card">
+          <p className="profile-card-label">Rentetan Belajar</p>
+          <h2>Belajar Setiap Hari</h2>
+          <strong>{student.streak} hari 🔥</strong>
+          <p>Teruskan usaha — jangan putus rentetannya!</p>
+        </section>
+      ) : (
+        <section className="profile-growth-card profile-growth-card--muted">
+          <p className="profile-card-label">Rentetan Belajar</p>
+          <h2>Mulakan Hari Ini!</h2>
+          <strong>0 hari</strong>
+          <p>Belajar setiap hari untuk bina rentetan dan dapatkan bonus XP.</p>
+        </section>
+      )}
+
+      {/* Topic performance — gated */}
+      <section className="profile-info-card">
+        <p className="profile-card-label">Prestasi Topik</p>
+        {canSeeAnalytics ? (
+          <div className="profile-performance-list">
+            <ProfileStatRow
+              label="Topik paling kuat"
+              value={student.strongTopic ?? "—"}
+              empty={!student.strongTopic}
+              emptyHint="Belum cukup data"
+            />
+            <ProfileStatRow
+              label="Topik perlu dibaiki"
+              value={student.weakTopic ?? "—"}
+              empty={!student.weakTopic}
+              emptyHint="Belum cukup data"
+            />
+          </div>
+        ) : (
+          <div className="profile-analytics-gate profile-analytics-gate--compact">
+            <p className="profile-analytics-gate-title">
+              📊 Jawab {ANALYTICS_UNLOCK_QUESTIONS - student.questionsAnswered} lagi soalan untuk buka analisis ini
+            </p>
+            <div className="profile-gate-track profile-gate-track--spaced">
+              <div
+                className="profile-gate-fill"
+                style={{ "--pct": `${Math.min(100, (student.questionsAnswered / ANALYTICS_UNLOCK_QUESTIONS) * 100)}%` } as React.CSSProperties}
+              />
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function BadgesTab() {
-  const badgeList = [
-    ...DEFAULT_STUDENT.badges.map((badge) => ({ label: badge, locked: false })),
-    { label: "Lencana Terkunci", locked: true },
-    { label: "Lencana Terkunci", locked: true },
-  ];
-
+function ProfileStatRow({
+  label,
+  value,
+  empty,
+  emptyHint,
+}: {
+  label: string;
+  value: string;
+  empty?: boolean;
+  emptyHint?: string;
+}) {
   return (
-    <div className="profile-badge-grid">
-      {badgeList.map((badge, index) => (
-        <BadgeCard key={`${badge.label}-${index}`} {...badge} />
-      ))}
+    <div className="profile-stat-row">
+      <span className="profile-stat-row-label">{label}</span>
+      {empty ? (
+        <span className="profile-stat-row-hint">{emptyHint}</span>
+      ) : (
+        <strong className="profile-stat-row-value">{value}</strong>
+      )}
     </div>
   );
 }
 
-function ProfileStatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="profile-stat-card">
-      <strong>{value}</strong>
-      <span>{label}</span>
-    </div>
-  );
-}
+// ── Badges tab ───────────────────────────────────────────────────────────────
 
-function BadgeCard({ label, locked }: { label: string; locked: boolean }) {
+function BadgesTab({ badges }: { badges: BadgeData[] }) {
+  const earned = badges.filter((b) => b.earned);
+  const locked = badges.filter((b) => !b.earned);
+
   return (
-    <article className={`profile-badge-card${locked ? " locked" : ""}`}>
-      <div className="profile-badge-medal" aria-hidden="true">
-        {locked ? <LockIcon /> : <GiftIcon />}
+    <div className="profile-tab-stack">
+      {earned.length === 0 && (
+        <div className="profile-badge-empty">
+          <p className="profile-badge-empty-icon" aria-hidden="true">🏅</p>
+          <p className="profile-badge-empty-title">Belum ada lencana diraih</p>
+          <p className="profile-badge-empty-sub">
+            Siapkan cabaran di bawah untuk buka lencana pertama anda!
+          </p>
+        </div>
+      )}
+
+      {earned.length > 0 && (
+        <>
+          <p className="profile-badge-section-label">Diraih ({earned.length})</p>
+          <div className="profile-badge-grid">
+            {earned.map((b) => (
+              <BadgeCard key={b.id} badge={b} />
+            ))}
+          </div>
+        </>
+      )}
+
+      <p className="profile-badge-section-label">
+        {earned.length === 0 ? "Cara buka lencana" : `Belum dibuka (${locked.length})`}
+      </p>
+      <div className="profile-badge-grid">
+        {locked.map((b) => (
+          <BadgeCard key={b.id} badge={b} />
+        ))}
       </div>
-      <h2>{label}</h2>
-      <p>{locked ? "Terus belajar untuk buka kunci" : "Sudah dibuka"}</p>
+    </div>
+  );
+}
+
+function BadgeCard({ badge }: { badge: BadgeData }) {
+  return (
+    <article className={`profile-badge-card${badge.earned ? "" : " locked"}`}>
+      <div className="profile-badge-medal" aria-hidden="true">
+        {badge.earned ? <StarIcon /> : <LockIcon />}
+      </div>
+      <h2>{badge.label}</h2>
+      <p>{badge.earned ? badge.desc : badge.unlockAt}</p>
     </article>
   );
 }
 
+// ── Icons ─────────────────────────────────────────────────────────────────────
+
 function IconBase({ children }: { children: ReactNode }) {
-  return <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">{children}</svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {children}
+    </svg>
+  );
 }
 
 function ArrowLeftIcon() {
@@ -297,14 +629,6 @@ function GiftIcon() {
   return (
     <IconBase>
       <path d="M20 12v8H4v-8M3 8h18v4H3V8ZM12 8v12M12 8H8.5a2 2 0 1 1 2-2c0 1.2.7 2 1.5 2ZM12 8h3.5a2 2 0 1 0-2-2c0 1.2-.7 2-1.5 2Z" />
-    </IconBase>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <IconBase>
-      <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4" />
     </IconBase>
   );
 }
@@ -325,14 +649,6 @@ function SettingsIcon() {
   );
 }
 
-function UserPlusIcon() {
-  return (
-    <IconBase>
-      <path d="M10 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM3.5 20c.7-3.6 3-6 6.5-6 2 0 3.7.8 4.8 2.2M18 9v6M15 12h6" />
-    </IconBase>
-  );
-}
-
 function PencilIcon() {
   return (
     <IconBase>
@@ -349,10 +665,10 @@ function ShareIcon() {
   );
 }
 
-function PlusIcon() {
+function ZapIcon() {
   return (
     <IconBase>
-      <path d="M12 5v14M5 12h14" />
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" />
     </IconBase>
   );
 }
@@ -365,3 +681,18 @@ function LockIcon() {
   );
 }
 
+function TrophyIcon() {
+  return (
+    <IconBase>
+      <path d="M7 3H5v6a7 7 0 0 0 14 0V3h-2M3 3h18M12 16v4M8 20h8" />
+    </IconBase>
+  );
+}
+
+function StarIcon() {
+  return (
+    <IconBase>
+      <path d="M12 2l2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.9l6.5-.9L12 2Z" />
+    </IconBase>
+  );
+}
