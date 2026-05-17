@@ -17,6 +17,8 @@ interface QuizSheetProps {
   streak?: number;
   xp?: number;
   meta?: string;
+  flagged?: boolean;
+  onToggleFlag?: () => void;
 }
 
 export default function QuizSheet({
@@ -34,6 +36,8 @@ export default function QuizSheet({
   streak,
   xp,
   meta,
+  flagged,
+  onToggleFlag,
 }: QuizSheetProps) {
   return (
     <StandardQuizShell
@@ -50,6 +54,8 @@ export default function QuizSheet({
       streak={streak}
       xp={xp}
       meta={meta}
+      flagged={flagged}
+      onToggleFlag={onToggleFlag}
     >
       {children}
     </StandardQuizShell>

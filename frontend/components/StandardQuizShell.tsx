@@ -21,6 +21,10 @@ interface StandardQuizShellProps {
   xp?: number;
   /** Quiz metadata shown next to mascot, e.g. "Ubahan · Mudah" */
   meta?: string;
+  /** Whether the current question is flagged */
+  flagged?: boolean;
+  /** Called when the user toggles the flag button */
+  onToggleFlag?: () => void;
 }
 
 export default function StandardQuizShell({
@@ -38,10 +42,11 @@ export default function StandardQuizShell({
   streak = 0,
   xp = 0,
   meta,
+  flagged = false,
+  onToggleFlag,
 }: StandardQuizShellProps) {
   const fillRef = useRef<HTMLDivElement>(null);
   const [muted, setMuted] = useState(false);
-  const [flagged, setFlagged] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   // Sync mute state with sounds lib — store in sessionStorage so sounds.ts can read it
@@ -142,7 +147,7 @@ export default function StandardQuizShell({
             className={`qs-stat-icon-btn${flagged ? " qs-stat-icon-btn--flagged" : ""}`}
             aria-label={flagged ? "Nyahbenderakan" : "Tandakan soalan"}
             title={flagged ? "Nyahbenderakan" : "Tandakan soalan"}
-            onClick={() => setFlagged((f) => !f)}
+            onClick={() => onToggleFlag?.()}
           >
             🚩
           </button>
@@ -177,7 +182,7 @@ export default function StandardQuizShell({
             <button
               type="button"
               className={`qs-settings-toggle${flagged ? " qs-settings-toggle--on" : ""}`}
-              onClick={() => setFlagged((f) => !f)}
+              onClick={() => onToggleFlag?.()}
               aria-pressed={flagged ? "true" : "false"}
             >
               {flagged ? "Ditandakan" : "Tandakan"}

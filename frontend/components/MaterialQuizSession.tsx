@@ -5,9 +5,10 @@ import Image from "next/image";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
-import { Question, submitAnswer as apiSubmitAnswer } from "@/lib/api";
+import { Question, Explanation, submitAnswer as apiSubmitAnswer, generateExplanation } from "@/lib/api";
 import { MaterialMcq } from "@/app/materials/ubahan/data";
 import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
+import ExplanationBlock from "@/components/ExplanationBlock";
 
 type ChapterKey = "ubahan" | "matriks" | "insurans";
 
@@ -87,7 +88,12 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const [sessionStreak, setSessionStreak] = useState(0);
   const [xp, setXp] = useState(0);
   const [showBuddy, setShowBuddy] = useState(false);
+  const [explanation, setExplanation] = useState<Explanation | null>(null);
+  const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [flaggedIndices, setFlaggedIndices] = useState<Set<number>>(new Set());
+  const [reviewMode, setReviewMode] = useState(false);
+  const [reviewIndex, setReviewIndex] = useState(0);
 
   useEffect(() => {
     const uid = sessionStorage.getItem("userId");
@@ -111,8 +117,6 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
   const done = currentIndex + (submitted ? 1 : 0);
   const total = questionSet.length;
   const finalStep = submitted && currentIndex === total - 1;
-  const displayedCorrect = correctCount + (submitted && isCorrect ? 1 : 0);
-  const accuracy = done > 0 ? `${Math.round((displayedCorrect / done) * 100)}%` : "-";
 
   async function handleSubmit() {
     if (selected === null) return;
@@ -153,12 +157,45 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
     setSubmitted(true);
   }
 
+  async function handleGenerateExplanation() {
+    if (!userId || selected === null) return;
+    setIsGeneratingExplanation(true);
+    try {
+      const exp = await generateExplanation(userId, question.id, selected);
+      setExplanation(exp);
+    } catch {
+      // silently ignore — user can retry
+    } finally {
+      setIsGeneratingExplanation(false);
+    }
+  }
+
   function nextQuestion() {
     if (currentIndex >= total - 1) return;
     setCurrentIndex((prev) => prev + 1);
     setSelected(null);
     setSubmitted(false);
     setShowBuddy(false);
+    setExplanation(null);
+  }
+
+  function toggleFlag() {
+    setFlaggedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(currentIndex)) next.delete(currentIndex);
+      else next.add(currentIndex);
+      return next;
+    });
+  }
+
+  function handleFinish() {
+    const flaggedList = Array.from(flaggedIndices);
+    if (flaggedList.length > 0) {
+      setReviewIndex(0);
+      setReviewMode(true);
+    } else {
+      onContinue();
+    }
   }
 
   const bar = !submitted ? (
@@ -179,16 +216,58 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
       <button
         type="button"
         className="qs-feedback-btn"
-        onClick={finalStep ? onContinue : nextQuestion}
+        onClick={finalStep ? handleFinish : nextQuestion}
       >
         {finalStep ? "TAMAT SESI" : "SETERUSNYA"} &rsaquo;
       </button>
     </div>
   );
 
-  const chapterLabel = chapter === "ubahan" ? "Ubahan" : chapter === "matriks" ? "Matriks" : "Insurans";
-  const stepTypeLabel = step.type === "Assessment" ? "Penilaian" : "Latihan";
-  const metaLabel = `${chapterLabel} · ${stepTypeLabel}`;
+  const flaggedList = Array.from(flaggedIndices);
+
+  if (reviewMode) {
+    const reviewQ = questionSet[flaggedList[reviewIndex]];
+    const isLast = reviewIndex === flaggedList.length - 1;
+    const reviewBar = (
+      <div className="qs-feedback-panel qs-feedback-correct">
+        <div className="qs-feedback-top">
+          <span className="qs-feedback-icon">🚩</span>
+          <div className="qs-feedback-text">
+            <p className="qs-feedback-title">Semakan soalan ditandakan</p>
+            <p className="qs-feedback-hint">{reviewIndex + 1} / {flaggedList.length}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="qs-feedback-btn"
+          onClick={isLast ? onContinue : () => setReviewIndex((i) => i + 1)}
+        >
+          {isLast ? "SELESAI" : "SETERUSNYA"} &rsaquo;
+        </button>
+      </div>
+    );
+    return (
+      <QuizSheet
+        open
+        bar={reviewBar}
+        onClose={onClose}
+        progress={reviewIndex + 1}
+        total={flaggedList.length}
+        streak={sessionStreak}
+        xp={xp}
+        title={`Semakan: ${step.title}`}
+        meta={`${flaggedList.length} soalan ditandakan`}
+      >
+        <QuestionCard
+          question={reviewQ.question}
+          selectedOptionIndex={reviewQ.correctIndex}
+          showResult
+          isCorrect
+          correctOptionIndex={reviewQ.correctIndex}
+        />
+      </QuizSheet>
+    );
+  }
 
   return (
     <QuizSheet
@@ -199,26 +278,9 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
       total={total}
       streak={sessionStreak}
       xp={xp}
-      title={step.title}
-      meta={metaLabel}
+      flagged={flaggedIndices.has(currentIndex)}
+      onToggleFlag={toggleFlag}
     >
-      <div className="learn-stats">
-        <div className="learn-stat">
-          <div className="learn-stat-label">Selesai</div>
-          <div className="learn-stat-value">{done}</div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">Betul</div>
-          <div className="learn-stat-value green">{displayedCorrect}</div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">Ketepatan</div>
-          <div className={`learn-stat-value ${submitted && !isCorrect ? "red" : submitted ? "green" : "red"}`}>{accuracy}</div>
-        </div>
-      </div>
-
-      <div className="learn-ai-cues" />
-
       <QuestionCard
         question={question}
         selectedOptionIndex={selected}
@@ -227,6 +289,15 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
         isCorrect={isCorrect}
         correctOptionIndex={correctIndex}
       />
+
+      {submitted && (
+        <ExplanationBlock
+          explanation={explanation}
+          isCorrect={isCorrect}
+          onGenerateExplanation={handleGenerateExplanation}
+          isGenerating={isGeneratingExplanation}
+        />
+      )}
 
       {submitted && showBuddy && userId && (
         <StudyBuddyPanel userId={userId} questionContext={question.text} onClose={() => setShowBuddy(false)} />
