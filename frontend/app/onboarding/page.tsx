@@ -83,11 +83,49 @@ function TypewriterText({
   return <>{displayed}</>;
 }
 
-function topicTier(accuracy: number): { label: string; cls: string } {
-  if (accuracy >= 0.75) return { label: "✓ MANTAP!", cls: "strong" };
-  if (accuracy >= 0.5)
-    return { label: "Dah ok, jom mantapkan lagi", cls: "medium" };
-  return { label: "Fokus utama kamu", cls: "weak" };
+function WordTypewriterText({
+  text,
+  speed = 220,
+  startDelay = 500,
+}: {
+  text: string;
+  speed?: number;
+  startDelay?: number;
+}) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const [visibleCount, setVisibleCount] = useState(0);
+
+  useEffect(() => {
+    setVisibleCount(0);
+    if (!words.length) return;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
+        setVisibleCount((prev) => {
+          if (prev >= words.length) {
+            if (intervalId) clearInterval(intervalId);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, speed);
+    }, startDelay);
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [text, speed, startDelay]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <>{words.slice(0, visibleCount).join(" ")}</>;
+}
+
+function topicHighlightByRank(
+  index: number,
+  total: number,
+): { label: string; cls: "weak" | "medium" | "strong" } {
+  if (index === 0) return { label: "FOKUS UTAMA KAMU", cls: "weak" };
+  if (index === total - 1) return { label: "MANTAP", cls: "strong" };
+  return { label: "LATIH LAGI", cls: "medium" };
 }
 
 function topicEmoji(topic: string) {
@@ -634,13 +672,13 @@ function ProgressFillDriver({ pct }: { pct: number }) {
 
 function TopicCard({
   topic,
-  tier,
+  highlight,
   index,
   isWeakest,
   onPractice,
 }: {
   topic: string;
-  tier: { label: string; cls: string };
+  highlight: { label: string; cls: "weak" | "medium" | "strong" };
   index: number;
   isWeakest: boolean;
   onPractice?: () => void;
@@ -656,21 +694,22 @@ function TopicCard({
   return (
     <div
       ref={cardRef}
-      className={`ob2-topic-card ob-result-fadein ob2-topic-card--${tier.cls}${isWeakest ? " ob2-topic-card--featured" : ""}`}
+      className={`ob2-topic-card ob-result-fadein ob2-topic-card--${highlight.cls}${isWeakest ? " ob2-topic-card--featured" : ""}`}
     >
       <div className="ob2-topic-header">
         <span className="ob2-topic-emoji">{topicEmoji(topic)}</span>
         <div className="ob2-topic-info">
           <div className="ob2-topic-name-row">
             <span className="ob2-topic-name">{topic}</span>
-            {isWeakest && (
-              <span className="ob2-recommended-badge">FOKUS UTAMA KAMU</span>
-            )}
+            <span
+              className={`ob2-recommended-badge ob2-recommended-badge--${highlight.cls}`}
+            >
+              {highlight.label}
+            </span>
           </div>
         </div>
       </div>
       <div className="ob2-topic-footer">
-        {!isWeakest && <span className="ob2-tier-label">{tier.label}</span>}
         <button
           type="button"
           className="ob2-topic-cta-btn"
@@ -684,9 +723,6 @@ function TopicCard({
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-const RING_R = 52;
-const CIRCUMFERENCE = 2 * Math.PI * RING_R;
 
 function ResultScreen({
   result,
@@ -702,38 +738,6 @@ function ResultScreen({
   onDashboard: () => void;
 }) {
   const pct = Math.round((result.score / result.total) * 100);
-  const [displayScore, setDisplayScore] = useState(0);
-  const [displayPct, setDisplayPct] = useState(0);
-  const ringFillRef = useRef<SVGCircleElement>(null);
-  const ringCircleRef = useRef<HTMLDivElement>(null);
-
-  const ringColor =
-    pct >= 70 ? "var(--correct)" : pct >= 45 ? "#f59e0b" : "var(--wrong)";
-
-  useEffect(() => {
-    let raf: number;
-    const duration = 950;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - (1 - t) ** 3;
-      const score = Math.round(eased * result.score);
-      const pctNow = Math.round(eased * pct);
-      const offset = CIRCUMFERENCE - (CIRCUMFERENCE * pctNow) / 100;
-      setDisplayScore(score);
-      setDisplayPct(pctNow);
-      if (ringFillRef.current) {
-        ringFillRef.current.style.strokeDashoffset = String(offset);
-        ringFillRef.current.style.stroke = ringColor;
-      }
-      if (ringCircleRef.current) {
-        ringCircleRef.current.style.borderColor = ringColor;
-      }
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const grade =
     pct >= 70
@@ -745,10 +749,7 @@ function ResultScreen({
   const sortedTopics = [...result.by_topic].sort(
     (a, b) => a.accuracy - b.accuracy,
   );
-  const visibleTopics = sortedTopics.filter((t) => {
-    const cls = topicTier(t.accuracy).cls;
-    return cls === "weak" || cls === "strong";
-  });
+  const visibleTopics = sortedTopics;
   const weakestTopic = sortedTopics[0];
   const weakestTopicName = weakestTopic?.topic ?? "";
 
@@ -769,56 +770,21 @@ function ResultScreen({
       <div className={`ob2-hero ob2-hero--${grade.mod}`}>
         <div className="ob2-hero-noise" aria-hidden="true" />
 
-        {/* XP pill */}
-        <div className="ob2-xp-pill ob-result-fadein">
-          <span className="ob2-xp-bolt">⚡</span>+50 XP
+        <div className="ob2-mascot-cloud ob-result-fadein">
+          <WordTypewriterText text={`${grade.label}, ${userName || "pelajar"}!`} />
         </div>
 
-        {/* Score ring */}
-        <div className="ob2-ring-wrap">
-          <svg
-            className="ob2-ring-svg"
-            viewBox="0 0 140 140"
-            aria-hidden="true"
-          >
-            <defs>
-              <filter
-                id="ring-glow"
-                x="-30%"
-                y="-30%"
-                width="160%"
-                height="160%"
-              >
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <circle className="ob2-ring-track" cx="70" cy="70" r={RING_R} />
-            <circle
-              ref={ringFillRef}
-              className="ob2-ring-fill"
-              cx="70"
-              cy="70"
-              r={RING_R}
-              filter="url(#ring-glow)"
-            />
-          </svg>
-          <div className="ob2-ring-inner">
-            <span className="ob2-ring-score" ref={ringCircleRef}>
-              {displayScore}
-              <span className="ob2-ring-total">/{result.total}</span>
-            </span>
-            <span className="ob2-ring-pct">{displayPct}%</span>
-          </div>
+        <div className="ob2-result-mascot ob-result-fadein" aria-hidden="true">
+          <Image
+            src="/assets/mascot.webp"
+            alt=""
+            width={108}
+            height={108}
+            className="ob2-result-mascot-img"
+            priority
+          />
         </div>
 
-        {/* Headline */}
-        <h2 className="ob2-hero-title ob-result-fadein">
-          {grade.emoji} {grade.label}, {userName || "pelajar"}!
-        </h2>
         <p className="ob2-hero-sub ob-result-fadein">
           Ini diagnosis awal tahap SPM kamu.
         </p>
@@ -836,12 +802,12 @@ function ResultScreen({
             </h3>
             <div className="ob2-topics-grid">
               {visibleTopics.map((t, i) => {
-                const tier = topicTier(t.accuracy);
+                const highlight = topicHighlightByRank(i, visibleTopics.length);
                 return (
                   <TopicCard
                     key={t.topic}
                     topic={t.topic}
-                    tier={tier}
+                    highlight={highlight}
                     index={i}
                     isWeakest={t.topic === weakestTopicName}
                     onPractice={onContinue}
