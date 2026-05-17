@@ -302,11 +302,13 @@ type TopicKey = keyof typeof TOPICS;
 
 function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
   return (
-    <button
-      type="button"
+    <div
       className="ai-chat-collapsed"
       onClick={onOpenSheet}
+      role="button"
+      tabIndex={0}
       aria-label="Buka Skorrel"
+      onKeyDown={(e) => e.key === "Enter" && onOpenSheet()}
     >
       <div className="ai-chat-avatar" aria-hidden="true">
         <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />

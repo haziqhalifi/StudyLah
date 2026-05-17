@@ -439,7 +439,6 @@ export default function ReviewPage() {
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
           aria-label="Tanya Skorrel"
-          aria-label="Tanya Skorrel"
         >
           <img
             src="/assets/mascot.webp"
