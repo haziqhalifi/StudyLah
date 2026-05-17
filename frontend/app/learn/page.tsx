@@ -536,9 +536,6 @@ export default function LearnPage() {
         <span className="qs-feedback-icon">{result.is_correct ? "✓" : "✗"}</span>
         <div className="qs-feedback-text">
           <p className="qs-feedback-title">{result.is_correct ? "Betul!" : "Jawapan Salah"}</p>
-          {!result.is_correct && (
-            <p className="qs-feedback-hint">Semak penerangan di bawah untuk faham jawapan betul.</p>
-          )}
         </div>
       </div>
       <button type="button" className="qs-feedback-btn" onClick={handleNext}>
