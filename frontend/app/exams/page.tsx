@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import QuestionCard from "@/components/QuestionCard";
 import QuizSheet from "@/components/QuizSheet";
 import StandardQuizShell from "@/components/StandardQuizShell";
@@ -72,7 +73,9 @@ function formatTime(seconds: number): string {
 }
 
 export default function ExamsPage() {
-  const [stage, setStage] = useState<Stage>("pick");
+  const searchParams = useSearchParams();
+  const autoId = searchParams.get("paperId");
+  const [stage, setStage] = useState<Stage>(autoId ? "quiz" : "pick");
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingPaperId, setLoadingPaperId] = useState<number | null>(null);
@@ -93,11 +96,19 @@ export default function ExamsPage() {
   useEffect(() => {
     let cancelled = false;
     getPapers()
-      .then((res) => { if (!cancelled) setPapers(res.papers); })
+      .then((res) => {
+        if (!cancelled) setPapers(res.papers);
+        // Auto-start if paperId param is present (from examination page)
+        const paramId = searchParams.get("paperId");
+        if (paramId && !cancelled) {
+          const paper = res.papers.find(p => String(p.id) === paramId);
+          if (paper) handlePickPaper(paper, 0);
+        }
+      })
       .catch(() => { if (!cancelled) setError("Gagal memuatkan kertas."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Start/stop timer when quiz stage changes
   useEffect(() => {
@@ -170,6 +181,10 @@ export default function ExamsPage() {
   }
 
   function handleCloseQuiz() {
+    if (autoId) {
+      window.history.back();
+      return;
+    }
     setStage("pick");
     setQuestions([]);
     setCorrectMap({});
@@ -177,6 +192,16 @@ export default function ExamsPage() {
     setAnswers({});
     setError("");
     setTimedOut(false);
+  }
+
+  // ── Auto-loading from examination page ────────────────────────────
+  if (autoId && stage === "quiz" && questions.length === 0) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60dvh", gap: "1rem", color: "var(--muted)" }}>
+        <div className="onboard-loader" />
+        <p style={{ fontSize: "0.9rem", fontWeight: 600 }}>Memuatkan soalan…</p>
+      </div>
+    );
   }
 
   // ── Pick stage ─────────────────────────────────────────────────────
