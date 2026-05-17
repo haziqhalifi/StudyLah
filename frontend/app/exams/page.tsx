@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import QuestionCard from "@/components/QuestionCard";
 import QuizSheet from "@/components/QuizSheet";
 import StandardQuizShell from "@/components/StandardQuizShell";
+import QuestionCard from "@/components/QuestionCard";
 import { Paper, Question, getPapers } from "@/lib/api";
+
 
 const SUPABASE_URL = "https://pxzyfiysxzwihjplrfvo.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -88,6 +89,17 @@ export default function ExamsPage() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [completedPaperIds, setCompletedPaperIds] = useState<Set<number>>(new Set());
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+
+  function toggleFlag() {
+    const id = questions[current]?.id;
+    if (!id) return;
+    setFlaggedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   // Timer state
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_SECONDS);
@@ -377,68 +389,55 @@ export default function ExamsPage() {
     );
   }
 
-  // ── Quiz stage ─────────────────────────────────────────────────────
-  const question = questions[current];
-  const answered = Object.keys(answers).length;
-  const isLast = current === questions.length - 1;
-  const isWarning = timeLeft <= 300; // last 5 min
+  // ── Quiz stage — same design as Kuiz Diagnostik ──────────────────
+  const question   = questions[current];
+  const isLast     = current === questions.length - 1;
+  const isWarning  = timeLeft <= 300;
   const isCritical = timeLeft <= 60;
 
   const bar = (
-    <div className="qs-nav-bar">
+    <div style={{ display: "flex", gap: "0.75rem", width: "100%" }}>
       <button
         type="button"
-        className="qs-nav-icon-btn"
-        onClick={() => setCurrent((v) => v - 1)}
+        className="btn-ghost"
+        style={{ flex: 1, width: "auto" }}
+        onClick={() => setCurrent(c => Math.max(0, c - 1))}
         disabled={current === 0}
-        aria-label="Soalan sebelumnya"
       >
-        ←
+        ← Lepas
       </button>
-      <button
-        type="button"
-        className="qs-nav-icon-btn"
-        onClick={() => setCurrent((v) => v + 1)}
-        disabled={isLast}
-        aria-label="Soalan seterusnya"
-      >
-        →
-      </button>
-      {answered === questions.length && (
+      {isLast ? (
+        <button type="button" className="btn-primary" style={{ flex: 2, width: "auto" }} onClick={handleSubmit}>
+          Hantar Peperiksaan
+        </button>
+      ) : (
         <button
           type="button"
-          className="qs-nav-submit"
-          onClick={handleSubmit}
-          aria-label="Hantar peperiksaan"
+          className="btn-primary"
+          style={{ flex: 2, width: "auto" }}
+          onClick={() => setCurrent(c => Math.min(questions.length - 1, c + 1))}
         >
-          Hantar
+          Seterusnya →
         </button>
       )}
     </div>
   );
 
-  const paperSubtitle = [
-    selectedPaper?.paper_name,
-    selectedPaper?.paper_type,
-    selectedPaper?.year,
-    selectedPaper?.state,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
   return (
     <QuizSheet
       open={stage === "quiz"}
-      bar={bar}
       onClose={handleCloseQuiz}
-      title="Matematik"
-      subtitle={paperSubtitle}
-      label={`Soalan ${current + 1} / ${questions.length}`}
+      title={[selectedPaper?.state, selectedPaper?.year].filter(Boolean).join(" · ")}
+      subtitle={selectedPaper?.paper_name ?? ""}
+      statsLabel={`Soalan ${current + 1} / ${questions.length}`}
       progress={current + 1}
       total={questions.length}
-      showStats={false}
+      flagged={flaggedIds.has(questions[current]?.id ?? "")}
+      onToggleFlag={toggleFlag}
+      showStreakXp={false}
+      bar={bar}
       timer={
-        <span className={`exam-timer${isWarning ? " exam-timer-warn" : ""}${isCritical ? " exam-timer-critical" : ""}`}>
+        <span className={`exam-ob-timer${isWarning ? " exam-ob-timer--warn" : ""}${isCritical ? " exam-ob-timer--critical" : ""}`}>
           ⏱ {formatTime(timeLeft)}
         </span>
       }
@@ -451,8 +450,7 @@ export default function ExamsPage() {
           onSelectOption={(idx) => selectOption(question.id, idx)}
         />
       )}
-
-      {error && <p className="qs-error">{error}</p>}
+      {error && <p style={{ color: "var(--wrong)", fontSize: "0.85rem" }}>{error}</p>}
     </QuizSheet>
   );
 }
