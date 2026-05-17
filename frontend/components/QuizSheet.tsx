@@ -19,6 +19,8 @@ interface QuizSheetProps {
   meta?: string;
   flagged?: boolean;
   onToggleFlag?: () => void;
+  showStreakXp?: boolean;
+  statsLabel?: string;
 }
 
 export default function QuizSheet({
@@ -38,6 +40,8 @@ export default function QuizSheet({
   meta,
   flagged,
   onToggleFlag,
+  showStreakXp,
+  statsLabel,
 }: QuizSheetProps) {
   return (
     <StandardQuizShell
@@ -56,6 +60,8 @@ export default function QuizSheet({
       meta={meta}
       flagged={flagged}
       onToggleFlag={onToggleFlag}
+      showStreakXp={showStreakXp}
+      statsLabel={statsLabel}
     >
       {children}
     </StandardQuizShell>

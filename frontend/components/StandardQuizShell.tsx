@@ -25,6 +25,10 @@ interface StandardQuizShellProps {
   flagged?: boolean;
   /** Called when the user toggles the flag button */
   onToggleFlag?: () => void;
+  /** Hide the streak and XP counters (keep speaker/flag/settings) */
+  showStreakXp?: boolean;
+  /** Label shown in the stats bar (e.g. "Soalan 1/40") replacing streak/XP */
+  statsLabel?: string;
 }
 
 export default function StandardQuizShell({
@@ -44,6 +48,8 @@ export default function StandardQuizShell({
   meta,
   flagged = false,
   onToggleFlag,
+  showStreakXp = true,
+  statsLabel,
 }: StandardQuizShellProps) {
   const fillRef = useRef<HTMLDivElement>(null);
   const [muted, setMuted] = useState(false);
@@ -124,14 +130,21 @@ export default function StandardQuizShell({
       {/* ── Header row 2: live streak + XP ── */}
       {showStats && (
         <div className="qs-stats-bar">
-          <span className={`qs-stat qs-stat-streak${streak >= 2 ? " qs-stat-streak--active" : ""}`}>
-            <span className="qs-stat-icon">🔥</span>
-            <span className="qs-stat-val">{streak}</span>
-          </span>
-          <span className="qs-stat qs-stat-xp">
-            <span className="qs-stat-icon">⚡</span>
-            <span className="qs-stat-val">{xp} XP</span>
-          </span>
+          {statsLabel && (
+            <span className="qs-stat-label">{statsLabel}</span>
+          )}
+          {showStreakXp && !statsLabel && (
+            <>
+              <span className={`qs-stat qs-stat-streak${streak >= 2 ? " qs-stat-streak--active" : ""}`}>
+                <span className="qs-stat-icon">🔥</span>
+                <span className="qs-stat-val">{streak}</span>
+              </span>
+              <span className="qs-stat qs-stat-xp">
+                <span className="qs-stat-icon">⚡</span>
+                <span className="qs-stat-val">{xp} XP</span>
+              </span>
+            </>
+          )}
           <span className="qs-stats-spacer" />
           <button
             type="button"
