@@ -5402,6 +5402,162 @@ button.map-node:hover {
   align-self: center;
 }
 
+/* ── Laluan Pembelajaran hero card ───────────────────────────────── */
+.lp-path-card {
+  background: linear-gradient(135deg, #6d28d9 0%, #5b4cf5 45%, #4f46e5 100%);
+  border-radius: var(--r-2xl);
+  padding: 1.4rem 1.4rem 1.3rem;
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(91, 76, 245, 0.38);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.lp-path-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0.25rem 0.7rem;
+  width: fit-content;
+}
+
+.lp-path-copy {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.55;
+  opacity: 0.92;
+}
+
+.lp-path-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lp-path-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.lp-path-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.9);
+  width: var(--pct, 0%);
+  transition: width 0.5s ease;
+}
+
+.lp-path-pct {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.lp-path-progress-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.72;
+  margin-top: -0.2rem;
+}
+
+.lp-path-cta-btn {
+  width: 100%;
+  background: #fff;
+  color: #4f46e5;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  border: none;
+  border-radius: var(--r-lg);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.35;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  margin-top: 0.2rem;
+}
+.lp-path-cta-btn:hover {
+  background: #eef2ff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+.lp-path-cta-btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Section hint ─────────────────────────────────────────────────── */
+.lp-section-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 0.25rem;
+  line-height: 1.5;
+}
+
+/* ── Recommended chapter card emphasis ───────────────────────────── */
+.lp-chapter-recommended {
+  outline: 2.5px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 2px;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.18),
+    0 0 0 4px rgba(91, 76, 245, 0.18);
+}
+
+/* ── Recommended badge inside card ───────────────────────────────── */
+.lp-recommended-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0.2rem 0.6rem;
+  width: fit-content;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Difficulty pill variants ─────────────────────────────────────── */
+.lp-tag-diff-mudah {
+  background: rgba(16, 185, 129, 0.25);
+}
+.lp-tag-diff-sederhana {
+  background: rgba(245, 158, 11, 0.25);
+}
+.lp-tag-diff-sukar {
+  background: rgba(239, 68, 68, 0.25);
+}
+.lp-tag-time {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Mini study plan CTA under progress ──────────────────────────── */
+.lp-chapter-next-cta {
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.4;
+}
+
 /* ── Learn page: Subtopic picker ──────────────────────────────────── */
 .lp-all-card {
   display: flex;

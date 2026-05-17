@@ -345,53 +345,125 @@ export default function LearnPage() {
 
   // ── VIEW: Chapter picker ────────────────────────────────────────────
   if (view === "topics") {
+    // Compute total subtopics done across all chapters
+    const totalSubtopicsDone = MATH_F5_TOPICS.reduce((acc, topic) => {
+      const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+      return acc + np.done;
+    }, 0);
+    const totalSubtopics = MATH_F5_TOPICS.reduce((acc, t) => acc + t.steps.length, 0);
+
+    // Determine recommended chapter: lowest completion pct (first untouched, else least done)
+    const topicPcts = MATH_F5_TOPICS.map((topic) => {
+      const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+      return { topic, pct: np.total > 0 ? Math.round((np.done / np.total) * 100) : 0 };
+    });
+    const recommendedId = topicPcts.reduce((best, cur) =>
+      cur.pct < best.pct ? cur : best
+    ).topic.id;
+
+    const firstTopic = MATH_F5_TOPICS[0];
+    const firstNp = nodeProgress[firstTopic.id] ?? { done: 0, total: firstTopic.steps.length };
+    const firstPct = firstNp.total > 0 ? Math.round((firstNp.done / firstNp.total) * 100) : 0;
+    const overallPct = totalSubtopics > 0 ? Math.round((totalSubtopicsDone / totalSubtopics) * 100) : 0;
+
     return (
       <section
         className="home-dashboard-shell page-enter"
-        aria-label="Latih — pilih bab"
+        aria-label="Pilih Bab"
       >
+        {/* ── Header ── */}
         <header className="student-header">
           <div className="student-header-copy">
             <p className="student-time">Latihan Adaptif</p>
             <h1>Pilih Bab</h1>
             <div className="student-meta-row">
               <span>Matematik Tingkatan 5</span>
-              <span aria-hidden="true">•</span>
+              <span aria-hidden="true">·</span>
               <span>{MATH_F5_TOPICS.length} bab</span>
+              <span aria-hidden="true">·</span>
+              <span>{totalSubtopics} subtopik</span>
             </div>
           </div>
         </header>
 
-        {/* Chapter list */}
+        {/* ── Laluan Pembelajaran card ── */}
+        <div className="lp-path-card">
+          <div className="lp-path-badge">✦ Laluan Pembelajaran</div>
+          <p className="lp-path-copy">
+            Kami pilih urutan bab terbaik untuk kamu — ikut sahaja, kamu akan cover semua topik penting SPM.
+          </p>
+
+          {/* Overall progress bar */}
+          <div className="lp-path-progress-row">
+            <div className="lp-path-track">
+              <div
+                className="lp-path-fill"
+                style={{ "--pct": `${overallPct}%` } as React.CSSProperties}
+              />
+            </div>
+            <span className="lp-path-pct">{overallPct}%</span>
+          </div>
+          <p className="lp-path-progress-label">
+            {totalSubtopicsDone} subtopik siap daripada {totalSubtopics}
+          </p>
+
+          {/* CTA button */}
+          <button
+            type="button"
+            className="lp-path-cta-btn"
+            onClick={() => {
+              const next = MATH_F5_TOPICS.find((t) => t.id === recommendedId) ?? firstTopic;
+              setActiveTopic(next);
+              handleStartPractice(next.id, null);
+            }}
+          >
+            {firstPct === 0
+              ? `Mulakan Laluan → ${firstTopic.bab}: ${firstTopic.name} (${firstTopic.estimatedTime})`
+              : `Sambung Laluan → ${MATH_F5_TOPICS.find(t => t.id === recommendedId)?.bab}: ${MATH_F5_TOPICS.find(t => t.id === recommendedId)?.name}`
+            }
+          </button>
+        </div>
+
+        {/* ── Chapter list hint ── */}
+        <p className="lp-section-hint">
+          💡 Kami syorkan habiskan 1 bab dahulu sebelum lompat ke bab lain.
+        </p>
+
+        {/* ── Chapter cards ── */}
         <div className="lp-chapter-list">
           {MATH_F5_TOPICS.map((topic) => {
-            const np = nodeProgress[topic.id] ?? {
-              done: 0,
-              total: topic.steps.length,
-            };
-            const pct =
-              np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+            const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+            const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+            const isRecommended = topic.id === recommendedId;
+            const isInProgress = pct > 0 && pct < 100;
+
             return (
               <button
                 key={topic.id}
                 type="button"
-                className={`lp-chapter-card lp-chapter-${topic.tone}`}
+                className={`lp-chapter-card lp-chapter-${topic.tone}${isRecommended ? " lp-chapter-recommended" : ""}`}
                 onClick={() => {
                   setActiveTopic(topic);
                   handleStartPractice(topic.id, null);
                 }}
               >
                 <div className="lp-chapter-left">
+                  {isRecommended && (
+                    <div className="lp-recommended-badge">⭐ Disyorkan hari ini</div>
+                  )}
                   <p className="lp-chapter-bab">{topic.bab}</p>
                   <h2 className="lp-chapter-name">{topic.name}</h2>
                   <p className="lp-chapter-desc">{topic.desc}</p>
+
                   <div className="lp-chapter-tags">
-                    <span className="lp-tag">{topic.difficulty}</span>
-                    <span className="lp-tag">{topic.estimatedTime}</span>
-                    <span className="lp-tag">
-                      {topic.subtopics.length} subtopik
+                    <span className={`lp-tag lp-tag-difficulty lp-tag-diff-${topic.difficulty.toLowerCase()}`}>
+                      {topic.difficulty}
                     </span>
+                    <span className="lp-tag lp-tag-time">⏱ {topic.estimatedTime}</span>
+                    <span className="lp-tag">{topic.subtopics.length} subtopik</span>
                   </div>
+
+                  {/* Progress bar with percentage */}
                   <div className="lp-chapter-progress-row">
                     <div className="lp-chapter-track">
                       <div
@@ -399,13 +471,19 @@ export default function LearnPage() {
                         style={{ "--pct": `${pct}%` } as React.CSSProperties}
                       />
                     </div>
-                    {pct === 0 ? (
-                      <span className="lp-chapter-cta">Mula →</span>
-                    ) : (
-                      <span className="lp-chapter-pct">{pct}%</span>
-                    )}
+                    <span className="lp-chapter-pct">{pct}%</span>
                   </div>
+
+                  {/* Mini study plan CTA */}
+                  <p className="lp-chapter-next-cta">
+                    {pct === 100
+                      ? "✓ Siap! Ulangkaji untuk kukuhkan lagi →"
+                      : isInProgress
+                      ? "Sambung subtopik seterusnya →"
+                      : "Mulakan dengan contoh mudah →"}
+                  </p>
                 </div>
+
                 <div className="lp-chapter-icon" aria-hidden="true">
                   {topic.icon}
                 </div>
