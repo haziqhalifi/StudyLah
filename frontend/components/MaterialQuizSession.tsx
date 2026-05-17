@@ -168,9 +168,9 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Ask StudyBuddy"
+          aria-label="Tanya Skorrel"
         >
-          🤖
+          <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </button>
       )}
     </QuizSheet>

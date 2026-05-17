@@ -415,9 +415,9 @@ export default function ReviewPage() {
           type="button"
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
-          aria-label="Tanya StudyBuddy"
+          aria-label="Tanya Skorrel"
         >
-          🤖
+          <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </button>
       )}
     </QuizSheet>

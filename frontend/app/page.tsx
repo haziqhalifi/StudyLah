@@ -139,8 +139,8 @@ function StudentHeader() {
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Helo, {name}</h1>
-        <div className="student-meta-row">
+        <h1 style={{ paddingLeft: "0.5rem" }}>Helo, {name}</h1>
+        <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
           <span>{DEFAULT_STUDENT.form}</span>
           <span aria-hidden="true">•</span>
           <span>{xp} XP</span>
@@ -307,12 +307,14 @@ function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
       type="button"
       className="ai-chat-collapsed"
       onClick={onOpenSheet}
-      aria-label="Buka Cikgu AI"
+      aria-label="Buka Skorrel"
     >
-      <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+      <div className="ai-chat-avatar" aria-hidden="true">
+        <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+      </div>
       <div className="ai-chat-collapsed-text">
         <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
-        <p className="ai-chat-collapsed-sub">Cikgu AI sedia membantu</p>
+        <p className="ai-chat-collapsed-sub">Skorrel sedia membantu</p>
       </div>
       <span className="ai-chat-collapsed-arrow" aria-hidden="true">›</span>
     </button>
@@ -394,21 +396,23 @@ function AIChatSheet({
         className={`ai-sheet${open ? " ai-sheet--open" : ""}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Cikgu AI"
+        aria-label="Skorrel"
       >
         <div className="ai-sheet-handle" aria-hidden="true" />
 
         <div className="ai-chat-header">
-          <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+          <div className="ai-chat-avatar" aria-hidden="true">
+            <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          </div>
           <div className="ai-chat-header-text">
-            <h2>Tanya Tutor AI</h2>
+            <h2>Tanya Skorrel</h2>
             <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
           </div>
           <button
             type="button"
             className="ai-chat-collapse-btn"
             onClick={onClose}
-            aria-label="Tutup Cikgu AI"
+            aria-label="Tutup Skorrel"
           >
             ✕
           </button>

@@ -184,9 +184,9 @@ export default function ExamsPage() {
       <section className="home-dashboard-shell page-enter" aria-label="Exams hub">
         <header className="student-header">
           <div className="student-header-copy">
-            <p className="student-time">Kertas Percubaan</p>
-            <h1>Pilih Kertas Percubaan Matematik</h1>
-            <div className="student-meta-row">
+            <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Kertas Percubaan</p>
+            <h1 style={{ paddingLeft: "0.5rem" }}>Pilih Kertas Percubaan Matematik</h1>
+            <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
               <span>{loading ? "Memuatkan…" : `${trialPapers.length} kertas`}</span>
               <span aria-hidden="true">•</span>
               <span>Matematik</span>

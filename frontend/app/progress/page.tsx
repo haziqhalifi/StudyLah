@@ -70,9 +70,9 @@ function ProgressHeader({ name, xp, level }: { name: string; xp: number; level: 
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <p className="student-time">Kemajuan</p>
-        <h1>{name || "Pelajar"}</h1>
-        <div className="student-meta-row">
+        <p className="student-time" style={{ paddingLeft: "0.5rem" }}>Kemajuan</p>
+        <h1 style={{ paddingLeft: "0.5rem" }}>{name || "Pelajar"}</h1>
+        <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
           <span>Tahap {level}</span>
           <span aria-hidden="true">•</span>
           <span>{xp} XP</span>

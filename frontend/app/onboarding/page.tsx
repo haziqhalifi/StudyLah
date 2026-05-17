@@ -29,12 +29,10 @@ const FEEDBACK_MS = 1500;
 
 const DIALOGUES: Record<string, string[]> = {
   welcome: [
-    "Hi! I'm Lah, your study buddy! 🦉",
-    "Let's see what you already know!",
+    "Hi! I'm Skorrel 🐿️ Think of me as your personal guide to acing SPM Matematik. Let's set up your learning path!",
   ],
   profile: [
-    "Tell me about yourself!",
-    "I'll make your lessons extra personal 😊",
+    "Fill in your details below so I can set up your perfect learning path. Let's get those A's!",
   ],
   quiz_start: ["First question — let's go! 🚀"],
   quiz_correct: [
@@ -61,6 +59,27 @@ const DIALOGUES: Record<string, string[]> = {
 
 function pick(arr: string[]) {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function TypewriterText({
+  text, speed = 28, onStart, onDone,
+}: {
+  text: string; speed?: number; onStart?: () => void; onDone?: () => void;
+}) {
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    setDisplayed("");
+    onStart?.();
+    if (!text.length) { onDone?.(); return; }
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) { clearInterval(id); onDone?.(); }
+    }, speed);
+    return () => clearInterval(id);
+  }, [text, speed]); // eslint-disable-line react-hooks/exhaustive-deps
+  return <>{displayed}</>;
 }
 
 function topicTier(accuracy: number): { label: string; cls: string } {
@@ -102,6 +121,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<Step>("welcome");
   const [dialogue, setDialogue] = useState(pick(DIALOGUES.welcome));
   const [dialogueKey, setDialogueKey] = useState(0);
+  const [isTalking, setIsTalking] = useState(false);
 
   // Profile
   const [name, setName] = useState("");
@@ -267,19 +287,38 @@ export default function OnboardingPage() {
         <div className="ob-progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Mascot + dialogue (welcome and profile only) */}
-      {(step === "welcome" || step === "profile") && (
+      {/* Back button — above mascot on profile step */}
+      {step === "profile" && (
+        <button
+          type="button"
+          className="ob-back-btn"
+          onClick={() => { setStep("welcome"); showDialogue("welcome"); }}
+          aria-label="Back"
+        >
+          ‹
+        </button>
+      )}
+
+      {/* Mascot + dialogue — profile step only (side-by-side) */}
+      {step === "profile" && (
         <div className="ob-mascot-row">
-          <Image
-            src="/assets/mascot.webp"
-            alt="Lah the mascot"
-            width={64}
-            height={64}
-            className="ob-mascot-img"
-            priority
-          />
+          <span style={{ display: "inline-block", transform: "scaleX(-1)", flexShrink: 0 }}>
+            <Image
+              src="/assets/mascot.webp"
+              alt="Skorrel"
+              width={104}
+              height={104}
+              className={`ob-mascot-img${isTalking ? " ob-mascot-talking" : ""}`}
+              style={{ width: "104px", height: "104px" }}
+              priority
+            />
+          </span>
           <div className="ob-dialogue" key={dialogueKey}>
-            {dialogue}
+            <TypewriterText
+              text={dialogue}
+              onStart={() => setIsTalking(true)}
+              onDone={() => setIsTalking(false)}
+            />
           </div>
         </div>
       )}
@@ -287,47 +326,23 @@ export default function OnboardingPage() {
       {/* ── WELCOME ────────────────────────────────────────────────────────── */}
       {step === "welcome" && (
         <>
-          <h1 className="ob-welcome-title">
-            Let&apos;s find out what you know! 🎓
-          </h1>
-          <p className="ob-welcome-sub">
-            Answer 10 quick questions so we can personalise your SPM Matematik
-            learning journey. It only takes a few minutes!
-          </p>
-
-          {/* Topic preview chips */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "0.5rem",
-              marginBottom: "2rem",
-              alignSelf: "flex-start",
-            }}
-          >
-            {[
-              ["Ubahan", "📐"],
-              ["Matriks", "🔢"],
-              ["Insurans", "📋"],
-            ].map(([label, emoji]) => (
-              <span
-                key={label}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.3rem",
-                  background: "white",
-                  border: "1.5px solid var(--brand-muted)",
-                  borderRadius: "999px",
-                  padding: "0.3rem 0.85rem",
-                  fontSize: "0.82rem",
-                  fontWeight: 600,
-                  color: "var(--ink-2)",
-                }}
-              >
-                {emoji} {label}
-              </span>
-            ))}
+          <div className="ob-welcome-layout">
+            {/* Bubble: normal flow, grows downward */}
+            <div className="ob-dialogue ob-dialogue--above" key={dialogueKey}>
+              <TypewriterText text={dialogue} />
+            </div>
+            {/* Mascot: absolutely anchored at bottom, never moves */}
+            <div className="ob-mascot-wrapper">
+              <Image
+                src="/assets/mascot.webp"
+                alt="Skorrel"
+                width={180}
+                height={180}
+                className="ob-mascot-center"
+                style={{ width: "180px", height: "180px" }}
+                priority
+              />
+            </div>
           </div>
 
           <div className="ob-sticky-cta">
@@ -348,11 +363,6 @@ export default function OnboardingPage() {
       {/* ── PROFILE ────────────────────────────────────────────────────────── */}
       {step === "profile" && (
         <>
-          <h2 className="ob-section-title">Tell us about yourself</h2>
-          <p className="ob-section-sub">
-            We&apos;ll personalise your experience just for you.
-          </p>
-
           <div className="ob-form">
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-name">

@@ -44,13 +44,13 @@ const TOPIC_DISPLAY: Record<string, string> = {
 function buildWelcomeMessage(ctx?: LearningContext): string {
   if (ctx?.currentQuestion) {
     return (
-      `Hi! I'm StudyBuddy 👋 I can see you're working on **${ctx.topicName}**` +
+      `Hi! I'm Skorrel 👋 I can see you're working on **${ctx.topicName}**` +
       (ctx.chapterName ? ` — ${ctx.chapterName}` : "") +
       ".\n\nUse the chips below to get instant help, or ask me anything! 🚀"
     );
   }
   return (
-    "Hi! I'm StudyBuddy 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**.\n\n" +
+    "Hi! I'm Skorrel 👋 I can help you with **Ubahan**, **Matriks**, and **Insurans**.\n\n" +
     "Tap a chip below to get started, or ask me anything! 🚀"
   );
 }
@@ -241,16 +241,18 @@ export default function StudyBuddyChat({
       <div className="sb-backdrop" onClick={onClose} aria-hidden="true" />
 
       {/* Drawer */}
-      <div className="sb-panel" role="dialog" aria-label="StudyBuddy chat">
+      <div className="sb-panel" role="dialog" aria-label="Skorrel chat">
         {/* Drag handle */}
         <div className="sb-drag-handle" />
 
         {/* Header */}
         <div className="sb-header">
           <div className="sb-header-left">
-            <span className="sb-avatar">🤖</span>
+            <span className="sb-avatar">
+              <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            </span>
             <div>
-              <div className="sb-title">StudyBuddy</div>
+              <div className="sb-title">Skorrel</div>
               <div className="sb-subtitle">Ubahan · Matriks · Insurans</div>
             </div>
           </div>
@@ -258,7 +260,7 @@ export default function StudyBuddyChat({
             type="button"
             className="sb-close"
             onClick={onClose}
-            aria-label="Close StudyBuddy"
+            aria-label="Tutup Skorrel"
           >
             ✕
           </button>
