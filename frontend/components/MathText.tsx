@@ -114,8 +114,15 @@ function normaliseMath(text: string): string {
       .replace(/\\\(([\s\S]*?)\\\)/g, (_m, i) => `$${i}$`);
   }
 
+  // Wrap \begin{env}...\end{env} blocks as display math before anything else.
+  // This handles matrices and other multi-line environments that segmentLatex can't parse.
+  let out = text.replace(
+    /\\begin\{([^}]+)\}([\s\S]*?)\\end\{\1\}/g,
+    (_m, env, body) => `$$\\begin{${env}}${body}\\end{${env}}$$`
+  );
+
   // Normalise \[...\] → $$...$$ and \(...\) → $...$
-  let out = text
+  out = out
     .replace(/\\\[([\s\S]*?)\\\]/g, (_m, i) => `$$${i}$$`)
     .replace(/\\\(([\s\S]*?)\\\)/g, (_m, i) => `$${i}$`);
 

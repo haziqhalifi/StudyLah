@@ -21,7 +21,7 @@ def _row_to_question(row: dict) -> Question:
     return Question(
         id=str(row["id"]),
         topic_id=row.get("topic") or row.get("subject") or "general",
-        text=row["question"],
+        text=row.get("question_ms") or row.get("question") or "",
         options=row["options"] if isinstance(row["options"], list) else list(row["options"]),
         correct_option_index=row["correct_index"],
         difficulty=row.get("difficulty") or "medium",
@@ -60,7 +60,7 @@ def get_question_by_id(question_id: str) -> Optional[Question]:
         return None
     response = (
         supabase.table("questions")
-        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject")
         .eq("id", int_id)
         .eq("approval_status", "approved")
         .maybe_single()
@@ -98,7 +98,7 @@ def get_questions_by_ids(ids: List[str]) -> List[Question]:
     if int_ids:
         response = (
             supabase.table("questions")
-            .select("id, question, options, correct_index, difficulty, topic, subject")
+            .select("id, question, question_ms, options, correct_index, difficulty, topic, subject")
             .in_("id", int_ids)
             .eq("approval_status", "approved")
             .execute()
@@ -113,7 +113,7 @@ def get_questions_by_ids(ids: List[str]) -> List[Question]:
 def get_questions_by_paper(paper_id: int, limit: int = 50) -> List[Question]:
     response = (
         supabase.table("questions")
-        .select("id, question, options, correct_index, difficulty, topic, subject")
+        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject")
         .eq("paper_id", paper_id)
         .eq("approval_status", "approved")
         .not_.is_("question", "null")
@@ -129,7 +129,7 @@ def get_questions_from_trial_papers(limit: int = 200) -> List[Question]:
     """Fetch diagnostic questions from the first 3 Form 5 Matematik chapters."""
     response = (
         supabase.table("questions")
-        .select("id, question, options, correct_index, difficulty, topic, subject, chapter_id")
+        .select("id, question, question_ms, options, correct_index, difficulty, topic, subject, chapter_id")
         .in_("chapter_id", _DIAGNOSTIC_CHAPTER_IDS)
         .eq("approval_status", "approved")
         .not_.is_("question", "null")
