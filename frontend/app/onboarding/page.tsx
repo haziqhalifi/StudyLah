@@ -646,9 +646,7 @@ function TopicCard({
   onPractice?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const cta = isWeakest
-    ? { text: "Latih sekarang →", time: "~10 min · +10 XP" }
-    : { text: "Ulang kaji →", time: "~5 min · +5 XP" };
+  const cta = isWeakest ? "Latih sekarang →" : "Ulang kaji →";
 
   useEffect(() => {
     if (cardRef.current)
@@ -672,14 +670,13 @@ function TopicCard({
         </div>
       </div>
       <div className="ob2-topic-footer">
-        <span className="ob2-tier-label">{tier.label}</span>
+        {!isWeakest && <span className="ob2-tier-label">{tier.label}</span>}
         <button
           type="button"
           className="ob2-topic-cta-btn"
           onClick={onPractice}
         >
-          {cta.text}
-          <span className="ob2-topic-cta-meta">{cta.time}</span>
+          {cta}
         </button>
       </div>
     </div>

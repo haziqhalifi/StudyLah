@@ -12184,8 +12184,10 @@ button.map-node:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 2.5rem 0 1rem;
+  min-height: calc(100dvh - 6px);
+  padding: 0;
   width: 100%;
   gap: 0;
 }
@@ -14832,13 +14834,14 @@ button.map-node:hover {
 }
 
 .ob2-floating-plan-btn {
-  background: linear-gradient(90deg, var(--brand) 0%, #a78bfa 100%);
-  border-color: rgba(127, 101, 255, 0.52);
+  background: var(--brand);
+  border-color: var(--brand);
   box-shadow:
     0 14px 28px rgba(88, 62, 194, 0.3),
     0 4px 10px rgba(75, 53, 165, 0.22);
 }
 
 .ob2-floating-plan-btn:hover {
-  background: linear-gradient(90deg, #7259f2 0%, #9d7ef8 100%);
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
 }
