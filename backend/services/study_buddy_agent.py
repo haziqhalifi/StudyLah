@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import logging
 import os
-import re
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional, TypedDict
 
@@ -33,9 +32,6 @@ logger = logging.getLogger(__name__)
 # Model configuration — swap MODEL_NAME here to change the model globally.
 # ---------------------------------------------------------------------------
 
-# TODO: StudyBuddyAgent uses OpenAI (gpt-4o-mini) while ai_coach.py / ai_engine.py
-# use Anthropic/Gemini. Unify on one provider to simplify key management.
-# Switch to Claude (anthropic SDK) or Gemini to remove the OpenAI dependency.
 MODEL_NAME = "gpt-4o-mini"
 
 # ---------------------------------------------------------------------------
@@ -372,56 +368,99 @@ def _get_client() -> OpenAI:
 
 
 # ---------------------------------------------------------------------------
-# Keyword-based intent classifier (no extra API call)
+# AI-powered intent classifier (OpenAI JSON response)
 # ---------------------------------------------------------------------------
 
-_QUIZ_TRIGGERS = [
-    "quiz", "kuiz", "soalan", "question", "questions", "generate",
-    "buat", "create", "personalised", "personalized", "set", "practice set",
-    "give me", "bagi", "sediakan", "buatkan", "hasilkan",
-]
+_INTENT_SYSTEM_PROMPT = """You are an intent classifier for a Malaysian SPM Math Form 5 study chatbot.
+Classify the user's message into exactly one of these intents:
 
-_TOPIC_KEYWORDS: Dict[str, list[str]] = {
-    "ubahan":   ["ubahan", "variation", "langsung", "songsang", "bersama", "separa",
-                 "direct", "inverse", "joint", "partial"],
-    "matriks":  ["matriks", "matrix", "matrices", "determinant", "inverse matrix",
-                 "transpose", "serentak", "simultaneous"],
-    "insurans": ["insurans", "insurance", "premium", "polisi", "policy",
-                 "takaful", "perlindungan", "coverage"],
-}
+- "create_quiz"       : User explicitly wants to take/generate a quiz or practice questions (e.g. "buat kuiz", "create quiz", "give me practice questions", "test me")
+- "create_flashcards" : User explicitly wants flashcards created (e.g. "buat flashcard", "create flashcards", "kad imbas")
+- "understand_concept": User wants explanation, wants to understand a concept, wants worked examples shown TO them, or asks "what is", "how does", "terangkan", "jelaskan" — even if the word "soalan" or "example" appears in passing
+- "chat"              : Greetings, small talk, or anything else
+
+IMPORTANT RULES:
+- "Terangkan dengan contoh soalan" = understand_concept (they want an explanation WITH example questions shown to them, NOT a quiz)
+- "Buat/cipta/hasilkan soalan/kuiz" = create_quiz (they want to answer questions themselves)
+- "Buat/cipta flashcard/kad" = create_flashcards
+- When in doubt between understand_concept and create_quiz, ask yourself: does the user want to BE TESTED, or do they want to LEARN/SEE an explanation?
+
+Also extract:
+- topic_id: "ubahan" | "matriks" | "insurans" | null
+- num_questions: integer 3-10 (only for create_quiz, default 5)
+- num_cards: integer 3-20 (only for create_flashcards, default 8)
+- subtopic_hint: short string describing subtopic if mentioned, else null
+
+Respond ONLY with valid JSON, no markdown, no extra text. Example:
+{"intent": "understand_concept", "topic_id": "insurans", "num_questions": null, "num_cards": null, "subtopic_hint": null}"""
 
 
+def _classify_intent_with_ai(
+    message: str, context_topic: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    AI-powered intent classifier using OpenAI structured JSON output.
+    Falls back to chat intent on any error so the conversation always continues.
+    """
+    try:
+        client = _get_client()
+        user_content = message
+        if context_topic:
+            user_content = f"[Current topic context: {context_topic}]\n\n{message}"
+
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": _INTENT_SYSTEM_PROMPT},
+                {"role": "user", "content": user_content},
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=150,
+            temperature=0,
+        )
+        raw = (response.choices[0].message.content or "{}").strip()
+        result: Dict[str, Any] = __import__("json").loads(raw)
+
+        intent = result.get("intent", "chat")
+        if intent not in {"create_quiz", "create_flashcards", "understand_concept", "chat"}:
+            intent = "chat"
+
+        topic_id = result.get("topic_id") or context_topic or None
+        if topic_id not in {"ubahan", "matriks", "insurans"}:
+            topic_id = None
+
+        num_questions = result.get("num_questions") or 5
+        try:
+            num_questions = max(3, min(int(num_questions), 10))
+        except (TypeError, ValueError):
+            num_questions = 5
+
+        num_cards = result.get("num_cards") or 8
+        try:
+            num_cards = max(3, min(int(num_cards), 20))
+        except (TypeError, ValueError):
+            num_cards = 8
+
+        subtopic_hint = result.get("subtopic_hint") or None
+
+        logger.info(
+            "AI intent classifier: intent=%s topic=%s", intent, topic_id
+        )
+        return {
+            "intent": intent,
+            "topic_id": topic_id,
+            "num_questions": num_questions,
+            "num_cards": num_cards,
+            "subtopic_hint": subtopic_hint,
+        }
+    except Exception as exc:
+        logger.warning("AI intent classifier failed, defaulting to chat: %s", exc)
+        return {"intent": "chat", "topic_id": context_topic, "num_questions": 5, "num_cards": 8, "subtopic_hint": None}
+
+
+# Keep old name as alias for the router that still calls decide_intent_and_reply
 def _classify_intent(message: str, context_topic: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Keyword-based intent classifier — no API call, no latency.
-
-    Returns {"intent": "create_quiz", "topic_id": ..., "num_questions": 5}
-    or      {"intent": "chat"}.
-    """
-    lower = message.lower()
-
-    is_quiz_request = any(kw in lower for kw in _QUIZ_TRIGGERS)
-    if not is_quiz_request:
-        return {"intent": "chat"}
-
-    detected_topic: Optional[str] = None
-    for topic_id, keywords in _TOPIC_KEYWORDS.items():
-        if any(kw in lower for kw in keywords):
-            detected_topic = topic_id
-            break
-
-    if not detected_topic:
-        if context_topic and context_topic in _TOPIC_KEYWORDS:
-            detected_topic = context_topic
-        else:
-            return {"intent": "chat"}
-
-    num_match = re.search(r"\b(\d+)\s*(?:soalan|questions?|qs?)\b", lower)
-    num_questions = int(num_match.group(1)) if num_match else 5
-    num_questions = max(3, min(num_questions, 10))
-
-    logger.info("Intent classifier: create_quiz topic=%s n=%d", detected_topic, num_questions)
-    return {"intent": "create_quiz", "topic_id": detected_topic, "num_questions": num_questions}
+    return _classify_intent_with_ai(message, context_topic)
 
 
 # ---------------------------------------------------------------------------

@@ -120,6 +120,7 @@ export interface ReviewResponse {
 
 export interface ReviewSubmitResponse {
   is_correct: boolean;
+  correct_option_index: number;
   explanation: Explanation;
   next_review_at: string; // ISO datetime (backward compat)
   review_state: ReviewState;
@@ -453,6 +454,19 @@ function normalizeCreateQuizResponse(raw: any): CreateQuizResponse {
   };
 }
 
+export type QuizSummary = {
+  quiz_id: string;
+  topic_id: "ubahan" | "matriks" | "insurans";
+  title: string;
+  question_count: number;
+  created_at: string;
+};
+
+/** List all quizzes created by a user. */
+export async function fetchUserQuizzes(userId: string): Promise<QuizSummary[]> {
+  return get("/api/quizzes", { userId });
+}
+
 /** Fetch a previously-created personalised quiz by ID. */
 export async function fetchQuizDetail(quizId: string): Promise<QuizDetail> {
   const raw = await get<any>(`/api/quizzes/${quizId}`);
@@ -600,6 +614,40 @@ export async function fetchDiagnosticResult(
   userId: string,
 ): Promise<DiagnosticResult> {
   return get("/api/diagnostic/result", { userId });
+}
+
+export type QuestionAttemptDetail = {
+  questionId: string;
+  questionText: string;
+  selectedOptionIndex: number;
+  correctOptionIndex: number;
+  isCorrect: boolean;
+  difficulty: Difficulty;
+  attemptedAt: string;
+};
+
+export type TopicReport = {
+  topicId: DiagnosticTopicId;
+  topicName: string;
+  accuracy: number;
+  attempts: number;
+  correct: number;
+  level: "weak" | "okay" | "strong";
+  questions: QuestionAttemptDetail[];
+};
+
+export type DiagnosticReport = {
+  userId: string;
+  totalQuestions: number;
+  correctQuestions: number;
+  overallAccuracy: number;
+  topics: TopicReport[];
+};
+
+export async function fetchDiagnosticReport(
+  userId: string,
+): Promise<DiagnosticReport> {
+  return get("/api/diagnostic/report", { userId });
 }
 
 // ---------------------------------------------------------------------------

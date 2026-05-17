@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const NAV_ITEMS = [
-  { href: "/", icon: HomeIcon, label: "Home" },
-  { href: "/materials", icon: BookIcon, label: "Lessons" },
-  { href: "/exams", icon: PathIcon, label: "Exams" },
-  { href: "/progress", icon: ProgressIcon, label: "Progress" },
-  { href: "/profile", icon: ProfileIcon, label: "Profile" },
+  { href: "/", icon: HomeIcon, label: "Utama" },
+  { href: "/materials", icon: BookIcon, label: "Pelajaran" },
+  { href: "/exams", icon: PathIcon, label: "Peperiksaan" },
+  { href: "/progress", icon: ProgressIcon, label: "Kemajuan" },
+  { href: "/profile", icon: ProfileIcon, label: "Profil" },
 ];
 
 export default function BottomNav() {
@@ -18,7 +18,7 @@ export default function BottomNav() {
   if (hiddenRoutes.includes(pathname)) return null;
 
   return (
-    <nav className="bottom-nav" aria-label="Primary navigation">
+    <nav className="bottom-nav" aria-label="Navigasi utama">
       {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
         const active = pathname === href;
         return (

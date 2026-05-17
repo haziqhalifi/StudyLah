@@ -40,7 +40,7 @@ export default function DiagnosticPage() {
       setQuestions(res.questions);
       setStep("quiz");
     } catch {
-      setError("Failed to load questions for this subject.");
+      setError("Gagal memuatkan soalan untuk mata pelajaran ini.");
     } finally {
       setStarting(false);
     }
@@ -57,7 +57,7 @@ export default function DiagnosticPage() {
     const unanswered = questions.filter((q) => answers[q.id] === undefined);
     if (unanswered.length > 0) {
       setError(
-        `${unanswered.length} question(s) unanswered. Skip them or answer before submitting.`,
+        `${unanswered.length} soalan belum dijawab. Langkau atau jawab sebelum menghantar.`,
       );
       return;
     }
@@ -78,13 +78,9 @@ export default function DiagnosticPage() {
         "skillProfile",
         JSON.stringify(result.skill_profile),
       );
-      // TODO: after submitting the diagnostic, redirect to /diagnostic/result
-      // so the user sees their per-topic breakdown and AI recommendation CTA,
-      // not directly to /materials. The result page already exists and is fully
-      // implemented — this is just a routing gap.
-      router.push("/materials");
+      router.push("/diagnostic/result");
     } catch {
-      setError("Submission failed. Please try again.");
+      setError("Penghantaran gagal. Sila cuba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -94,12 +90,12 @@ export default function DiagnosticPage() {
     return (
       <div className="page-enter">
         <div className="diag-header">
-          <h1 className="font-display diag-title">Choose Your Subject</h1>
-          <p className="diag-sub">Pick a subject to start your diagnostic.</p>
+          <h1 className="font-display diag-title">Pilih Mata Pelajaran</h1>
+          <p className="diag-sub">Pilih mata pelajaran untuk memulakan diagnostik.</p>
         </div>
 
         <div className="diag-picker-section">
-          <p className="diag-picker-label">Subject</p>
+          <p className="diag-picker-label">Mata Pelajaran</p>
           <div className="diag-subject-grid">
             {SUBJECTS.map((s) => (
               <button
@@ -123,7 +119,7 @@ export default function DiagnosticPage() {
             onClick={handleStart}
             disabled={starting}
           >
-            {starting ? "Loading questions…" : "Start Diagnostic →"}
+            {starting ? "Memuatkan soalan…" : "Mula Diagnostik →"}
           </button>
         </div>
       </div>
@@ -143,10 +139,10 @@ export default function DiagnosticPage() {
       disabled={submitting}
     >
       {submitting
-        ? "Analysing your answers…"
+        ? "Menganalisis jawapan anda…"
         : allAnswered
-          ? "Submit & Start Learning →"
-          : `Submit (${answered}/${questions.length} answered)`}
+          ? "Hantar & Mula Belajar →"
+          : `Hantar (${answered}/${questions.length} dijawab)`}
     </button>
   ) : (
     <div className="learn-actions">
@@ -155,7 +151,7 @@ export default function DiagnosticPage() {
         className="btn-ghost diag-skip-btn"
         onClick={() => setCurrent((c) => c + 1)}
       >
-        Skip
+        Langkau
       </button>
       <button
         type="button"
@@ -163,7 +159,7 @@ export default function DiagnosticPage() {
         onClick={() => setCurrent((c) => c + 1)}
         disabled={answers[q?.id] === undefined}
       >
-        Next →
+        Seterusnya →
       </button>
     </div>
   );
@@ -184,7 +180,7 @@ export default function DiagnosticPage() {
           className="quiz-sheet-back"
           onClick={() => setCurrent((c) => Math.max(0, c - 1))}
           disabled={current === 0}
-          aria-label="Previous question"
+          aria-label="Soalan sebelumnya"
         >
           ←
         </button>
@@ -194,21 +190,21 @@ export default function DiagnosticPage() {
             key={i}
             className={`diag-step-dot ${i === current ? "active" : answers[questions[i]?.id] !== undefined ? "completed" : ""}`}
             onClick={() => setCurrent(i)}
-            aria-label={`Go to question ${i + 1}`}
+            aria-label={`Pergi ke soalan ${i + 1}`}
           />
         ))}
       </div>
 
       <div className="diag-header page-enter">
-        <h1 className="font-display diag-title">Diagnostic</h1>
+        <h1 className="font-display diag-title">Diagnostik</h1>
         <p className="diag-sub">
-          Answer to personalise your learning path — just do your best!
+          Jawab untuk menyesuaikan laluan pembelajaran anda — buat yang terbaik!
         </p>
         <div className="diag-progress-row">
           <span className="diag-progress-label">
-            Question {current + 1} of {questions.length}
+            Soalan {current + 1} daripada {questions.length}
           </span>
-          <span className="diag-progress-count">{answered} answered</span>
+          <span className="diag-progress-count">{answered} dijawab</span>
         </div>
         <div className="progress-track">
           <div

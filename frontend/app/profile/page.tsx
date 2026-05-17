@@ -1,24 +1,24 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
-const student = {
-  name: "Amir",
-  form: "Form 4",
+const DEFAULT_STUDENT = {
+  name: "Pelajar",
+  form: "Form 5",
   stream: "Science Stream",
   targetExam: "SPM 2026",
   level: 1,
-  progress: 10,
-  xp: 180,
-  completedLessons: 3,
+  progress: 0,
+  xp: 0,
+  completedLessons: 0,
   totalLessons: 15,
-  weakTopic: "Quadratic Functions",
-  strongTopic: "Algebra",
-  streak: 2,
-  rank: "#12",
-  badges: ["First Step", "Algebra Starter", "Practice Beginner"],
+  weakTopic: "—",
+  strongTopic: "—",
+  streak: 0,
+  rank: "—",
+  badges: [] as string[],
 };
 
 const tabs = ["Ringkasan", "Statistik", "Lencana"] as const;
@@ -26,17 +26,30 @@ type ProfileTab = (typeof tabs)[number];
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("Ringkasan");
+  const [name, setName] = useState(DEFAULT_STUDENT.name);
+  const [xp, setXp] = useState(DEFAULT_STUDENT.xp);
+
+  useEffect(() => {
+    try {
+      const storedName = sessionStorage.getItem("userName");
+      const storedXp = sessionStorage.getItem("userXp");
+      if (storedName) setName(storedName);
+      if (storedXp) setXp(Number(storedXp));
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
 
   return (
     <section className="profile-page page-enter" aria-label="Profil pelajar">
       <ProfileTopBar />
-      <ProfileHeader />
+      <ProfileHeader name={name} xp={xp} />
       <ProfileActionButtons />
       <ProfileTabs activeTab={activeTab} onSelect={setActiveTab} />
 
       <div className="profile-tab-panel">
-        {activeTab === "Ringkasan" && <OverviewTab />}
-        {activeTab === "Statistik" && <StatisticsTab />}
+        {activeTab === "Ringkasan" && <OverviewTab xp={xp} />}
+        {activeTab === "Statistik" && <StatisticsTab xp={xp} />}
         {activeTab === "Lencana" && <BadgesTab />}
       </div>
     </section>
@@ -76,27 +89,27 @@ function ProfileTopBar() {
   );
 }
 
-function ProfileHeader() {
+function ProfileHeader({ name, xp }: { name: string; xp: number }) {
   return (
     <section className="profile-header-card" aria-label="Maklumat pelajar">
       <div className="profile-identity">
         <div className="profile-avatar" aria-hidden="true">
-          {student.name.charAt(0)}
+          {name.charAt(0).toUpperCase()}
         </div>
         <div>
           <p className="profile-kicker">Profil Pelajar</p>
-          <h1>{student.name}</h1>
+          <h1>{name}</h1>
           <p className="profile-school-line">
-            {student.stream} · {student.form}
+            {DEFAULT_STUDENT.stream} · {DEFAULT_STUDENT.form}
           </p>
-          <p className="profile-exam-line">Calon {student.targetExam}</p>
+          <p className="profile-exam-line">Calon {DEFAULT_STUDENT.targetExam}</p>
         </div>
       </div>
 
       <div className="profile-learning-stats" aria-label="Statistik kemajuan pembelajaran">
-        <ProfileStatCard label="siap" value={String(student.completedLessons)} />
-        <ProfileStatCard label="jumlah" value={String(student.totalLessons)} />
-        <ProfileStatCard label="XP" value={String(student.xp)} />
+        <ProfileStatCard label="siap" value={String(DEFAULT_STUDENT.completedLessons)} />
+        <ProfileStatCard label="jumlah" value={String(DEFAULT_STUDENT.totalLessons)} />
+        <ProfileStatCard label="XP" value={String(xp)} />
       </div>
     </section>
   );
@@ -153,7 +166,7 @@ function ProfileTabs({
   );
 }
 
-function OverviewTab() {
+function OverviewTab({ xp }: { xp: number }) {
   return (
     <div className="profile-tab-stack">
       <section className="profile-invite-card">
@@ -171,8 +184,8 @@ function OverviewTab() {
         <div>
           <p className="profile-card-label">Papan Kedudukan</p>
           <h2>Kedudukan Saya</h2>
-          <p>Kedudukan {student.rank}</p>
-          <span>{student.form}</span>
+          <p>Kedudukan {DEFAULT_STUDENT.rank}</p>
+          <span>{DEFAULT_STUDENT.form}</span>
         </div>
         <button type="button" className="profile-floating-action" aria-label="Buka papan kedudukan">
           <PlusIcon />
@@ -182,32 +195,32 @@ function OverviewTab() {
       <section className="profile-summary-card">
         <p className="profile-card-label">Ringkasan Pembelajaran</p>
         <div className="profile-summary-grid">
-          <ProfileStatCard label="Tahap semasa" value={`Tahap ${student.level}`} />
-          <ProfileStatCard label="Kemajuan" value={`${student.progress}%`} />
-          <ProfileStatCard label="Topik lemah" value={student.weakTopic} />
-          <ProfileStatCard label="Topik kuat" value={student.strongTopic} />
+          <ProfileStatCard label="Tahap semasa" value={`Tahap ${DEFAULT_STUDENT.level}`} />
+          <ProfileStatCard label="XP" value={`${xp} XP`} />
+          <ProfileStatCard label="Topik lemah" value={DEFAULT_STUDENT.weakTopic} />
+          <ProfileStatCard label="Topik kuat" value={DEFAULT_STUDENT.strongTopic} />
         </div>
       </section>
     </div>
   );
 }
 
-function StatisticsTab() {
+function StatisticsTab({ xp }: { xp: number }) {
   return (
     <div className="profile-tab-stack">
       <div className="profile-stat-grid">
         <section className="profile-metric-card">
           <p className="profile-card-label">Kad Tahap</p>
-          <h2>Tahap {student.level}</h2>
+          <h2>Tahap {DEFAULT_STUDENT.level}</h2>
           <span>Permulaan · 0 XP diperlukan ke tahap seterusnya</span>
           <div className="profile-progress-track" aria-hidden="true">
-            <div style={{ width: `${student.progress}%` }} />
+            <div style={{ width: `${DEFAULT_STUDENT.progress}%` }} />
           </div>
         </section>
 
         <section className="profile-metric-card">
           <p className="profile-card-label">Kad XP</p>
-          <h2>{student.xp} XP</h2>
+          <h2>{xp} XP</h2>
           <span>Mata pembelajaran</span>
         </section>
       </div>
@@ -215,16 +228,16 @@ function StatisticsTab() {
       <section className="profile-growth-card">
         <p className="profile-card-label">Perkembangan Semasa</p>
         <h2>Rentetan Belajar</h2>
-        <strong>{student.streak} hari</strong>
+        <strong>{DEFAULT_STUDENT.streak} hari</strong>
         <p>Teruskan usaha untuk panjangkan rentetan anda!</p>
       </section>
 
       <section className="profile-info-card">
         <p className="profile-card-label">Prestasi Topik</p>
         <div className="profile-performance-list">
-          <ProfileStatCard label="Topik terkuat" value={student.strongTopic} />
-          <ProfileStatCard label="Topik perlu dibaiki" value={student.weakTopic} />
-          <ProfileStatCard label="Pelajaran selesai" value={`${student.completedLessons} / ${student.totalLessons}`} />
+          <ProfileStatCard label="Topik terkuat" value={DEFAULT_STUDENT.strongTopic} />
+          <ProfileStatCard label="Topik perlu dibaiki" value={DEFAULT_STUDENT.weakTopic} />
+          <ProfileStatCard label="Pelajaran selesai" value={`${DEFAULT_STUDENT.completedLessons} / ${DEFAULT_STUDENT.totalLessons}`} />
         </div>
       </section>
     </div>
@@ -233,7 +246,7 @@ function StatisticsTab() {
 
 function BadgesTab() {
   const badgeList = [
-    ...student.badges.map((badge) => ({ label: badge, locked: false })),
+    ...DEFAULT_STUDENT.badges.map((badge) => ({ label: badge, locked: false })),
     { label: "Lencana Terkunci", locked: true },
     { label: "Lencana Terkunci", locked: true },
   ];

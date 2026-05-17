@@ -93,7 +93,7 @@ export default function ExamsPage() {
     let cancelled = false;
     getPapers()
       .then((res) => { if (!cancelled) setPapers(res.papers); })
-      .catch(() => { if (!cancelled) setError("Failed to load papers."); })
+      .catch(() => { if (!cancelled) setError("Gagal memuatkan kertas."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
@@ -143,15 +143,15 @@ export default function ExamsPage() {
     setError("");
     try {
       const { questions: qs, correctMap: cm } = await getQuestionsByPaper(paper.id);
-      if (qs.length === 0) throw new Error("No questions found for this paper.");
-      setSelectedPaper(paper);
+      if (qs.length === 0) throw new Error("Tiada soalan dijumpai untuk kertas ini.");
+  setSelectedPaper(paper);
       setQuestions(qs);
       setCorrectMap(cm);
       setCurrent(0);
       setAnswers({});
       setStage("quiz");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load questions.");
+      setError(e instanceof Error ? e.message : "Tidak dapat memuatkan soalan.");
     } finally {
       setLoadingPaperId(null);
     }
@@ -184,10 +184,10 @@ export default function ExamsPage() {
       <section className="home-dashboard-shell page-enter" aria-label="Exams hub">
         <header className="student-header">
           <div className="student-header-copy">
-            <p className="student-time">Trial Papers</p>
-            <h1>Choose a Math Trial Paper</h1>
+            <p className="student-time">Kertas Percubaan</p>
+            <h1>Pilih Kertas Percubaan Matematik</h1>
             <div className="student-meta-row">
-              <span>{loading ? "Loading…" : `${trialPapers.length} papers`}</span>
+              <span>{loading ? "Memuatkan…" : `${trialPapers.length} kertas`}</span>
               <span aria-hidden="true">•</span>
               <span>Matematik</span>
               <span aria-hidden="true">•</span>
@@ -198,16 +198,25 @@ export default function ExamsPage() {
 
         <section className="level-card" aria-label="Pick a paper to begin">
           <div className="level-card-content">
-            <p className="level-eyebrow">Paper Picker</p>
-            <h2>Tap a paper to start the exam instantly.</h2>
-            <div className="level-progress-row">
-              <div className="level-progress-track" aria-hidden="true">
-                <div className="level-progress-fill level-progress-fill-full">
-                  <span className="level-progress-dot" />
-                </div>
-              </div>
-              <span>{trialPapers.length} available</span>
-            </div>
+            <p className="level-eyebrow">Pemilih Kertas</p>
+            {(() => {
+              const completedCount = completedPaperIds.size;
+              const total = trialPapers.length;
+              const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+              return (
+                <>
+                  <h2>{completedCount === 0 ? "Ketik kertas untuk mula peperiksaan dengan segera." : `${completedCount} daripada ${total} kertas selesai`}</h2>
+                  <div className="level-progress-row">
+                    <div className="level-progress-track" aria-hidden="true">
+                      <div className="level-progress-fill" style={{ width: `${pct}%` }}>
+                        <span className="level-progress-dot" />
+                      </div>
+                    </div>
+                    <span>{completedCount === 0 ? `${total} tersedia` : `${pct}% selesai`}</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
           <div className="level-trophy" aria-hidden="true">
             <span className="learn-hub-chip">SPM</span>
@@ -220,7 +229,7 @@ export default function ExamsPage() {
             const unlocked = isPaperUnlocked(index);
             const completed = completedPaperIds.has(paper.id);
             const tone = index % 3 === 0 ? "lesson" : index % 3 === 1 ? "game" : "path";
-            const statusLabel = isLoading ? "Loading questions…" : !unlocked ? "Complete the previous paper to unlock" : completed ? "Completed — tap to retry" : "Tap to start";
+            const statusLabel = isLoading ? "Memuatkan soalan…" : !unlocked ? "Selesaikan kertas sebelum untuk buka kunci" : completed ? "Selesai — ketik untuk cuba semula" : "Ketik untuk mula";
             return (
               <button
                 key={paper.id}
@@ -250,8 +259,8 @@ export default function ExamsPage() {
             <div className="ai-assistant-card">
               <div className="ai-assistant-avatar" aria-hidden="true">!</div>
               <div>
-                <h2>No math trial papers found</h2>
-                <p>Check your Supabase connection.</p>
+                <h2>Tiada kertas percubaan matematik dijumpai</h2>
+                <p>Semak sambungan Supabase anda.</p>
               </div>
             </div>
           )}
@@ -276,7 +285,7 @@ export default function ExamsPage() {
         <header className="qs-header">
           <button type="button" className="qs-icon-btn" onClick={handleCloseQuiz} aria-label="Close">✕</button>
           <div className="qs-header-center">
-            <span className="qs-title">Results</span>
+            <span className="qs-title">Keputusan</span>
             <span className="qs-subtitle">{selectedPaper?.paper_name}</span>
           </div>
         </header>
@@ -284,7 +293,7 @@ export default function ExamsPage() {
         <div className="qs-scroll">
           {timedOut && (
             <div className="exam-timeout-banner">
-              ⏰ Time's up! Your answers have been submitted.
+              ⏰ Masa tamat! Jawapan anda telah dihantar.
             </div>
           )}
 
@@ -294,7 +303,7 @@ export default function ExamsPage() {
             <div className="exam-score-grade">{grade}</div>
             <div className="exam-score-fraction">{correct} / {total}</div>
             <div className="exam-score-pct">{pct}%</div>
-            <div className="exam-score-sub">{attempted < total ? `${total - attempted} unanswered` : "All questions attempted"}</div>
+            <div className="exam-score-sub">{attempted < total ? `${total - attempted} tidak dijawab` : "Semua soalan dijawab"}</div>
           </div>
 
           {/* Per-question breakdown */}
@@ -309,7 +318,7 @@ export default function ExamsPage() {
                   <div className="exam-review-top">
                     <span className="exam-review-num">Q{i + 1}</span>
                     <span className={`exam-review-badge${isCorrect ? " badge-correct" : answered ? " badge-wrong" : " badge-skipped"}`}>
-                      {isCorrect ? "✓ Correct" : answered ? "✗ Wrong" : "— Skipped"}
+                      {isCorrect ? "✓ Betul" : answered ? "✗ Salah" : "— Dilangkau"}
                     </span>
                   </div>
                   <p className="exam-review-text">{q.text}</p>

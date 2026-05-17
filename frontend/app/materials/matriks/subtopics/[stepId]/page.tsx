@@ -99,10 +99,10 @@ export default function MatriksStepPage() {
       router.push("/materials/matriks/subtopics");
       return;
     }
-    const raw = sessionStorage.getItem(COMPLETION_KEY);
+    const raw = localStorage.getItem(COMPLETION_KEY);
     const current = raw ? (JSON.parse(raw) as string[]) : [];
     if (!current.includes(step.id)) current.push(step.id);
-    sessionStorage.setItem(COMPLETION_KEY, JSON.stringify(current));
+    localStorage.setItem(COMPLETION_KEY, JSON.stringify(current));
     router.push("/materials/matriks/subtopics");
   }
 

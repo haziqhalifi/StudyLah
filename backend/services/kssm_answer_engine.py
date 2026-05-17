@@ -41,13 +41,6 @@ except ModuleNotFoundError:
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# OpenAI configuration for KSSM-grounded answers
-# ---------------------------------------------------------------------------
-
-# TODO: KssmAnswerEngine currently calls OpenAI (gpt-4o-mini) but the rest of
-# the stack uses Anthropic Claude / Gemini. Switch to Claude via anthropic SDK
-# or Gemini for consistency, and to avoid requiring a separate OPENAI_API_KEY.
 _KSSM_MODEL = "gpt-4o-mini"
 
 _KSSM_SYSTEM_PROMPT = (
@@ -64,7 +57,6 @@ _KSSM_SYSTEM_PROMPT = (
     "dan $...$ untuk matematik LaTeX sebaris (contoh: $y = kx$)."
 )
 
-# Fallback replies (no API call needed)
 _NO_CONTEXT_REPLY = (
     "Saya tidak mempunyai cukup bahan silibus untuk soalan ini. "
     "Sila tanya soalan lain atau pilih topik lain (Ubahan, Matriks, atau Insurans)."
@@ -92,10 +84,6 @@ class KssmAnswerEngine:
     def __init__(self, model_name: str = _KSSM_MODEL) -> None:
         self.model_name = model_name
         self._client = None  # lazy-initialised on first use
-
-    # ------------------------------------------------------------------
-    # Public interface
-    # ------------------------------------------------------------------
 
     def answer_with_kssm(
         self,
@@ -143,24 +131,19 @@ class KssmAnswerEngine:
             logger.error("KssmAnswerEngine: OpenAI error — %s", exc)
             return _API_ERROR_REPLY
 
-    # ------------------------------------------------------------------
-    # Internal
-    # ------------------------------------------------------------------
-
     def _get_client(self):
         if self._client is None:
+            from openai import OpenAI
             api_key = os.environ.get("OPENAI_API_KEY")
             if not api_key:
                 raise RuntimeError(
                     "OpenAI API key not set. Add OPENAI_API_KEY to backend/.env."
                 )
-            from openai import OpenAI
             self._client = OpenAI(api_key=api_key)
         return self._client
 
     def _call_openai(self, user_message: str) -> str:
         client = self._get_client()
-
         response = client.chat.completions.create(
             model=self.model_name,
             temperature=0.2,
@@ -169,7 +152,6 @@ class KssmAnswerEngine:
                 {"role": "user", "content": user_message},
             ],
         )
-
         text = (response.choices[0].message.content or "").strip()
         return text if text else _NO_CONTEXT_REPLY
 

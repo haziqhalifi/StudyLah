@@ -1,38 +1,68 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { postStudyBuddyMessage } from "@/lib/api";
-import type { ChatMessage } from "@/lib/api";
+import { getAssessment } from "@/lib/api";
+import type { TopicStats } from "@/lib/api";
+import StudyBuddyChat from "@/components/StudyBuddyChat";
+import type { LearningContext } from "@/lib/types";
 
-const student = {
-  name: "Amir",
-  form: "Form 4",
-  progress: 10,
-  level: 1,
-  xp: 180,
+const DEFAULT_STUDENT = {
+  name: "Pelajar",
+  form: "Form 5",
   streak: 1,
 };
 
-const quickActions = [
-  { label: "Ambil Kuiz", icon: QuizIcon, href: "/exams", color: "#7f65ff" },
-  { label: "Bahan", icon: BookIcon, href: "/materials", color: "#ff8dc0" },
-  { label: "Kemajuan", icon: ProgressIcon, href: "/progress", color: "#5bd4bc" },
-] as const;
+const XP_PER_LEVEL = 50;
+
+function xpToLevel(xp: number) {
+  return Math.max(1, Math.floor(xp / XP_PER_LEVEL) + 1);
+}
+
+function xpProgress(xp: number) {
+  return Math.min(Math.round((xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100), 100);
+}
+
 
 export default function Home() {
   return <HomeDashboard />;
 }
 
+const TOPIC_NAME_MAP: Record<string, LearningContext["topicId"]> = {
+  ubahan: "ubahan",
+  matriks: "matriks",
+  insurans: "insurans",
+};
+
+const TOPIC_DISPLAY_NAMES: Record<string, string> = {
+  ubahan: "Ubahan (Variation)",
+  matriks: "Matriks (Matrices)",
+  insurans: "Insurans",
+};
+
 function HomeDashboard() {
   const router = useRouter();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerInitialMsg, setDrawerInitialMsg] = useState("");
+  const [userId, setUserId] = useState("guest");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInitialMsg, setChatInitialMsg] = useState<string | undefined>();
+  const [aiSheetOpen, setAiSheetOpen] = useState(false);
+  const [topics, setTopics] = useState<TopicStats[]>([]);
+  const [chatContext, setChatContext] = useState<LearningContext>({
+    topicId: "ubahan",
+    topicName: "Ubahan (Variation)",
+    pageContext: "general",
+  });
 
   useEffect(() => {
     try {
       const uid = sessionStorage.getItem("userId");
+      if (uid) {
+        setUserId(uid);
+        getAssessment(uid)
+          .then((res) => setTopics(res.topics))
+          .catch(() => {});
+      }
       const shown = localStorage.getItem("onboardingDiagnosticShown");
       if (uid && !shown) {
         localStorage.setItem("onboardingDiagnosticShown", "1");
@@ -43,41 +73,77 @@ function HomeDashboard() {
     }
   }, [router]);
 
-  function openChat(initialMsg = "") {
-    setDrawerInitialMsg(initialMsg);
-    setDrawerOpen(true);
+  function openChat(topicKey: string, initialMsg?: string) {
+    const topicId = TOPIC_NAME_MAP[topicKey] ?? "ubahan";
+    setChatContext({
+      topicId,
+      topicName: TOPIC_DISPLAY_NAMES[topicKey] ?? "Ubahan (Variation)",
+      pageContext: "general",
+    });
+    setChatInitialMsg(initialMsg);
+    setChatOpen(true);
   }
 
   return (
     <>
       <section
         className="home-dashboard-shell page-enter"
-        aria-label="Student home dashboard"
+        aria-label="Papan pemuka pelajar"
       >
         <StudentHeader />
         <LevelProgressCard />
-        <QuickActionsRow />
-        <AIChatCard onOpen={openChat} />
-        <RecentSessionCard />
+        <DailyMissionCard />
+        <WeakTopicCard topics={topics} />
+        <AIChatCard onOpenSheet={() => setAiSheetOpen(true)} />
       </section>
-      <ChatDrawer
-        open={drawerOpen}
-        initialMessage={drawerInitialMsg}
-        onClose={() => setDrawerOpen(false)}
+      <AIChatSheet
+        open={aiSheetOpen}
+        onClose={() => setAiSheetOpen(false)}
+        onOpen={openChat}
+      />
+      <StudyBuddyChat
+        userId={userId}
+        isOpen={chatOpen}
+        onClose={() => { setChatOpen(false); setChatInitialMsg(undefined); }}
+        learningContext={chatContext}
+        initialMessage={chatInitialMsg}
       />
     </>
   );
 }
 
+function useXpState() {
+  const [xp, setXp] = useState(0);
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("userXp");
+      if (stored) setXp(Number(stored));
+    } catch {}
+  }, []);
+  return xp;
+}
+
 function StudentHeader() {
+  const [name, setName] = useState(DEFAULT_STUDENT.name);
+  const xp = useXpState();
+
+  useEffect(() => {
+    try {
+      const storedName = sessionStorage.getItem("userName");
+      if (storedName) setName(storedName);
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
   return (
     <header className="student-header">
       <div className="student-header-copy">
-        <h1>Hello, {student.name}</h1>
+        <h1>Helo, {name}</h1>
         <div className="student-meta-row">
-          <span>{student.form}</span>
+          <span>{DEFAULT_STUDENT.form}</span>
           <span aria-hidden="true">•</span>
-          <span>{student.xp} XP</span>
+          <span>{xp} XP</span>
         </div>
       </div>
 
@@ -85,12 +151,12 @@ function StudentHeader() {
         <button
           className="notification-button"
           type="button"
-          aria-label="Open notifications"
+          aria-label="Buka notifikasi"
         >
           <BellIcon />
           <span
             className="notification-dot"
-            aria-label="Unread notifications"
+            aria-label="Notifikasi belum dibaca"
           />
         </button>
       </div>
@@ -99,24 +165,29 @@ function StudentHeader() {
 }
 
 function LevelProgressCard() {
+  const xp = useXpState();
+  const level = xpToLevel(xp);
+  const progress = xpProgress(xp);
+  const levelLabel = progress === 0 && xp === 0 ? "Ini langkah pertama kamu menuju kejayaan!" : `${XP_PER_LEVEL - (xp % XP_PER_LEVEL)} XP ke Tahap ${level + 1}`;
+
   return (
     <section
       className="level-card"
-      aria-label={`Level ${student.level} progress`}
+      aria-label={`Kemajuan Tahap ${level}`}
     >
       <div className="level-card-content">
-        <p className="level-eyebrow">Level {student.level}</p>
-        <h2>This is your first step to greatness!</h2>
+        <p className="level-eyebrow">Tahap {level}</p>
+        <h2>{levelLabel}</h2>
         <div className="level-progress-row">
           <div className="level-progress-track" aria-hidden="true">
             <div
               className="level-progress-fill"
-              style={{ width: `${student.progress}%` }}
+              style={{ width: `${progress}%` }}
             >
               <span className="level-progress-dot" />
             </div>
           </div>
-          <span>{student.progress}%</span>
+          <span>{xp} XP</span>
         </div>
       </div>
       <div className="level-trophy" aria-hidden="true">
@@ -126,237 +197,290 @@ function LevelProgressCard() {
   );
 }
 
-function QuickActionsRow() {
+function DailyMissionCard() {
   const router = useRouter();
-  return (
-    <div className="quick-actions-row" aria-label="Quick actions">
-      {quickActions.map(({ label, icon: Icon, href, color }) => (
-        <button
-          key={label}
-          type="button"
-          className="quick-action-btn"
-          data-color={color}
-          onClick={() => router.push(href)}
-        >
-          <span className="quick-action-icon">
-            <Icon />
-          </span>
-          <span>{label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
+  const [done, setDone] = useState(false);
 
-const CHAT_CHIPS = [
-  "Terangkan fungsi kuadratik",
-  "Beri contoh soalan",
-  "Semak kelemahan saya",
-];
+  useEffect(() => {
+    try {
+      const today = new Date().toDateString();
+      const saved = localStorage.getItem("dailyMissionDate");
+      if (saved === today) setDone(true);
+    } catch {}
+  }, []);
 
-function AIChatCard({ onOpen }: { onOpen: (msg?: string) => void }) {
+  function handleClaim() {
+    try {
+      localStorage.setItem("dailyMissionDate", new Date().toDateString());
+    } catch {}
+    router.push("/learn");
+  }
+
   return (
-    <section className="ai-chat-card" aria-label="AI tutor chat">
-      <button
-        type="button"
-        className="ai-chat-header ai-chat-header-btn"
-        onClick={() => onOpen()}
-        aria-label="Buka chat tutor AI"
-      >
-        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
-        <div className="ai-chat-header-text">
-          <h2>Tanya Tutor AI</h2>
-          <p className="ai-chat-subtitle">Topik lemah anda: Fungsi Kuadratik</p>
-        </div>
-        <span className="ai-chat-open-hint" aria-hidden="true"><ArrowIcon /></span>
-      </button>
-      <div className="ai-chat-suggestions">
-        {CHAT_CHIPS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className="ai-chat-chip"
-            onClick={() => onOpen(s)}
-          >
-            {s}
-          </button>
-        ))}
+    <button
+      type="button"
+      className={`daily-mission-card${done ? " daily-mission-card--done" : ""}`}
+      onClick={handleClaim}
+      aria-label="Misi harian"
+    >
+      <span className="daily-mission-icon" aria-hidden="true">
+        {done ? <CheckCircleIcon /> : <FireIcon />}
+      </span>
+      <div className="daily-mission-body">
+        <p className="daily-mission-label">Misi Hari Ini</p>
+        <p className="daily-mission-title">
+          {done ? "Misi selesai! Teruskan streak kamu" : "Jawab 5 soalan hari ini"}
+        </p>
       </div>
-    </section>
+      {!done && (
+        <span className="daily-mission-badge" aria-hidden="true">+10 XP</span>
+      )}
+    </button>
   );
 }
 
-function ChatDrawer({
+function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
+  const router = useRouter();
+
+  const weakest = topics.length > 0
+    ? topics.reduce((a, b) => (a.accuracy < b.accuracy ? a : b))
+    : null;
+
+  if (!weakest) return null;
+
+  const name = TOPIC_META[weakest.topic_id]?.name ?? weakest.topic_id;
+  const pct = Math.round(weakest.accuracy * 100);
+
+  return (
+    <button
+      type="button"
+      className="weak-topic-card"
+      onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+      aria-label={`Fokus hari ini: ${name}`}
+    >
+      <span className="weak-topic-icon" aria-hidden="true">
+        <TargetIcon />
+      </span>
+      <div className="weak-topic-body">
+        <p className="weak-topic-label">Fokus Hari Ini</p>
+        <p className="weak-topic-title">{name}</p>
+        <div className="weak-topic-bar-wrap" aria-hidden="true">
+          <div className="weak-topic-bar">
+            <div className="weak-topic-bar-fill" style={{ "--fill": `${pct}%` } as React.CSSProperties} />
+          </div>
+          <span className="weak-topic-pct">{pct}% tepat</span>
+        </div>
+        <span className="weak-topic-cta">Ulangkaji sekarang — +10 XP</span>
+      </div>
+    </button>
+  );
+}
+
+const TOPICS = {
+  ubahan: {
+    label: "Ubahan",
+    subtopics: ["Ubahan Langsung", "Ubahan Songsang", "Ubahan Bergabung", "Ubahan Separa"],
+  },
+  matriks: {
+    label: "Matriks",
+    subtopics: ["Operasi Matriks", "Penentu Matriks", "Matriks Songsang"],
+  },
+  insurans: {
+    label: "Insurans",
+    subtopics: ["Konsep Insurans", "Premium & Polisi", "Tuntutan Insurans"],
+  },
+} as const;
+
+type TopicKey = keyof typeof TOPICS;
+
+
+function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
+  return (
+    <button
+      type="button"
+      className="ai-chat-collapsed"
+      onClick={onOpenSheet}
+      aria-label="Buka Cikgu AI"
+    >
+      <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+      <div className="ai-chat-collapsed-text">
+        <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
+        <p className="ai-chat-collapsed-sub">Cikgu AI sedia membantu</p>
+      </div>
+      <span className="ai-chat-collapsed-arrow" aria-hidden="true">›</span>
+    </button>
+  );
+}
+
+function AIChatSheet({
   open,
-  initialMessage,
   onClose,
+  onOpen,
 }: {
   open: boolean;
-  initialMessage: string;
   onClose: () => void;
+  onOpen: (topicKey: string, msg?: string) => void;
 }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
+  const [selectedMode, setSelectedMode] = useState<"notes" | "questions" | "flashcard">("notes");
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // When drawer opens with a pre-filled message, send it immediately
+  const MODE_CHIPS: { key: "notes" | "questions" | "flashcard"; label: string; emoji: string }[] = [
+    { key: "notes", label: "Nota", emoji: "📝" },
+    { key: "questions", label: "Soalan", emoji: "❓" },
+    { key: "flashcard", label: "Flashcard", emoji: "🃏" },
+  ];
+
+  const TOPIC_CHIPS: { key: TopicKey; label: string }[] = [
+    { key: "ubahan", label: "Ubahan" },
+    { key: "matriks", label: "Matriks" },
+    { key: "insurans", label: "Insurans" },
+  ];
+
+  const MODE_PROMPT: Record<"notes" | "questions" | "flashcard", string> = {
+    notes: `Buat nota ringkas untuk topik ${TOPICS[selectedTopic].label} SPM`,
+    questions: `Bagi saya 3 soalan latihan SPM untuk topik ${TOPICS[selectedTopic].label}`,
+    flashcard: `Buat 3 flashcard soal-jawab untuk topik ${TOPICS[selectedTopic].label} SPM`,
+  };
+
   useEffect(() => {
-    if (!open) return;
-    setTimeout(() => inputRef.current?.focus(), 100);
-    if (initialMessage) {
-      sendMessage(initialMessage);
+    if (open) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => inputRef.current?.focus(), 300);
+    } else {
+      document.body.style.overflow = "";
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialMessage]);
-
-  // Reset messages when drawer closes
-  useEffect(() => {
-    if (!open) setMessages([]);
+    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  function handleSend() {
+    const msg = draft.trim();
+    if (!msg) return;
+    setDraft("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
+    onClose();
+    onOpen(selectedTopic, msg);
+  }
 
-  async function sendMessage(text: string) {
-    const trimmed = text.trim();
-    if (!trimmed || loading) return;
-    setInput("");
-    const next: ChatMessage[] = [...messages, { role: "user", content: trimmed }];
-    setMessages(next);
-    setLoading(true);
-    try {
-      const userId = (typeof window !== "undefined" && sessionStorage.getItem("userId")) || "guest";
-      const res = await postStudyBuddyMessage(userId, next);
-      setMessages([...next, { role: "assistant", content: res.reply }]);
-    } catch {
-      setMessages([...next, { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." }]);
-    } finally {
-      setLoading(false);
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    sendMessage(input);
+  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setDraft(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
   }
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`chat-drawer-backdrop${open ? " open" : ""}`}
+        className={`ai-sheet-backdrop${open ? " ai-sheet-backdrop--open" : ""}`}
         onClick={onClose}
         aria-hidden="true"
       />
-      {/* Drawer */}
       <div
-        className={`chat-drawer${open ? " open" : ""}`}
+        className={`ai-sheet${open ? " ai-sheet--open" : ""}`}
         role="dialog"
-        aria-label="AI Tutor Chat"
         aria-modal="true"
+        aria-label="Cikgu AI"
       >
-        <div className="chat-drawer-handle" aria-hidden="true" />
-        <header className="chat-drawer-header">
-          <div className="chat-drawer-avatar" aria-hidden="true">AI</div>
-          <div>
-            <h2>Tutor AI</h2>
-            <p>StudyBuddy — sedia membantu</p>
+        <div className="ai-sheet-handle" aria-hidden="true" />
+
+        <div className="ai-chat-header">
+          <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+          <div className="ai-chat-header-text">
+            <h2>Tanya Tutor AI</h2>
+            <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
           </div>
           <button
             type="button"
-            className="chat-drawer-close"
+            className="ai-chat-collapse-btn"
             onClick={onClose}
-            aria-label="Tutup chat"
+            aria-label="Tutup Cikgu AI"
           >
-            <CloseIcon />
+            ✕
           </button>
-        </header>
-
-        <div className="chat-drawer-messages">
-          {messages.length === 0 && !loading && (
-            <div className="chat-drawer-empty">
-              <p>Tanya apa sahaja tentang pelajaran anda!</p>
-              <div className="ai-chat-suggestions">
-                {CHAT_CHIPS.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className="ai-chat-chip"
-                    onClick={() => sendMessage(s)}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`chat-bubble ${m.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}`}
-            >
-              {m.content}
-            </div>
-          ))}
-          {loading && (
-            <div className="chat-bubble chat-bubble-ai chat-bubble-typing">
-              <span /><span /><span />
-            </div>
-          )}
-          <div ref={bottomRef} />
         </div>
 
-        <form className="chat-drawer-input-row" onSubmit={handleSubmit}>
-          <input
+        <div className="ai-sheet-chip-group">
+          <p className="ai-sheet-chip-label">Jenis</p>
+          <div className="ai-chat-suggestions">
+            {MODE_CHIPS.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                className={`ai-chat-chip${selectedMode === m.key ? " active" : ""}`}
+                onClick={() => setSelectedMode(m.key)}
+              >
+                {m.emoji} {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="ai-sheet-chip-group">
+          <p className="ai-sheet-chip-label">Topik</p>
+          <div className="ai-chat-suggestions">
+            {TOPIC_CHIPS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                className={`ai-chat-chip${selectedTopic === t.key ? " active" : ""}`}
+                onClick={() => setSelectedTopic(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="ai-sheet-go-btn"
+          onClick={() => { onClose(); onOpen(selectedTopic, MODE_PROMPT[selectedMode]); }}
+        >
+          Mula — {MODE_CHIPS.find(m => m.key === selectedMode)?.emoji} {MODE_CHIPS.find(m => m.key === selectedMode)?.label} · {TOPICS[selectedTopic].label}
+        </button>
+
+        <div className="ai-chat-input-wrap">
+          <textarea
             ref={inputRef}
             className="ai-chat-input"
-            type="text"
-            placeholder="Tanya soalan..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            aria-label="Chat input"
-            disabled={loading}
+            rows={1}
+            placeholder="Taip soalan kamu di sini…"
+            value={draft}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
           />
           <button
-            type="submit"
+            type="button"
             className="ai-chat-send"
-            aria-label="Hantar"
-            disabled={loading || !input.trim()}
+            onClick={handleSend}
+            disabled={!draft.trim()}
+            aria-label="Hantar soalan"
           >
-            <SendIcon />
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
-        </form>
+        </div>
       </div>
     </>
   );
 }
 
-function RecentSessionCard() {
-  const router = useRouter();
-  return (
-    <section className="recent-session-card" aria-label="Continue recent session">
-      <div className="recent-session-info">
-        <p className="recent-session-label">Sambung semula</p>
-        <h3>Kuiz Matematik</h3>
-        <div className="recent-session-meta">
-          <span className="recent-session-progress-pill">25%</span>
-          <span>selesai</span>
-        </div>
-      </div>
-      <button
-        type="button"
-        className="recent-session-btn"
-        aria-label="Continue quiz"
-        onClick={() => router.push("/exams")}
-      >
-        <ArrowIcon />
-      </button>
-    </section>
-  );
-}
+
+const TOPIC_META: Record<string, { name: string }> = {
+  ubahan:   { name: "Ubahan" },
+  matriks:  { name: "Matriks" },
+  insurans: { name: "Insurans" },
+};
+
 
 function IconBase({ children }: { children: ReactNode }) {
   return (
@@ -366,29 +490,29 @@ function IconBase({ children }: { children: ReactNode }) {
   );
 }
 
-function BookIcon() {
+function FireIcon() {
   return (
     <IconBase>
-      <path d="M5 5.8c0-1 0.8-1.8 1.8-1.8H11v15H6.8A1.8 1.8 0 0 1 5 17.2V5.8Z" />
-      <path d="M13 4h4.2c1 0 1.8.8 1.8 1.8v11.4c0 1-.8 1.8-1.8 1.8H13V4Z" />
+      <path d="M12 2c0 0-5 4-5 9a5 5 0 0 0 10 0c0-2.5-1.5-5-3-6.5 0 2-1 3.5-2 4.5-1-2-1-4.5 0-7Z" />
     </IconBase>
   );
 }
 
-function QuizIcon() {
+function CheckCircleIcon() {
   return (
     <IconBase>
-      <path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2Z" />
-      <path d="m9 14 2 2 4-4" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 12 2 2 4-4" />
     </IconBase>
   );
 }
 
-function ProgressIcon() {
+function TargetIcon() {
   return (
     <IconBase>
-      <path d="M5 19V9M12 19V5M19 19v-7" />
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
     </IconBase>
   );
 }
@@ -411,26 +535,4 @@ function BellIcon() {
   );
 }
 
-function ArrowIcon() {
-  return (
-    <IconBase>
-      <path d="M8 12h8M13 8l4 4-4 4" />
-    </IconBase>
-  );
-}
 
-function SendIcon() {
-  return (
-    <IconBase>
-      <path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7Z" />
-    </IconBase>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <IconBase>
-      <path d="M18 6 6 18M6 6l12 12" />
-    </IconBase>
-  );
-}

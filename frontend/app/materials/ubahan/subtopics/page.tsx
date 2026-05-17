@@ -29,7 +29,7 @@ export default function UbahanSubtopicsPage() {
   const circleRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   function syncCompletedFromStorage() {
-    const raw = sessionStorage.getItem(COMPLETION_KEY);
+    const raw = localStorage.getItem(COMPLETION_KEY);
     if (!raw) {
       setCompletedIds([]);
       return;
@@ -122,6 +122,17 @@ export default function UbahanSubtopicsPage() {
         }}
         className="material-current-head"
       >
+        <button
+          type="button"
+          onClick={() => router.push("/materials/ubahan")}
+          className="material-back-btn"
+          aria-label="Kembali ke Ubahan"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Kembali
+        </button>
         <p className="material-eyebrow">📖 Bab 1</p>
         <h1 className="material-title">
           {currentSubtopic.id} {currentSubtopic.title}

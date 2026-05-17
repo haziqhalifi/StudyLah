@@ -39,7 +39,8 @@ To serve them alongside Supabase questions, patch get_all_questions() in db.py:
         merged = seed_qs + supabase_qs
         return merged[:limit]
 
-TODO: Move these into Supabase via a migration script once the schema is stable.
+Questions are also persisted in the studylah_questions Supabase table.
+The in-memory list serves as a zero-latency fallback if Supabase is unreachable.
 """
 
 from __future__ import annotations

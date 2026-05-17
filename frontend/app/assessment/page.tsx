@@ -24,6 +24,7 @@ export default function AssessmentPage() {
     getAssessment(userId)
       .then((res) => setTopics(res.topics))
       .catch(() => setError("Gagal memuatkan data penilaian."))
+      .catch(() => setError("Gagal memuatkan data penilaian."))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -33,6 +34,7 @@ export default function AssessmentPage() {
     <div>
       <div className="assessment-header page-enter">
         <h1 className="font-display assessment-title">
+          {name ? `Kemajuan ${name}` : "Kemajuan Anda"}
           {name ? `Kemajuan ${name}` : "Kemajuan Anda"}
         </h1>
         <p className="assessment-sub">

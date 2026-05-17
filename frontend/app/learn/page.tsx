@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   submitAnswer,
@@ -8,16 +8,25 @@ import {
   startDiagnostic,
   submitDiagnostic,
   getPapers,
+  getAssessment,
+  postStudyBuddyMessage,
   Question,
   SubmitAnswerResponse,
   Paper,
+  TopicStats,
+  ChatMessage,
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import AiBadge from "@/components/AiBadge";
 import QuizSheet from "@/components/QuizSheet";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
-import type { LearningContext } from "@/lib/types";
+import MathText from "@/components/MathText";
+import type { LearningContext, QuickAction } from "@/lib/types";
+import { getChipsForContext } from "@/lib/quickActions";
+import { UBAHAN_STEPS } from "@/app/materials/ubahan/data";
+import { MATRIKS_STEPS } from "@/app/materials/matriks/data";
+import { INSURANS_STEPS } from "@/app/materials/insurans/data";
 
 type View = "topics" | "practice";
 
@@ -28,6 +37,8 @@ const MATH_F5_TOPICS = [
     subtitle: "Variation",
     icon: "∝",
     desc: "Direct, inverse, joint & partial variation",
+    steps: UBAHAN_STEPS,
+    completionKey: "ubahan_completed_steps_v1",
   },
   {
     id: "matriks",
@@ -35,6 +46,8 @@ const MATH_F5_TOPICS = [
     subtitle: "Matrices",
     icon: "⊞",
     desc: "Matrix operations & simultaneous equations",
+    steps: MATRIKS_STEPS,
+    completionKey: "matriks_completed_steps_v1",
   },
   {
     id: "insurans",
@@ -42,8 +55,20 @@ const MATH_F5_TOPICS = [
     subtitle: "Insurance",
     icon: "🛡",
     desc: "Premiums, policies & claims",
+    steps: INSURANS_STEPS,
+    completionKey: "insurans_completed_steps_v1",
   },
 ];
+
+function readCompletedSteps(key: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    return new Set();
+  }
+}
 
 export default function LearnPage() {
   const router = useRouter();
@@ -51,6 +76,8 @@ export default function LearnPage() {
   const [view, setView] = useState<View>("topics");
 
   // Topic picker state
+  const [topicStats, setTopicStats] = useState<TopicStats[]>([]);
+  const [nodeProgress, setNodeProgress] = useState<Record<string, { done: number; total: number }>>({});
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -90,6 +117,15 @@ export default function LearnPage() {
       setPrevDiff(q.difficulty);
       setView("practice");
     }
+
+    getAssessment(uid).catch(() => ({ topics: [] })).then((res) => setTopicStats(res.topics));
+
+    const progress: Record<string, { done: number; total: number }> = {};
+    for (const topic of MATH_F5_TOPICS) {
+      const completed = readCompletedSteps(topic.completionKey);
+      progress[topic.id] = { done: completed.size, total: topic.steps.length };
+    }
+    setNodeProgress(progress);
 
     getPapers()
       .then((res) => {
@@ -220,15 +256,25 @@ export default function LearnPage() {
         <section className="level-card" aria-label="Choose a topic to practise">
           <div className="level-card-content">
             <p className="level-eyebrow">Learning Path</p>
-            <h2>Pick a topic and jump into adaptive practice.</h2>
-            <div className="level-progress-row">
-              <div className="level-progress-track" aria-hidden="true">
-                <div className="level-progress-fill level-progress-fill-full">
-                  <span className="level-progress-dot" />
-                </div>
-              </div>
-              <span>{MATH_F5_TOPICS.length} available</span>
-            </div>
+            {(() => {
+              const totalNodes = MATH_F5_TOPICS.reduce((s, t) => s + t.steps.length, 0);
+              const doneNodes = Object.values(nodeProgress).reduce((s, v) => s + v.done, 0);
+              const pct = totalNodes > 0 ? Math.round((doneNodes / totalNodes) * 100) : 0;
+              const hasStarted = doneNodes > 0;
+              return (
+                <>
+                  <h2>{hasStarted ? `${doneNodes} of ${totalNodes} nodes unlocked` : "Start from a chapter and move into the subtopic map."}</h2>
+                  <div className="level-progress-row">
+                    <div className="level-progress-track" aria-hidden="true">
+                      <div className="level-progress-fill" style={{ width: `${pct}%` }}>
+                        <span className="level-progress-dot" />
+                      </div>
+                    </div>
+                    <span>{hasStarted ? `${pct}%` : `${MATH_F5_TOPICS.length} available`}</span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
           <div className="level-trophy" aria-hidden="true">
             <span className="learn-hub-chip">AI</span>
@@ -245,6 +291,10 @@ export default function LearnPage() {
           <div className="home-learning-stack">
             {MATH_F5_TOPICS.map((topic, index) => {
               const tone = index === 0 ? "lesson" : index === 1 ? "game" : "path";
+              const np = nodeProgress[topic.id] ?? { done: 0, total: topic.steps.length };
+              const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
+              const stat = topicStats.find(t => t.topic_id === topic.id);
+              const level = stat?.level ?? null;
               return (
                 <button
                   key={topic.id}
@@ -257,7 +307,14 @@ export default function LearnPage() {
                     <p className="learning-feature-kicker">Matematik Tingkatan 5</p>
                     <h2>{topic.name}</h2>
                     <p>{topic.desc}</p>
-                    <p className="study-select-subtitle">{topic.subtitle}</p>
+                    <div className="learn-topic-progress-row">
+                      <div className="learn-topic-progress-track">
+                        <div className="learn-topic-progress-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="learn-topic-progress-label">
+                        {np.done}/{np.total} nodes{level ? ` · ${level}` : ""}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="feature-visual" aria-hidden="true">
@@ -299,8 +356,7 @@ export default function LearnPage() {
     return <div className="page-enter diag-sub">Loading question…</div>;
 
   const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
-  const showReview = count > 0 && count % 5 === 0 && !result;
-  const isReview = question.tags?.includes("review") ?? false;
+const isReview = question.tags?.includes("review") ?? false;
 
   const bar = !result ? (
     <button
@@ -372,28 +428,7 @@ export default function LearnPage() {
         >
           View Your Progress
         </button>
-        <button
-          className="btn-secondary"
-          onClick={() => router.push("/review")}
-        >
-          Start a Review Session
-        </button>
       </div>
-
-      {showReview && (
-        <div className="learn-review-banner">
-          <span className="learn-review-banner-text">
-            ↺ Time to revisit something tricky!
-          </span>
-          <button
-            type="button"
-            className="btn-primary btn-primary-sm"
-            onClick={() => router.push("/review")}
-          >
-            Review
-          </button>
-        </div>
-      )}
 
       <QuestionCard
         question={question}
@@ -414,53 +449,215 @@ export default function LearnPage() {
         />
       )}
 
-      {/* Full-screen drawer — rendered outside QuizSheet scroll area via portal-like placement */}
+      {/* Inline AI chat bar — always visible below the question */}
+      {userId && (
+        <InlineChatBar
+          userId={userId}
+          learningContext={{
+            topicId: (question.topic_id ?? "ubahan") as LearningContext["topicId"],
+            topicName:
+              question.topic_id === "matriks"
+                ? "Matriks (Matrices)"
+                : question.topic_id === "insurans"
+                  ? "Insurans (Insurance)"
+                  : "Ubahan (Variation)",
+            currentQuestion: {
+              id: question.id,
+              text: question.text,
+              options: question.options,
+              difficulty: question.difficulty,
+            },
+            lastAttempt: result
+              ? {
+                  selectedOptionIndex: selected ?? 0,
+                  isCorrect: result.is_correct,
+                  correctOptionIndex,
+                }
+              : undefined,
+            recentAttempts,
+            pageContext: "learn",
+          }}
+          onOpenFull={() => setShowBuddy(true)}
+        />
+      )}
+
+      {/* Full-screen drawer */}
       {userId && (
         <StudyBuddyChat
           userId={userId}
           isOpen={showBuddy}
           onClose={() => setShowBuddy(false)}
-          learningContext={
-            {
-              topicId: (question.topic_id ??
-                "ubahan") as LearningContext["topicId"],
-              topicName:
-                question.topic_id === "matriks"
-                  ? "Matriks (Matrices)"
-                  : question.topic_id === "insurans"
-                    ? "Insurans (Insurance)"
-                    : "Ubahan (Variation)",
-              currentQuestion: {
-                id: question.id,
-                text: question.text,
-                options: question.options,
-                difficulty: question.difficulty,
-              },
-              lastAttempt: result
-                ? {
-                    selectedOptionIndex: selected ?? 0,
-                    isCorrect: result.is_correct,
-                    correctOptionIndex,
-                  }
-                : undefined,
-              recentAttempts,
-              pageContext: "learn",
-            } satisfies LearningContext
-          }
+          learningContext={{
+            topicId: (question.topic_id ?? "ubahan") as LearningContext["topicId"],
+            topicName:
+              question.topic_id === "matriks"
+                ? "Matriks (Matrices)"
+                : question.topic_id === "insurans"
+                  ? "Insurans (Insurance)"
+                  : "Ubahan (Variation)",
+            currentQuestion: {
+              id: question.id,
+              text: question.text,
+              options: question.options,
+              difficulty: question.difficulty,
+            },
+            lastAttempt: result
+              ? {
+                  selectedOptionIndex: selected ?? 0,
+                  isCorrect: result.is_correct,
+                  correctOptionIndex,
+                }
+              : undefined,
+            recentAttempts,
+            pageContext: "learn",
+          }}
         />
       )}
+    </QuizSheet>
+  );
+}
 
-      {/* FAB — hidden while drawer is open (drawer has its own close button) */}
-      {!showBuddy && (
+// ---------------------------------------------------------------------------
+// InlineChatBar — embedded AI chat panel shown inside the quiz view
+// ---------------------------------------------------------------------------
+
+interface InlineChatBarProps {
+  userId: string;
+  learningContext: LearningContext;
+  onOpenFull: () => void;
+}
+
+function InlineChatBar({ userId, learningContext, onOpenFull }: InlineChatBarProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const chips = getChipsForContext(learningContext);
+
+  useEffect(() => {
+    // Reset conversation when question changes
+    setMessages([]);
+    setInput("");
+  }, [learningContext.currentQuestion?.id]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  async function send(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
+    const userMsg: ChatMessage = { role: "user", content: trimmed };
+    const history: ChatMessage[] = [...messages, userMsg];
+    setMessages(history);
+    setInput("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
+    setLoading(true);
+    try {
+      const res = await postStudyBuddyMessage(userId, history, learningContext);
+      setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleChip(action: QuickAction) {
+    send(action.message);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send(input);
+    }
+  }
+
+  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  }
+
+  return (
+    <div className="icb-wrap">
+      {/* Header */}
+      <div className="icb-header">
+        <span className="icb-avatar" aria-hidden="true">🤖</span>
+        <span className="icb-title">Tanya AI</span>
         <button
           type="button"
-          className="sb-fab"
-          onClick={() => setShowBuddy(true)}
-          aria-label="Ask StudyBuddy"
+          className="icb-expand-btn"
+          onClick={onOpenFull}
+          aria-label="Buka chat penuh"
         >
-          🤖
+          Buka penuh ↗
         </button>
+      </div>
+
+      {/* Message thread — only shown once there are messages */}
+      {messages.length > 0 && (
+        <div className="icb-messages">
+          {messages.map((m, i) => (
+            <div key={i} className={`icb-bubble icb-bubble--${m.role}`}>
+              {m.role === "assistant"
+                ? <MathText className="icb-md">{m.content}</MathText>
+                : <span>{m.content}</span>
+              }
+            </div>
+          ))}
+          {loading && (
+            <div className="icb-bubble icb-bubble--assistant">
+              <span className="sb-typing"><span /><span /><span /></span>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
       )}
-    </QuizSheet>
+
+      {/* Input */}
+      <div className="icb-input-wrap">
+        <textarea
+          ref={inputRef}
+          className="icb-input"
+          rows={1}
+          placeholder="Tanya soalan kamu di sini…"
+          value={input}
+          onChange={handleInput}
+          onKeyDown={handleKeyDown}
+          disabled={loading}
+        />
+        <button
+          type="button"
+          className="icb-send"
+          onClick={() => send(input)}
+          disabled={!input.trim() || loading}
+          aria-label="Hantar"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Chips */}
+      <div className="icb-chips">
+        {chips.map((chip) => (
+          <button
+            key={chip.actionType + chip.label}
+            type="button"
+            className="icb-chip"
+            onClick={() => handleChip(chip)}
+            disabled={loading}
+          >
+            <span aria-hidden="true">{chip.emoji}</span>
+            {chip.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

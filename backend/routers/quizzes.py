@@ -2,6 +2,7 @@
 Quiz endpoints.
 
 POST /api/quizzes/personalized  — create a personalised quiz for a user/topic
+GET  /api/quizzes               — list all quizzes for a user
 GET  /api/quizzes/{quiz_id}     — fetch a quiz's questions (safe: no correct answers)
 """
 
@@ -10,23 +11,23 @@ from __future__ import annotations
 import logging
 from typing import List, Literal, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 try:
     from backend.services.quiz_service import (
         create_personalized_quiz,
         get_quiz,
-        SUPPORTED_TOPICS,
-        TOPIC_NAMES,
+        get_quiz_questions,
+        list_user_quizzes,
     )
     from backend.schemas.question import QuestionPublic
 except ModuleNotFoundError:
     from services.quiz_service import (  # type: ignore
         create_personalized_quiz,
         get_quiz,
-        SUPPORTED_TOPICS,
-        TOPIC_NAMES,
+        get_quiz_questions,
+        list_user_quizzes,
     )
     from schemas.question import QuestionPublic  # type: ignore
 
@@ -80,18 +81,44 @@ class QuizDetailResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class QuizSummary(BaseModel):
+    quiz_id: str
+    topic_id: str
+    title: str
+    question_count: int
+    created_at: str  # ISO datetime
+
+
+@router.get("", response_model=list[QuizSummary])
+def list_quizzes(userId: str = Query(..., description="User ID")) -> list[QuizSummary]:
+    """Return all quizzes created by a user (summary only)."""
+    quizzes = list_user_quizzes(userId)
+    return [
+        QuizSummary(
+            quiz_id=q.id,
+            topic_id=q.topic_id,
+            title=q.title,
+            question_count=q.question_count,
+            created_at=q.created_at.isoformat(),
+        )
+        for q in quizzes
+    ]
+
+
 @router.post("/personalized", response_model=CreateQuizResponse)
 def create_quiz(body: CreateQuizRequest) -> CreateQuizResponse:
     """
     Create a personalised quiz for a user and topic.
 
-    Selects questions from the seed bank based on the user's skill profile
-    (rule-based for now; Gemini personalisation is a TODO).
+    Selects questions from the seed bank based on the user's skill profile.
     """
     try:
+        from backend.db import get_or_create_profile
+        skill_profile = get_or_create_profile(body.user_id)
         quiz = create_personalized_quiz(
             user_id=body.user_id,
             topic_id=body.topic_id,
+            skill_profile=skill_profile,
             num_questions=body.num_questions,
         )
     except ValueError as exc:
@@ -125,5 +152,5 @@ def get_quiz_detail(quiz_id: str) -> QuizDetailResponse:
         topic_id=quiz.topic_id,
         title=quiz.title,
         created_at=quiz.created_at.isoformat(),
-        questions=[q.to_public() for q in quiz.questions],
+        questions=[q.to_public() for q in get_quiz_questions(quiz_id)],
     )
