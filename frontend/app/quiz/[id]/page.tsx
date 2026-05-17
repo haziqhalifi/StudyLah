@@ -261,7 +261,7 @@ export default function QuizPage() {
     <StandardQuizShell
       title={state.quiz.title}
       subtitle={`Soalan ${state.currentIndex + 1} / ${questions.length}`}
-      label={currentQuestion.topic_id?.replace(/_/g, " ")}
+      label={state.quiz.topicId?.replace(/_/g, " ")}
       progress={answeredCount}
       total={questions.length}
       onClose={() => router.push("/")}
