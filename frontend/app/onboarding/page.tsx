@@ -640,6 +640,7 @@ function TopicCard({
   tier,
   index,
   isWeakest,
+  onPractice,
 }: {
   topic: string;
   correct: number;
@@ -648,10 +649,14 @@ function TopicCard({
   tier: { label: string; cls: string };
   index: number;
   isWeakest: boolean;
+  onPractice?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const pct = Math.round(accuracy * 100);
+  const cta = isWeakest
+    ? { text: "Latih sekarang →", time: "~10 min · +10 XP" }
+    : { text: "Ulang kaji →", time: "~5 min · +5 XP" };
 
   useEffect(() => {
     if (cardRef.current)
@@ -880,6 +885,7 @@ function ResultScreen({
                     tier={tier}
                     index={i}
                     isWeakest={t.topic === weakestTopicName}
+                    onPractice={onContinue}
                   />
                 );
               })}
