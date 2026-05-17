@@ -352,7 +352,7 @@ function FokusHariIni({ topics }: { topics: TopicStats[] }) {
       <button
         type="button"
         className="fokus-cta"
-        onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+        onClick={() => router.push("/learning")}
         aria-label={`Mula ulang kaji ${meta.name}`}
       >
         <span aria-hidden="true">⚡</span>
@@ -391,12 +391,9 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
                 className={`progress-set-card page-enter topic-${t.topic_id}`}
                 role="button"
                 tabIndex={0}
-                onClick={() =>
-                  router.push(`/materials/${t.topic_id}/subtopics`)
-                }
+                onClick={() => router.push("/learning")}
                 onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  router.push(`/materials/${t.topic_id}/subtopics`)
+                  e.key === "Enter" && router.push("/learning")
                 }
                 aria-label={`${meta.name} – ${pct}%`}
               >

@@ -4930,7 +4930,7 @@ button.map-node:hover {
   padding: 1.25rem 1.125rem 1.125rem;
   background:
     radial-gradient(circle at 88% 16%, rgba(255,255,255,0.38) 0 13%, transparent 14%),
-    linear-gradient(135deg, #8e78ff 0%, #b26cff 52%, #ff8dc0 100%);
+    linear-gradient(135deg, #8e78ff 0%, #a06bff 52%, #b26cff 100%);
   color: #fff;
   box-shadow: 0 22px 42px rgba(151, 109, 255, 0.28);
 }
@@ -12445,12 +12445,20 @@ button.map-node:hover {
   align-items: center;
   padding: 2.5rem 1.5rem 3rem;
   overflow: hidden;
-  background: #0f0c29;
+  background:
+    radial-gradient(circle at 88% 16%, rgba(255,255,255,0.38) 0 13%, transparent 14%),
+    linear-gradient(135deg, #8e78ff 0%, #a06bff 52%, #b26cff 100%);
 }
 
-.ob2-hero--high { background: linear-gradient(160deg, #0a2118 0%, #0f2d3a 50%, #0f0c29 100%); }
-.ob2-hero--mid  { background: linear-gradient(160deg, #1a1400 0%, #241b00 50%, #0f0c29 100%); }
-.ob2-hero--low  { background: linear-gradient(160deg, #1a0a00 0%, #261208 50%, #0f0c29 100%); }
+.ob2-hero--high { background:
+    radial-gradient(circle at 88% 16%, rgba(255,255,255,0.38) 0 13%, transparent 14%),
+    linear-gradient(135deg, #8e78ff 0%, #a06bff 52%, #b26cff 100%); }
+.ob2-hero--mid  { background:
+    radial-gradient(circle at 88% 16%, rgba(255,255,255,0.32) 0 13%, transparent 14%),
+    linear-gradient(135deg, #a07bff 0%, #b57aff 52%, #c27bff 100%); }
+.ob2-hero--low  { background:
+    radial-gradient(circle at 88% 16%, rgba(255,255,255,0.28) 0 13%, transparent 14%),
+    linear-gradient(135deg, #b290ff 0%, #c48fff 52%, #d490ff 100%); }
 
 /* Grain texture overlay */
 .ob2-hero-noise {
@@ -12790,7 +12798,7 @@ button.map-node:hover {
   justify-content: center;
   gap: 0.6rem;
   padding: 1rem 1.5rem;
-  background: var(--ink);
+  background: linear-gradient(135deg, #8e78ff 0%, #b26cff 100%);
   color: #fff;
   font-family: var(--font-body);
   font-size: 0.95rem;
@@ -12800,12 +12808,12 @@ button.map-node:hover {
   border-radius: 14px;
   cursor: pointer;
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-  box-shadow: 0 4px 20px rgba(15,15,35,0.22);
+  box-shadow: 0 4px 20px rgba(142,120,255,0.35);
   margin-top: 0.25rem;
 }
 .ob2-cta-btn:hover {
-  background: #1a1a3a;
-  box-shadow: 0 6px 28px rgba(15,15,35,0.3);
+  background: linear-gradient(135deg, #7f65ff 0%, #a35cf5 100%);
+  box-shadow: 0 6px 28px rgba(142,120,255,0.45);
 }
 .ob2-cta-btn:active {
   transform: scale(0.98);

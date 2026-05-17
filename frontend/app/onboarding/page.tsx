@@ -96,12 +96,6 @@ function topicEmoji(topic: string) {
   return "📘";
 }
 
-function topicPracticeCta(_topic: string, accuracy: number): { text: string; time: string } {
-  const pct = Math.round(accuracy * 100);
-  if (pct === 0) return { text: "Mulakan dengan contoh mudah →", time: "~8 min" };
-  if (accuracy < 0.5) return { text: "Latih soalan seterusnya →", time: "~10 min" };
-  return { text: "Ulang kaji soalan lagi →", time: "~8 min" };
-}
 
 function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
   const weakest =
@@ -604,6 +598,7 @@ export default function OnboardingPage() {
           result={result}
           userName={name}
           onContinue={() => router.push(getPersonalizedRoute(result))}
+          onDashboard={() => router.push("/dashboard")}
           weakestTopic={getWeakestTopicName(result)}
         />
       )}
@@ -623,7 +618,7 @@ function ProgressFillDriver({ pct }: { pct: number }) {
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 
-// ─── TopicCard — bold data-forward card with animated fill bar ───────────────
+// ─── TopicCard — compact read-only card with animated fill bar ────────────────
 
 function TopicCard({
   topic,
@@ -633,7 +628,6 @@ function TopicCard({
   tier,
   index,
   isWeakest,
-  onPractice,
 }: {
   topic: string;
   correct: number;
@@ -642,12 +636,10 @@ function TopicCard({
   tier: { label: string; cls: string };
   index: number;
   isWeakest: boolean;
-  onPractice: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const pct = Math.round(accuracy * 100);
-  const cta = topicPracticeCta(topic, accuracy);
 
   useEffect(() => {
     if (cardRef.current)
@@ -669,7 +661,7 @@ function TopicCard({
           <div className="ob2-topic-name-row">
             <span className="ob2-topic-name">{topic}</span>
             {isWeakest && (
-              <span className="ob2-recommended-badge">Disyorkan sekarang</span>
+              <span className="ob2-recommended-badge">FOKUS UTAMA KAMU</span>
             )}
           </div>
           <span className="ob2-topic-score">{correct}/{total} betul · {pct}%</span>
@@ -680,13 +672,6 @@ function TopicCard({
       </div>
       <div className="ob2-bar-track">
         <div ref={barRef} className={`ob2-bar-fill ob2-bar-fill--${tier.cls}`} />
-      </div>
-      <div className="ob2-topic-footer">
-        <span className="ob2-tier-label">{tier.label}</span>
-        <button type="button" className="ob2-topic-cta-btn" onClick={onPractice}>
-          {cta.text}
-          <span className="ob2-topic-cta-meta">{cta.time}</span>
-        </button>
       </div>
     </div>
   );
@@ -702,11 +687,13 @@ function ResultScreen({
   userName,
   weakestTopic: _weakestTopic,
   onContinue,
+  onDashboard,
 }: {
   result: OnboardingDiagnosticResponse;
   userName: string;
   weakestTopic: string;
   onContinue: () => void;
+  onDashboard: () => void;
 }) {
   const pct = Math.round((result.score / result.total) * 100);
   const [displayScore, setDisplayScore] = useState(0);
@@ -753,10 +740,10 @@ function ResultScreen({
 
   function getRouteForTopic(topicName: string): string {
     const t = topicName.toLowerCase();
-    if (t.includes("ubahan")) return "/materials/ubahan/subtopics";
-    if (t.includes("matriks")) return "/materials/matriks/subtopics";
-    if (t.includes("insurans")) return "/materials/insurans/subtopics";
-    return "/materials";
+    if (t.includes("ubahan")) return "/learning";
+    if (t.includes("matriks")) return "/learning";
+    if (t.includes("insurans")) return "/learning";
+    return "/learning";
   }
 
   // suppress unused-variable warning — kept to satisfy call-site signature
@@ -827,7 +814,7 @@ function ResultScreen({
       {/* ── BODY ── */}
       <div className="ob2-body">
 
-        {/* Topic performance */}
+        {/* Topic breakdown — read-only */}
         {result.by_topic.length > 0 && (
           <section className="ob2-section">
             <h3 className="ob2-section-title">
@@ -847,68 +834,21 @@ function ResultScreen({
                     tier={tier}
                     index={i}
                     isWeakest={t.topic === weakestTopicName}
-                    onPractice={() => onContinue()}
                   />
                 );
               })}
             </div>
-            <p className="ob2-learning-path-note">
-              🌱 Kami telah tetapkan <strong>Fokus Hari Ini</strong> dan <strong>Laluan Pembelajaran</strong> berdasarkan keputusan ini.
-              {" "}<button type="button" className="ob2-learning-path-link" onClick={() => onContinue()}>Lihat pelan penuh →</button>
-            </p>
           </section>
         )}
 
-        {/* AI Diagnosis */}
-        <section className="ob2-section ob-result-fadein">
-          <h3 className="ob2-section-title">
-            <span className="ob2-section-dot ob2-section-dot--brand" />
-            AI Diagnosis
-          </h3>
-          <div className="ob2-ai-card">
-            <span className="ob2-ai-sparkle">✦</span>
-            <p className="ob2-ai-text">{result.recommendation}</p>
-          </div>
-        </section>
-
-        {/* Strengths + Next Step side-by-side */}
-        <div className="ob2-two-col">
-          {result.strengths.length > 0 && (
-            <div className="ob2-insight-card ob2-insight-card--green ob-result-fadein">
-              <div className="ob2-insight-header">
-                <span className="ob2-insight-icon">✅</span>
-                <span className="ob2-insight-label">Kekuatan</span>
-              </div>
-              <ul className="ob2-insight-list">
-                {result.strengths.map((s, i) => (
-                  <li key={i} className="ob2-insight-item">
-                    <span className="ob2-insight-bullet" />
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {result.next_step && (
-            <div className="ob2-insight-card ob2-insight-card--brand ob-result-fadein">
-              <div className="ob2-insight-header">
-                <span className="ob2-insight-icon">🎯</span>
-                <span className="ob2-insight-label">Langkah Seterusnya</span>
-              </div>
-              <p className="ob2-insight-next">{result.next_step}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Secondary actions */}
+        {/* Actions */}
         <div className="ob2-secondary-actions ob-result-fadein">
-          <p className="ob2-secondary-label">Pilihan lain:</p>
-          <button type="button" className="ob2-secondary-btn" onClick={onContinue}>
-            Ikut pelan auto →
+          <button type="button" className="ob2-cta-btn" onClick={onContinue}>
+            Latih topik paling lemah sekarang
+            <span className="ob2-cta-arrow">→</span>
           </button>
-          <button type="button" className="ob2-secondary-btn ob2-secondary-btn--ghost" onClick={() => window.location.reload()}>
-            Ulang buat diagnostik nanti →
+          <button type="button" className="ob2-secondary-btn ob2-secondary-btn--ghost" onClick={onDashboard}>
+            Pergi ke dashboard →
           </button>
         </div>
       </div>
