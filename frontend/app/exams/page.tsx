@@ -323,9 +323,9 @@ export default function ExamsPage() {
                   </div>
                   <p className="exam-review-text">{q.text}</p>
                   {answered && !isCorrect && (
-                    <p className="exam-review-your">Your answer: <strong>{q.options[userIdx]}</strong></p>
+                    <p className="exam-review-your">Jawapan anda: <strong>{q.options[userIdx]}</strong></p>
                   )}
-                  <p className="exam-review-correct-ans">Correct: <strong>{q.options[corrIdx]}</strong></p>
+                  <p className="exam-review-correct-ans">Betul: <strong>{q.options[corrIdx]}</strong></p>
                 </div>
               );
             })}
@@ -334,7 +334,7 @@ export default function ExamsPage() {
 
         <div className="qs-bar">
           <div className="learn-actions">
-            <button type="button" className="btn-ghost" onClick={handleCloseQuiz}>Back</button>
+            <button type="button" className="btn-ghost" onClick={handleCloseQuiz}>Kembali</button>
             <button
               type="button"
               className="btn-primary"
@@ -344,7 +344,7 @@ export default function ExamsPage() {
                 setStage("quiz");
               }}
             >
-              Retry Paper
+              Cuba Semula
             </button>
           </div>
         </div>
@@ -366,7 +366,7 @@ export default function ExamsPage() {
         className="qs-nav-icon-btn"
         onClick={() => setCurrent((v) => v - 1)}
         disabled={current === 0}
-        aria-label="Previous question"
+        aria-label="Soalan sebelumnya"
       >
         ←
       </button>
@@ -375,7 +375,7 @@ export default function ExamsPage() {
         className="qs-nav-icon-btn"
         onClick={() => setCurrent((v) => v + 1)}
         disabled={isLast}
-        aria-label="Next question"
+        aria-label="Soalan seterusnya"
       >
         →
       </button>
@@ -384,9 +384,9 @@ export default function ExamsPage() {
           type="button"
           className="qs-nav-submit"
           onClick={handleSubmit}
-          aria-label="Submit exam"
+          aria-label="Hantar peperiksaan"
         >
-          Submit
+          Hantar
         </button>
       )}
     </div>

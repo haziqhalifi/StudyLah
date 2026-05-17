@@ -14,6 +14,9 @@ const BAB_CARDS = [
     href: "/materials/ubahan/subtopics",
     steps: UBAHAN_STEPS,
     completionKey: "ubahan_completed_steps_v1",
+    difficulty: "Mudah",
+    estimatedTime: "~20 min",
+    tone: "lesson" as const,
   },
   {
     id: "matriks",
@@ -22,6 +25,9 @@ const BAB_CARDS = [
     href: "/materials/matriks/subtopics",
     steps: MATRIKS_STEPS,
     completionKey: "matriks_completed_steps_v1",
+    difficulty: "Sederhana",
+    estimatedTime: "~30 min",
+    tone: "game" as const,
   },
   {
     id: "insurans",
@@ -30,6 +36,9 @@ const BAB_CARDS = [
     href: "/materials/insurans/subtopics",
     steps: INSURANS_STEPS,
     completionKey: "insurans_completed_steps_v1",
+    difficulty: "Mudah",
+    estimatedTime: "~25 min",
+    tone: "path" as const,
   },
 ];
 
@@ -70,6 +79,7 @@ export default function MaterialsHubPage() {
             <span>Matematik Tingkatan 5</span>
             <span aria-hidden="true">•</span>
             <span>{BAB_CARDS.length} bab</span>
+            <span>{BAB_CARDS.length} bab</span>
           </div>
         </div>
       </header>
@@ -79,49 +89,65 @@ export default function MaterialsHubPage() {
           <p className="level-eyebrow">Laluan Pembelajaran</p>
           <h2>Mulakan dengan satu bab dan teruskan ke peta subtopik.</h2>
           <div className="level-progress-row">
-            <div className="level-progress-track" aria-hidden="true">
-              <div className="level-progress-fill" style={{ width: `${overallPct}%` }}>
-                <span className="level-progress-dot" />
-              </div>
+            <div className="w-full h-1.5 rounded-full bg-white/20" aria-hidden="true">
+              <div
+                className="h-1.5 rounded-full bg-white transition-all duration-500"
+                style={{ width: `${overallPct}%` }}
+              />
             </div>
             <span>{BAB_CARDS.length} tersedia</span>
           </div>
         </div>
+        {/* Labeled subtopik badge */}
         <div className="level-trophy" aria-hidden="true">
-          <span className="learn-hub-chip">5</span>
+          <span className="learn-hub-chip text-white/80 text-sm font-medium px-3 py-1 rounded-full bg-white/20">
+            {totalNodes} subtopik
+          </span>
         </div>
       </section>
 
-      <div className="home-learning-stack">
-        {BAB_CARDS.map((card, index) => {
-          const tone = index === 0 ? "lesson" : index === 1 ? "game" : "path";
+      {/* Chapter cards — scrollable with bottom peek affordance */}
+      <div className="home-learning-stack pb-32 overflow-y-auto">
+        {BAB_CARDS.map((card) => {
           const np = nodeProgress[card.id] ?? { done: 0, total: card.steps.length };
           const pct = np.total > 0 ? Math.round((np.done / np.total) * 100) : 0;
           return (
             <button
               key={card.id}
               type="button"
-              className={`learning-feature-card learning-feature-${tone} study-select-card`}
+              className={`learning-feature-card learning-feature-${card.tone} study-select-card`}
               onClick={() => router.push(card.href)}
             >
               <div>
                 <h2>{card.title}</h2>
                 <p>{card.subtitle}</p>
-                <div className="learn-topic-progress-row">
-                  <div className="learn-topic-progress-track">
-                    <div className="learn-topic-progress-fill" style={{ width: `${pct}%` }} />
-                  </div>
-                  <span className="learn-topic-progress-label">
-                    {pct}%
+
+                {/* Difficulty + estimated time tags */}
+                <div className="flex gap-2 mt-2 mb-3">
+                  <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                    {card.difficulty}
+                  </span>
+                  <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                    {card.estimatedTime}
                   </span>
                 </div>
-              </div>
 
-              <div className="feature-visual" aria-hidden="true">
-                <div className="feature-blob feature-blob-large" />
-                <div className="feature-blob feature-blob-small" />
-                <div className="feature-mini-card">{index + 1}</div>
+                {/* Always-visible progress track */}
+                <div className="learn-topic-progress-row">
+                  <div className="w-full h-1.5 rounded-full bg-white/20">
+                    <div
+                      className="h-1.5 rounded-full bg-white transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  {pct === 0 ? (
+                    <span className="text-white/70 text-xs font-medium whitespace-nowrap ml-2">Mula sekarang →</span>
+                  ) : (
+                    <span className="learn-topic-progress-label">{pct}%</span>
+                  )}
+                </div>
               </div>
+              {/* Floating number badge removed — chapter number is in title text */}
             </button>
           );
         })}

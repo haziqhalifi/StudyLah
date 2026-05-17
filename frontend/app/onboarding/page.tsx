@@ -97,7 +97,7 @@ export default function OnboardingPage() {
 
   function getPersonalizedBabName(diag: OnboardingDiagnosticResponse): string {
     const weakestTopic = [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ?? "";
-    if (!weakestTopic) return "Lessons";
+    if (!weakestTopic) return "Pelajaran";
     return weakestTopic;
   }
 
@@ -128,7 +128,7 @@ export default function OnboardingPage() {
       setAnswers({});
       setStep("quiz");
     } catch {
-      setError("Unable to start onboarding. Please try again.");
+      setError("Tidak dapat memulakan onboarding. Sila cuba lagi.");
     }
   }
 
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
       localStorage.setItem("onboardingDiagnosticShown", "1");
       setStep("result");
     } catch {
-      setError("Failed to generate AI diagnostic. Please retry.");
+      setError("Gagal menjana diagnostik AI. Sila cuba lagi.");
       setStep("quiz");
     }
   }
@@ -179,28 +179,28 @@ export default function OnboardingPage() {
 
           <div className="ob-body">
             <p className="ob-eyebrow">StudyLah AI</p>
-            <h1 className="ob-title">Let&apos;s find out what you know!</h1>
+            <h1 className="ob-title">Mari ketahui tahap pengetahuan anda!</h1>
             <p className="ob-sub">
-              Answer a few quick questions so we can personalise your SPM learning journey.
+              Jawab beberapa soalan ringkas supaya kami boleh peribadikan perjalanan pembelajaran SPM anda.
             </p>
 
             <div className="ob-features-row">
               <div className="ob-feature-pill">
                 <span className="ob-feature-dot ob-feature-dot--brand" />
-                AI-powered
+                Dikuasai AI
               </div>
               <div className="ob-feature-pill">
                 <span className="ob-feature-dot ob-feature-dot--green" />
-                5 min quiz
+                Kuiz 5 min
               </div>
               <div className="ob-feature-pill">
                 <span className="ob-feature-dot ob-feature-dot--pink" />
-                Personalised
+                Diperibadikan
               </div>
             </div>
 
             <button className="btn-primary ob-cta" type="button" onClick={() => setStep("profile")}>
-              Let&apos;s Start
+              Jom Mula
             </button>
           </div>
         </div>
@@ -215,46 +215,46 @@ export default function OnboardingPage() {
               <UserIcon />
             </div>
             <div>
-              <p className="ob-eyebrow">Step 1 of 2</p>
-              <h2 className="ob-title-sm">Tell us about you</h2>
+              <p className="ob-eyebrow">Langkah 1 daripada 2</p>
+              <h2 className="ob-title-sm">Ceritakan tentang diri anda</h2>
             </div>
           </div>
 
           <div className="ob-fields">
             <label className="ob-field">
-              <span className="ob-field-label">Full Name</span>
+              <span className="ob-field-label">Nama Penuh</span>
               <input
                 className="ob-input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Ahmad Haziq"
+                placeholder="cth. Ahmad Haziq"
                 required
               />
             </label>
 
             <label className="ob-field">
-              <span className="ob-field-label">School</span>
+              <span className="ob-field-label">Sekolah</span>
               <input
                 className="ob-input"
                 value={school}
                 onChange={(e) => setSchool(e.target.value)}
-                placeholder="e.g. SMK Taman Muda"
+                placeholder="cth. SMK Taman Muda"
                 required
               />
             </label>
 
             <label className="ob-field">
-              <span className="ob-field-label">Form</span>
+              <span className="ob-field-label">Tingkatan</span>
               <select className="ob-input ob-select" value={form} onChange={(e) => setForm(e.target.value)}>
                 {[1, 2, 3, 4, 5].map((f) => (
-                  <option key={f} value={f}>{`Form ${f}`}</option>
+                  <option key={f} value={f}>{`Tingkatan ${f}`}</option>
                 ))}
               </select>
             </label>
           </div>
 
           <button className="btn-primary ob-cta" type="submit" disabled={!canSubmitProfile}>
-            Start Quiz
+            Mula Kuiz
           </button>
         </form>
       );
@@ -268,8 +268,8 @@ export default function OnboardingPage() {
               <BrainIcon />
             </div>
           </div>
-          <h2 className="ob-title-sm">Analysing your answers&hellip;</h2>
-          <p className="ob-sub">Google AI is preparing your strengths, weaknesses, and next lesson path.</p>
+          <h2 className="ob-title-sm">Menganalisis jawapan anda&hellip;</h2>
+          <p className="ob-sub">AI sedang menyediakan kekuatan, kelemahan, dan laluan pelajaran seterusnya anda.</p>
           <div className="ob-dots" aria-hidden="true">
             <span className="ob-dot ob-dot--1" />
             <span className="ob-dot ob-dot--2" />
@@ -293,7 +293,7 @@ export default function OnboardingPage() {
               <TrophyIcon />
             </div>
             <div>
-              <p className="ob-eyebrow">Your AI Diagnostic</p>
+              <p className="ob-eyebrow">Diagnostik AI Anda</p>
               <p className={`ob-score ${scoreColor}`}>{result.score}<span className="ob-score-total">/{result.total}</span></p>
             </div>
             <div className="ob-result-hero-glow" aria-hidden="true" />
@@ -311,35 +311,35 @@ export default function OnboardingPage() {
             <div className="ob-result-section ob-result-section--green">
               <p className="ob-result-label">
                 <span className="ob-result-dot ob-result-dot--green" />
-                Strengths
+                Kekuatan
               </p>
               <ul className="ob-result-list">
                 {result.strengths.length
                   ? result.strengths.map((s) => <li key={s}><CheckIcon />{s}</li>)
-                  : <li>Keep practising to find your strengths!</li>}
+                  : <li>Teruskan berlatih untuk temui kekuatan anda!</li>}
               </ul>
             </div>
             <div className="ob-result-section ob-result-section--warn">
               <p className="ob-result-label">
                 <span className="ob-result-dot ob-result-dot--warn" />
-                Focus Areas
+                Kawasan Tumpuan
               </p>
               <ul className="ob-result-list">
                 {result.weaknesses.length
                   ? result.weaknesses.map((w) => <li key={w}><span className="ob-list-dash">—</span>{w}</li>)
-                  : <li>Great job — no weak subtopics detected!</li>}
+                  : <li>Hebat — tiada subtopik lemah dikesan!</li>}
               </ul>
             </div>
           </div>
 
           <div className="ob-reco-card">
-            <p className="ob-reco-label">AI Recommendation</p>
+            <p className="ob-reco-label">Cadangan AI</p>
             <p className="ob-reco-text">{result.recommendation}</p>
             <p className="ob-next-text">{result.next_step}</p>
           </div>
 
           <button className="btn-primary ob-cta" type="button" onClick={() => router.push(personalizedRoute)}>
-            Continue to {personalizedBabName}
+            Teruskan ke {personalizedBabName}
           </button>
         </div>
       );
@@ -355,7 +355,7 @@ export default function OnboardingPage() {
           {/* quiz header */}
           <div className="ob-quiz-header">
             <div className="ob-quiz-meta">
-              <p className="ob-eyebrow">Question {index + 1} of {questions.length}</p>
+              <p className="ob-eyebrow">Soalan {index + 1} daripada {questions.length}</p>
               <p className="ob-quiz-topic-label">{current.topic}</p>
             </div>
             <div className="ob-quiz-counter">
@@ -388,7 +388,7 @@ export default function OnboardingPage() {
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span className="ob-option-text">{opt}</span>
-                    {isCorrectPick && <span className="ob-option-check" aria-label="Correct"><CheckIcon /></span>}
+                    {isCorrectPick && <span className="ob-option-check" aria-label="Betul"><CheckIcon /></span>}
                   </button>
                 );
               })}
@@ -397,7 +397,7 @@ export default function OnboardingPage() {
 
           {index === questions.length - 1 && answers[current.id] !== undefined && feedback === null && (
             <button className="btn-primary ob-cta" type="button" onClick={finishQuiz}>
-              Submit &amp; Get AI Diagnostic
+              Hantar &amp; Dapatkan Diagnostik AI
             </button>
           )}
         </div>

@@ -1159,6 +1159,38 @@ h3 {
   text-transform: capitalize;
 }
 
+.learn-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.learn-meta-topic {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.learn-meta-sep {
+  color: var(--border);
+}
+.learn-meta-diff {
+  font-weight: 700;
+}
+.learn-diff-easy  { color: var(--correct); }
+.learn-diff-medium { color: var(--warn); }
+.learn-diff-hard  { color: var(--wrong); }
+.learn-meta-shift {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--surface);
+  border-radius: 99px;
+  padding: 0.1rem 0.5rem;
+}
+
 .learn-ai-cues {
   display: flex;
   flex-direction: column;
@@ -3854,7 +3886,241 @@ button.map-node:hover {
   border-radius: var(--r-lg);
 }
 .learn-back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand);
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-body);
+}
+
+/* ── Learn page: Chapter list ─────────────────────────────────────── */
+.lp-chapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 7rem;
+}
+
+.lp-chapter-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border: none;
+  border-radius: var(--r-xl);
+  padding: 1.25rem 1.25rem 1.1rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-body);
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-card);
+}
+.lp-chapter-card:hover { transform: translateY(-2px); }
+.lp-chapter-card:active { transform: scale(0.98); }
+
+/* Gradient themes matching materials page tones */
+.lp-chapter-lesson { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; }
+.lp-chapter-game   { background: linear-gradient(135deg, #ec4899, #e11d48); color: #fff; }
+.lp-chapter-path   { background: linear-gradient(135deg, #14b8a6, #059669); color: #fff; }
+
+.lp-chapter-left { flex: 1; min-width: 0; }
+
+.lp-chapter-bab {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin: 0 0 0.2rem;
+}
+
+.lp-chapter-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 0.3rem;
+  line-height: 1.25;
+  font-family: var(--font-display);
+}
+
+.lp-chapter-desc {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin: 0 0 0.6rem;
+  line-height: 1.4;
+}
+
+.lp-chapter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   margin-bottom: 0.75rem;
+}
+
+.lp-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 99px;
+  padding: 0.15rem 0.55rem;
+}
+
+.lp-chapter-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lp-chapter-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.25);
+  overflow: hidden;
+}
+
+.lp-chapter-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.9);
+  width: var(--pct, 0%);
+  transition: width 0.4s ease;
+}
+
+.lp-chapter-cta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  white-space: nowrap;
+}
+
+.lp-chapter-pct {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.lp-chapter-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  opacity: 0.9;
+  align-self: center;
+}
+
+/* ── Learn page: Subtopic picker ──────────────────────────────────── */
+.lp-all-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-xl);
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  box-shadow: var(--shadow-brand);
+  transition: background 0.15s, transform 0.1s;
+  text-align: left;
+  margin-bottom: 0.25rem;
+}
+.lp-all-card:hover { background: var(--brand-dark); }
+.lp-all-card:active { transform: scale(0.98); }
+.lp-all-card:disabled { background: var(--brand-muted); box-shadow: none; cursor: not-allowed; }
+
+.lp-all-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.lp-all-body { flex: 1; }
+
+.lp-all-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.1rem;
+}
+
+.lp-all-sub {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.lp-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin: 1.1rem 0 0.6rem;
+}
+
+.lp-subtopic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 7rem;
+}
+
+.lp-subtopic-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.lp-subtopic-row:hover { border-color: var(--brand-muted); background: var(--brand-light); }
+.lp-subtopic-row:active { transform: scale(0.98); }
+.lp-subtopic-row:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.lp-subtopic-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lp-subtopic-body { flex: 1; min-width: 0; }
+
+.lp-subtopic-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 0.1rem;
+}
+
+.lp-subtopic-id {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.lp-arrow {
+  font-size: 1rem;
+  color: var(--muted);
+  flex-shrink: 0;
 }
 
 /* â”€â”€ StudyBuddy FAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -4666,6 +4932,34 @@ button.map-node:hover {
 .notification-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 32px rgba(93, 78, 172, 0.18);
+}
+
+.profile-avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.profile-avatar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(93, 78, 172, 0.18);
+}
+.profile-avatar-btn svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
 .notification-button svg,
