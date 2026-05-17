@@ -131,7 +131,6 @@ function useXpState() {
 
 function StudentHeader() {
   const [name, setName] = useState(DEFAULT_STUDENT.name);
-  const xp = useXpState();
 
   useEffect(() => {
     try {
@@ -148,7 +147,6 @@ function StudentHeader() {
         <h1>Helo, {name}</h1>
         <div className="student-meta-row">
           <span>{DEFAULT_STUDENT.form}</span>
-          <span>{xp} XP</span>
         </div>
       </div>
 
@@ -275,7 +273,6 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
               className={`progress-set-card page-enter topic-${t.topic_id}`}
               role="button"
               tabIndex={0}
-              style={{ cursor: "pointer" }}
               onClick={() => router.push(`/materials/${t.topic_id}/subtopics`)}
               onKeyDown={(e) => e.key === "Enter" && router.push(`/materials/${t.topic_id}/subtopics`)}
               aria-label={`${meta.name} – ${pct}%`}
@@ -624,15 +621,6 @@ function CheckCircleIcon() {
   );
 }
 
-function _TargetIcon_unused() {
-  return (
-    <IconBase>
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-    </IconBase>
-  );
-}
 
 function TrophyIcon() {
   return (

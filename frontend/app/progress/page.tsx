@@ -364,7 +364,6 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
               className={`progress-set-card page-enter topic-${t.topic_id}`}
               role="button"
               tabIndex={0}
-              style={{ cursor: "pointer" }}
               onClick={() => setActiveTopic(t)}
               onKeyDown={(e) => e.key === "Enter" && setActiveTopic(t)}
               aria-label={`${meta.name} – ${pct}%`}
