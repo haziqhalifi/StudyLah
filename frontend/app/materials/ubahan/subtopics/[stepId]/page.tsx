@@ -4,7 +4,8 @@ import type React from "react";
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import MaterialQuizSession from "@/components/MaterialQuizSession";
-import { UBAHAN_STEPS, UBAHAN_SUBTOPICS } from "../../data";
+import MathText from "@/components/MathText";
+import { MaterialMcq, UBAHAN_QUESTION_BANK, UBAHAN_STEPS, UBAHAN_SUBTOPICS } from "../../data";
 
 type LessonPage = {
   title: string;
@@ -12,7 +13,7 @@ type LessonPage = {
 };
 
 const COMPLETION_KEY = "ubahan_completed_steps_v1";
-const MATH_LINE_PATTERN = /[=∝÷×⁻ⁿᵐ]|\bA\^?-?1\b|\b\d+\/\w+/;
+const MATH_LINE_PATTERN = /[$=]|\\frac|\\times|\\neq|\\left|\\right|\\begin|\\end/;
 
 function buildPages(step: (typeof UBAHAN_STEPS)[number], subtopic: (typeof UBAHAN_SUBTOPICS)[number]): LessonPage[] {
   const conceptLines = [subtopic.meaning];
@@ -31,7 +32,7 @@ function buildPages(step: (typeof UBAHAN_STEPS)[number], subtopic: (typeof UBAHA
       lines: conceptLines,
     },
     {
-      title: step.type === "Assessment" ? "Assessment Task" : "Task",
+      title: step.type === "Assessment" ? "Tugasan Pentaksiran" : "Tugasan",
       lines: [
         step.task ?? "Ulangkaji konsep ini dan pastikan anda boleh menerangkan semula dengan ayat sendiri.",
         step.answer ?? "Pastikan anda faham definisi, bentuk persamaan, dan penggunaan pemalar k.",
@@ -61,18 +62,37 @@ export default function UbahanStepPage() {
     return buildPages(step, subtopic);
   }, [step, subtopic]);
 
+  const sessionQuestions = useMemo(() => {
+    if (!step) return [] as MaterialMcq[];
+
+    if (step.id === "ubahan-final-exam") {
+      const bySubtopic = ["1.1", "1.2", "1.3"].flatMap((sid) => {
+        const pool = UBAHAN_QUESTION_BANK.filter((q) => q.subtopicId === sid);
+        const shuffled = [...pool].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 5);
+      });
+      return bySubtopic.sort(() => Math.random() - 0.5);
+    }
+
+    if (step.type === "Exercise") {
+      return UBAHAN_QUESTION_BANK.filter((q) => q.subtopicId === step.subtopicId).sort(() => Math.random() - 0.5);
+    }
+
+    return [] as MaterialMcq[];
+  }, [step]);
+
   if (!step || !subtopic) {
     return (
       <div className="material-step-page page-enter">
         <section className="material-viewer material-viewer-standalone">
           <div className="material-viewer-top">
             <button type="button" className="material-close-btn" onClick={() => router.push("/materials/ubahan/subtopics")}>
-              Close
+              Tutup
             </button>
-            <p className="material-viewer-step">Step not found</p>
+            <p className="material-viewer-step">Langkah tidak dijumpai</p>
           </div>
           <div className="material-viewer-body">
-            <h2>Step tidak dijumpai</h2>
+            <h2>Langkah tidak dijumpai</h2>
           </div>
         </section>
       </div>
@@ -115,6 +135,7 @@ export default function UbahanStepPage() {
         chapter="ubahan"
         step={step}
         subtopic={subtopic}
+        materialQuestions={sessionQuestions}
         onClose={closePage}
         onContinue={continueToMap}
       />
@@ -127,7 +148,7 @@ export default function UbahanStepPage() {
         <section className="material-viewer material-viewer-standalone">
           <div className="material-viewer-top">
             <button type="button" className="material-close-btn" onClick={closePage}>
-              Close
+              Tutup
             </button>
             <p className="material-viewer-step">
               {subtopic.id} {subtopic.title}
@@ -136,24 +157,28 @@ export default function UbahanStepPage() {
 
           <div className="material-viewer-body">
             <p className="material-viewer-page">
-              Page {pageIndex + 1} / {pages.length}
+              Halaman {pageIndex + 1} / {pages.length}
             </p>
             <h2>{pages[pageIndex]?.title}</h2>
-            {pages[pageIndex]?.lines.map((line) => (
-              <p key={line} className={isMathLine(line) ? "material-math-line" : undefined}>
-                {line}
-              </p>
-            ))}
+            {pages[pageIndex]?.lines.map((line) =>
+              isMathLine(line) ? (
+                <div key={line} className="material-math-line">
+                  <MathText>{line}</MathText>
+                </div>
+              ) : (
+                <p key={line}>{line}</p>
+              )
+            )}
           </div>
 
           <div className="material-viewer-footer">
             {!isLastPage ? (
               <button type="button" className="btn-primary material-viewer-cta" onClick={nextPage}>
-                Next
+                Seterusnya
               </button>
             ) : (
               <button type="button" className="btn-primary material-viewer-cta" onClick={submitStep}>
-                Submit
+                Hantar
               </button>
             )}
           </div>
@@ -174,10 +199,10 @@ export default function UbahanStepPage() {
               />
             ))}
           </div>
-          <h2>Great Work</h2>
-          <p>{`No.${step.no} complete. Circle akan dikemaskini sebagai completed.`}</p>
+          <h2>Tahniah</h2>
+          <p>{`No.${step.no} selesai. Bulatan akan dikemas kini sebagai selesai.`}</p>
           <button type="button" className="btn-primary material-viewer-cta" onClick={continueToMap}>
-            Continue
+            Teruskan
           </button>
         </section>
       )}

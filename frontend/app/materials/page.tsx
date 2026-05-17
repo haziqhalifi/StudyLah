@@ -27,32 +27,32 @@ export default function MaterialsHubPage() {
   const router = useRouter();
 
   return (
-    <section className="home-dashboard-shell page-enter" aria-label="Materials hub">
+    <section className="home-dashboard-shell page-enter" aria-label="Hab bahan pembelajaran">
       <header className="student-header">
         <div className="student-header-copy">
-          <p className="student-time">Materials</p>
+          <p className="student-time">Bahan</p>
           <h1>Pilih Bab</h1>
           <div className="student-meta-row">
             <span>Matematik Tingkatan 5</span>
             <span aria-hidden="true">•</span>
-            <span>{BAB_CARDS.length} chapters</span>
+            <span>{BAB_CARDS.length} bab</span>
           </div>
         </div>
 
 
       </header>
 
-      <section className="level-card" aria-label="Choose a chapter">
+      <section className="level-card" aria-label="Pilih satu bab">
         <div className="level-card-content">
-          <p className="level-eyebrow">Learning Path</p>
-          <h2>Start from a chapter and move into the subtopic map.</h2>
+          <p className="level-eyebrow">Laluan Pembelajaran</p>
+          <h2>Mulakan dengan satu bab dan teruskan ke peta subtopik.</h2>
           <div className="level-progress-row">
             <div className="level-progress-track" aria-hidden="true">
               <div className="level-progress-fill level-progress-fill-full">
                 <span className="level-progress-dot" />
               </div>
             </div>
-            <span>{BAB_CARDS.length} available</span>
+            <span>{BAB_CARDS.length} tersedia</span>
           </div>
         </div>
         <div className="level-trophy" aria-hidden="true">

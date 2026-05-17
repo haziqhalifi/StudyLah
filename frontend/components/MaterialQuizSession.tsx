@@ -5,6 +5,7 @@ import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
 import { Question } from "@/lib/api";
+import { MaterialMcq } from "@/app/materials/ubahan/data";
 
 type ChapterKey = "ubahan" | "matriks" | "insurans";
 
@@ -27,6 +28,7 @@ type Props = {
   chapter: ChapterKey;
   step: StepLite;
   subtopic: SubtopicLite;
+  materialQuestions?: MaterialMcq[];
   onClose: () => void;
   onContinue: () => void;
 };
@@ -61,42 +63,86 @@ function buildQuestion(chapter: ChapterKey, step: StepLite, subtopic: SubtopicLi
   };
 }
 
-export default function MaterialQuizSession({ chapter, step, subtopic, onClose, onContinue }: Props) {
+function mapMaterialQuestion(chapter: ChapterKey, item: MaterialMcq): { question: Question; correctIndex: number } {
+  return {
+    question: {
+      id: item.id,
+      topic_id: chapterTopicId(chapter),
+      text: item.text,
+      options: item.options,
+      difficulty: item.difficulty === "Mudah" ? "easy" : item.difficulty === "Sederhana" ? "medium" : "hard",
+      tags: [chapter, "material", item.subtopicId, `kategori:${item.difficulty}`],
+    },
+    correctIndex: item.answerIndex,
+  };
+}
+
+export default function MaterialQuizSession({ chapter, step, subtopic, materialQuestions, onClose, onContinue }: Props) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
   const [showBuddy, setShowBuddy] = useState(false);
 
   const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null;
-  const { question, correctIndex } = useMemo(() => buildQuestion(chapter, step, subtopic), [chapter, step, subtopic]);
+  const questionSet = useMemo(() => {
+    if (materialQuestions && materialQuestions.length > 0) {
+      return materialQuestions.map((q) => mapMaterialQuestion(chapter, q));
+    }
+    return [buildQuestion(chapter, step, subtopic)];
+  }, [chapter, materialQuestions, step, subtopic]);
+
+  const current = questionSet[currentIndex];
+  const question = current.question;
+  const correctIndex = current.correctIndex;
 
   const isCorrect = selected === correctIndex;
-  const done = submitted ? 1 : 0;
-  const correct = submitted && isCorrect ? 1 : 0;
-  const accuracy = submitted ? (isCorrect ? "100%" : "0%") : "—";
+  const done = currentIndex + (submitted ? 1 : 0);
+  const total = questionSet.length;
+  const finalStep = submitted && currentIndex === total - 1;
+  const displayedCorrect = correctCount + (submitted && isCorrect ? 1 : 0);
+  const accuracy = done > 0 ? `${Math.round((displayedCorrect / done) * 100)}%` : "-";
+
+  function submitAnswer() {
+    if (selected === null) return;
+    if (selected === correctIndex) setCorrectCount((prev) => prev + 1);
+    setSubmitted(true);
+  }
+
+  function nextQuestion() {
+    if (currentIndex >= total - 1) return;
+    setCurrentIndex((prev) => prev + 1);
+    setSelected(null);
+    setSubmitted(false);
+  }
 
   const bar = !submitted ? (
-    <button type="button" className="btn-primary" disabled={selected === null} onClick={() => setSubmitted(true)}>
-      Submit Answer
+    <button type="button" className="btn-primary" disabled={selected === null} onClick={submitAnswer}>
+      Hantar Jawapan
+    </button>
+  ) : finalStep ? (
+    <button type="button" className="btn-primary" onClick={onContinue}>
+      Tamat Sesi
     </button>
   ) : (
-    <button type="button" className="btn-primary" onClick={onContinue}>
-      Continue
+    <button type="button" className="btn-primary" onClick={nextQuestion}>
+      Soalan Seterusnya
     </button>
   );
 
   return (
-    <QuizSheet open bar={bar} onClose={onClose}>
+    <QuizSheet open bar={bar} onClose={onClose} progress={done} total={total}>
       <div className="learn-stats">
         <div className="learn-stat">
-          <div className="learn-stat-label">Done</div>
+          <div className="learn-stat-label">Selesai</div>
           <div className="learn-stat-value">{done}</div>
         </div>
         <div className="learn-stat">
-          <div className="learn-stat-label">Correct</div>
-          <div className="learn-stat-value green">{correct}</div>
+          <div className="learn-stat-label">Betul</div>
+          <div className="learn-stat-value green">{displayedCorrect}</div>
         </div>
         <div className="learn-stat">
-          <div className="learn-stat-label">Accuracy</div>
+          <div className="learn-stat-label">Ketepatan</div>
           <div className={`learn-stat-value ${submitted && !isCorrect ? "red" : submitted ? "green" : "red"}`}>{accuracy}</div>
         </div>
       </div>
@@ -105,6 +151,7 @@ export default function MaterialQuizSession({ chapter, step, subtopic, onClose, 
 
       <QuestionCard
         question={question}
+        questionNumber={currentIndex + 1}
         selectedOptionIndex={selected}
         onSelectOption={submitted ? undefined : setSelected}
         showResult={submitted}
@@ -120,9 +167,9 @@ export default function MaterialQuizSession({ chapter, step, subtopic, onClose, 
         type="button"
         className={`sb-fab ${showBuddy ? "sb-fab-active" : ""}`}
         onClick={() => setShowBuddy((v) => !v)}
-        aria-label="Ask StudyBuddy"
+        aria-label="Tanya StudyBuddy"
       >
-        {showBuddy ? "✕" : "🤖"}
+        {showBuddy ? "x" : "AI"}
       </button>
     </QuizSheet>
   );

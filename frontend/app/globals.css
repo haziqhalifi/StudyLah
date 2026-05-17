@@ -2448,14 +2448,23 @@ h3 {
 
 .material-viewer-body .material-math-line {
   margin-top: 0.65rem;
-  padding: 0.6rem 0.7rem;
+  padding: 0.7rem 0.8rem;
   border-radius: 12px;
-  background: #f5f3ff;
-  border: 1px solid #ddd6fe;
-  color: #312e81;
-  font-weight: 700;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #0c4a6e;
+  font-weight: 600;
   letter-spacing: 0.01em;
   overflow-x: auto;
+  line-height: 1.55;
+}
+
+.material-viewer-body .material-math-line p {
+  margin: 0;
+}
+
+.material-viewer-body .material-math-line .katex-display {
+  margin: 0.35rem 0 0;
 }
 
 .material-viewer-footer {
@@ -3491,6 +3500,25 @@ button.map-node:hover {
 }
 .qs-shell .qcard-header {
   margin-bottom: 0.75rem;
+}
+
+.qs-shell .qcard-category-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.1rem 0 0.35rem;
+}
+
+.qs-shell .qcard-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 /* Legacy quiz-sheet kept for other pages */
