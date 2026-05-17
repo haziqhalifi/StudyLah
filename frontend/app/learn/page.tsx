@@ -26,7 +26,7 @@ import {
   INSURANS_SUBTOPICS,
 } from "@/app/materials/insurans/data";
 
-type View = "topics" | "subtopics" | "practice";
+type View = "topics" | "practice";
 
 interface SubtopicOption {
   id: string;
@@ -97,22 +97,20 @@ export default function LearnPage() {
   >({});
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loadingPapers, setLoadingPapers] = useState(true);
-  const [starting, setStarting] = useState(false);
+  const [, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
 
   // Which topic the user drilled into
   const [activeTopic, setActiveTopic] = useState<
     (typeof MATH_F5_TOPICS)[number] | null
   >(null);
-  // Which subtopic was selected (null = "all")
-  const [activeSubtopicId, setActiveSubtopicId] = useState<string | null>(null);
-
   // Practice state
   const [question, setQuestion] = useState<Question | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<SubmitAnswerResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [generatingExplanation, setGeneratingExplanation] = useState(false);
+  const [explanation, setExplanation] = useState<import("@/lib/api").Explanation | null>(null);
   const [count, setCount] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [prevDiff, setPrevDiff] = useState<string | null>(null);
@@ -229,7 +227,6 @@ export default function LearnPage() {
       let resolvedSubtopic = subtopicId ?? undefined;
       if (!resolvedSubtopic && activeTopic) {
         resolvedSubtopic = pickWeakestSubtopic(activeTopic.subtopics, topicStats);
-        setActiveSubtopicId(resolvedSubtopic);
       }
 
       const diagRes = await startDiagnostic(userId, topicId, paper.id, resolvedSubtopic);
@@ -246,6 +243,7 @@ export default function LearnPage() {
       setRecentAttempts([]);
       setCorrectOptionIndex(-1);
       setSessionStreak(0);
+      setExplanation(null);
       setView("practice");
     } catch {
       setStartError("Tidak dapat memuatkan soalan. Cuba lagi.");
@@ -329,18 +327,15 @@ export default function LearnPage() {
     setSelected(null);
     setResult(null);
     setCorrectOptionIndex(-1);
+    setExplanation(null);
   }
 
   async function handleGenerateExplanation() {
     if (!result || !question || !userId || selected === null) return;
     setGeneratingExplanation(true);
     try {
-      const explanation = await generateExplanation(
-        userId,
-        question.id,
-        selected,
-      );
-      setResult({ ...result, explanation });
+      const exp = await generateExplanation(userId, question.id, selected);
+      setExplanation(exp);
     } catch {
       alert("Gagal menjana penerangan. Sila cuba lagi.");
     } finally {
@@ -383,7 +378,7 @@ export default function LearnPage() {
                 className={`lp-chapter-card lp-chapter-${topic.tone}`}
                 onClick={() => {
                   setActiveTopic(topic);
-                  setView("subtopics");
+                  handleStartPractice(topic.id, null);
                 }}
               >
                 <div className="lp-chapter-left">
@@ -449,93 +444,6 @@ export default function LearnPage() {
     );
   }
 
-  // ── VIEW: Subtopic picker ───────────────────────────────────────────
-  if (view === "subtopics" && activeTopic) {
-    return (
-      <section
-        className="home-dashboard-shell page-enter"
-        aria-label="Pilih subtopik"
-      >
-        <header className="student-header">
-          <div className="student-header-copy">
-            <button
-              type="button"
-              className="learn-back-btn"
-              onClick={() => setView("topics")}
-            >
-              ← Kembali
-            </button>
-            <p className="student-time">{activeTopic.bab}</p>
-            <h1>{activeTopic.name}</h1>
-            <div className="student-meta-row">
-              <span>{activeTopic.subtopics.length} subtopik</span>
-              <span aria-hidden="true">•</span>
-              <span>{activeTopic.difficulty}</span>
-              <span aria-hidden="true">•</span>
-              <span>{activeTopic.estimatedTime}</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Practice all subtopics */}
-        <button
-          type="button"
-          className="lp-all-card"
-          onClick={() => {
-            setActiveSubtopicId(null);
-            handleStartPractice(activeTopic.id, null);
-          }}
-          disabled={starting}
-        >
-          <span className="lp-all-icon" aria-hidden="true">
-            ⚡
-          </span>
-          <div className="lp-all-body">
-            <p className="lp-all-title">Semua Subtopik</p>
-            <p className="lp-all-sub">
-              AI pilih subtopik terlemah &amp; sesuaikan soalan mengikut tahap penguasaan
-            </p>
-          </div>
-          <span className="lp-arrow" aria-hidden="true">
-            →
-          </span>
-        </button>
-
-        <p className="lp-section-label">Atau pilih subtopik tertentu</p>
-
-        {/* Individual subtopics */}
-        <div className="lp-subtopic-list">
-          {activeTopic.subtopics.map((sub, idx) => (
-            <button
-              key={sub.id}
-              type="button"
-              className="lp-subtopic-row"
-              onClick={() => {
-                setActiveSubtopicId(sub.id);
-                handleStartPractice(activeTopic.id, sub.id);
-              }}
-              disabled={starting}
-            >
-              <span className="lp-subtopic-num" aria-hidden="true">
-                {idx + 1}
-              </span>
-              <div className="lp-subtopic-body">
-                <p className="lp-subtopic-title">{sub.title}</p>
-                <p className="lp-subtopic-id">{sub.id}</p>
-              </div>
-              <span className="lp-arrow" aria-hidden="true">
-                →
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {startError && <p className="diag-error">{startError}</p>}
-        {starting && <p className="diag-sub">Memuatkan soalan…</p>}
-      </section>
-    );
-  }
-
   // ── VIEW: Practice ──────────────────────────────────────────────────
   if (!question)
     return <div className="page-enter diag-sub">Memuatkan soalan…</div>;
@@ -546,23 +454,12 @@ export default function LearnPage() {
     medium: "Sederhana",
     hard: "Sukar",
   };
-  const diffClass: Record<string, string> = {
-    easy: "learn-diff-easy",
-    medium: "learn-diff-medium",
-    hard: "learn-diff-hard",
-  };
   const topicLabel =
     question.topic_id === "matriks"
       ? "Matriks"
       : question.topic_id === "insurans"
         ? "Insurans"
         : "Ubahan";
-
-  // Show selected subtopic name if one was picked
-  const activeSubtopicTitle = activeSubtopicId
-    ? (activeTopic?.subtopics.find((s) => s.id === activeSubtopicId)?.title ??
-      null)
-    : null;
 
   const topicDisplayName =
     question.topic_id === "matriks"
@@ -607,7 +504,7 @@ export default function LearnPage() {
       progress={count}
       total={Math.max(10, count)}
       onClose={() => {
-        setView("subtopics");
+        setView("topics");
         setResult(null);
         setSelected(null);
         setShowBuddy(false);
@@ -621,25 +518,14 @@ export default function LearnPage() {
       )}
 
 
-      {/* ── Question context row ── */}
-      <div className="learn-meta-row">
-        <span className="learn-meta-topic">
-          {activeSubtopicTitle ?? topicLabel}
-        </span>
-        <span className="learn-meta-sep" aria-hidden="true">
-          ·
-        </span>
-        <span
-          className={`learn-meta-diff ${diffClass[diff] ?? diffClass.easy}`}
-        >
-          {diffLabel[diff] ?? diff}
-        </span>
-        {diffShift && (
+      {/* ── Difficulty shift indicator ── */}
+      {diffShift && (
+        <div className="learn-meta-row">
           <span className="learn-meta-shift">
             {diffShift === "up" ? "↑ Naik tahap" : "↓ Turun tahap"}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Question card ── */}
       <QuestionCard
@@ -654,7 +540,7 @@ export default function LearnPage() {
       {/* ── Explanation shown after answering ── */}
       {result && (
         <ExplanationBlock
-          explanation={result.explanation}
+          explanation={explanation}
           isCorrect={result.is_correct}
           onGenerateExplanation={handleGenerateExplanation}
           isGenerating={generatingExplanation}

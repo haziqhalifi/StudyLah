@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { getAssessment } from "@/lib/api";
-import type { TopicStats } from "@/lib/api";
+import { getAssessment, fetchFlashcardSets } from "@/lib/api";
+import type { TopicStats, FlashcardSetSummary } from "@/lib/api";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
 import type { LearningContext } from "@/lib/types";
 
@@ -48,6 +48,7 @@ function HomeDashboard() {
   const [chatInitialMsg, setChatInitialMsg] = useState<string | undefined>();
   const [aiSheetOpen, setAiSheetOpen] = useState(false);
   const [topics, setTopics] = useState<TopicStats[]>([]);
+  const [flashcardSets, setFlashcardSets] = useState<FlashcardSetSummary[]>([]);
   const [chatContext, setChatContext] = useState<LearningContext>({
     topicId: "ubahan",
     topicName: "Ubahan (Variation)",
@@ -61,6 +62,9 @@ function HomeDashboard() {
         setUserId(uid);
         getAssessment(uid)
           .then((res) => setTopics(res.topics))
+          .catch(() => {});
+        fetchFlashcardSets(uid)
+          .then((sets) => setFlashcardSets(sets))
           .catch(() => {});
       }
       const shown = localStorage.getItem("onboardingDiagnosticShown");
@@ -93,9 +97,11 @@ function HomeDashboard() {
         <StudentHeader />
         <LevelProgressCard />
         <DailyMissionCard />
+        <QuickStatsRow topics={topics} />
         <WeakTopicCard topics={topics} />
-        <AIChatCard onOpenSheet={() => setAiSheetOpen(true)} />
+        <QuickFlashcardWidget sets={flashcardSets} />
       </section>
+      <FloatingAIButton onClick={() => setAiSheetOpen(true)} />
       <AIChatSheet
         open={aiSheetOpen}
         onClose={() => setAiSheetOpen(false)}
@@ -276,8 +282,109 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
           </div>
           <span className="weak-topic-pct">{pct}% tepat</span>
         </div>
-        <span className="weak-topic-cta">Ulangkaji sekarang ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â +10 XP</span>
+        <span className="weak-topic-cta">Ulangkaji sekarang → +10 XP</span>
       </div>
+    </button>
+  );
+}
+
+function QuickStatsRow({ topics }: { topics: TopicStats[] }) {
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("streakDays");
+      if (stored) setStreak(Number(stored));
+    } catch {}
+  }, []);
+
+  const mastered = topics.filter((t) => t.level === "proficient" || t.level === "advanced").length;
+
+  return (
+    <div className="quick-stats-row">
+      <div className="quick-stat-card">
+        <span className="quick-stat-icon" aria-hidden="true">🔥</span>
+        <span className="quick-stat-value">{streak}</span>
+        <span className="quick-stat-label">Hari streak</span>
+      </div>
+      <div className="quick-stat-card">
+        <span className="quick-stat-icon" aria-hidden="true">⭐</span>
+        <span className="quick-stat-value">{mastered}</span>
+        <span className="quick-stat-label">Topik mahir</span>
+      </div>
+      <div className="quick-stat-card">
+        <span className="quick-stat-icon" aria-hidden="true">📚</span>
+        <span className="quick-stat-value">{topics.length}</span>
+        <span className="quick-stat-label">Topik dipelajari</span>
+      </div>
+    </div>
+  );
+}
+
+function QuickFlashcardWidget({ sets }: { sets: FlashcardSetSummary[] }) {
+  const router = useRouter();
+
+  if (sets.length === 0) {
+    return (
+      <button
+        type="button"
+        className="quick-flashcard-empty"
+        onClick={() => router.push("/learn")}
+        aria-label="Buat flashcard pertama kamu"
+      >
+        <span className="quick-flashcard-empty-icon" aria-hidden="true">🃏</span>
+        <div>
+          <p className="quick-flashcard-empty-title">Tiada flashcard lagi</p>
+          <p className="quick-flashcard-empty-sub">Tanya AI untuk jana flashcard baru →</p>
+        </div>
+      </button>
+    );
+  }
+
+  const recent = sets.slice(0, 3);
+
+  return (
+    <div className="quick-flashcard-widget">
+      <div className="quick-flashcard-header">
+        <span className="quick-flashcard-title">🃏 Flashcard Saya</span>
+        <button
+          type="button"
+          className="quick-flashcard-see-all"
+          onClick={() => router.push("/progress")}
+        >
+          Lihat semua →
+        </button>
+      </div>
+      <div className="quick-flashcard-list">
+        {recent.map((set) => (
+          <button
+            key={set.id}
+            type="button"
+            className="quick-flashcard-item"
+            onClick={() => router.push(`/flashcards/${set.id}`)}
+            aria-label={`Buka flashcard ${set.title}`}
+          >
+            <div className="quick-flashcard-item-info">
+              <span className="quick-flashcard-item-title">{set.title}</span>
+              <span className="quick-flashcard-item-count">{set.card_count} kad</span>
+            </div>
+            <span className="quick-flashcard-item-arrow" aria-hidden="true">›</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FloatingAIButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="fab-ai"
+      onClick={onClick}
+      aria-label="Buka Tutor AI"
+    >
+      <span aria-hidden="true">🤖</span>
     </button>
   );
 }
@@ -299,45 +406,6 @@ const TOPICS = {
 
 type TopicKey = keyof typeof TOPICS;
 
-
-function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
-  return (
-    <div className="icb-wrap" aria-label="Buka Cikgu AI">
-      <div className="icb-header">
-        <span className="icb-avatar" aria-hidden="true">{"\u{1F916}"}</span>
-        <span className="icb-title">Tanya AI</span>
-        <button type="button" className="icb-expand-btn" aria-label="Buka chat penuh" onClick={onOpenSheet}>
-          {"Buka penuh \u2197"}
-        </button>
-      </div>
-      <div className="icb-mid-copy">
-        <p>Keliru dengan soalan? Tanya je.</p>
-        <p>Skorrel sedia membantu.</p>
-      </div>
-      <div className="icb-input-wrap">
-        <textarea
-          className="icb-input"
-          rows={1}
-          placeholder={"Tanya soalan kamu di sini\u2026"}
-          onFocus={onOpenSheet}
-          readOnly
-        />
-        <button type="button" className="icb-send" disabled aria-label="Hantar">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-          </svg>
-        </button>
-      </div>
-      <div className="icb-chips">
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F4A1}"}</span>Hint Please</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F50D}"}</span>Step-by-Step</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F3AF}"}</span>Practice Quiz</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F4D6}"}</span>Teach Me This</button>
-        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F9D1}\u200D\u{1F3EB}"}</span>Ask AI Coach</button>
-      </div>
-    </div>
-  );
-}
 
 function AIChatSheet({
   open,
