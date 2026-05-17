@@ -27,7 +27,7 @@ const STYLE_META: Record<
 
 export default function ExplanationBlock({
   explanation,
-  isCorrect,
+  isCorrect: _isCorrect,
   onGenerateExplanation,
   isGenerating = false,
 }: Props) {
@@ -35,14 +35,6 @@ export default function ExplanationBlock({
   if (!explanation) {
     return (
       <div className="expblock card page-enter">
-        {/* Result banner */}
-        <div
-          className={`expblock-banner ${isCorrect ? "expblock-banner-correct" : "expblock-banner-wrong"}`}
-        >
-          <span className="expblock-banner-icon">{isCorrect ? "✓" : "✗"}</span>
-          {isCorrect ? "Correct!" : "Not quite — here's why"}
-        </div>
-
         {/* Body */}
         <div className="expblock-body">
           <p
@@ -74,14 +66,6 @@ export default function ExplanationBlock({
 
   return (
     <div className={`expblock card page-enter ${meta.cls}`}>
-      {/* Result banner */}
-      <div
-        className={`expblock-banner ${isCorrect ? "expblock-banner-correct" : "expblock-banner-wrong"}`}
-      >
-        <span className="expblock-banner-icon">{isCorrect ? "✓" : "✗"}</span>
-        {isCorrect ? "Correct!" : "Not quite — here's why"}
-      </div>
-
       {/* Body */}
       <div className="expblock-body">
         {/* AI style chip */}

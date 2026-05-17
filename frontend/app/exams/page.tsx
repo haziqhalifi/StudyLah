@@ -18,6 +18,7 @@ type Stage = "pick" | "quiz" | "results";
 interface RawQuestion {
   id: number;
   question: string | null;
+  question_ms: string | null;
   options: string[];
   correct_index: number;
   difficulty: string;
@@ -29,7 +30,7 @@ interface RawQuestionWithCorrect extends RawQuestion {}
 function mapQuestion(raw: RawQuestion): Question {
   return {
     id: String(raw.id),
-    text: raw.question ?? "",
+    text: raw.question_ms ?? raw.question ?? "",
     options: raw.options ?? [],
     difficulty: (raw.difficulty as Question["difficulty"]) ?? "medium",
     topic_id: raw.topic ?? "",
@@ -39,7 +40,7 @@ function mapQuestion(raw: RawQuestion): Question {
 
 async function getQuestionsByPaper(paperId: number): Promise<{ questions: Question[]; correctMap: Record<string, number> }> {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/questions?select=id,question,options,correct_index,difficulty,topic&paper_id=eq.${paperId}&order=question_number`,
+    `${SUPABASE_URL}/rest/v1/questions?select=id,question,question_ms,options,correct_index,difficulty,topic&paper_id=eq.${paperId}&order=question_number`,
     {
       headers: {
         apikey: SUPABASE_ANON_KEY,

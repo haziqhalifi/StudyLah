@@ -308,57 +308,69 @@ def submit_answer(req: SubmitAnswerRequest) -> SubmitAnswerResponse:
     if not all_questions:
         raise HTTPException(status_code=503, detail="Question bank unavailable. Please try again.")
 
-    ai_profile = ai_engine.analyze_diagnostic(all_questions, all_attempts)
+    try:
+        ai_profile = ai_engine.analyze_diagnostic(all_questions, all_attempts)
+    except Exception as exc:
+        logger.error("Failed to analyze skill profile for user %s: %s", req.user_id, exc)
+        raise HTTPException(status_code=500, detail="Failed to analyze skill profile. Please try again.")
 
     # Persist updated stats back into the db-layer profile
-    db_profile = db.get_or_create_profile(req.user_id)
-    for tid, stats in ai_profile.items():
-        db_profile.topics[tid] = TopicStats(
-            topic_id=tid,
-            accuracy=stats.accuracy,
-            attempts=stats.attempt_count,
-            correct=stats.correct_count,
-            level=TopicStats.compute_level(stats.accuracy),
-        )
-    db.save_profile(db_profile)
+    try:
+        db_profile = db.get_or_create_profile(req.user_id)
+        for tid, stats in ai_profile.items():
+            db_profile.topics[tid] = TopicStats(
+                topic_id=tid,
+                accuracy=stats.accuracy,
+                attempts=stats.attempt_count,
+                correct=stats.correct_count,
+                level=TopicStats.compute_level(stats.accuracy),
+            )
+        db.save_profile(db_profile)
+    except Exception as exc:
+        logger.error("Failed to save profile for user %s: %s", req.user_id, exc)
+        raise HTTPException(status_code=500, detail="Failed to update skill profile. Please try again.")
 
     # Don't generate explanation immediately; let frontend request it on demand
     explanation = None
 
     # Every _REVIEW_INJECTION_INTERVAL answers, serve an overdue review question
     # instead of a fresh adaptive one.
-    answer_count = review_scheduler.increment_answer_counter(req.user_id)
-    is_review = False
-    if answer_count % _REVIEW_INJECTION_INTERVAL == 0:
-        engine_questions = [
-            ai_engine.Question(**q.model_dump()) for q in all_questions
-        ]
-        engine_attempts = [
-            ai_engine.Attempt(**a.model_dump()) for a in all_attempts
-        ]
-        due = review_scheduler.get_due_reviews(
-            user_id=req.user_id,
-            all_questions=engine_questions,
-            attempts=engine_attempts,
-            skill_profile=ai_profile,
-            now=attempt.timestamp,
-            limit=1,
-        )
-        if due:
-            review_item = due[0]
-            next_q_public = QuestionPublic(
-                id=review_item.question.id,
-                topic_id=review_item.question.topic_id,
-                text=review_item.question.text,
-                options=review_item.question.options,
-                difficulty=review_item.question.difficulty,
-                tags=review_item.question.tags,
+    try:
+        answer_count = review_scheduler.increment_answer_counter(req.user_id)
+        is_review = False
+        if answer_count % _REVIEW_INJECTION_INTERVAL == 0:
+            engine_questions = [
+                ai_engine.Question(**q.model_dump()) for q in all_questions
+            ]
+            engine_attempts = [
+                ai_engine.Attempt(**a.model_dump()) for a in all_attempts
+            ]
+            due = review_scheduler.get_due_reviews(
+                user_id=req.user_id,
+                all_questions=engine_questions,
+                attempts=engine_attempts,
+                skill_profile=ai_profile,
+                now=attempt.timestamp,
+                limit=1,
             )
-            is_review = True
+            if due:
+                review_item = due[0]
+                next_q_public = QuestionPublic(
+                    id=review_item.question.id,
+                    topic_id=review_item.question.topic_id,
+                    text=review_item.question.text,
+                    options=review_item.question.options,
+                    difficulty=review_item.question.difficulty,
+                    tags=review_item.question.tags,
+                )
+                is_review = True
+            else:
+                next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
         else:
             next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
-    else:
-        next_q_public = choose_next_question_for_user(req.user_id, ai_profile).to_public()
+    except Exception as exc:
+        logger.error("Failed to pick next question for user %s: %s", req.user_id, exc)
+        raise HTTPException(status_code=500, detail="Failed to pick next question. Please try again.")
 
     topic_summary: Optional[TopicStats] = db_profile.topics.get(question.topic_id)
 

@@ -7,185 +7,142 @@ import {
   createPersonalizedQuiz,
   type DiagnosticResult,
   type TopicDiagnostic,
-  type DiagnosticRecommendation,
 } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
-// Tier system: 0–30% NEEDS WORK | 31–60% IMPROVING | 61–85% GOOD | 86–100% STRONG
+// Tier helpers
 // ---------------------------------------------------------------------------
 
 type Tier = "needs-work" | "improving" | "good" | "strong";
 
 function getTier(accuracy: number): Tier {
-  if (accuracy <= 0.30) return "needs-work";
-  if (accuracy <= 0.60) return "improving";
+  if (accuracy <= 0.3) return "needs-work";
+  if (accuracy <= 0.6) return "improving";
   if (accuracy <= 0.85) return "good";
   return "strong";
 }
 
-const TIER_CONFIG: Record<
-  Tier,
-  { emoji: string; label: string; badgeBg: string; badgeText: string; badgeBorder: string; barColor: string }
-> = {
-  "needs-work": {
-    emoji: "🔴",
-    label: "NEEDS WORK",
-    badgeBg: "#fef2f2",
-    badgeText: "#b91c1c",
-    badgeBorder: "#fecaca",
-    barColor: "#ef4444",
-  },
-  improving: {
-    emoji: "🟡",
-    label: "IMPROVING",
-    badgeBg: "#fffbeb",
-    badgeText: "#92400e",
-    badgeBorder: "#fde68a",
-    barColor: "#f59e0b",
-  },
-  good: {
-    emoji: "🟢",
-    label: "GOOD",
-    badgeBg: "#ecfdf5",
-    badgeText: "#065f46",
-    badgeBorder: "#a7f3d0",
-    barColor: "#10b981",
-  },
-  strong: {
-    emoji: "⭐",
-    label: "STRONG",
-    badgeBg: "#ede9fe",
-    badgeText: "#4c1d95",
-    badgeBorder: "#c4b5fd",
-    barColor: "#7c3aed",
-  },
+const TIER_LABEL: Record<Tier, { emoji: string; label: string }> = {
+  "needs-work": { emoji: "🔴", label: "PERLU KERJA" },
+  improving:    { emoji: "🟡", label: "MENINGKAT"  },
+  good:         { emoji: "🟢", label: "BAIK"       },
+  strong:       { emoji: "⭐", label: "KUKUH"      },
 };
 
 // ---------------------------------------------------------------------------
-// Score framing copy
+// Copy helpers
 // ---------------------------------------------------------------------------
 
-function scoreContextLine(pct: number): string {
-  if (pct <= 15)
-    return "Most students score 10–20% on their first try — you're right where everyone starts.";
-  if (pct <= 30)
-    return "Most students score 15–25% on their first try — you're right on track!";
-  if (pct <= 50)
-    return "You're scoring above average for a first attempt. Good foundation!";
-  if (pct <= 70)
-    return "Solid first attempt! You already know more than most incoming students.";
-  return "Impressive start! You're well ahead of the curve.";
+function scoreGrade(pct: number): { emoji: string; label: string } {
+  if (pct >= 85) return { emoji: "🏆", label: "Cemerlang!" };
+  if (pct >= 65) return { emoji: "⭐", label: "Bagus!" };
+  if (pct >= 40) return { emoji: "💪", label: "Boleh Improve!" };
+  return { emoji: "🌱", label: "Permulaan Yang Baik!" };
 }
 
-// ---------------------------------------------------------------------------
-// AI Diagnosis copy — specific, single-topic
-// ---------------------------------------------------------------------------
+function scoreContextLine(pct: number): string {
+  if (pct <= 15) return "Kebanyakan pelajar skor 10–20% pada percubaan pertama — kamu tepat di mana semua orang bermula.";
+  if (pct <= 30) return "Kebanyakan pelajar skor 15–25% pada percubaan pertama — kamu berada di landasan yang betul!";
+  if (pct <= 50) return "Kamu melebihi purata untuk percubaan pertama. Asas yang baik!";
+  if (pct <= 70) return "Percubaan pertama yang mantap! Kamu sudah tahu lebih banyak daripada kebanyakan pelajar baharu.";
+  return "Permulaan yang mengagumkan! Kamu jauh ke hadapan.";
+}
 
-function buildAiDiagnosis(_topics: TopicDiagnostic[], weakestTopic: TopicDiagnostic): string {
+function buildAiDiagnosis(weakestTopic: TopicDiagnostic): string {
   const name = weakestTopic.topicName;
   const pct = Math.round(weakestTopic.accuracy * 100);
-  if (pct === 0) {
-    return `${name} is your biggest growth opportunity right now — you haven't had a chance to practise it yet. Start with short 5-min drills on ${name} to build a strong foundation before moving on.`;
-  }
-  if (pct <= 30) {
-    return `${name} needs the most attention (${pct}% correct). Start with short 5-min drills on ${name} to lock in the basics before tackling harder questions.`;
-  }
-  return `${name} is your weakest area at ${pct}%. A focused 10-min review session on ${name} will help you close this gap quickly.`;
+  if (pct === 0) return `${name} adalah peluang pertumbuhan terbesar kamu — kamu belum berlatih lagi. Mulakan dengan 5 soalan asas untuk bina keyakinan.`;
+  if (pct <= 30) return `${name} memerlukan perhatian paling banyak (${pct}% betul). Mulakan dengan 5 soalan mudah untuk kukuhkan asas sebelum cuba soalan lebih susah.`;
+  return `${name} adalah kawasan paling lemah kamu pada ${pct}%. Sesi ulang kaji 10-min yang fokus akan membantu kamu menutup jurang ini dengan cepat.`;
+}
+
+function focusPriorityClass(tier: Tier, isPrimary: boolean): string {
+  if (isPrimary) return `dr2-focus-priority dr2-focus-priority--${tier}-primary`;
+  return `dr2-focus-priority dr2-focus-priority--${tier}`;
+}
+
+function focusPriorityLabel(tier: Tier, isPrimary: boolean): string {
+  if (isPrimary && tier === "needs-work") return "🎯 Utama — Mula di sini";
+  if (isPrimary) return "🎯 Fokus utama";
+  if (tier === "needs-work") return "⚡ Penting";
+  if (tier === "improving")  return "📈 Tingkatkan";
+  return "✅ Maintain";
+}
+
+function focusHint(tier: Tier): string {
+  if (tier === "needs-work") return "Mulakan dengan 5 soalan asas untuk bina keyakinan";
+  if (tier === "improving")  return "Cuba 8 soalan latihan untuk tingkatkan kefahaman";
+  if (tier === "good")       return "Latih 5 soalan sederhana untuk kekalkan momentum";
+  return "Teruskan dengan soalan SPM sebenar untuk kekal tajam";
 }
 
 // ---------------------------------------------------------------------------
 // Skeleton
 // ---------------------------------------------------------------------------
 
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div className={`animate-pulse rounded-lg bg-slate-200 ${className ?? ""}`} />
-  );
-}
-
 function ResultSkeleton() {
   return (
-    <div className="page-enter dr-page">
-      <Skeleton className="h-40 w-full mb-4 rounded-2xl" />
-      <Skeleton className="h-5 w-3/4 mb-6" />
-      {[0, 1, 2].map((i) => (
-        <Skeleton key={i} className="h-28 w-full mb-3" />
-      ))}
-      <Skeleton className="h-32 w-full mb-3" />
-      <Skeleton className="h-20 w-full mb-4" />
-      <Skeleton className="h-12 w-full" />
+    <div className="dr2-page page-enter">
+      <div className="dr2-skeleton dr2-skel-header" />
+      <div className="dr2-skeleton dr2-skel-row" />
+      <div className="dr2-skeleton dr2-skel-row" />
+      <div className="dr2-skeleton dr2-skel-tall" />
+      <div className="dr2-skeleton dr2-skel-row" />
+      <div className="dr2-skeleton dr2-skel-btn" />
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Score circle header
+// Hero header  (mirrors level-card gradient)
 // ---------------------------------------------------------------------------
 
-function ScoreHeader({
-  correct,
-  total,
-  pct,
-  userName,
-}: {
-  correct: number;
-  total: number;
-  pct: number;
-  userName?: string;
+function ScoreHeader({ correct, total, pct, userName }: {
+  correct: number; total: number; pct: number; userName?: string;
 }) {
-  const isLowScore = pct < 30;
-  const r = 46;
+  const { emoji, label } = scoreGrade(pct);
+  const r = 38;
   const circ = 2 * Math.PI * r;
   const fill = (pct / 100) * circ;
 
   return (
-    <div className="dr-header">
-      <span className="dr-xp-pill">+50 XP ✨</span>
+    <div className="dr2-hero">
+      <span className="dr2-xp-pill">+50 XP ✨</span>
 
-      <div className="dr-header-row">
-        {/* SVG donut */}
-        <div className="dr-circle-wrap">
-          <svg
-            width="110"
-            height="110"
-            viewBox="0 0 110 110"
-            className="dr-circle-svg"
-          >
-            <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="10" />
+      <div className="dr2-hero-row">
+        {/* Score ring — same structure as progress-set-ring */}
+        <div className="dr2-ring-wrap">
+          <svg width="90" height="90" viewBox="0 0 90 90" className="dr2-ring-svg">
+            <circle cx="45" cy="45" r={r} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="8" />
             <circle
-              cx="55"
-              cy="55"
-              r={r}
-              fill="none"
-              stroke="#fff"
-              strokeWidth="10"
+              cx="45" cy="45" r={r}
+              fill="none" stroke="#fff" strokeWidth="8"
               strokeDasharray={`${fill} ${circ}`}
               strokeLinecap="round"
-              className="dr-circle-arc"
+              className="dr2-ring-arc"
             />
           </svg>
-          <div className="dr-circle-inner">
-            <span className="dr-circle-pct">{pct}%</span>
-            <span className="dr-circle-frac">{correct}/{total}</span>
+          <div className="dr2-ring-inner">
+            <span className="dr2-ring-pct">{pct}%</span>
+            <span className="dr2-ring-frac">{correct}/{total}</span>
           </div>
         </div>
 
-        {/* Right copy */}
-        <div className="dr-header-copy">
-          <p className="dr-greeting">
-            {userName ? `Great start, ${userName}! 🎉` : "Great start! 🎉"}
-          </p>
-          <p className="dr-ready-line">Your personalised diagnosis is ready.</p>
-          <p className="dr-context-line">{scoreContextLine(pct)}</p>
+        <div className="dr2-hero-copy">
+          <p className="dr2-hero-grade">{emoji} {label}</p>
+          <h1 className="dr2-hero-name">
+            {userName ? `Tahniah, ${userName}!` : "Tahniah!"}
+          </h1>
+          <p className="dr2-hero-sub">Diagnosis peribadi kamu sudah siap.</p>
         </div>
       </div>
 
-      {isLowScore && (
-        <div className="dr-low-score-banner">
-          <span className="dr-low-score-icon">💪</span>
-          <span>
-            Don&apos;t worry — this is just the starting line. Your path is now personalised for you.
-          </span>
+      <p className="dr2-context-chip">{scoreContextLine(pct)}</p>
+
+      {pct < 30 && (
+        <div className="dr2-encouragement">
+          <span>💪</span>
+          <span>Jangan risau — ini hanya titik permulaan. Laluan kamu kini telah diperibadikan.</span>
         </div>
       )}
     </div>
@@ -193,78 +150,26 @@ function ScoreHeader({
 }
 
 // ---------------------------------------------------------------------------
-// Topic card (tiered)
+// Insight strip  (mirrors quick-stat-card)
 // ---------------------------------------------------------------------------
 
-function TopicCard({
-  topic,
-  isBest,
-}: {
-  topic: TopicDiagnostic;
-  isBest: boolean;
+function InsightStrip({ strongestTopic, weakestTopic }: {
+  strongestTopic: TopicDiagnostic; weakestTopic: TopicDiagnostic;
 }) {
-  const pct = Math.round(topic.accuracy * 100);
-  const tier = getTier(topic.accuracy);
-  const cfg = TIER_CONFIG[tier];
-  const isZero = topic.accuracy === 0;
-
   return (
-    <div className={`dr-topic-card${isBest ? " dr-topic-card--best" : ""}`}>
-      {isBest && <span className="dr-best-tag">📌 Best topic so far</span>}
-
-      <div className="dr-topic-inner">
-        <div className="dr-topic-left">
-          <div className={`dr-topic-name-row${isBest ? " dr-topic-name-row--offset" : ""}`}>
-            <span className="dr-topic-name">{topic.topicName}</span>
-            <span
-              className="dr-tier-badge"
-              style={
-                {
-                  "--tier-bg": cfg.badgeBg,
-                  "--tier-text": cfg.badgeText,
-                  "--tier-border": cfg.badgeBorder,
-                } as React.CSSProperties
-              }
-            >
-              {cfg.emoji} {cfg.label}
-            </span>
-          </div>
-
-          <p className="dr-topic-meta">
-            {isZero ? "No answers yet" : `${pct}% correct`} &middot;{" "}
-            {topic.attempts} question{topic.attempts !== 1 ? "s" : ""}
-          </p>
-
-          <div className="dr-bar-track">
-            {isZero ? (
-              <div className="dr-bar-zero" />
-            ) : (
-              <div
-                className="dr-bar-fill"
-                style={
-                  {
-                    "--bar-width": `${pct}%`,
-                    "--bar-color": cfg.barColor,
-                  } as React.CSSProperties
-                }
-              />
-            )}
-          </div>
-
-          {isZero && <p className="dr-zero-label">Not enough data yet</p>}
+    <div className="dr2-insight-row">
+      <div className="dr2-insight-card dr2-insight-strength">
+        <span className="dr2-insight-icon">💡</span>
+        <div>
+          <p className="dr2-insight-label">Kekuatan</p>
+          <p className="dr2-insight-val">{strongestTopic.topicName}</p>
         </div>
-
-        <div className="dr-topic-pct">
-          <span
-            className="dr-pct-num"
-            style={
-              {
-                "--pct-color": isZero ? "#f87171" : cfg.barColor,
-              } as React.CSSProperties
-            }
-          >
-            {pct}%
-          </span>
+      </div>
+      <div className="dr2-insight-card dr2-insight-next">
+        <span className="dr2-insight-icon">🎯</span>
+        <div>
+          <p className="dr2-insight-label">Fokus Seterusnya</p>
+          <p className="dr2-insight-val">{weakestTopic.topicName}</p>
         </div>
       </div>
     </div>
@@ -272,59 +177,143 @@ function TopicCard({
 }
 
 // ---------------------------------------------------------------------------
-// AI Diagnosis card
+// AI Diagnosis card  (mirrors fokus-card with icon box)
 // ---------------------------------------------------------------------------
 
 function AiDiagnosisCard({ copy }: { copy: string }) {
   return (
-    <div className="dr-ai-card">
-      <p className="dr-ai-label">🤖 AI Diagnosis</p>
-      <p className="dr-ai-copy">{copy}</p>
+    <div className="dr2-ai-card">
+      <div className="dr2-ai-header">
+        <span className="dr2-ai-icon-box">🤖</span>
+        <div>
+          <p className="dr2-ai-label">AI Diagnosis</p>
+          <p className="dr2-ai-sublabel">dikuasakan oleh Skorrel</p>
+        </div>
+      </div>
+      <p className="dr2-ai-copy">{copy}</p>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Next Step card
+// Focus path card  (primary mirrors fokus-cta; others mirror weak-topic-card)
 // ---------------------------------------------------------------------------
 
-function NextStepCard({
-  rec,
-  topicName,
-  onStart,
-  starting,
-}: {
-  rec: DiagnosticRecommendation;
-  topicName: string;
-  onStart: () => void;
-  starting: boolean;
+function FocusPathCard({ topic, rank, onStart, starting }: {
+  topic: TopicDiagnostic; rank: number; onStart: () => void; starting: boolean;
 }) {
+  const tier = getTier(topic.accuracy);
+  const pct = Math.round(topic.accuracy * 100);
+  const isPrimary = rank === 0;
+
   return (
-    <div className="dr-next-card">
-      <p className="dr-next-label">Next Step</p>
-      <p className="dr-next-title">
-        → First lesson:{" "}
-        <span className="dr-next-title-accent">{topicName}</span>
-        {rec.title ? ` – ${rec.title}` : ""}
-      </p>
-      <p className="dr-next-body">
-        {rec.message ||
-          `Start with ${rec.suggestedQuizLength} focused questions (~${rec.suggestedQuizLength} min).`}
-      </p>
-      <button
-        type="button"
-        className="btn-primary dr-full-btn"
-        disabled={starting}
-        onClick={onStart}
-      >
-        {starting ? "Creating quiz…" : "Start My Learning Path →"}
-      </button>
+    <div className={`dr2-focus-card${isPrimary ? " dr2-focus-card--primary" : ""}`}>
+      <div className="dr2-focus-top">
+        <span className={focusPriorityClass(tier, isPrimary)}>
+          {focusPriorityLabel(tier, isPrimary)}
+        </span>
+        <span className="dr2-focus-rank">#{rank + 1}</span>
+      </div>
+
+      <div className="dr2-focus-body">
+        <div className="dr2-focus-info">
+          <p className="dr2-focus-name">{topic.topicName}</p>
+          <p className="dr2-focus-meta">
+            <span className={`dr2-focus-pct dr2-focus-pct--${topic.accuracy === 0 ? "zero" : tier}`}>
+              {pct}%
+            </span>
+            {" "}ketepatan · {topic.attempts} soalan dijawab
+          </p>
+          <p className="dr2-focus-hint">{focusHint(tier)}</p>
+        </div>
+
+        {isPrimary ? (
+          <button type="button" className="dr2-focus-btn" disabled={starting} onClick={onStart}>
+            {starting ? "Sebentar…" : "Mula →"}
+          </button>
+        ) : (
+          <button type="button" className="dr2-focus-btn-ghost" disabled={starting} onClick={onStart}>
+            {starting ? "…" : "Cuba →"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Main page
+// Topic breakdown card  (mirrors progress-set-card list)
+// ---------------------------------------------------------------------------
+
+function TopicBreakdownCard({ topic, isBest }: {
+  topic: TopicDiagnostic; isBest: boolean;
+}) {
+  const pct = Math.round(topic.accuracy * 100);
+  const tier = getTier(topic.accuracy);
+  const { emoji, label } = TIER_LABEL[tier];
+  const isZero = topic.accuracy === 0;
+  const r = 22;
+  const circ = 2 * Math.PI * r;
+  const arc = (pct / 100) * circ;
+
+  return (
+    <div className={`dr2-topic-card${isBest ? " dr2-topic-card--best" : ""}`}>
+      {isBest && <span className="dr2-best-tag">⭐ Terbaik setakat ini</span>}
+
+      <div className="dr2-topic-inner">
+        {/* Ring — mirrors progress-set-ring-wrap at 56×56 */}
+        <div className="dr2-mini-ring-wrap" data-tier={isZero ? "zero" : tier}>
+          <svg width="56" height="56" viewBox="0 0 56 56" className="dr2-mini-svg">
+            <circle cx="28" cy="28" r={r} fill="none" stroke="#e5e7eb" strokeWidth="5" />
+            <circle
+              cx="28" cy="28" r={r}
+              fill="none" strokeWidth="5"
+              strokeDasharray={`${arc} ${circ}`}
+              strokeLinecap="round"
+              transform="rotate(-90 28 28)"
+              className="dr2-mini-arc"
+            />
+          </svg>
+          <span className="dr2-mini-pct">{pct}%</span>
+        </div>
+
+        <div className="dr2-topic-info">
+          <div className="dr2-topic-name-row">
+            <span className="dr2-topic-name">{topic.topicName}</span>
+            <span className={`dr2-tier-badge dr2-tier-badge--${tier}`}>
+              {emoji} {label}
+            </span>
+          </div>
+          <p className="dr2-topic-meta">
+            {isZero ? "Tiada jawapan lagi" : `${pct}% betul`} · {topic.attempts} soalan
+          </p>
+          <div className="dr2-bar-track">
+            <div
+              className={`dr2-bar-fill dr2-bar-fill--${isZero ? "zero" : tier}`}
+              style={{ width: isZero ? "4%" : `${pct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section header  (mirrors progress-section-header)
+// ---------------------------------------------------------------------------
+
+function SectionHeader({ label, sub }: { label: string; sub?: string }) {
+  return (
+    <div className="dr2-section-head">
+      <h2 className="dr2-section-title">{label}</h2>
+      {sub && <p className="dr2-section-sub">{sub}</p>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
 // ---------------------------------------------------------------------------
 
 export default function DiagnosticResultPage() {
@@ -334,32 +323,23 @@ export default function DiagnosticResultPage() {
   const [loading, setLoading] = useState(true);
   const [startingTopicId, setStartingTopicId] = useState<string | null>(null);
 
-  const userId =
-    typeof window !== "undefined" ? sessionStorage.getItem("userId") ?? "" : "";
-  const userName =
-    typeof window !== "undefined" ? sessionStorage.getItem("userName") ?? "" : "";
+  const userId   = typeof window !== "undefined" ? sessionStorage.getItem("userId")   ?? "" : "";
+  const userName = typeof window !== "undefined" ? sessionStorage.getItem("userName") ?? "" : "";
 
   async function load() {
-    if (!userId) {
-      router.push("/");
-      return;
-    }
+    if (!userId) { router.push("/"); return; }
     setLoading(true);
     setError("");
     try {
-      const data = await fetchDiagnosticResult(userId);
-      setResult(data);
+      setResult(await fetchDiagnosticResult(userId));
     } catch {
-      setError("Diagnostic results could not be loaded. Please try again.");
+      setError("Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi.");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   async function handleStartQuiz(topicId: string) {
     if (!userId || !result) return;
@@ -367,62 +347,42 @@ export default function DiagnosticResultPage() {
     try {
       const isMain = result.mainRecommendation.topicId === topicId;
       const rec = isMain ? result.mainRecommendation : result.secondaryRecommendation;
-      const numQuestions = rec?.suggestedQuizLength ?? 5;
       const quiz = await createPersonalizedQuiz(
         userId,
         topicId as "ubahan" | "matriks" | "insurans",
-        numQuestions,
+        rec?.suggestedQuizLength ?? 5,
       );
       router.push(`/quiz/${quiz.quizId}`);
     } catch {
       setStartingTopicId(null);
-      setError("Failed to create quiz. Please try again.");
+      setError("Gagal buat kuiz. Sila cuba lagi.");
     }
   }
 
-  // ── loading ───────────────────────────────────────────────────────────────
-
   if (loading) return <ResultSkeleton />;
-
-  // ── error ─────────────────────────────────────────────────────────────────
 
   if (error || !result) {
     return (
-      <div className="page-enter dr-error-page">
-        <div className="dr-error-emoji">😕</div>
-        <h2 className="dr-error-title">Something went wrong</h2>
-        <p className="dr-error-body">
-          {error || "Diagnostic results could not be loaded. Please try again."}
-        </p>
-        <button type="button" className="btn-primary" onClick={load}>
-          Try again
-        </button>
+      <div className="page-enter dr2-error-page">
+        <div className="dr2-error-emoji">😕</div>
+        <h2 className="dr2-error-title">Ada masalah</h2>
+        <p className="dr2-error-body">{error || "Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi."}</p>
+        <button type="button" className="btn-primary" onClick={load}>Cuba lagi</button>
       </div>
     );
   }
 
-  // ── derived data ──────────────────────────────────────────────────────────
-
-  const pctCorrect = Math.round(result.overallAccuracy * 100);
-
-  const bestTopicId = [...result.topics].sort((a, b) => b.accuracy - a.accuracy)[0]?.topicId;
-  const weakestTopic = [...result.topics].sort((a, b) => a.accuracy - b.accuracy)[0];
-
-  const mainTopicName =
-    result.topics.find((t) => t.topicId === result.mainRecommendation.topicId)?.topicName ??
-    result.mainRecommendation.topicId;
-
-  const aiDiagnosisCopy = weakestTopic
-    ? buildAiDiagnosis(result.topics, weakestTopic)
-    : result.mainRecommendation.message;
-
-  const isStartingMain = startingTopicId === result.mainRecommendation.topicId;
-
-  // ── render ────────────────────────────────────────────────────────────────
+  const pctCorrect       = Math.round(result.overallAccuracy * 100);
+  const sortedByWeakest  = [...result.topics].sort((a, b) => a.accuracy - b.accuracy);
+  const sortedByStrongest = [...result.topics].sort((a, b) => b.accuracy - a.accuracy);
+  const bestTopicId      = sortedByStrongest[0]?.topicId;
+  const weakestTopic     = sortedByWeakest[0];
+  const strongestTopic   = sortedByStrongest[0];
 
   return (
-    <div className="page-enter dr-page">
-      {/* Score header */}
+    <div className="dr2-page page-enter">
+
+      {/* 1 · Hero */}
       <ScoreHeader
         correct={result.correctQuestions}
         total={result.totalQuestions}
@@ -430,66 +390,55 @@ export default function DiagnosticResultPage() {
         userName={userName || undefined}
       />
 
-      {/* Topic breakdown */}
-      <section className="dr-section">
-        <h2 className="dr-section-label">Topic Breakdown</h2>
-        {result.topics.map((topic) => (
-          <TopicCard
+      {/* 2 · Insight strip */}
+      {strongestTopic && weakestTopic && strongestTopic.topicId !== weakestTopic.topicId && (
+        <InsightStrip strongestTopic={strongestTopic} weakestTopic={weakestTopic} />
+      )}
+
+      {/* 3 · AI Diagnosis */}
+      {weakestTopic && (
+        <AiDiagnosisCard copy={buildAiDiagnosis(weakestTopic)} />
+      )}
+
+      {/* 4 · Personalized focus path */}
+      <section className="dr2-section">
+        <SectionHeader label="Laluan Fokus Kamu" sub="Disusun mengikut keperluan — mulakan dari atas" />
+        {sortedByWeakest.map((topic, rank) => (
+          <FocusPathCard
             key={topic.topicId}
             topic={topic}
-            isBest={topic.topicId === bestTopicId}
+            rank={rank}
+            onStart={() => handleStartQuiz(topic.topicId)}
+            starting={startingTopicId === topic.topicId}
           />
         ))}
       </section>
 
-      {/* AI Diagnosis */}
-      <AiDiagnosisCard copy={aiDiagnosisCopy} />
-
-      {/* Next Step */}
-      <NextStepCard
-        rec={result.mainRecommendation}
-        topicName={mainTopicName}
-        onStart={() => handleStartQuiz(result.mainRecommendation.topicId)}
-        starting={isStartingMain}
-      />
-
-      {/* Secondary recommendation */}
-      {result.secondaryRecommendation && (
-        <div className="dr-secondary-card">
-          <p className="dr-secondary-label">Also consider</p>
-          <p className="dr-secondary-body">{result.secondaryRecommendation.message}</p>
-          <button
-            type="button"
-            className="btn-ghost dr-full-btn"
-            disabled={!!startingTopicId}
-            onClick={() => handleStartQuiz(result.secondaryRecommendation!.topicId)}
-          >
-            {startingTopicId === result.secondaryRecommendation.topicId
-              ? "Creating quiz…"
-              : `Try ${result.topics.find((t) => t.topicId === result.secondaryRecommendation!.topicId)?.topicName ?? ""} later`}
-          </button>
+      {/* 5 · Topic breakdown */}
+      <section className="dr2-section">
+        <SectionHeader label="Pecahan Topik" />
+        <div className="dr2-topic-list">
+          {result.topics.map((topic) => (
+            <TopicBreakdownCard
+              key={topic.topicId}
+              topic={topic}
+              isBest={topic.topicId === bestTopicId}
+            />
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* Bottom actions */}
-      <div className="dr-bottom-actions">
-        <button
-          type="button"
-          className="btn-ghost dr-dashboard-btn"
-          onClick={() => router.push("/dashboard")}
-        >
-          Go to dashboard
+      {/* 6 · Actions */}
+      <div className="dr2-bottom-actions">
+        <button type="button" className="btn-ghost dr2-dashboard-btn" onClick={() => router.push("/dashboard")}>
+          Pergi ke Papan Pemuka
         </button>
-        <button
-          type="button"
-          className="dr-link-btn"
-          onClick={() => router.push("/diagnostic/report")}
-        >
-          View detailed breakdown →
+        <button type="button" className="dr2-link-btn" onClick={() => router.push("/diagnostic/report")}>
+          Lihat laporan terperinci →
         </button>
       </div>
 
-      {error && <p className="dr-error">{error}</p>}
+      {error && <p className="dr2-error">{error}</p>}
     </div>
   );
 }

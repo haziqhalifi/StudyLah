@@ -8,14 +8,11 @@ import {
   startOnboarding,
   submitOnboarding,
   submitAnswer as apiSubmitAnswer,
-  generateExplanation,
-  type Explanation,
   type OnboardingDiagnosticResponse,
   type OnboardingQuestion,
 } from "@/lib/api";
 import QuizSheet from "@/components/QuizSheet";
 import QuestionCard from "@/components/QuestionCard";
-import ExplanationBlock from "@/components/ExplanationBlock";
 import StudyBuddyPanel from "@/components/StudyBuddyPanel";
 import {
   playSubmitSound,
@@ -31,18 +28,21 @@ type Step = "welcome" | "profile" | "quiz" | "analyzing" | "result";
 
 const DIALOGUES: Record<string, string[]> = {
   welcome: [
-    "Hi! I'm Skorrel 🐿️ Think of me as your personal guide to acing SPM Matematik. Let's set up your learning path!",
+    "Hai! Saya Skorrel 🐿️ Anggap saya sebagai pembimbing peribadi anda untuk menguasai Matematik SPM. Jom kita bina laluan pembelajaran anda",
   ],
   profile: [
-    "Fill in your details below so I can set up your perfect learning path. Let's get those A's!",
+    "Isi maklumat anda di bawah supaya saya boleh menetapkan laluan pembelajaran yang sesuai untuk anda. Mari kita dapatkan A's!",
   ],
   analyzing: [
-    "Let me look at your answers... 🔍",
-    "Analysing with Google AI! 🧮",
+    "Biar Skorrel semak jawapan anda dulu...🔍",
+    "Hmm, keputusan yang menarik! 🤔",
+    "Sedang dianalisis dengan Google AI! 🧮",
+    "Hampir siap, Skorrel sedang bina laluan pembelajaran anda...📚",
+    "Nampak macam ada perkembangan yang baik! 🌟",
   ],
   result: [
-    "Your personalised path is ready! 🚀",
-    "Check out your diagnosis! 📊",
+    "Laluan peribadi anda sudah sedia! 🚀",
+    "Periksa diagnosis anda! 📊",
   ],
 };
 
@@ -84,9 +84,10 @@ function TypewriterText({
 }
 
 function topicTier(accuracy: number): { label: string; cls: string } {
-  if (accuracy >= 0.75) return { label: "✓ MASTERED", cls: "strong" };
-  if (accuracy >= 0.5) return { label: "○ GETTING THERE", cls: "medium" };
-  return { label: "↑ NEEDS WORK", cls: "weak" };
+  if (accuracy >= 0.75) return { label: "✓ MANTAP!", cls: "strong" };
+  if (accuracy >= 0.5)
+    return { label: "Dah ok, jom mantapkan lagi", cls: "medium" };
+  return { label: "Fokus utama kamu", cls: "weak" };
 }
 
 function topicEmoji(topic: string) {
@@ -110,7 +111,64 @@ function getPersonalizedRoute(diag: OnboardingDiagnosticResponse): string {
 function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
   return (
     [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ??
-    "Lessons"
+    "Pelajaran"
+  );
+}
+
+function localizeResultText(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(
+      "You've got a baseline in Ubahan! Let's focus next on Matriks with short daily drills, then revise mistakes using worked examples.",
+      "Anda sudah ada asas dalam Ubahan! Seterusnya, fokus pada Matriks dengan latihan ringkas harian, kemudian semak semula kesilapan menggunakan contoh penyelesaian.",
+    )
+    .replace(
+      "Start your personalized lesson path on the weakest topic.",
+      "Mulakan laluan pembelajaran peribadi anda pada topik paling lemah.",
+    );
+}
+
+const ANALYZING_MESSAGES = [
+  "Biar saya semak jawapan anda... 🔍",
+  "Hmm, keputusan yang menarik! 🤔",
+  "Sedang dianalisis dengan Google AI! 🧮",
+  "Hampir siap, sedang bina laluan anda... 📚",
+  "Nampak sangat memberangsangkan! 🌟",
+];
+
+function AnalyzingScreen() {
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const cycle = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setMsgIndex((i) => (i + 1) % ANALYZING_MESSAGES.length);
+        setVisible(true);
+      }, 350);
+    }, 2800);
+    return () => clearInterval(cycle);
+  }, []);
+
+  return (
+    <div className="ob-analyzing">
+      <div className="ob-analyzing-bubble" data-visible={visible}>
+        <span>{ANALYZING_MESSAGES[msgIndex]}</span>
+        <div className="ob-bubble-dots">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+      <Image
+        src="/assets/mascot.webp"
+        alt="Skorrel sedang menganalisis"
+        width={120}
+        height={120}
+        className="ob-analyzing-mascot ob-analyzing-mascot--talking"
+      />
+    </div>
   );
 }
 
@@ -140,8 +198,6 @@ export default function OnboardingPage() {
   const [score, setScore] = useState(0);
   const [sessionStreak, setSessionStreak] = useState(0);
   const [xp, setXp] = useState(0);
-  const [explanation, setExplanation] = useState<Explanation | null>(null);
-  const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
   const [showBuddy, setShowBuddy] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const answersRef = useRef<Record<string, number>>({});
@@ -178,7 +234,7 @@ export default function OnboardingPage() {
 
   async function handleStartQuiz() {
     if (!name.trim() || !school.trim()) {
-      setError("Please fill in all fields.");
+      setError("Sila isi semua medan.");
       return;
     }
     setError("");
@@ -214,7 +270,7 @@ export default function OnboardingPage() {
       setStep("quiz");
     } catch {
       setError(
-        "Unable to start onboarding. Check your connection and try again.",
+        "Tidak dapat memulakan onboarding. Semak sambungan anda dan cuba lagi.",
       );
     } finally {
       setLoading(false);
@@ -256,20 +312,6 @@ export default function OnboardingPage() {
     setSubmitted(true);
   }
 
-  async function handleGenerateExplanation() {
-    const q = questions[qIndex];
-    if (!userId || selected === null || !q) return;
-    setIsGeneratingExplanation(true);
-    try {
-      const exp = await generateExplanation(userId, q.id, selected);
-      setExplanation(exp);
-    } catch {
-      // silently ignore
-    } finally {
-      setIsGeneratingExplanation(false);
-    }
-  }
-
   // ── Next question / finish ─────────────────────────────────────────────────
 
   function handleNext() {
@@ -280,7 +322,6 @@ export default function OnboardingPage() {
       setQIndex((i) => i + 1);
       setSelected(null);
       setSubmitted(false);
-      setExplanation(null);
       setShowBuddy(false);
     }
   }
@@ -307,7 +348,7 @@ export default function OnboardingPage() {
       setStep("result");
       showDialogue("result");
     } catch {
-      setError("AI diagnostic failed. Please retry.");
+      setError("Diagnostik AI gagal. Sila cuba semula.");
       setStep("quiz");
     }
   }
@@ -323,7 +364,7 @@ export default function OnboardingPage() {
       text: currentQ.text,
       options: currentQ.options,
       topic_id: currentQ.topic,
-      difficulty: "sederhana" as const,
+      difficulty: "medium" as const,
       tags: [] as string[],
     };
 
@@ -338,7 +379,7 @@ export default function OnboardingPage() {
         disabled={selected === null}
         onClick={handleSubmit}
       >
-        Hantar Jawapan
+        Semak
       </button>
     ) : (
       <div
@@ -350,11 +391,6 @@ export default function OnboardingPage() {
             <p className="qs-feedback-title">
               {isCorrect ? "Betul!" : "Jawapan Salah"}
             </p>
-            {!isCorrect && (
-              <p className="qs-feedback-hint">
-                Semak jawapan betul yang ditunjukkan di atas.
-              </p>
-            )}
           </div>
         </div>
         <button type="button" className="qs-feedback-btn" onClick={handleNext}>
@@ -370,7 +406,7 @@ export default function OnboardingPage() {
           setStep("welcome");
           showDialogue("welcome");
         }}
-        title="Diagnostic Quiz"
+        title="Kuiz Diagnostik"
         subtitle={`Soalan ${qIndex + 1} / ${questions.length}`}
         progress={done}
         total={questions.length}
@@ -387,19 +423,11 @@ export default function OnboardingPage() {
           correctOptionIndex={currentQ.correct_index}
         />
 
-        {submitted && (
-          <ExplanationBlock
-            explanation={explanation}
-            isCorrect={isCorrect}
-            onGenerateExplanation={handleGenerateExplanation}
-            isGenerating={isGeneratingExplanation}
-          />
-        )}
-
         {submitted && showBuddy && userId && (
           <StudyBuddyPanel
             userId={userId}
             questionContext={currentQ.text}
+            topicId={currentQ.topic}
             onClose={() => setShowBuddy(false)}
           />
         )}
@@ -442,7 +470,7 @@ export default function OnboardingPage() {
             setStep("welcome");
             showDialogue("welcome");
           }}
-          aria-label="Back"
+          aria-label="Kembali"
         >
           ‹
         </button>
@@ -501,7 +529,7 @@ export default function OnboardingPage() {
                 showDialogue("profile");
               }}
             >
-              Let&apos;s Start! 🚀
+              Jom Mula ! 🚀
             </button>
           </div>
         </>
@@ -513,13 +541,13 @@ export default function OnboardingPage() {
           <div className="ob-form">
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-name">
-                Your Name
+                Nama Anda
               </label>
               <input
                 id="ob-name"
                 className="ob-input"
                 type="text"
-                placeholder="e.g. Ahmad Haziq"
+                placeholder="cth. Ahmad Haziq"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="given-name"
@@ -527,13 +555,13 @@ export default function OnboardingPage() {
             </div>
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-school">
-                School
+                Sekolah
               </label>
               <input
                 id="ob-school"
                 className="ob-input"
                 type="text"
-                placeholder="e.g. SMK Taman Desa"
+                placeholder="cth. SMK Taman Desa"
                 value={school}
                 onChange={(e) => setSchool(e.target.value)}
                 autoComplete="organization"
@@ -541,7 +569,7 @@ export default function OnboardingPage() {
             </div>
             <div className="ob-field">
               <label className="ob-label" htmlFor="ob-form">
-                Form
+                Tingkatan
               </label>
               <select
                 id="ob-form"
@@ -551,7 +579,7 @@ export default function OnboardingPage() {
               >
                 {[1, 2, 3, 4, 5].map((f) => (
                   <option key={f} value={f}>
-                    Form {f}
+                    Tingkatan {f}
                   </option>
                 ))}
               </select>
@@ -567,36 +595,14 @@ export default function OnboardingPage() {
               onClick={handleStartQuiz}
               disabled={loading}
             >
-              {loading ? "Loading questions..." : "Start Quiz →"}
+              {loading ? "Memuatkan soalan..." : "Mulakan Kuiz →"}
             </button>
           </div>
         </>
       )}
 
       {/* ── ANALYZING ──────────────────────────────────────────────────────── */}
-      {step === "analyzing" && (
-        <div className="ob-analyzing">
-          <Image
-            src="/assets/mascot.webp"
-            alt="Lah analysing"
-            width={110}
-            height={110}
-            className="ob-analyzing-mascot"
-          />
-          <h2 className="ob-analyzing-title">Analysing your results…</h2>
-          <p className="ob-analyzing-sub">
-            Google AI is building your personalised
-            <br />
-            SPM learning path 🗺️
-          </p>
-          <div className="ob-spinner" />
-          <div className="ob-bounce-dots">
-            <div className="ob-bounce-dot" />
-            <div className="ob-bounce-dot" />
-            <div className="ob-bounce-dot" />
-          </div>
-        </div>
-      )}
+      {step === "analyzing" && <AnalyzingScreen />}
 
       {/* ── RESULT ─────────────────────────────────────────────────────────── */}
       {step === "result" && result && (
@@ -604,6 +610,7 @@ export default function OnboardingPage() {
           result={result}
           userName={name}
           onContinue={() => router.push(getPersonalizedRoute(result))}
+          onDashboard={() => router.push("/dashboard")}
           weakestTopic={getWeakestTopicName(result)}
         />
       )}
@@ -623,7 +630,7 @@ function ProgressFillDriver({ pct }: { pct: number }) {
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 
-// ─── TopicCard (uses ref to set dynamic CSS vars without inline styles) ───────
+// ─── TopicCard — compact read-only card with animated fill bar ────────────────
 
 function TopicCard({
   topic,
@@ -632,6 +639,8 @@ function TopicCard({
   accuracy,
   tier,
   index,
+  isWeakest,
+  onPractice,
 }: {
   topic: string;
   correct: number;
@@ -639,30 +648,63 @@ function TopicCard({
   accuracy: number;
   tier: { label: string; cls: string };
   index: number;
+  isWeakest: boolean;
+  onPractice?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const pct = Math.round(accuracy * 100);
+  const cta = isWeakest
+    ? { text: "Latih sekarang →", time: "~10 min · +10 XP" }
+    : { text: "Ulang kaji →", time: "~5 min · +5 XP" };
 
   useEffect(() => {
     if (cardRef.current)
-      cardRef.current.style.animationDelay = `${0.6 + index * 0.12}s`;
-    if (barRef.current)
-      barRef.current.style.width = `${Math.round(accuracy * 100)}%`;
-  }, [index, accuracy]);
+      cardRef.current.style.animationDelay = `${0.4 + index * 0.15}s`;
+    const t = setTimeout(() => {
+      if (barRef.current) barRef.current.style.width = `${pct}%`;
+    }, 100);
+    return () => clearTimeout(t);
+  }, [index, pct]);
 
   return (
-    <div ref={cardRef} className="ob-topic-card ob-result-fadein">
-      <div className="ob-topic-row">
-        <span className="ob-topic-name">
-          {topicEmoji(topic)} {topic}
+    <div
+      ref={cardRef}
+      className={`ob2-topic-card ob-result-fadein ob2-topic-card--${tier.cls}${isWeakest ? " ob2-topic-card--featured" : ""}`}
+    >
+      <div className="ob2-topic-header">
+        <span className="ob2-topic-emoji">{topicEmoji(topic)}</span>
+        <div className="ob2-topic-info">
+          <div className="ob2-topic-name-row">
+            <span className="ob2-topic-name">{topic}</span>
+            {isWeakest && (
+              <span className="ob2-recommended-badge">FOKUS UTAMA KAMU</span>
+            )}
+          </div>
+          <span className="ob2-topic-score">
+            {correct}/{total} betul · {pct}%
+          </span>
+        </div>
+        <span className={`ob2-tier-badge ob2-tier-badge--${tier.cls}`}>
+          {pct}%
         </span>
-        <span className={`ob-topic-badge ${tier.cls}`}>{tier.label}</span>
       </div>
-      <p className="ob-topic-score">
-        {correct}/{total} correct
-      </p>
-      <div className="ob-topic-bar-track">
-        <div ref={barRef} className={`ob-topic-bar-fill ${tier.cls}`} />
+      <div className="ob2-bar-track">
+        <div
+          ref={barRef}
+          className={`ob2-bar-fill ob2-bar-fill--${tier.cls}`}
+        />
+      </div>
+      <div className="ob2-topic-footer">
+        <span className="ob2-tier-label">{tier.label}</span>
+        <button
+          type="button"
+          className="ob2-topic-cta-btn"
+          onClick={onPractice}
+        >
+          {cta.text}
+          <span className="ob2-topic-cta-meta">{cta.time}</span>
+        </button>
       </div>
     </div>
   );
@@ -678,11 +720,13 @@ function ResultScreen({
   userName,
   weakestTopic: _weakestTopic,
   onContinue,
+  onDashboard,
 }: {
   result: OnboardingDiagnosticResponse;
   userName: string;
   weakestTopic: string;
   onContinue: () => void;
+  onDashboard: () => void;
 }) {
   const pct = Math.round((result.score / result.total) * 100);
   const [displayScore, setDisplayScore] = useState(0);
@@ -718,109 +762,203 @@ function ResultScreen({
     return () => cancelAnimationFrame(raf);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const grade =
+    pct >= 70
+      ? { label: "Cemerlang", emoji: "🏆", mod: "high" }
+      : pct >= 45
+        ? { label: "Usaha yang baik", emoji: "💪", mod: "mid" }
+        : { label: "Permulaan yang baik", emoji: "🌱", mod: "low" };
+
+  const sortedTopics = [...result.by_topic].sort(
+    (a, b) => a.accuracy - b.accuracy,
+  );
+  const weakestTopic = sortedTopics[0];
+  const weakestTopicName = weakestTopic?.topic ?? "";
+
+  function getRouteForTopic(topicName: string): string {
+    const t = topicName.toLowerCase();
+    if (t.includes("ubahan")) return "/learning";
+    if (t.includes("matriks")) return "/learning";
+    if (t.includes("insurans")) return "/learning";
+    return "/learning";
+  }
+
+  // suppress unused-variable warning — kept to satisfy call-site signature
+  void getRouteForTopic;
+
   return (
-    <>
-      {/* Score hero */}
-      <div className="ob-result-hero">
-        <div className="ob-score-ring-wrap">
+    <div className="ob2-result-page">
+      {/* ── HERO ── */}
+      <div className={`ob2-hero ob2-hero--${grade.mod}`}>
+        <div className="ob2-hero-noise" aria-hidden="true" />
+
+        {/* XP pill */}
+        <div className="ob2-xp-pill ob-result-fadein">
+          <span className="ob2-xp-bolt">⚡</span>+50 XP
+        </div>
+
+        {/* Score ring */}
+        <div className="ob2-ring-wrap">
           <svg
-            className="ob-score-svg"
-            viewBox="0 0 120 120"
+            className="ob2-ring-svg"
+            viewBox="0 0 140 140"
             aria-hidden="true"
           >
-            <circle className="ob-score-svg-track" cx="60" cy="60" r={RING_R} />
+            <defs>
+              <filter
+                id="ring-glow"
+                x="-30%"
+                y="-30%"
+                width="160%"
+                height="160%"
+              >
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <circle className="ob2-ring-track" cx="70" cy="70" r={RING_R} />
             <circle
               ref={ringFillRef}
-              className="ob-score-svg-fill"
-              cx="60"
-              cy="60"
+              className="ob2-ring-fill"
+              cx="70"
+              cy="70"
               r={RING_R}
+              filter="url(#ring-glow)"
             />
           </svg>
-          <div ref={ringCircleRef} className="ob-score-circle">
-            <span className="ob-score-number">
+          <div className="ob2-ring-inner">
+            <span className="ob2-ring-score" ref={ringCircleRef}>
               {displayScore}
-              <span className="ob-score-denom-inline">/{result.total}</span>
+              <span className="ob2-ring-total">/{result.total}</span>
             </span>
-            <span className="ob-score-denom">{displayPct}%</span>
+            <span className="ob2-ring-pct">{displayPct}%</span>
           </div>
         </div>
-        <p className="ob-xp-line ob-result-fadein ob-delay-1">
-          +50 XP earned for completing your diagnosis!
-        </p>
-        <h2 className="ob-result-title ob-result-fadein ob-delay-2">
-          {pct >= 70 ? "Excellent" : pct >= 45 ? "Good effort" : "Great start"},{" "}
-          {userName || "student"}! 🎉
+
+        {/* Headline */}
+        <h2 className="ob2-hero-title ob-result-fadein">
+          {grade.emoji} {grade.label}, {userName || "pelajar"}!
         </h2>
-        <p className="ob-result-sub ob-result-fadein ob-delay-3">
-          Your personalised diagnosis is ready
+        <p className="ob2-hero-sub ob-result-fadein">
+          Ini diagnosis awal tahap SPM kamu.
         </p>
+
+        {/* Primary CTA — weakest topic */}
+        {weakestTopicName && (
+          <button
+            type="button"
+            className="ob2-hero-cta ob-result-fadein"
+            onClick={() => onContinue()}
+          >
+            <span className="ob2-hero-cta-main">
+              Latih topik paling lemah sekarang →
+            </span>
+            <span className="ob2-hero-cta-sub">
+              5 soalan {weakestTopicName} · ~10 min · +10 XP
+            </span>
+          </button>
+        )}
       </div>
 
-      {/* Topic breakdown */}
-      {result.by_topic.length > 0 && (
-        <section className="ob-breakdown-section">
-          <p className="ob-breakdown-label">Topic Breakdown</p>
-          {result.by_topic.map((t, i) => {
-            const tier = topicTier(t.accuracy);
-            return (
-              <TopicCard
-                key={t.topic}
-                topic={t.topic}
-                correct={t.correct}
-                total={t.total}
-                accuracy={t.accuracy}
-                tier={tier}
-                index={i}
-              />
-            );
-          })}
-        </section>
-      )}
-
-      {/* AI Recommendation */}
-      <div className="ob-ai-card">
-        <div className="ob-ai-label">
-          <span>✦</span> AI Diagnosis
-        </div>
-        <p className="ob-ai-text">{result.recommendation}</p>
-      </div>
-
-      {/* Strengths */}
-      {result.strengths.length > 0 && (
-        <div className="ob-list-card">
-          <h4 className="ob-list-title">
-            <span className="ob-list-icon ob-list-icon-correct">✅</span> Your
-            Strengths
-          </h4>
-          {result.strengths.map((s, i) => (
-            <div key={i} className="ob-list-item">
-              <span className="ob-list-bullet ob-list-bullet-correct">•</span>
-              <span>{s}</span>
+      {/* ── BODY ── */}
+      <div className="ob2-body">
+        {/* Topic perTingkatanance */}
+        {result.by_topic.length > 0 && (
+          <section className="ob2-section">
+            <h3 className="ob2-section-title">
+              <span className="ob2-section-dot" />
+              Prestasi Topik
+            </h3>
+            <div className="ob2-topics-grid">
+              {sortedTopics.map((t, i) => {
+                const tier = topicTier(t.accuracy);
+                return (
+                  <TopicCard
+                    key={t.topic}
+                    topic={t.topic}
+                    correct={t.correct}
+                    total={t.total}
+                    accuracy={t.accuracy}
+                    tier={tier}
+                    index={i}
+                    isWeakest={t.topic === weakestTopicName}
+                    onPractice={onContinue}
+                  />
+                );
+              })}
             </div>
-          ))}
-        </div>
-      )}
+          </section>
+        )}
 
-      {/* Next step */}
-      {result.next_step && (
-        <div className="ob-list-card ob-list-card-last">
-          <h4 className="ob-list-title">
-            <span className="ob-list-icon ob-list-icon-brand">🎯</span> Next
-            Step
-          </h4>
-          <div className="ob-list-item">
-            <span className="ob-list-bullet ob-list-bullet-brand">→</span>
-            <span>{result.next_step}</span>
+        {/* Diagnosa AI */}
+        <section className="ob2-section ob-result-fadein">
+          <h3 className="ob2-section-title">
+            <span className="ob2-section-dot ob2-section-dot--brand" />
+            Diagnosa AI
+          </h3>
+          <div className="ob2-ai-card">
+            <span className="ob2-ai-sparkle">✦</span>
+            <p className="ob2-ai-text">
+              {localizeResultText(result.recommendation)}
+            </p>
           </div>
-        </div>
-      )}
+        </section>
 
-      <div className="ob-sticky-cta ob-sticky-cta--floating">
-        <button type="button" className="btn-primary" onClick={onContinue}>
-          Start My Learning Path →
-        </button>
+        {/* Strengths + Next Step side-by-side */}
+        <div className="ob2-two-col">
+          {result.strengths.length > 0 && (
+            <div className="ob2-insight-card ob2-insight-card--green ob-result-fadein">
+              <div className="ob2-insight-header">
+                <span className="ob2-insight-icon">✅</span>
+                <span className="ob2-insight-label">Kekuatan</span>
+              </div>
+              <ul className="ob2-insight-list">
+                {result.strengths.map((s, i) => (
+                  <li key={i} className="ob2-insight-item">
+                    <span className="ob2-insight-bullet" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {result.next_step && (
+            <div className="ob2-insight-card ob2-insight-card--brand ob-result-fadein">
+              <div className="ob2-insight-header">
+                <span className="ob2-insight-icon">🎯</span>
+                <span className="ob2-insight-label">Langkah Seterusnya</span>
+              </div>
+              <p className="ob2-insight-next">
+                {localizeResultText(result.next_step)}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Secondary actions */}
+        <div className="ob2-secondary-actions ob-result-fadein">
+          <p className="ob2-secondary-label">Pilihan lain:</p>
+          <button
+            type="button"
+            className="ob2-secondary-btn ob2-secondary-btn--ghost"
+            onClick={() => window.location.reload()}
+          >
+            Ulang buat diagnostik nanti →
+          </button>
+        </div>
       </div>
-    </>
+
+      <button
+        type="button"
+        className="ob2-secondary-btn ob2-floating-plan-btn"
+        onClick={onContinue}
+      >
+        Ikut pelan auto →
+      </button>
+    </div>
   );
 }

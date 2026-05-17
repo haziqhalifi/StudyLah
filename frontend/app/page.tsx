@@ -28,31 +28,19 @@ export default function Home() {
   return <HomeDashboard />;
 }
 
-const TOPIC_NAME_MAP: Record<string, LearningContext["topicId"]> = {
-  ubahan: "ubahan",
-  matriks: "matriks",
-  insurans: "insurans",
-};
-
-const TOPIC_DISPLAY_NAMES: Record<string, string> = {
-  ubahan: "Ubahan (Variation)",
-  matriks: "Matriks (Matrices)",
-  insurans: "Insurans",
-};
 
 function HomeDashboard() {
   const router = useRouter();
   const [userId, setUserId] = useState("guest");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInitialMsg, setChatInitialMsg] = useState<string | undefined>();
-  const [aiSheetOpen, setAiSheetOpen] = useState(false);
   const [topics, setTopics] = useState<TopicStats[]>([]);
   const [flashcardSets, setFlashcardSets] = useState<FlashcardSetSummary[]>([]);
-  const [chatContext, setChatContext] = useState<LearningContext>({
+  const chatContext: LearningContext = {
     topicId: "ubahan",
     topicName: "Ubahan (Variation)",
     pageContext: "general",
-  });
+  };
 
   useEffect(() => {
     try {
@@ -76,17 +64,6 @@ function HomeDashboard() {
     }
   }, [router]);
 
-  function openChat(topicKey: string, initialMsg?: string) {
-    const topicId = TOPIC_NAME_MAP[topicKey] ?? "ubahan";
-    setChatContext({
-      topicId,
-      topicName: TOPIC_DISPLAY_NAMES[topicKey] ?? "Ubahan (Variation)",
-      pageContext: "general",
-    });
-    setChatInitialMsg(initialMsg);
-    setChatOpen(true);
-  }
-
   return (
     <>
       <section
@@ -101,12 +78,7 @@ function HomeDashboard() {
         <ResumeLearningSection topics={topics} />
         <QuickFlashcardWidget sets={flashcardSets} />
       </section>
-      <FloatingAIButton onClick={() => setAiSheetOpen(true)} />
-      <AIChatSheet
-        open={aiSheetOpen}
-        onClose={() => setAiSheetOpen(false)}
-        onOpen={openChat}
-      />
+      <FloatingAIButton onClick={() => setChatOpen(true)} />
       <StudyBuddyChat
         userId={userId}
         isOpen={chatOpen}
@@ -132,8 +104,38 @@ function useXpState() {
   return xp;
 }
 
+const NOTIFICATIONS = [
+  {
+    id: 1,
+    icon: "🔥",
+    title: "Streak kamu aktif!",
+    body: "Teruskan belajar hari ini untuk kekalkan streak.",
+    time: "Baru sahaja",
+    unread: true,
+  },
+  {
+    id: 2,
+    icon: "⭐",
+    title: "Tahniah! Kamu dapat XP baru",
+    body: "Kamu telah mendapat 10 XP daripada misi harian.",
+    time: "1 jam lalu",
+    unread: true,
+  },
+  {
+    id: 3,
+    icon: "📚",
+    title: "Ulang kaji Matriks",
+    body: "Kamu belum menyentuh topik Matriks minggu ini.",
+    time: "Semalam",
+    unread: false,
+  },
+];
+
 function StudentHeader() {
   const [name, setName] = useState(DEFAULT_STUDENT.name);
+  const [notiOpen, setNotiOpen] = useState(false);
+  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const notiRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -143,6 +145,23 @@ function StudentHeader() {
       // ignore storage errors
     }
   }, []);
+
+  useEffect(() => {
+    if (!notiOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (notiRef.current && !notiRef.current.contains(e.target as Node)) {
+        setNotiOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [notiOpen]);
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  function markAllRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  }
 
   return (
     <header className="student-header">
@@ -154,17 +173,61 @@ function StudentHeader() {
       </div>
 
       <div className="student-header-actions">
-        <button
-          className="notification-button"
-          type="button"
-          aria-label="Buka notifikasi"
-        >
-          <BellIcon />
-          <span
-            className="notification-dot"
-            aria-label="Notifikasi belum dibaca"
-          />
-        </button>
+        <div className="noti-wrapper" ref={notiRef}>
+          <button
+            className="notification-button"
+            type="button"
+            aria-label="Buka notifikasi"
+            aria-expanded={notiOpen ? "true" : "false"}
+            onClick={() => setNotiOpen((v) => !v)}
+          >
+            <BellIcon />
+            {unreadCount > 0 && (
+              <span
+                className="notification-dot"
+                aria-label="Notifikasi belum dibaca"
+              />
+            )}
+          </button>
+
+          {notiOpen && (
+            <div className="noti-popup" role="dialog" aria-label="Notifikasi">
+              <div className="noti-popup-header">
+                <span className="noti-popup-title">Notifikasi</span>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    className="noti-mark-read"
+                    onClick={markAllRead}
+                  >
+                    Tandakan semua dibaca
+                  </button>
+                )}
+              </div>
+              <ul className="noti-list" role="list">
+                {notifications.map((n) => (
+                  <li
+                    key={n.id}
+                    className={`noti-item${n.unread ? " noti-item--unread" : ""}`}
+                  >
+                    <span className="noti-item-icon" aria-hidden="true">
+                      {n.icon}
+                    </span>
+                    <div className="noti-item-body">
+                      <p className="noti-item-title">{n.title}</p>
+                      <p className="noti-item-text">{n.body}</p>
+                      <p className="noti-item-time">{n.time}</p>
+                    </div>
+                    {n.unread && (
+                      <span className="noti-item-dot" aria-hidden="true" />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
         <a
           href="/profile"
           className="profile-avatar-btn"
@@ -289,7 +352,7 @@ function FokusHariIni({ topics }: { topics: TopicStats[] }) {
       <button
         type="button"
         className="fokus-cta"
-        onClick={() => router.push(`/materials/${weakest.topic_id}/subtopics`)}
+        onClick={() => router.push("/learning")}
         aria-label={`Mula ulang kaji ${meta.name}`}
       >
         <span aria-hidden="true">⚡</span>
@@ -328,12 +391,9 @@ function ResumeLearningSection({ topics }: { topics: TopicStats[] }) {
                 className={`progress-set-card page-enter topic-${t.topic_id}`}
                 role="button"
                 tabIndex={0}
-                onClick={() =>
-                  router.push(`/materials/${t.topic_id}/subtopics`)
-                }
+                onClick={() => router.push("/learning")}
                 onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  router.push(`/materials/${t.topic_id}/subtopics`)
+                  e.key === "Enter" && router.push("/learning")
                 }
                 aria-label={`${meta.name} – ${pct}%`}
               >
@@ -496,220 +556,11 @@ function FloatingAIButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Buka Tutor AI"
     >
-      <span aria-hidden="true">🤖</span>
+      <img src="/assets/mascot.webp" alt="Skorrel" className="fab-ai-mascot" />
     </button>
   );
 }
 
-const TOPICS = {
-  ubahan: {
-    label: "Ubahan",
-    subtopics: [
-      "Ubahan Langsung",
-      "Ubahan Songsang",
-      "Ubahan Bergabung",
-      "Ubahan Separa",
-    ],
-  },
-  matriks: {
-    label: "Matriks",
-    subtopics: ["Operasi Matriks", "Penentu Matriks", "Matriks Songsang"],
-  },
-  insurans: {
-    label: "Insurans",
-    subtopics: ["Konsep Insurans", "Premium & Polisi", "Tuntutan Insurans"],
-  },
-} as const;
-
-type TopicKey = keyof typeof TOPICS;
-
-function AIChatSheet({
-  open,
-  onClose,
-  onOpen,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onOpen: (topicKey: string, msg?: string) => void;
-}) {
-  const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
-  const [selectedMode, setSelectedMode] = useState<
-    "notes" | "questions" | "flashcard"
-  >("notes");
-  const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  const MODE_CHIPS: {
-    key: "notes" | "questions" | "flashcard";
-    label: string;
-    emoji: string;
-  }[] = [
-    { key: "notes", label: "Nota", emoji: "\u{1F4DD}" },
-    { key: "questions", label: "Soalan", emoji: "\u2753" },
-    { key: "flashcard", label: "Flashcard", emoji: "\u{1F0CF}" },
-  ];
-
-  const TOPIC_CHIPS: { key: TopicKey; label: string }[] = [
-    { key: "ubahan", label: "Ubahan" },
-    { key: "matriks", label: "Matriks" },
-    { key: "insurans", label: "Insurans" },
-  ];
-
-  const MODE_PROMPT: Record<"notes" | "questions" | "flashcard", string> = {
-    notes: `Buat nota ringkas untuk topik ${TOPICS[selectedTopic].label} SPM`,
-    questions: `Bagi saya 3 soalan latihan SPM untuk topik ${TOPICS[selectedTopic].label}`,
-    flashcard: `Buat 3 flashcard soal-jawab untuk topik ${TOPICS[selectedTopic].label} SPM`,
-  };
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-      setTimeout(() => inputRef.current?.focus(), 300);
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  function handleSend() {
-    const msg = draft.trim();
-    if (!msg) return;
-    setDraft("");
-    if (inputRef.current) inputRef.current.style.height = "auto";
-    onClose();
-    onOpen(selectedTopic, msg);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  }
-
-  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setDraft(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
-  }
-
-  return (
-    <>
-      <div
-        className={`ai-sheet-backdrop${open ? " ai-sheet-backdrop--open" : ""}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div
-        className={`ai-sheet${open ? " ai-sheet--open" : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Skorrel"
-      >
-        <div className="ai-sheet-handle" aria-hidden="true" />
-
-        <div className="ai-chat-header">
-          <div className="ai-chat-avatar" aria-hidden="true">
-            <img
-              src="/assets/mascot.webp"
-              alt="Skorrel"
-              style={{ width: "100%", height: "100%", objectFit: "contain" }}
-            />
-          </div>
-          <div className="ai-chat-header-text">
-            <h2>Tanya Skorrel</h2>
-            <p className="ai-chat-subtitle">
-              Pilih topik &amp; bab untuk mulakan
-            </p>
-          </div>
-          <button
-            type="button"
-            className="ai-chat-collapse-btn"
-            onClick={onClose}
-            aria-label="Tutup Skorrel"
-          >
-            {"\u2715"}
-          </button>
-        </div>
-
-        <div className="ai-sheet-chip-group">
-          <p className="ai-sheet-chip-label">Jenis</p>
-          <div className="ai-chat-suggestions">
-            {MODE_CHIPS.map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                className={`ai-chat-chip${selectedMode === m.key ? " active" : ""}`}
-                onClick={() => setSelectedMode(m.key)}
-              >
-                {m.emoji} {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="ai-sheet-chip-group">
-          <p className="ai-sheet-chip-label">Topik</p>
-          <div className="ai-chat-suggestions">
-            {TOPIC_CHIPS.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                className={`ai-chat-chip${selectedTopic === t.key ? " active" : ""}`}
-                onClick={() => setSelectedTopic(t.key)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="ai-sheet-go-btn"
-          onClick={() => {
-            onClose();
-            onOpen(selectedTopic, MODE_PROMPT[selectedMode]);
-          }}
-        >
-          {"Mula \u2014 "}
-          {MODE_CHIPS.find((m) => m.key === selectedMode)?.emoji}{" "}
-          {MODE_CHIPS.find((m) => m.key === selectedMode)?.label} {" \u00B7 "}
-          {TOPICS[selectedTopic].label}
-        </button>
-
-        <div className="ai-chat-input-wrap">
-          <textarea
-            ref={inputRef}
-            className="ai-chat-input"
-            rows={1}
-            placeholder={"Taip soalan kamu di sini\u2026"}
-            value={draft}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-          />
-          <button
-            type="button"
-            className="ai-chat-send"
-            onClick={handleSend}
-            disabled={!draft.trim()}
-            aria-label="Hantar soalan"
-          >
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M12 19V5M5 12l7-7 7 7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
 
 const TOPIC_META: Record<string, { name: string }> = {
   ubahan: { name: "Ubahan" },

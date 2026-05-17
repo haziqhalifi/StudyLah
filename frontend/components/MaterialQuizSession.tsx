@@ -243,7 +243,7 @@ export default function MaterialQuizSession({
       disabled={selected === null}
       onClick={handleSubmit}
     >
-      Hantar Jawapan
+      Semak
     </button>
   ) : (
     <div
@@ -255,11 +255,6 @@ export default function MaterialQuizSession({
           <p className="qs-feedback-title">
             {isCorrect ? "Betul!" : "Jawapan Salah"}
           </p>
-          {!isCorrect && (
-            <p className="qs-feedback-hint">
-              Semak jawapan betul yang ditunjukkan di atas.
-            </p>
-          )}
         </div>
       </div>
       <button
