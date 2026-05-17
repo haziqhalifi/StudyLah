@@ -23,7 +23,7 @@ export default function AssessmentPage() {
 
     getAssessment(userId)
       .then((res) => setTopics(res.topics))
-      .catch(() => setError("Failed to load assessment data."))
+      .catch(() => setError("Gagal memuatkan data penilaian."))
       .finally(() => setLoading(false));
   }, [router]);
 

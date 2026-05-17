@@ -40,7 +40,7 @@ export default function DiagnosticPage() {
       setQuestions(res.questions);
       setStep("quiz");
     } catch {
-      setError("Failed to load questions for this subject.");
+      setError("Gagal memuatkan soalan untuk mata pelajaran ini.");
     } finally {
       setStarting(false);
     }
