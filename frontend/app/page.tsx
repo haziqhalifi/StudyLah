@@ -46,6 +46,7 @@ function HomeDashboard() {
   const [userId, setUserId] = useState("guest");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInitialMsg, setChatInitialMsg] = useState<string | undefined>();
+  const [aiSheetOpen, setAiSheetOpen] = useState(false);
   const [topics, setTopics] = useState<TopicStats[]>([]);
   const [chatContext, setChatContext] = useState<LearningContext>({
     topicId: "ubahan",
@@ -93,8 +94,13 @@ function HomeDashboard() {
         <LevelProgressCard />
         <DailyMissionCard />
         <WeakTopicCard topics={topics} />
-        <AIChatCard onOpen={openChat} />
+        <AIChatCard onOpenSheet={() => setAiSheetOpen(true)} />
       </section>
+      <AIChatSheet
+        open={aiSheetOpen}
+        onClose={() => setAiSheetOpen(false)}
+        onOpen={openChat}
+      />
       <StudyBuddyChat
         userId={userId}
         isOpen={chatOpen}
@@ -264,8 +270,8 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
           </div>
           <span className="weak-topic-pct">{pct}% tepat</span>
         </div>
+        <span className="weak-topic-cta">Ulangkaji sekarang — +10 XP</span>
       </div>
-      <span className="weak-topic-cta">Ulangkaji sekarang — +10 XP</span>
     </button>
   );
 }
@@ -288,23 +294,72 @@ const TOPICS = {
 type TopicKey = keyof typeof TOPICS;
 
 
-function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => void }) {
-  const [expanded, setExpanded] = useState(false);
+function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
+  return (
+    <button
+      type="button"
+      className="ai-chat-collapsed"
+      onClick={onOpenSheet}
+      aria-label="Buka Cikgu AI"
+    >
+      <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+      <div className="ai-chat-collapsed-text">
+        <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
+        <p className="ai-chat-collapsed-sub">Cikgu AI sedia membantu</p>
+      </div>
+      <span className="ai-chat-collapsed-arrow" aria-hidden="true">›</span>
+    </button>
+  );
+}
+
+function AIChatSheet({
+  open,
+  onClose,
+  onOpen,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onOpen: (topicKey: string, msg?: string) => void;
+}) {
   const [selectedTopic, setSelectedTopic] = useState<TopicKey>("ubahan");
+  const [selectedMode, setSelectedMode] = useState<"notes" | "questions" | "flashcard">("notes");
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const topic = TOPICS[selectedTopic];
 
-  const topicChips = topic.subtopics.map((sub) => ({
-    label: sub,
-    message: `Terangkan ${sub} dengan contoh soalan SPM`,
-  }));
+  const MODE_CHIPS: { key: "notes" | "questions" | "flashcard"; label: string; emoji: string }[] = [
+    { key: "notes", label: "Nota", emoji: "📝" },
+    { key: "questions", label: "Soalan", emoji: "❓" },
+    { key: "flashcard", label: "Flashcard", emoji: "🃏" },
+  ];
+
+  const TOPIC_CHIPS: { key: TopicKey; label: string }[] = [
+    { key: "ubahan", label: "Ubahan" },
+    { key: "matriks", label: "Matriks" },
+    { key: "insurans", label: "Insurans" },
+  ];
+
+  const MODE_PROMPT: Record<"notes" | "questions" | "flashcard", string> = {
+    notes: `Buat nota ringkas untuk topik ${TOPICS[selectedTopic].label} SPM`,
+    questions: `Bagi saya 3 soalan latihan SPM untuk topik ${TOPICS[selectedTopic].label}`,
+    flashcard: `Buat 3 flashcard soal-jawab untuk topik ${TOPICS[selectedTopic].label} SPM`,
+  };
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => inputRef.current?.focus(), 300);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   function handleSend() {
     const msg = draft.trim();
     if (!msg) return;
     setDraft("");
     if (inputRef.current) inputRef.current.style.height = "auto";
+    onClose();
     onOpen(selectedTopic, msg);
   }
 
@@ -321,93 +376,101 @@ function AIChatCard({ onOpen }: { onOpen: (topicKey: string, msg?: string) => vo
     e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
   }
 
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        className="ai-chat-collapsed"
-        onClick={() => setExpanded(true)}
-        aria-label="Buka Cikgu AI"
-      >
-        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
-        <div className="ai-chat-collapsed-text">
-          <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
-          <p className="ai-chat-collapsed-sub">Cikgu AI sedia membantu</p>
-        </div>
-        <span className="ai-chat-collapsed-arrow" aria-hidden="true">›</span>
-      </button>
-    );
-  }
-
   return (
-    <section className="ai-chat-card" aria-label="AI tutor chat">
-      <div className="ai-chat-header">
-        <div className="ai-chat-avatar" aria-hidden="true">AI</div>
-        <div className="ai-chat-header-text">
-          <h2>Tanya Tutor AI</h2>
-          <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
+    <>
+      <div
+        className={`ai-sheet-backdrop${open ? " ai-sheet-backdrop--open" : ""}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        className={`ai-sheet${open ? " ai-sheet--open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cikgu AI"
+      >
+        <div className="ai-sheet-handle" aria-hidden="true" />
+
+        <div className="ai-chat-header">
+          <div className="ai-chat-avatar" aria-hidden="true">AI</div>
+          <div className="ai-chat-header-text">
+            <h2>Tanya Tutor AI</h2>
+            <p className="ai-chat-subtitle">Pilih topik &amp; bab untuk mulakan</p>
+          </div>
+          <button
+            type="button"
+            className="ai-chat-collapse-btn"
+            onClick={onClose}
+            aria-label="Tutup Cikgu AI"
+          >
+            ✕
+          </button>
         </div>
+
+        <div className="ai-sheet-chip-group">
+          <p className="ai-sheet-chip-label">Jenis</p>
+          <div className="ai-chat-suggestions">
+            {MODE_CHIPS.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                className={`ai-chat-chip${selectedMode === m.key ? " active" : ""}`}
+                onClick={() => setSelectedMode(m.key)}
+              >
+                {m.emoji} {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="ai-sheet-chip-group">
+          <p className="ai-sheet-chip-label">Topik</p>
+          <div className="ai-chat-suggestions">
+            {TOPIC_CHIPS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                className={`ai-chat-chip${selectedTopic === t.key ? " active" : ""}`}
+                onClick={() => setSelectedTopic(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button
           type="button"
-          className="ai-chat-collapse-btn"
-          onClick={() => setExpanded(false)}
-          aria-label="Tutup Cikgu AI"
+          className="ai-sheet-go-btn"
+          onClick={() => { onClose(); onOpen(selectedTopic, MODE_PROMPT[selectedMode]); }}
         >
-          ✕
+          Mula — {MODE_CHIPS.find(m => m.key === selectedMode)?.emoji} {MODE_CHIPS.find(m => m.key === selectedMode)?.label} · {TOPICS[selectedTopic].label}
         </button>
-      </div>
 
-      <div className="ai-topic-tabs" role="tablist" aria-label="Pilih topik">
-        {(Object.keys(TOPICS) as TopicKey[]).map((key) => (
+        <div className="ai-chat-input-wrap">
+          <textarea
+            ref={inputRef}
+            className="ai-chat-input"
+            rows={1}
+            placeholder="Taip soalan kamu di sini…"
+            value={draft}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+          />
           <button
-            key={key}
             type="button"
-            role="tab"
-            aria-selected={selectedTopic === key}
-            className={`ai-topic-tab${selectedTopic === key ? " active" : ""}`}
-            onClick={() => setSelectedTopic(key)}
+            className="ai-chat-send"
+            onClick={handleSend}
+            disabled={!draft.trim()}
+            aria-label="Hantar soalan"
           >
-            {TOPICS[key].label}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
-        ))}
+        </div>
       </div>
-
-      <div className="ai-chat-suggestions">
-        {topicChips.map((chip) => (
-          <button
-            key={chip.label}
-            type="button"
-            className="ai-chat-chip"
-            onClick={() => onOpen(selectedTopic, chip.message)}
-          >
-            {chip.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="ai-chat-input-wrap">
-        <textarea
-          ref={inputRef}
-          className="ai-chat-input"
-          rows={1}
-          placeholder="Taip soalan kamu di sini…"
-          value={draft}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-        />
-        <button
-          type="button"
-          className="ai-chat-send"
-          onClick={handleSend}
-          disabled={!draft.trim()}
-          aria-label="Hantar soalan"
-        >
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </div>
-    </section>
+    </>
   );
 }
 
