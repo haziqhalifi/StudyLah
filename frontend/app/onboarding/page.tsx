@@ -62,20 +62,32 @@ function pick(arr: string[]) {
 }
 
 function TypewriterText({
-  text, speed = 28, onStart, onDone,
+  text,
+  speed = 28,
+  onStart,
+  onDone,
 }: {
-  text: string; speed?: number; onStart?: () => void; onDone?: () => void;
+  text: string;
+  speed?: number;
+  onStart?: () => void;
+  onDone?: () => void;
 }) {
   const [displayed, setDisplayed] = useState("");
   useEffect(() => {
     setDisplayed("");
     onStart?.();
-    if (!text.length) { onDone?.(); return; }
+    if (!text.length) {
+      onDone?.();
+      return;
+    }
     let i = 0;
     const id = setInterval(() => {
       i++;
       setDisplayed(text.slice(0, i));
-      if (i >= text.length) { clearInterval(id); onDone?.(); }
+      if (i >= text.length) {
+        clearInterval(id);
+        onDone?.();
+      }
     }, speed);
     return () => clearInterval(id);
   }, [text, speed]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -281,18 +293,25 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="ob-page">
+    <div className={`ob-page ${step === "result" ? "ob-page--result" : ""}`}>
       {/* Fixed progress bar */}
       <div className="ob-progress-track">
-        <div className="ob-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="ob-progress-fill ob-progress-fill-dynamic"
+          data-pct={progress}
+        />
       </div>
+      <ProgressFillDriver pct={progress} />
 
       {/* Back button — above mascot on profile step */}
       {step === "profile" && (
         <button
           type="button"
           className="ob-back-btn"
-          onClick={() => { setStep("welcome"); showDialogue("welcome"); }}
+          onClick={() => {
+            setStep("welcome");
+            showDialogue("welcome");
+          }}
           aria-label="Back"
         >
           ‹
@@ -302,7 +321,13 @@ export default function OnboardingPage() {
       {/* Mascot + dialogue — profile step only (side-by-side) */}
       {step === "profile" && (
         <div className="ob-mascot-row">
-          <span style={{ display: "inline-block", transform: "scaleX(-1)", flexShrink: 0 }}>
+          <span
+            style={{
+              display: "inline-block",
+              transform: "scaleX(-1)",
+              flexShrink: 0,
+            }}
+          >
             <Image
               src="/assets/mascot.webp"
               alt="Skorrel"
@@ -410,18 +435,7 @@ export default function OnboardingPage() {
               </select>
             </div>
 
-            {error && (
-              <p
-                style={{
-                  color: "var(--wrong)",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  margin: 0,
-                }}
-              >
-                {error}
-              </p>
-            )}
+            {error && <p className="ob-form-error">{error}</p>}
           </div>
 
           <div className="ob-sticky-cta">
@@ -455,30 +469,24 @@ export default function OnboardingPage() {
               return (
                 <div
                   key={i}
-                  style={{
-                    width: i === qIndex ? 20 : 8,
-                    height: 8,
-                    borderRadius: 4,
-                    background: slot
+                  className={[
+                    "ob-dot",
+                    i === qIndex ? "ob-dot-active" : "",
+                    slot
                       ? slot.isCorrect
-                        ? "var(--correct)"
-                        : "var(--wrong)"
-                      : i === qIndex
-                        ? "var(--brand)"
-                        : "var(--border)",
-                    transition: "width 0.25s, background 0.25s",
-                  }}
+                        ? "ob-dot-correct"
+                        : "ob-dot-wrong"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 />
               );
             })}
           </div>
 
           {/* Question card — keyed so slide animation re-fires on advance */}
-          <div
-            className="ob-question-enter"
-            key={qKey}
-            style={{ width: "100%" }}
-          >
+          <div className="ob-question-enter" key={qKey}>
             <div className="ob-topic-tag">
               {topicEmoji(currentQ.topic)} {currentQ.topic}
             </div>
@@ -497,18 +505,18 @@ export default function OnboardingPage() {
                   disabled={!!currentSlot?.revealed}
                 >
                   <span className="ob-option-letter">{LETTERS[idx]}</span>
-                  <span style={{ flex: 1, textAlign: "left" }}>
+                  <span className="ob-option-text">
                     <MathText inline>{opt}</MathText>
                   </span>
                   {currentSlot?.revealed && idx === currentQ.correct_index && (
-                    <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>
+                    <span className="ob-option-check ob-option-check-correct">
                       ✓
                     </span>
                   )}
                   {currentSlot?.revealed &&
                     idx === currentSlot.selected &&
                     !currentSlot.isCorrect && (
-                      <span style={{ fontSize: "1.05rem", marginLeft: "auto" }}>
+                      <span className="ob-option-check ob-option-check-wrong">
                         ✗
                       </span>
                     )}
@@ -517,14 +525,7 @@ export default function OnboardingPage() {
             </div>
 
             {currentSlot?.revealed && (
-              <p
-                style={{
-                  marginTop: "1rem",
-                  fontSize: "0.82rem",
-                  color: "var(--muted)",
-                  textAlign: "center",
-                }}
-              >
+              <p className="ob-next-hint">
                 {currentSlot.isCorrect
                   ? "Correct! Next question loading…"
                   : `The correct answer was ${LETTERS[currentQ.correct_index]}. Moving on…`}
@@ -532,24 +533,13 @@ export default function OnboardingPage() {
             )}
           </div>
 
-          {error && (
-            <p
-              style={{
-                color: "var(--wrong)",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                marginTop: "1rem",
-              }}
-            >
-              {error}
-            </p>
-          )}
+          {error && <p className="ob-form-error">{error}</p>}
         </>
       )}
 
       {/* ── ANALYZING ──────────────────────────────────────────────────────── */}
       {step === "analyzing" && (
-        <div className="ob-analyzing" style={{ marginTop: "2rem" }}>
+        <div className="ob-analyzing">
           <Image
             src="/assets/mascot.webp"
             alt="Lah analysing"
@@ -585,6 +575,16 @@ export default function OnboardingPage() {
   );
 }
 
+// ─── Progress fill driver (avoids inline style on the fill bar) ───────────────
+
+function ProgressFillDriver({ pct }: { pct: number }) {
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>(".ob-progress-fill-dynamic");
+    if (el) el.style.width = `${pct}%`;
+  }, [pct]);
+  return null;
+}
+
 // ─── Result Screen ────────────────────────────────────────────────────────────
 
 const RING_R = 52;
@@ -593,7 +593,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RING_R;
 function ResultScreen({
   result,
   userName,
-  weakestTopic,
+  weakestTopic: _weakestTopic,
   onContinue,
 }: {
   result: OnboardingDiagnosticResponse;
@@ -646,55 +646,33 @@ function ResultScreen({
           <div className="ob-score-circle" style={{ borderColor: ringColor }}>
             <span className="ob-score-number">
               {displayScore}
-              <span style={{ fontSize: "1rem", fontWeight: 700 }}>
-                /{result.total}
-              </span>
+              <span className="ob-score-denom-inline">/{result.total}</span>
             </span>
             <span className="ob-score-denom">{displayPct}%</span>
           </div>
         </div>
-        <p
-          className="ob-xp-line ob-result-fadein"
-          style={{ animationDelay: "0.2s" }}
-        >
+        <p className="ob-xp-line ob-result-fadein ob-delay-1">
           +50 XP earned for completing your diagnosis!
         </p>
-        <h2
-          className="ob-result-title ob-result-fadein"
-          style={{ animationDelay: "0.35s" }}
-        >
+        <h2 className="ob-result-title ob-result-fadein ob-delay-2">
           {pct >= 70 ? "Excellent" : pct >= 45 ? "Good effort" : "Great start"},{" "}
           {userName || "student"}! 🎉
         </h2>
-        <p
-          className="ob-result-sub ob-result-fadein"
-          style={{ animationDelay: "0.5s" }}
-        >
+        <p className="ob-result-sub ob-result-fadein ob-delay-3">
           Your personalised diagnosis is ready
         </p>
       </div>
 
       {/* Topic breakdown */}
       {result.by_topic.length > 0 && (
-        <section style={{ width: "100%", marginBottom: "0.25rem" }}>
-          <p
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: "var(--muted)",
-              margin: "0 0 0.55rem",
-            }}
-          >
-            Topic Breakdown
-          </p>
+        <section className="ob-breakdown-section">
+          <p className="ob-breakdown-label">Topic Breakdown</p>
           {result.by_topic.map((t, i) => {
             const tier = topicTier(t.accuracy);
             return (
               <div
                 key={t.topic}
-                className="ob-topic-card"
+                className="ob-topic-card ob-result-fadein"
                 style={{ animationDelay: `${0.6 + i * 0.12}s` }}
               >
                 <div className="ob-topic-row">
@@ -732,11 +710,12 @@ function ResultScreen({
       {result.strengths.length > 0 && (
         <div className="ob-list-card">
           <h4 className="ob-list-title">
-            <span style={{ color: "var(--correct)" }}>✅</span> Your Strengths
+            <span className="ob-list-icon ob-list-icon-correct">✅</span> Your
+            Strengths
           </h4>
           {result.strengths.map((s, i) => (
             <div key={i} className="ob-list-item">
-              <span style={{ color: "var(--correct)", flexShrink: 0 }}>•</span>
+              <span className="ob-list-bullet ob-list-bullet-correct">•</span>
               <span>{s}</span>
             </div>
           ))}
@@ -745,18 +724,19 @@ function ResultScreen({
 
       {/* Next step */}
       {result.next_step && (
-        <div className="ob-list-card" style={{ marginBottom: "1rem" }}>
+        <div className="ob-list-card ob-list-card-last">
           <h4 className="ob-list-title">
-            <span style={{ color: "var(--brand)" }}>🎯</span> Next Step
+            <span className="ob-list-icon ob-list-icon-brand">🎯</span> Next
+            Step
           </h4>
           <div className="ob-list-item">
-            <span style={{ color: "var(--brand)", flexShrink: 0 }}>→</span>
+            <span className="ob-list-bullet ob-list-bullet-brand">→</span>
             <span>{result.next_step}</span>
           </div>
         </div>
       )}
 
-      <div className="ob-sticky-cta">
+      <div className="ob-sticky-cta ob-sticky-cta--floating">
         <button type="button" className="btn-primary" onClick={onContinue}>
           Start My Learning Path →
         </button>

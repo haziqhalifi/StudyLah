@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   fetchDiagnosticResult,
@@ -11,51 +11,86 @@ import {
 } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Tier system: 0–30% NEEDS WORK | 31–60% IMPROVING | 61–85% GOOD | 86–100% STRONG
 // ---------------------------------------------------------------------------
 
-function levelColor(level: "weak" | "okay" | "strong") {
-  if (level === "strong") return "bg-emerald-500";
-  if (level === "okay") return "bg-amber-500";
-  return "bg-red-500";
+type Tier = "needs-work" | "improving" | "good" | "strong";
+
+function getTier(accuracy: number): Tier {
+  if (accuracy <= 0.30) return "needs-work";
+  if (accuracy <= 0.60) return "improving";
+  if (accuracy <= 0.85) return "good";
+  return "strong";
 }
 
-function levelBadgeClass(level: "weak" | "okay" | "strong") {
-  if (level === "strong")
-    return "bg-emerald-100 text-emerald-800 border border-emerald-200";
-  if (level === "okay")
-    return "bg-amber-100 text-amber-800 border border-amber-200";
-  return "bg-red-100 text-red-800 border border-red-200";
+const TIER_CONFIG: Record<
+  Tier,
+  { emoji: string; label: string; badgeBg: string; badgeText: string; badgeBorder: string; barColor: string }
+> = {
+  "needs-work": {
+    emoji: "🔴",
+    label: "NEEDS WORK",
+    badgeBg: "#fef2f2",
+    badgeText: "#b91c1c",
+    badgeBorder: "#fecaca",
+    barColor: "#ef4444",
+  },
+  improving: {
+    emoji: "🟡",
+    label: "IMPROVING",
+    badgeBg: "#fffbeb",
+    badgeText: "#92400e",
+    badgeBorder: "#fde68a",
+    barColor: "#f59e0b",
+  },
+  good: {
+    emoji: "🟢",
+    label: "GOOD",
+    badgeBg: "#ecfdf5",
+    badgeText: "#065f46",
+    badgeBorder: "#a7f3d0",
+    barColor: "#10b981",
+  },
+  strong: {
+    emoji: "⭐",
+    label: "STRONG",
+    badgeBg: "#ede9fe",
+    badgeText: "#4c1d95",
+    badgeBorder: "#c4b5fd",
+    barColor: "#7c3aed",
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Score framing copy
+// ---------------------------------------------------------------------------
+
+function scoreContextLine(pct: number): string {
+  if (pct <= 15)
+    return "Most students score 10–20% on their first try — you're right where everyone starts.";
+  if (pct <= 30)
+    return "Most students score 15–25% on their first try — you're right on track!";
+  if (pct <= 50)
+    return "You're scoring above average for a first attempt. Good foundation!";
+  if (pct <= 70)
+    return "Solid first attempt! You already know more than most incoming students.";
+  return "Impressive start! You're well ahead of the curve.";
 }
 
-function levelLabel(level: "weak" | "okay" | "strong") {
-  if (level === "strong") return "Kukuh";
-  if (level === "okay") return "Sederhana";
-  return "Perlu usaha";
-}
+// ---------------------------------------------------------------------------
+// AI Diagnosis copy — specific, single-topic
+// ---------------------------------------------------------------------------
 
-function summaryInterpretation(overallAccuracy: number, topics: TopicDiagnostic[]) {
-  const weakTopics = topics.filter((t) => t.level === "weak").map((t) => t.topicName);
-  const okayTopics = topics.filter((t) => t.level === "okay").map((t) => t.topicName);
-  const strongTopics = topics.filter((t) => t.level === "strong").map((t) => t.topicName);
-
-  if (strongTopics.length === topics.length) return "Hebat! Anda mula dengan baik dalam semua topik!";
-  if (weakTopics.length === 0 && okayTopics.length > 0)
-    return `Bagus! Fokus pada ${okayTopics.join(" dan ")} untuk naik tahap.`;
-  if (weakTopics.length > 0 && okayTopics.length === 0 && strongTopics.length === 0)
-    return `Kita akan fokus membina asas anda dalam ${weakTopics.join(", ")}.`;
-
-  const parts: string[] = [];
-  if (strongTopics.length > 0) parts.push(`kukuh dalam ${strongTopics.join(", ")}`);
-  if (okayTopics.length > 0) parts.push(`sederhana dalam ${okayTopics.join(", ")}`);
-  if (weakTopics.length > 0) parts.push(`${weakTopics.join(" dan ")} perlu lebih latihan`);
-  return `Anda ${parts.join(", tetapi ")}.`;
-}
-
-function friendlyHeadline(overallAccuracy: number) {
-  if (overallAccuracy >= 0.8) return "Kerja yang cemerlang! Inilah titik permulaan anda.";
-  if (overallAccuracy >= 0.5) return "Bagus! Inilah titik permulaan anda.";
-  return "Usaha yang baik! Inilah titik permulaan anda.";
+function buildAiDiagnosis(_topics: TopicDiagnostic[], weakestTopic: TopicDiagnostic): string {
+  const name = weakestTopic.topicName;
+  const pct = Math.round(weakestTopic.accuracy * 100);
+  if (pct === 0) {
+    return `${name} is your biggest growth opportunity right now — you haven't had a chance to practise it yet. Start with short 5-min drills on ${name} to build a strong foundation before moving on.`;
+  }
+  if (pct <= 30) {
+    return `${name} needs the most attention (${pct}% correct). Start with short 5-min drills on ${name} to lock in the basics before tackling harder questions.`;
+  }
+  return `${name} is your weakest area at ${pct}%. A focused 10-min review session on ${name} will help you close this gap quickly.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -64,116 +99,169 @@ function friendlyHeadline(overallAccuracy: number) {
 
 function Skeleton({ className }: { className?: string }) {
   return (
-    <div
-      className={`animate-pulse rounded-lg bg-slate-200 ${className ?? ""}`}
-    />
+    <div className={`animate-pulse rounded-lg bg-slate-200 ${className ?? ""}`} />
   );
 }
 
 function ResultSkeleton() {
   return (
-    <div className="page-enter" style={{ padding: "1.5rem", maxWidth: 600, margin: "0 auto" }}>
-      <Skeleton className="h-8 w-3/4 mb-3" />
-      <Skeleton className="h-5 w-full mb-1" />
-      <Skeleton className="h-5 w-2/3 mb-8" />
+    <div className="page-enter dr-page">
+      <Skeleton className="h-40 w-full mb-4 rounded-2xl" />
+      <Skeleton className="h-5 w-3/4 mb-6" />
       {[0, 1, 2].map((i) => (
-        <Skeleton key={i} className="h-28 w-full mb-4" />
+        <Skeleton key={i} className="h-28 w-full mb-3" />
       ))}
-      <Skeleton className="h-36 w-full mb-4" />
-      <Skeleton className="h-12 w-full mb-3" />
-      <Skeleton className="h-10 w-2/3 mx-auto" />
+      <Skeleton className="h-32 w-full mb-3" />
+      <Skeleton className="h-20 w-full mb-4" />
+      <Skeleton className="h-12 w-full" />
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Topic card
+// Score circle header
 // ---------------------------------------------------------------------------
 
-function TopicCard({ topic }: { topic: TopicDiagnostic }) {
-  const pct = Math.round(topic.accuracy * 100);
+function ScoreHeader({
+  correct,
+  total,
+  pct,
+  userName,
+}: {
+  correct: number;
+  total: number;
+  pct: number;
+  userName?: string;
+}) {
+  const isLowScore = pct < 30;
+  const r = 46;
+  const circ = 2 * Math.PI * r;
+  const fill = (pct / 100) * circ;
+
   return (
-    <div
-      style={{
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--r-lg)",
-        padding: "1rem 1.25rem",
-        boxShadow: "var(--shadow-card)",
-        marginBottom: "0.75rem",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
-        {/* Left: name + badge */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.25rem" }}>
-            <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--ink)" }}>
-              {topic.topicName}
-            </span>
-            <span
-              className={levelBadgeClass(topic.level)}
-              style={{ fontSize: "0.7rem", fontWeight: 600, borderRadius: 999, padding: "2px 8px" }}
-            >
-              {levelLabel(topic.level)}
-            </span>
-            {topic.level === "weak" && (
-              <span
-                style={{
-                  fontSize: "0.65rem",
-                  fontWeight: 700,
-                  borderRadius: 999,
-                  padding: "2px 7px",
-                  background: "#fee2e2",
-                  color: "#b91c1c",
-                  border: "1px solid #fecaca",
-                  letterSpacing: "0.03em",
-                }}
-              >
-                Keutamaan tinggi
-              </span>
-            )}
-          </div>
-          <p style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "0.6rem" }}>
-            {pct}% betul &middot; {topic.attempts} soalan
-          </p>
-          {/* Accuracy bar */}
-          <div
-            style={{
-              width: "100%",
-              height: 6,
-              background: "#e2e8f0",
-              borderRadius: 999,
-              overflow: "hidden",
-            }}
+    <div className="dr-header">
+      <span className="dr-xp-pill">+50 XP ✨</span>
+
+      <div className="dr-header-row">
+        {/* SVG donut */}
+        <div className="dr-circle-wrap">
+          <svg
+            width="110"
+            height="110"
+            viewBox="0 0 110 110"
+            className="dr-circle-svg"
           >
-            <div
-              className={levelColor(topic.level)}
-              style={{ height: "100%", width: `${pct}%`, borderRadius: 999, transition: "width 0.6s ease" }}
+            <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="10" />
+            <circle
+              cx="55"
+              cy="55"
+              r={r}
+              fill="none"
+              stroke="#fff"
+              strokeWidth="10"
+              strokeDasharray={`${fill} ${circ}`}
+              strokeLinecap="round"
+              className="dr-circle-arc"
             />
+          </svg>
+          <div className="dr-circle-inner">
+            <span className="dr-circle-pct">{pct}%</span>
+            <span className="dr-circle-frac">{correct}/{total}</span>
           </div>
         </div>
 
-        {/* Right: large pct */}
-        <div
-          style={{
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        {/* Right copy */}
+        <div className="dr-header-copy">
+          <p className="dr-greeting">
+            {userName ? `Great start, ${userName}! 🎉` : "Great start! 🎉"}
+          </p>
+          <p className="dr-ready-line">Your personalised diagnosis is ready.</p>
+          <p className="dr-context-line">{scoreContextLine(pct)}</p>
+        </div>
+      </div>
+
+      {isLowScore && (
+        <div className="dr-low-score-banner">
+          <span className="dr-low-score-icon">💪</span>
+          <span>
+            Don&apos;t worry — this is just the starting line. Your path is now personalised for you.
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Topic card (tiered)
+// ---------------------------------------------------------------------------
+
+function TopicCard({
+  topic,
+  isBest,
+}: {
+  topic: TopicDiagnostic;
+  isBest: boolean;
+}) {
+  const pct = Math.round(topic.accuracy * 100);
+  const tier = getTier(topic.accuracy);
+  const cfg = TIER_CONFIG[tier];
+  const isZero = topic.accuracy === 0;
+
+  return (
+    <div className={`dr-topic-card${isBest ? " dr-topic-card--best" : ""}`}>
+      {isBest && <span className="dr-best-tag">📌 Best topic so far</span>}
+
+      <div className="dr-topic-inner">
+        <div className="dr-topic-left">
+          <div className={`dr-topic-name-row${isBest ? " dr-topic-name-row--offset" : ""}`}>
+            <span className="dr-topic-name">{topic.topicName}</span>
+            <span
+              className="dr-tier-badge"
+              style={
+                {
+                  "--tier-bg": cfg.badgeBg,
+                  "--tier-text": cfg.badgeText,
+                  "--tier-border": cfg.badgeBorder,
+                } as React.CSSProperties
+              }
+            >
+              {cfg.emoji} {cfg.label}
+            </span>
+          </div>
+
+          <p className="dr-topic-meta">
+            {isZero ? "No answers yet" : `${pct}% correct`} &middot;{" "}
+            {topic.attempts} question{topic.attempts !== 1 ? "s" : ""}
+          </p>
+
+          <div className="dr-bar-track">
+            {isZero ? (
+              <div className="dr-bar-zero" />
+            ) : (
+              <div
+                className="dr-bar-fill"
+                style={
+                  {
+                    "--bar-width": `${pct}%`,
+                    "--bar-color": cfg.barColor,
+                  } as React.CSSProperties
+                }
+              />
+            )}
+          </div>
+
+          {isZero && <p className="dr-zero-label">Not enough data yet</p>}
+        </div>
+
+        <div className="dr-topic-pct">
           <span
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              color:
-                topic.level === "strong"
-                  ? "#059669"
-                  : topic.level === "okay"
-                  ? "#d97706"
-                  : "#dc2626",
-            }}
+            className="dr-pct-num"
+            style={
+              {
+                "--pct-color": isZero ? "#f87171" : cfg.barColor,
+              } as React.CSSProperties
+            }
           >
             {pct}%
           </span>
@@ -184,65 +272,52 @@ function TopicCard({ topic }: { topic: TopicDiagnostic }) {
 }
 
 // ---------------------------------------------------------------------------
-// Recommendation card
+// AI Diagnosis card
 // ---------------------------------------------------------------------------
 
-function RecommendationCard({
+function AiDiagnosisCard({ copy }: { copy: string }) {
+  return (
+    <div className="dr-ai-card">
+      <p className="dr-ai-label">🤖 AI Diagnosis</p>
+      <p className="dr-ai-copy">{copy}</p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Next Step card
+// ---------------------------------------------------------------------------
+
+function NextStepCard({
   rec,
   topicName,
-  isPrimary,
-  userId,
   onStart,
   starting,
 }: {
   rec: DiagnosticRecommendation;
   topicName: string;
-  isPrimary: boolean;
-  userId: string;
-  onStart: (quizId: string) => void;
+  onStart: () => void;
   starting: boolean;
 }) {
   return (
-    <div
-      style={{
-        background: isPrimary ? "var(--brand-light)" : "var(--card)",
-        border: isPrimary ? "1.5px solid var(--brand-muted)" : "1px solid var(--border)",
-        borderRadius: "var(--r-lg)",
-        padding: "1.1rem 1.25rem",
-        boxShadow: isPrimary ? "var(--shadow-brand)" : "var(--shadow-card)",
-        marginBottom: "0.75rem",
-      }}
-    >
-      <p
-        style={{
-          fontSize: "0.7rem",
-          fontWeight: 700,
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-          color: isPrimary ? "var(--brand)" : "var(--muted)",
-          marginBottom: "0.3rem",
-        }}
-      >
-        {isPrimary ? "Jurulatih cadangkan" : "Cuba juga"}
+    <div className="dr-next-card">
+      <p className="dr-next-label">Next Step</p>
+      <p className="dr-next-title">
+        → First lesson:{" "}
+        <span className="dr-next-title-accent">{topicName}</span>
+        {rec.title ? ` – ${rec.title}` : ""}
       </p>
-      <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--ink)", marginBottom: "0.4rem" }}>
-        {rec.title}
-      </p>
-      <p style={{ fontSize: "0.85rem", color: "var(--ink-2)", lineHeight: 1.55, marginBottom: "0.9rem" }}>
-        {rec.message}
+      <p className="dr-next-body">
+        {rec.message ||
+          `Start with ${rec.suggestedQuizLength} focused questions (~${rec.suggestedQuizLength} min).`}
       </p>
       <button
         type="button"
-        className={isPrimary ? "btn-primary" : "btn-ghost"}
+        className="btn-primary dr-full-btn"
         disabled={starting}
-        onClick={() => onStart(rec.topicId)}
-        style={{ width: "100%" }}
+        onClick={onStart}
       >
-        {starting
-          ? "Mencipta kuiz…"
-          : isPrimary
-          ? `Mula kuiz ${topicName} sekarang →`
-          : `Buat ${topicName} kemudian`}
+        {starting ? "Creating quiz…" : "Start My Learning Path →"}
       </button>
     </div>
   );
@@ -261,6 +336,8 @@ export default function DiagnosticResultPage() {
 
   const userId =
     typeof window !== "undefined" ? sessionStorage.getItem("userId") ?? "" : "";
+  const userName =
+    typeof window !== "undefined" ? sessionStorage.getItem("userName") ?? "" : "";
 
   async function load() {
     if (!userId) {
@@ -273,7 +350,7 @@ export default function DiagnosticResultPage() {
       const data = await fetchDiagnosticResult(userId);
       setResult(data);
     } catch {
-      setError("Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi.");
+      setError("Diagnostic results could not be loaded. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -288,10 +365,8 @@ export default function DiagnosticResultPage() {
     if (!userId || !result) return;
     setStartingTopicId(topicId);
     try {
-      const rec =
-        result.mainRecommendation.topicId === topicId
-          ? result.mainRecommendation
-          : result.secondaryRecommendation;
+      const isMain = result.mainRecommendation.topicId === topicId;
+      const rec = isMain ? result.mainRecommendation : result.secondaryRecommendation;
       const numQuestions = rec?.suggestedQuizLength ?? 5;
       const quiz = await createPersonalizedQuiz(
         userId,
@@ -301,208 +376,120 @@ export default function DiagnosticResultPage() {
       router.push(`/quiz/${quiz.quizId}`);
     } catch {
       setStartingTopicId(null);
-      setError("Gagal mencipta kuiz. Sila cuba lagi.");
+      setError("Failed to create quiz. Please try again.");
     }
   }
 
-  function topicNameFor(topicId: string) {
-    return result?.topics.find((t) => t.topicId === topicId)?.topicName ?? topicId;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Render: loading
-  // ---------------------------------------------------------------------------
+  // ── loading ───────────────────────────────────────────────────────────────
 
   if (loading) return <ResultSkeleton />;
 
-  // ---------------------------------------------------------------------------
-  // Render: error
-  // ---------------------------------------------------------------------------
+  // ── error ─────────────────────────────────────────────────────────────────
 
   if (error || !result) {
     return (
-      <div
-        className="page-enter"
-        style={{
-          padding: "2rem 1.5rem",
-          maxWidth: 480,
-          margin: "0 auto",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>😕</div>
-        <h2
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.25rem",
-            fontWeight: 700,
-            color: "var(--ink)",
-            marginBottom: "0.5rem",
-          }}
-        >
-          Ada masalah berlaku
-        </h2>
-        <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-          {error || "Keputusan diagnostik tidak dapat dimuatkan. Sila cuba lagi."}
+      <div className="page-enter dr-error-page">
+        <div className="dr-error-emoji">😕</div>
+        <h2 className="dr-error-title">Something went wrong</h2>
+        <p className="dr-error-body">
+          {error || "Diagnostic results could not be loaded. Please try again."}
         </p>
         <button type="button" className="btn-primary" onClick={load}>
-          Cuba lagi
+          Try again
         </button>
       </div>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Render: full result
-  // ---------------------------------------------------------------------------
+  // ── derived data ──────────────────────────────────────────────────────────
 
   const pctCorrect = Math.round(result.overallAccuracy * 100);
+
+  const bestTopicId = [...result.topics].sort((a, b) => b.accuracy - a.accuracy)[0]?.topicId;
+  const weakestTopic = [...result.topics].sort((a, b) => a.accuracy - b.accuracy)[0];
+
+  const mainTopicName =
+    result.topics.find((t) => t.topicId === result.mainRecommendation.topicId)?.topicName ??
+    result.mainRecommendation.topicId;
+
+  const aiDiagnosisCopy = weakestTopic
+    ? buildAiDiagnosis(result.topics, weakestTopic)
+    : result.mainRecommendation.message;
+
   const isStartingMain = startingTopicId === result.mainRecommendation.topicId;
 
-  return (
-    <div
-      className="page-enter"
-      style={{ padding: "1.5rem", maxWidth: 600, margin: "0 auto", paddingBottom: "6rem" }}
-    >
-      {/* ── Summary ─────────────────────────────────────────── */}
-      <div style={{ marginBottom: "1.75rem" }}>
-        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🎉</div>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.6rem",
-            fontWeight: 800,
-            color: "var(--ink)",
-            lineHeight: 1.2,
-            marginBottom: "0.5rem",
-          }}
-        >
-          Diagnostik selesai
-        </h1>
-        <p style={{ color: "var(--ink-2)", fontSize: "0.95rem", marginBottom: "0.3rem" }}>
-          Anda mendapat{" "}
-          <strong>
-            {result.correctQuestions} daripada {result.totalQuestions}
-          </strong>{" "}
-          soalan betul ({pctCorrect}%).
-        </p>
-        <p style={{ color: "var(--muted)", fontSize: "0.88rem", lineHeight: 1.5 }}>
-          {summaryInterpretation(result.overallAccuracy, result.topics)}
-        </p>
-      </div>
+  // ── render ────────────────────────────────────────────────────────────────
 
-      {/* ── Topic cards ─────────────────────────────────────── */}
-      <section style={{ marginBottom: "1.75rem" }}>
-        <h2
-          style={{
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--muted)",
-            marginBottom: "0.75rem",
-          }}
-        >
-          Keputusan topik anda
-        </h2>
+  return (
+    <div className="page-enter dr-page">
+      {/* Score header */}
+      <ScoreHeader
+        correct={result.correctQuestions}
+        total={result.totalQuestions}
+        pct={pctCorrect}
+        userName={userName || undefined}
+      />
+
+      {/* Topic breakdown */}
+      <section className="dr-section">
+        <h2 className="dr-section-label">Topic Breakdown</h2>
         {result.topics.map((topic) => (
-          <TopicCard key={topic.topicId} topic={topic} />
+          <TopicCard
+            key={topic.topicId}
+            topic={topic}
+            isBest={topic.topicId === bestTopicId}
+          />
         ))}
       </section>
 
-      {/* ── Recommendations ─────────────────────────────────── */}
-      <section style={{ marginBottom: "1.75rem" }}>
-        <h2
-          style={{
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--muted)",
-            marginBottom: "0.75rem",
-          }}
-        >
-          Langkah seterusnya yang diperibadikan
-        </h2>
+      {/* AI Diagnosis */}
+      <AiDiagnosisCard copy={aiDiagnosisCopy} />
 
-        <RecommendationCard
-          rec={result.mainRecommendation}
-          topicName={topicNameFor(result.mainRecommendation.topicId)}
-          isPrimary
-          userId={userId}
-          onStart={handleStartQuiz}
-          starting={isStartingMain}
-        />
+      {/* Next Step */}
+      <NextStepCard
+        rec={result.mainRecommendation}
+        topicName={mainTopicName}
+        onStart={() => handleStartQuiz(result.mainRecommendation.topicId)}
+        starting={isStartingMain}
+      />
 
-        {result.secondaryRecommendation && (
-          <RecommendationCard
-            rec={result.secondaryRecommendation}
-            topicName={topicNameFor(result.secondaryRecommendation.topicId)}
-            isPrimary={false}
-            userId={userId}
-            onStart={handleStartQuiz}
-            starting={startingTopicId === result.secondaryRecommendation.topicId}
-          />
-        )}
-      </section>
+      {/* Secondary recommendation */}
+      {result.secondaryRecommendation && (
+        <div className="dr-secondary-card">
+          <p className="dr-secondary-label">Also consider</p>
+          <p className="dr-secondary-body">{result.secondaryRecommendation.message}</p>
+          <button
+            type="button"
+            className="btn-ghost dr-full-btn"
+            disabled={!!startingTopicId}
+            onClick={() => handleStartQuiz(result.secondaryRecommendation!.topicId)}
+          >
+            {startingTopicId === result.secondaryRecommendation.topicId
+              ? "Creating quiz…"
+              : `Try ${result.topics.find((t) => t.topicId === result.secondaryRecommendation!.topicId)?.topicName ?? ""} later`}
+          </button>
+        </div>
+      )}
 
-      {/* ── Bottom actions ──────────────────────────────────── */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-          alignItems: "stretch",
-        }}
-      >
+      {/* Bottom actions */}
+      <div className="dr-bottom-actions">
         <button
           type="button"
-          className="btn-primary"
-          disabled={!!startingTopicId}
-          onClick={() => handleStartQuiz(result.mainRecommendation.topicId)}
-        >
-          {isStartingMain ? "Mencipta kuiz…" : "Mula latihan diperibadikan →"}
-        </button>
-
-        <button
-          type="button"
-          className="btn-ghost"
+          className="btn-ghost dr-dashboard-btn"
           onClick={() => router.push("/dashboard")}
-          style={{ textAlign: "center" }}
         >
-          Pergi ke papan pemuka
+          Go to dashboard
         </button>
-
         <button
           type="button"
+          className="dr-link-btn"
           onClick={() => router.push("/diagnostic/report")}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--brand)",
-            fontSize: "0.85rem",
-            textDecoration: "underline",
-            textAlign: "center",
-            padding: "0.25rem",
-          }}
         >
-          Lihat pecahan terperinci →
+          View detailed breakdown →
         </button>
       </div>
 
-      {error && (
-        <p
-          style={{
-            marginTop: "1rem",
-            color: "var(--wrong)",
-            fontSize: "0.85rem",
-            textAlign: "center",
-          }}
-        >
-          {error}
-        </p>
-      )}
+      {error && <p className="dr-error">{error}</p>}
     </div>
   );
 }

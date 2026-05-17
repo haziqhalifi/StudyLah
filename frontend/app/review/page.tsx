@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   getReview,
@@ -25,7 +26,8 @@ const REASON_BUDDY: Record<string, string> = {
     "Anda belum lihat ini sejak lama. Ulangkaji pantas untuk kekalkan ingatan! 🔄",
   weak_topic: "Topik ini perlu sedikit perhatian. Kita boleh! 🌱",
   new: "Soalan baru — mari lihat bagaimana anda! 🆕",
-  overdue: "Yang ini sudah lama menunggu — bagus anda mengulangkajinya sekarang! ⏰",
+  overdue:
+    "Yang ini sudah lama menunggu — bagus anda mengulangkajinya sekarang! ⏰",
   due_for_review: "Tepat pada masanya! Mari kekalkan ingatan anda. 🎯",
   learning: "Mari kerjakan ini bersama! 📖",
 };
@@ -42,17 +44,17 @@ const REASON_LABEL: Record<string, string> = {
 
 // ── Spaced-rep status badges ──────────────────────────────────────
 const STATUS_BADGE: Record<ReviewStatus, { label: string; cls: string }> = {
-  learning:  { label: "Belajar",    cls: "chip chip-warn"    },
-  reviewing: { label: "Mengulang",  cls: "chip chip-brand"   },
-  mastered:  { label: "Dikuasai",   cls: "chip chip-correct" },
+  learning: { label: "Belajar", cls: "chip chip-warn" },
+  reviewing: { label: "Mengulang", cls: "chip chip-brand" },
+  mastered: { label: "Dikuasai", cls: "chip chip-correct" },
 };
 
 // Tags that get a coloured chip under the question header
 const TAG_CHIP: Record<string, { label: string; cls: string }> = {
-  ubahan:   { label: "Ubahan",   cls: "chip chip-brand"   },
-  matriks:  { label: "Matriks",  cls: "chip chip-warn"    },
+  ubahan: { label: "Ubahan", cls: "chip chip-brand" },
+  matriks: { label: "Matriks", cls: "chip chip-warn" },
   insurans: { label: "Insurans", cls: "chip chip-correct" },
-  review:   { label: "↺ Ulang Kaji", cls: "chip chip-brand"   },
+  review: { label: "↺ Ulang Kaji", cls: "chip chip-brand" },
 };
 
 function formatIntervalDays(days: number): string {
@@ -173,7 +175,9 @@ export default function ReviewPage() {
       <div className="review-done page-enter">
         <div className="review-done-emoji">✅</div>
         <h2 className="font-display review-done-title">
-          {caughtUp ? "Anda sudah selesai!" : "Tiada yang perlu diulang kaji lagi!"}
+          {caughtUp
+            ? "Anda sudah selesai!"
+            : "Tiada yang perlu diulang kaji lagi!"}
         </h2>
         <p className="review-done-sub">
           {caughtUp
@@ -208,7 +212,8 @@ export default function ReviewPage() {
         <div className="review-done-emoji">🎉</div>
         <h2 className="font-display review-done-title">Ulang kaji selesai!</h2>
         <p className="review-done-sub">
-          Bagus! Anda telah selesai ulangkaji hari ini. Saya akan jadualkan sesi seterusnya pada masa yang sesuai.
+          Bagus! Anda telah selesai ulangkaji hari ini. Saya akan jadualkan sesi
+          seterusnya pada masa yang sesuai.
         </p>
         <div className="review-done-actions">
           <button
@@ -259,7 +264,9 @@ export default function ReviewPage() {
   ) : (
     <div className="review-next-stack">
       <button type="button" className="btn-primary" onClick={handleNext}>
-        {idx + 1 < items.length ? "Soalan ulang kaji seterusnya →" : "Selesai Ulang Kaji →"}
+        {idx + 1 < items.length
+          ? "Soalan ulang kaji seterusnya →"
+          : "Selesai Ulang Kaji →"}
       </button>
 
       {/* Spaced-rep feedback after submit */}
@@ -267,7 +274,8 @@ export default function ReviewPage() {
         <p className="review-next-hint">
           {result.review_state.status === "mastered" ? (
             <>
-              Soalan <strong>dikuasai</strong> — saya akan simpan sehingga masa yang sesuai. 🏆
+              Soalan <strong>dikuasai</strong> — saya akan simpan sehingga masa
+              yang sesuai. 🏆
             </>
           ) : (
             <>
@@ -286,7 +294,16 @@ export default function ReviewPage() {
   );
 
   return (
-    <QuizSheet open bar={bar} onClose={() => router.push("/")}>
+    <QuizSheet
+      open
+      bar={bar}
+      onClose={() => router.push("/")}
+      title="Ulang Kaji"
+      subtitle={`${idx + 1} / ${items.length} soalan`}
+      label={item.question.topic_id?.replace(/_/g, " ")}
+      progress={idx}
+      total={items.length}
+    >
       {/* ── Header banner ── */}
       <div className="ai-cue ai-cue-review review-banner">
         <div className="review-banner-reason">
@@ -305,7 +322,10 @@ export default function ReviewPage() {
           {idx + 1} / {items.length}
         </span>
       </div>
-      <div className="review-progress-track review-progress-dots" aria-hidden="true">
+      <div
+        className="review-progress-track review-progress-dots"
+        aria-hidden="true"
+      >
         {items.map((_, progressIndex) => (
           <span
             key={progressIndex}
@@ -335,7 +355,10 @@ export default function ReviewPage() {
         )}
         {/* Overdue flag — shown when question missed its scheduled window */}
         {item.is_overdue && (
-          <span className="chip chip-warn" title="Ini sudah tertunggak — bagus anda mengulangkajinya sekarang!">
+          <span
+            className="chip chip-warn"
+            title="Ini sudah tertunggak — bagus anda mengulangkajinya sekarang!"
+          >
             Tertunggak
           </span>
         )}
@@ -362,7 +385,6 @@ export default function ReviewPage() {
           showResult={result !== null}
           isCorrect={result?.is_correct}
           correctOptionIndex={result ? result.correct_option_index : undefined}
-          isReview
         />
       </div>
 
@@ -384,7 +406,8 @@ export default function ReviewPage() {
           onClose={() => setShowBuddy(false)}
           learningContext={
             {
-              topicId: (item.question.topic_id ?? "ubahan") as LearningContext["topicId"],
+              topicId: (item.question.topic_id ??
+                "ubahan") as LearningContext["topicId"],
               topicName:
                 item.question.topic_id === "matriks"
                   ? "Matriks (Matrices)"
@@ -416,8 +439,13 @@ export default function ReviewPage() {
           className="sb-fab"
           onClick={() => setShowBuddy(true)}
           aria-label="Tanya Skorrel"
+          aria-label="Tanya Skorrel"
         >
-          <img src="/assets/mascot.webp" alt="Skorrel" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          <img
+            src="/assets/mascot.webp"
+            alt="Skorrel"
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
         </button>
       )}
     </QuizSheet>

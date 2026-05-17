@@ -142,7 +142,6 @@ function StudentHeader() {
         <h1 style={{ paddingLeft: "0.5rem" }}>Helo, {name}</h1>
         <div className="student-meta-row" style={{ paddingLeft: "0.5rem" }}>
           <span>{DEFAULT_STUDENT.form}</span>
-          <span aria-hidden="true">•</span>
           <span>{xp} XP</span>
         </div>
       </div>
@@ -277,7 +276,7 @@ function WeakTopicCard({ topics }: { topics: TopicStats[] }) {
           </div>
           <span className="weak-topic-pct">{pct}% tepat</span>
         </div>
-        <span className="weak-topic-cta">Ulangkaji sekarang — +10 XP</span>
+        <span className="weak-topic-cta">Ulangkaji sekarang ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â +10 XP</span>
       </div>
     </button>
   );
@@ -316,8 +315,28 @@ function AIChatCard({ onOpenSheet }: { onOpenSheet: () => void }) {
         <p className="ai-chat-collapsed-title">Keliru dengan soalan? Tanya je.</p>
         <p className="ai-chat-collapsed-sub">Skorrel sedia membantu</p>
       </div>
-      <span className="ai-chat-collapsed-arrow" aria-hidden="true">›</span>
-    </button>
+      <div className="icb-input-wrap">
+        <textarea
+          className="icb-input"
+          rows={1}
+          placeholder={"Tanya soalan kamu di sini\u2026"}
+          onFocus={onOpenSheet}
+          readOnly
+        />
+        <button type="button" className="icb-send" disabled aria-label="Hantar">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
+          </svg>
+        </button>
+      </div>
+      <div className="icb-chips">
+        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F4A1}"}</span>Hint Please</button>
+        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F50D}"}</span>Step-by-Step</button>
+        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F3AF}"}</span>Practice Quiz</button>
+        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F4D6}"}</span>Teach Me This</button>
+        <button type="button" className="icb-chip" onClick={onOpenSheet}><span aria-hidden="true">{"\u{1F9D1}\u200D\u{1F3EB}"}</span>Ask AI Coach</button>
+      </div>
+    </div>
   );
 }
 
@@ -336,9 +355,9 @@ function AIChatSheet({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const MODE_CHIPS: { key: "notes" | "questions" | "flashcard"; label: string; emoji: string }[] = [
-    { key: "notes", label: "Nota", emoji: "📝" },
-    { key: "questions", label: "Soalan", emoji: "❓" },
-    { key: "flashcard", label: "Flashcard", emoji: "🃏" },
+    { key: "notes", label: "Nota", emoji: "\u{1F4DD}" },
+    { key: "questions", label: "Soalan", emoji: "\u2753" },
+    { key: "flashcard", label: "Flashcard", emoji: "\u{1F0CF}" },
   ];
 
   const TOPIC_CHIPS: { key: TopicKey; label: string }[] = [
@@ -414,7 +433,7 @@ function AIChatSheet({
             onClick={onClose}
             aria-label="Tutup Skorrel"
           >
-            ✕
+            {"\u2715"}
           </button>
         </div>
 
@@ -455,7 +474,7 @@ function AIChatSheet({
           className="ai-sheet-go-btn"
           onClick={() => { onClose(); onOpen(selectedTopic, MODE_PROMPT[selectedMode]); }}
         >
-          Mula — {MODE_CHIPS.find(m => m.key === selectedMode)?.emoji} {MODE_CHIPS.find(m => m.key === selectedMode)?.label} · {TOPICS[selectedTopic].label}
+          {"Mula \u2014 "}{MODE_CHIPS.find(m => m.key === selectedMode)?.emoji} {MODE_CHIPS.find(m => m.key === selectedMode)?.label} {" \u00B7 "}{TOPICS[selectedTopic].label}
         </button>
 
         <div className="ai-chat-input-wrap">
@@ -463,7 +482,7 @@ function AIChatSheet({
             ref={inputRef}
             className="ai-chat-input"
             rows={1}
-            placeholder="Taip soalan kamu di sini…"
+            placeholder={"Taip soalan kamu di sini\u2026"}
             value={draft}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
@@ -553,5 +572,3 @@ function ProfileIcon() {
     </IconBase>
   );
 }
-
-

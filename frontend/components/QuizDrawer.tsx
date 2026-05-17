@@ -1,17 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import StandardQuizShell from "@/components/StandardQuizShell";
 import OptionCard from "@/components/OptionCard";
 import { QuizDetail, QuizSubmitResult, fetchQuizDetail, submitQuiz } from "@/lib/api";
-
-const TOPIC_META: Record<
-  QuizDetail["topicId"],
-  { label: string; emoji: string; color: string }
-> = {
-  ubahan:   { label: "Ubahan",   emoji: "📐", color: "#5b4cf5" },
-  matriks:  { label: "Matriks",  emoji: "🔢", color: "#d97706" },
-  insurans: { label: "Insurans", emoji: "🛡️", color: "#059669" },
-};
 
 interface QuizDrawerProps {
   quizId: string;
@@ -43,22 +35,21 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
         setPhase("questions");
       })
       .catch(() => {
-        setError("Couldn't load this quiz. Please try again.");
+        setError("Kuiz tidak dapat dimuatkan. Sila cuba lagi.");
         setPhase("error");
       });
   }, [quizId]);
 
   const questions = quiz?.questions ?? [];
   const currentQuestion = questions[currentIndex];
-  const topicMeta = quiz ? TOPIC_META[quiz.topicId] : null;
   const answeredCount = Object.keys(answers).length;
   const allAnswered = questions.length > 0 && questions.every((q) => answers[q.id] !== undefined);
 
   const scoreMessage = useMemo(() => {
     if (!result) return "";
-    if (result.percentage >= 80) return "Amazing! You're getting really strong at this. 🎉";
-    if (result.percentage >= 50) return "Good effort! Let's review the ones you missed. 💪";
-    return "No worries — let's go through this together. 📘";
+    if (result.percentage >= 80) return "Hebat! Anda semakin mahir dalam topik ini. 🎉";
+    if (result.percentage >= 50) return "Usaha yang baik! Mari ulang kaji soalan yang terlepas. 💪";
+    return "Tak apa, mari kita semak bersama. 📘";
   }, [result]);
 
   async function handleSubmit() {
@@ -73,7 +64,7 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
       setResult(res);
       setPhase("results");
     } catch {
-      setError("Couldn't submit your quiz. Please try again.");
+      setError("Kuiz tidak dapat dihantar. Sila cuba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -87,255 +78,180 @@ export default function QuizDrawer({ quizId, userId, onClose }: QuizDrawerProps)
     setPhase("questions");
   }
 
-  return (
-    <>
-      <div className="sb-backdrop" onClick={onClose} aria-hidden="true" />
-
-      <div className="sb-panel" role="dialog" aria-label="Practice Quiz">
-        {/* Drag handle */}
-        <div className="sb-drag-handle" />
-
-        {/* Header */}
-        <div className="sb-header">
-          <div className="sb-header-left">
-            <span className="sb-avatar">{topicMeta?.emoji ?? "🎯"}</span>
-            <div>
-              <div className="sb-title">{quiz?.title ?? "Practice Quiz"}</div>
-              <div className="sb-subtitle">
-                {topicMeta ? `${topicMeta.label} · Personalised` : "Loading…"}
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="sb-close"
-            onClick={onClose}
-            aria-label="Close quiz"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Scrollable body */}
-        <div className="sb-messages" style={{ padding: "1rem" }}>
-
-          {/* ── Loading ── */}
-          {phase === "loading" && (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-[20px] bg-slate-100 animate-pulse"
-                  style={{ height: 80 }}
-                />
+  // ── Loading ──
+  if (phase === "loading") {
+    return (
+      <StandardQuizShell
+        title="Menyediakan kuiz…"
+        progress={0}
+        total={1}
+        onClose={onClose}
+        bar={<div />}
+      >
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="card qcard animate-pulse">
+              <div className="h-5 w-3/4 bg-slate-100 rounded-full mb-4" />
+              {Array.from({ length: 4 }).map((__, j) => (
+                <div key={j} className="h-11 bg-slate-100 rounded-2xl mb-2" />
               ))}
-              <p className="text-center text-sm text-slate-400 mt-4">
-                Building your personalised quiz…
-              </p>
             </div>
-          )}
-
-          {/* ── Error ── */}
-          {phase === "error" && (
-            <div className="text-center py-10">
-              <p className="text-2xl mb-3">😕</p>
-              <p className="text-slate-700 font-medium">{error}</p>
-              <button
-                type="button"
-                className="mt-5 px-6 py-2.5 rounded-2xl bg-slate-900 text-white text-sm font-medium"
-                onClick={onClose}
-              >
-                Back to chat
-              </button>
-            </div>
-          )}
-
-          {/* ── Questions ── */}
-          {phase === "questions" && quiz && currentQuestion && topicMeta && (
-            <div className="space-y-4">
-              {/* Progress bar */}
-              <div>
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                  <span
-                    className="px-2 py-0.5 rounded-full text-white text-xs font-medium"
-                    style={{ background: topicMeta.color }}
-                  >
-                    {topicMeta.label}
-                  </span>
-                  <span>
-                    Q{currentIndex + 1} of {questions.length}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${Math.max(4, (answeredCount / questions.length) * 100)}%`,
-                      background: topicMeta.color,
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Question card */}
-              <div className="rounded-[20px] bg-white border border-slate-100 shadow-sm p-4">
-                <p className="text-base font-semibold text-slate-900 leading-7">
-                  {currentQuestion.text}
-                </p>
-
-                <div className="mt-4 space-y-2">
-                  {currentQuestion.options.map((opt, i) => (
-                    <OptionCard
-                      key={i}
-                      text={opt}
-                      selected={answers[currentQuestion.id] === i}
-                      onClick={() =>
-                        setAnswers((prev) => ({ ...prev, [currentQuestion.id]: i }))
-                      }
-                    />
-                  ))}
-                </div>
-
-                {currentQuestion.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {currentQuestion.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Prev / Next */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  className="h-11 rounded-2xl border border-slate-200 bg-white text-slate-800 text-sm font-medium disabled:opacity-40"
-                  onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-                  disabled={currentIndex === 0}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  className="h-11 rounded-2xl border border-slate-200 bg-white text-slate-800 text-sm font-medium disabled:opacity-40"
-                  onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-                  disabled={currentIndex >= questions.length - 1}
-                >
-                  Next
-                </button>
-              </div>
-
-              {error && (
-                <p className="text-sm text-rose-600 text-center">{error}</p>
-              )}
-            </div>
-          )}
-
-          {/* ── Results ── */}
-          {phase === "results" && result && quiz && topicMeta && (
-            <div className="space-y-4 pb-4">
-              {/* Score banner */}
-              <div className="rounded-[20px] bg-white border border-slate-100 shadow-sm p-5">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">Your score</p>
-                    <p className="text-4xl font-semibold text-slate-900">
-                      {result.score} / {result.total}
-                    </p>
-                    <p className="text-sm text-slate-500 mt-2">{scoreMessage}</p>
-                  </div>
-                  <div
-                    className="rounded-full text-white px-4 py-2 text-sm font-semibold shrink-0"
-                    style={{ background: topicMeta.color }}
-                  >
-                    {result.percentage}%
-                  </div>
-                </div>
-              </div>
-
-              {/* Per-question breakdown */}
-              {questions.map((q, idx) => {
-                const item = result.results[idx];
-                if (!item) return null;
-                return (
-                  <div
-                    key={q.id}
-                    className="rounded-[20px] bg-white border border-slate-100 shadow-sm p-4"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-slate-400 font-medium">Q{idx + 1}</span>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          item.isCorrect
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-rose-50 text-rose-700"
-                        }`}
-                      >
-                        {item.isCorrect ? "✓ Correct" : "✗ Missed"}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-slate-900">{q.text}</p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      Correct:{" "}
-                      <span className="font-semibold text-slate-900">
-                        {q.options[item.correctOptionIndex]}
-                      </span>
-                    </p>
-                    <p className="mt-2 text-xs text-slate-500 leading-5">
-                      {item.explanation.text}
-                    </p>
-                  </div>
-                );
-              })}
-
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  className="h-11 rounded-2xl border border-slate-200 bg-white text-slate-800 text-sm font-medium"
-                  onClick={handleRetry}
-                >
-                  Try again
-                </button>
-                <button
-                  type="button"
-                  className="h-11 rounded-2xl text-white text-sm font-semibold"
-                  style={{ background: topicMeta.color }}
-                  onClick={onClose}
-                >
-                  Back to chat
-                </button>
-              </div>
-            </div>
-          )}
+          ))}
         </div>
+      </StandardQuizShell>
+    );
+  }
 
-        {/* Sticky submit button — only during questions phase */}
-        {phase === "questions" && (
-          <div
-            style={{
-              padding: "0.75rem 1rem",
-              borderTop: "1px solid var(--border)",
-              flexShrink: 0,
-            }}
-          >
-            <button
-              type="button"
-              className="w-full h-12 rounded-2xl text-white text-sm font-semibold disabled:opacity-40 transition-opacity"
-              style={{ background: topicMeta?.color ?? "#5b4cf5" }}
-              disabled={!allAnswered || submitting}
-              onClick={handleSubmit}
-            >
-              {submitting ? "Submitting…" : `Submit Quiz (${answeredCount}/${questions.length})`}
+  // ── Error ──
+  if (phase === "error") {
+    return (
+      <StandardQuizShell
+        title="Kuiz"
+        progress={0}
+        total={1}
+        onClose={onClose}
+        bar={
+          <button type="button" className="btn-primary" onClick={onClose}>
+            Kembali ke chat
+          </button>
+        }
+      >
+        <div className="qs-empty-state">
+          <p className="qs-empty-emoji">😕</p>
+          <p className="qs-empty-text">{error}</p>
+        </div>
+      </StandardQuizShell>
+    );
+  }
+
+  // ── Results ──
+  if (phase === "results" && result && quiz) {
+    const scoreEmoji =
+      result.percentage >= 80 ? "🎉" : result.percentage >= 50 ? "💪" : "📘";
+
+    return (
+      <StandardQuizShell
+        title="Keputusan Kuiz"
+        subtitle={quiz.title}
+        progress={questions.length}
+        total={questions.length}
+        onClose={onClose}
+        bar={
+          <div className="learn-actions">
+            <button type="button" className="btn-ghost diag-skip-btn" onClick={handleRetry}>
+              Cuba Semula
+            </button>
+            <button type="button" className="btn-primary" onClick={onClose}>
+              Kembali ke chat
             </button>
           </div>
-        )}
+        }
+      >
+        <div className="card quiz-result-card">
+          <div className="quiz-result-banner">
+            <span className="quiz-result-emoji">{scoreEmoji}</span>
+            <div>
+              <p className="quiz-result-score">
+                {result.score} / {result.total}
+              </p>
+              <p className="quiz-result-msg">{scoreMessage}</p>
+            </div>
+            <span className="quiz-result-pct">{result.percentage}%</span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {questions.map((q, idx) => {
+            const item = result.results[idx];
+            if (!item) return null;
+            return (
+              <div key={q.id} className="card quiz-review-card">
+                <div className="quiz-review-row">
+                  <span className="quiz-review-num">S{idx + 1}</span>
+                  <span className={`chip ${item.isCorrect ? "chip-correct" : "chip-wrong"}`}>
+                    {item.isCorrect ? "✓ Betul" : "✗ Terlepas"}
+                  </span>
+                </div>
+                <p className="quiz-review-text">{q.text}</p>
+                <p className="quiz-review-answer">
+                  Jawapan betul: <strong>{q.options[item.correctOptionIndex]}</strong>
+                </p>
+                <p className="quiz-review-explanation">{item.explanation.text}</p>
+              </div>
+            );
+          })}
+        </div>
+      </StandardQuizShell>
+    );
+  }
+
+  // ── Questions ──
+  if (phase !== "questions" || !quiz || !currentQuestion) return null;
+
+  const bar = (
+    <button
+      type="button"
+      className="btn-primary"
+      disabled={!allAnswered || submitting}
+      onClick={handleSubmit}
+    >
+      {submitting
+        ? "Menghantar…"
+        : allAnswered
+          ? "Hantar Kuiz"
+          : `Hantar (${answeredCount}/${questions.length} dijawab)`}
+    </button>
+  );
+
+  return (
+    <StandardQuizShell
+      title={quiz.title}
+      subtitle={`Soalan ${currentIndex + 1} / ${questions.length}`}
+      progress={answeredCount}
+      total={questions.length}
+      onClose={onClose}
+      bar={bar}
+    >
+      <div className="card qcard">
+        <div className="qcard-header">
+          <span className="qcard-label">Soalan {currentIndex + 1}</span>
+        </div>
+        <p className="qcard-question">{currentQuestion.text}</p>
+        <div className="qcard-options">
+          {currentQuestion.options.map((opt, i) => (
+            <OptionCard
+              key={i}
+              index={i}
+              text={opt}
+              selected={answers[currentQuestion.id] === i}
+              onClick={() =>
+                setAnswers((prev) => ({ ...prev, [currentQuestion.id]: i }))
+              }
+            />
+          ))}
+        </div>
       </div>
-    </>
+
+      {error && <p className="diag-error">{error}</p>}
+
+      <div className="learn-actions quiz-nav-actions">
+        <button
+          type="button"
+          className="btn-ghost diag-skip-btn"
+          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+          disabled={currentIndex === 0}
+        >
+          ← Sebelumnya
+        </button>
+        <button
+          type="button"
+          className="btn-ghost diag-skip-btn"
+          onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
+          disabled={currentIndex >= questions.length - 1}
+        >
+          Seterusnya →
+        </button>
+      </div>
+    </StandardQuizShell>
   );
 }

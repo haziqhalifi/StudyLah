@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   submitAnswer,
@@ -8,20 +9,16 @@ import {
   startDiagnostic,
   getPapers,
   getAssessment,
-  postStudyBuddyMessage,
   Question,
   SubmitAnswerResponse,
   Paper,
   TopicStats,
-  ChatMessage,
 } from "@/lib/api";
 import QuestionCard from "@/components/QuestionCard";
 import ExplanationBlock from "@/components/ExplanationBlock";
 import QuizSheet from "@/components/QuizSheet";
 import StudyBuddyChat from "@/components/StudyBuddyChat";
-import MathText from "@/components/MathText";
-import type { LearningContext, QuickAction } from "@/lib/types";
-import { getChipsForContext } from "@/lib/quickActions";
+import type { LearningContext } from "@/lib/types";
 import { UBAHAN_STEPS, UBAHAN_SUBTOPICS } from "@/app/materials/ubahan/data";
 import { MATRIKS_STEPS, MATRIKS_SUBTOPICS } from "@/app/materials/matriks/data";
 import {
@@ -189,7 +186,37 @@ export default function LearnPage() {
       .finally(() => setLoadingPapers(false));
   }, [router]);
 
-  async function handleStartPractice(topicId: string) {
+  function pickWeakestSubtopic(
+    subtopics: SubtopicOption[],
+    stats: TopicStats[],
+  ): string {
+    // Build a mastery score per subtopic id using topic-level stats as proxy.
+    // Lower accuracy → higher weight → more likely to be picked.
+    const LEVEL_WEIGHT: Record<string, number> = {
+      beginner: 4,
+      developing: 3,
+      proficient: 2,
+      advanced: 1,
+    };
+
+    const weights = subtopics.map((sub) => {
+      const stat = stats.find((s) => s.topic_id === sub.id);
+      if (!stat) return { id: sub.id, w: 4 }; // unseen → highest weight
+      const levelW = LEVEL_WEIGHT[stat.level] ?? 2;
+      const accuracyW = Math.max(0.1, 1 - stat.accuracy); // low accuracy → higher weight
+      return { id: sub.id, w: levelW * accuracyW };
+    });
+
+    const total = weights.reduce((s, x) => s + x.w, 0);
+    let rand = Math.random() * total;
+    for (const { id, w } of weights) {
+      rand -= w;
+      if (rand <= 0) return id;
+    }
+    return weights[weights.length - 1].id;
+  }
+
+  async function handleStartPractice(topicId: string, subtopicId?: string | null) {
     if (!userId) return;
     setStarting(true);
     setStartError("");
@@ -198,7 +225,14 @@ export default function LearnPage() {
       if (!subjectPapers.length) throw new Error("No papers");
       const paper = subjectPapers[0];
 
-      const diagRes = await startDiagnostic(userId, topicId, paper.id);
+      // When no specific subtopic is chosen, pick one weighted by mastery weakness
+      let resolvedSubtopic = subtopicId ?? undefined;
+      if (!resolvedSubtopic && activeTopic) {
+        resolvedSubtopic = pickWeakestSubtopic(activeTopic.subtopics, topicStats);
+        setActiveSubtopicId(resolvedSubtopic);
+      }
+
+      const diagRes = await startDiagnostic(userId, topicId, paper.id, resolvedSubtopic);
       const firstQ = diagRes.questions[0];
       sessionStorage.setItem("currentQuestion", JSON.stringify(firstQ));
       setQuestion(firstQ);
@@ -449,7 +483,7 @@ export default function LearnPage() {
           className="lp-all-card"
           onClick={() => {
             setActiveSubtopicId(null);
-            handleStartPractice(activeTopic.id);
+            handleStartPractice(activeTopic.id, null);
           }}
           disabled={starting}
         >
@@ -459,7 +493,7 @@ export default function LearnPage() {
           <div className="lp-all-body">
             <p className="lp-all-title">Semua Subtopik</p>
             <p className="lp-all-sub">
-              AI pilih soalan dari semua bahagian {activeTopic.name}
+              AI pilih subtopik terlemah &amp; sesuaikan soalan mengikut tahap penguasaan
             </p>
           </div>
           <span className="lp-arrow" aria-hidden="true">
@@ -478,7 +512,7 @@ export default function LearnPage() {
               className="lp-subtopic-row"
               onClick={() => {
                 setActiveSubtopicId(sub.id);
-                handleStartPractice(activeTopic.id);
+                handleStartPractice(activeTopic.id, sub.id);
               }}
               disabled={starting}
             >
@@ -506,7 +540,6 @@ export default function LearnPage() {
   if (!question)
     return <div className="page-enter diag-sub">Memuatkan soalan…</div>;
 
-  const accuracy = count > 0 ? Math.round((correct / count) * 100) : 0;
   const diff = question.difficulty ?? "easy";
   const diffLabel: Record<string, string> = {
     easy: "Mudah",
@@ -548,15 +581,31 @@ export default function LearnPage() {
       {submitting ? "Menyemak…" : "Hantar Jawapan"}
     </button>
   ) : (
-    <button type="button" className="btn-primary" onClick={handleNext}>
-      Soalan Seterusnya →
-    </button>
+    <div className={`qs-feedback-panel ${result.is_correct ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+      <div className="qs-feedback-top">
+        <span className="qs-feedback-icon">{result.is_correct ? "✓" : "✗"}</span>
+        <div className="qs-feedback-text">
+          <p className="qs-feedback-title">{result.is_correct ? "Betul!" : "Jawapan Salah"}</p>
+          {!result.is_correct && (
+            <p className="qs-feedback-hint">Semak penerangan di bawah untuk faham jawapan betul.</p>
+          )}
+        </div>
+      </div>
+      <button type="button" className="qs-feedback-btn" onClick={handleNext}>
+        SETERUSNYA &rsaquo;
+      </button>
+    </div>
   );
 
   return (
     <QuizSheet
       open={view === "practice"}
       bar={bar}
+      streak={sessionStreak}
+      xp={xp}
+      meta={`${topicLabel} · ${diffLabel[diff] ?? diff}`}
+      progress={count}
+      total={Math.max(10, count)}
       onClose={() => {
         setView("subtopics");
         setResult(null);
@@ -571,43 +620,6 @@ export default function LearnPage() {
         </div>
       )}
 
-      {/* ── Session stats strip ── */}
-      <div className="learn-stats">
-        <div className="learn-stat">
-          <div className="learn-stat-label">Selesai</div>
-          <div className="learn-stat-value">{count}</div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">Betul</div>
-          <div className="learn-stat-value green">{correct}</div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">Ketepatan</div>
-          <div
-            className={`learn-stat-value ${count === 0 ? "" : accuracy >= 60 ? "green" : "red"}`}
-          >
-            {count > 0 ? `${accuracy}%` : "—"}
-          </div>
-        </div>
-        <div className="learn-stat">
-          <div className="learn-stat-label">XP</div>
-          <div className="learn-stat-value brand">{xp}</div>
-        </div>
-        {sessionStreak >= 2 && (
-          <div className="learn-stat">
-            <div className="learn-stat-label">Rentetan</div>
-            <div className="learn-stat-value streak">{sessionStreak} 🔥</div>
-          </div>
-        )}
-        {result?.skill_summary && (
-          <div className="learn-stat">
-            <div className="learn-stat-label">Tahap</div>
-            <div className="learn-stat-value brand">
-              {result.skill_summary.level}
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* ── Question context row ── */}
       <div className="learn-meta-row">
@@ -637,7 +649,6 @@ export default function LearnPage() {
         showResult={result !== null}
         isCorrect={result?.is_correct}
         correctOptionIndex={result ? 0 : undefined}
-        isReview={false}
       />
 
       {/* ── Explanation shown after answering ── */}
@@ -650,32 +661,16 @@ export default function LearnPage() {
         />
       )}
 
-      {/* ── Inline AI chat ── */}
+      {/* ── StudyBuddy floating action button ── */}
       {userId && (
-        <InlineChatBar
-          userId={userId}
-          learningContext={{
-            topicId: (question.topic_id ??
-              "ubahan") as LearningContext["topicId"],
-            topicName: topicDisplayName,
-            currentQuestion: {
-              id: question.id,
-              text: question.text,
-              options: question.options,
-              difficulty: question.difficulty,
-            },
-            lastAttempt: result
-              ? {
-                  selectedOptionIndex: selected ?? 0,
-                  isCorrect: result.is_correct,
-                  correctOptionIndex,
-                }
-              : undefined,
-            recentAttempts,
-            pageContext: "learn",
-          }}
-          onOpenFull={() => setShowBuddy(true)}
-        />
+        <button
+          type="button"
+          className={`sb-fab${showBuddy ? " sb-fab-active" : ""}`}
+          onClick={() => setShowBuddy((v) => !v)}
+          aria-label="Open Skorrel"
+        >
+          <Image src="/assets/mascot.webp" alt="Skorrel" width={30} height={30} />
+        </button>
       )}
 
       {/* ── Full-screen StudyBuddy drawer ── */}
@@ -710,164 +705,3 @@ export default function LearnPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// InlineChatBar
-// ---------------------------------------------------------------------------
-
-interface InlineChatBarProps {
-  userId: string;
-  learningContext: LearningContext;
-  onOpenFull: () => void;
-}
-
-function InlineChatBar({
-  userId,
-  learningContext,
-  onOpenFull,
-}: InlineChatBarProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  const chips = getChipsForContext(learningContext);
-
-  useEffect(() => {
-    setMessages([]);
-    setInput("");
-  }, [learningContext.currentQuestion?.id]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
-
-  async function send(text: string) {
-    const trimmed = text.trim();
-    if (!trimmed || loading) return;
-    const userMsg: ChatMessage = { role: "user", content: trimmed };
-    const history: ChatMessage[] = [...messages, userMsg];
-    setMessages(history);
-    setInput("");
-    if (inputRef.current) inputRef.current.style.height = "auto";
-    setLoading(true);
-    try {
-      const res = await postStudyBuddyMessage(userId, history, learningContext);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: res.reply },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Maaf, ada ralat. Cuba lagi." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleChip(action: QuickAction) {
-    send(action.message);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send(input);
-    }
-  }
-
-  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-  }
-
-  return (
-    <div className="icb-wrap">
-      <div className="icb-header">
-        <span className="icb-avatar" aria-hidden="true">
-          🤖
-        </span>
-        <span className="icb-title">Tanya AI</span>
-        <button
-          type="button"
-          className="icb-expand-btn"
-          onClick={onOpenFull}
-          aria-label="Buka chat penuh"
-        >
-          Buka penuh ↗
-        </button>
-      </div>
-
-      {messages.length > 0 && (
-        <div className="icb-messages">
-          {messages.map((m, i) => (
-            <div key={i} className={`icb-bubble icb-bubble--${m.role}`}>
-              {m.role === "assistant" ? (
-                <MathText className="icb-md">{m.content}</MathText>
-              ) : (
-                <span>{m.content}</span>
-              )}
-            </div>
-          ))}
-          {loading && (
-            <div className="icb-bubble icb-bubble--assistant">
-              <span className="sb-typing">
-                <span />
-                <span />
-                <span />
-              </span>
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-      )}
-
-      <div className="icb-input-wrap">
-        <textarea
-          ref={inputRef}
-          className="icb-input"
-          rows={1}
-          placeholder="Tanya soalan kamu di sini…"
-          value={input}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-        />
-        <button
-          type="button"
-          className="icb-send"
-          onClick={() => send(input)}
-          disabled={!input.trim() || loading}
-          aria-label="Hantar"
-        >
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M12 19V5M5 12l7-7 7 7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <div className="icb-chips">
-        {chips.map((chip) => (
-          <button
-            key={chip.actionType + chip.label}
-            type="button"
-            className="icb-chip"
-            onClick={() => handleChip(chip)}
-            disabled={loading}
-          >
-            <span aria-hidden="true">{chip.emoji}</span>
-            {chip.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
