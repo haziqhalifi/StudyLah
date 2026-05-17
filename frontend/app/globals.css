@@ -8973,6 +8973,10 @@ button.map-node:hover {
   width: 100%;
 }
 
+.ob-page--result {
+  padding-bottom: 7.5rem;
+}
+
 /* Fixed gradient progress bar */
 .ob-progress-track {
   position: fixed;
@@ -9403,6 +9407,7 @@ button.map-node:hover {
   text-align: center;
   margin: 1.25rem 0 1rem;
   width: 100%;
+  background: transparent;
 }
 /* Score ring wrapper — holds the SVG ring + circle */
 .ob-score-ring-wrap {
@@ -9624,6 +9629,17 @@ button.map-node:hover {
   background: linear-gradient(to top, var(--surface) 70%, transparent);
   width: 100%;
   margin-top: auto;
+}
+
+.ob-sticky-cta--floating {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  width: min(480px, calc(100% - 2.5rem));
+  z-index: 220;
+  padding: 0;
+  background: transparent;
 }
 
 @media (max-width: 480px) {
