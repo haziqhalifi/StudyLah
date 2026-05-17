@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MATRIKS_STEPS, MATRIKS_SUBTOPICS } from "../data";
 
@@ -93,10 +93,6 @@ export default function MatriksSubtopicsPage() {
     };
   }, [currentSubtopicId]);
 
-  const currentSubtopic = useMemo(
-    () => MATRIKS_SUBTOPICS.find((subtopic) => subtopic.id === currentSubtopicId) ?? MATRIKS_SUBTOPICS[0],
-    [currentSubtopicId]
-  );
 
   function isCompleted(stepId: string) {
     return completedIds.includes(stepId);
@@ -114,31 +110,31 @@ export default function MatriksSubtopicsPage() {
   }
 
   return (
-    <div className="material-page page-enter">
+    <>
       <header
         ref={(node) => {
           stickyHeadRef.current = node;
         }}
         className="material-current-head"
       >
-        <button
-          type="button"
-          onClick={() => router.push("/materials/matriks")}
-          className="material-back-btn"
-          aria-label="Kembali ke Matriks"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Kembali
-        </button>
-        <p className="material-eyebrow">📖 Bab 2</p>
-        <h1 className="material-title">
-          {currentSubtopic.id} {currentSubtopic.title}
-        </h1>
+        <div className="material-header-top-row">
+          <button
+            type="button"
+            onClick={() => router.push("/materials/matriks")}
+            className="material-back-btn"
+            aria-label="Kembali ke Matriks"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <p className="material-eyebrow">📖 Matematik</p>
+        </div>
+        <h1 className="material-title">Bab 2: Matriks</h1>
         <p className="material-subtitle">Scroll untuk tukar subtopik semasa.</p>
       </header>
 
+      <div className="material-page page-enter">
       <section className="material-vertical-map" aria-label="Peta pembelajaran menegak">
         <div className="material-vertical-line" aria-hidden="true" />
         {MATRIKS_STEPS.map((step, index) => {
@@ -195,7 +191,8 @@ export default function MatriksSubtopicsPage() {
           );
         })}
       </section>
-    </div>
+      </div>
+    </>
   );
 }
 

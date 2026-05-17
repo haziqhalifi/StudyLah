@@ -16,7 +16,7 @@ export type JourneyStep = {
   subtopicId: string;
   type: StepType;
   title: string;
-  prompt: string;
+  prompt?: string;
   task?: string;
   answer?: string;
 };
@@ -55,30 +55,23 @@ export const INSURANS_SUBTOPICS: Subtopic[] = [
   },
 ];
 
-function labelJenis(type: StepType): string {
-  if (type === "Content") return "Kandungan";
-  if (type === "Exercise") return "Latihan";
-  return "Pentaksiran";
-}
-
 export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopic, index) => {
   const baseNo = index * 4;
+  const title = `${subtopic.id} ${subtopic.title}`;
   return [
     {
       id: `${subtopic.id}-content`,
       no: baseNo + 1,
       subtopicId: subtopic.id,
       type: "Content",
-      title: `${labelJenis("Content")} ${subtopic.id}`,
-      prompt: `Baca dan fahami konsep ${subtopic.title}.`,
+      title,
     },
     {
       id: `${subtopic.id}-exercise-1`,
       no: baseNo + 2,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `${labelJenis("Exercise")} ${subtopic.id}`,
-      prompt: `Kenal pasti konsep utama bagi ${subtopic.title}.`,
+      title,
       task: "Nyatakan maksud, fungsi, atau tujuan insurans berdasarkan subtopik ini.",
       answer: "Semak definisi dan kaitan konsep dengan pengurusan risiko kewangan.",
     },
@@ -87,8 +80,7 @@ export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopi
       no: baseNo + 3,
       subtopicId: subtopic.id,
       type: "Exercise",
-      title: `${labelJenis("Exercise")} ${subtopic.id}`,
-      prompt: `Gunakan kaedah ${subtopic.title} untuk menyelesaikan soalan.`,
+      title,
       task: "Laksanakan pengiraan atau pilih jenis insurans yang sesuai berdasarkan situasi diberi.",
       answer: "Pastikan formula, istilah, dan alasan pilihan digunakan dengan tepat.",
     },
@@ -97,8 +89,7 @@ export const INSURANS_STEPS: JourneyStep[] = INSURANS_SUBTOPICS.flatMap((subtopi
       no: baseNo + 4,
       subtopicId: subtopic.id,
       type: "Assessment",
-      title: `${labelJenis("Assessment")} ${subtopic.id}`,
-      prompt: `Uji penguasaan anda bagi ${subtopic.title}.`,
+      title,
       task: "Jawab soalan campuran konsep, jenis insurans, dan pengiraan.",
       answer: "Tumpukan pada ketepatan istilah, formula premium, serta tafsiran deduktibel dan ko-insurans.",
     },

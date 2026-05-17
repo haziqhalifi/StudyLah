@@ -14,7 +14,7 @@ type StepLite = {
   no: number;
   type: "Content" | "Exercise" | "Assessment";
   title: string;
-  prompt: string;
+  prompt?: string;
   task?: string;
   answer?: string;
 };
