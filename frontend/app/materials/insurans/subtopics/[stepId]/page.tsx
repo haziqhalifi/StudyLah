@@ -12,6 +12,7 @@ type LessonPage = {
 };
 
 const COMPLETION_KEY = "insurans_completed_steps_v1";
+const MATH_LINE_PATTERN = /[=÷×⁻ⁿᵐᵢⱼ≠]|\b\d+\/\w+|\bFormula\b/;
 
 function buildPages(step: (typeof INSURANS_STEPS)[number], subtopic: (typeof INSURANS_SUBTOPICS)[number]): LessonPage[] {
   const conceptLines = [subtopic.meaning];
@@ -104,6 +105,10 @@ export default function InsuransStepPage() {
     router.push("/materials/insurans/subtopics");
   }
 
+  function isMathLine(line: string) {
+    return MATH_LINE_PATTERN.test(line) || line.startsWith("Formula") || line.startsWith("Bentuk");
+  }
+
   if (step.type !== "Content") {
     return (
       <MaterialQuizSession
@@ -135,7 +140,9 @@ export default function InsuransStepPage() {
             </p>
             <h2>{pages[pageIndex]?.title}</h2>
             {pages[pageIndex]?.lines.map((line) => (
-              <p key={line}>{line}</p>
+              <p key={line} className={isMathLine(line) ? "material-math-line" : undefined}>
+                {line}
+              </p>
             ))}
           </div>
 
