@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import uuid
 from typing import Dict, List, Literal, Optional
 
@@ -22,6 +23,45 @@ _TOPIC_BY_CHAPTER: Dict[int, str] = {
 
 # In-memory onboarding sessions keyed by session_id.
 _session_bank: Dict[str, List[dict]] = {}
+
+_MOJIBAKE_MAP = {
+    "â‰¥": "≥",
+    "â‰¤": "≤",
+    "â‰ ": "≠",
+    "Ã—": "×",
+    "âˆ’": "−",
+    "âˆš": "√",
+    "Ï€": "π",
+    "Â°": "°",
+}
+
+
+def _clean_math_text(text: str) -> str:
+    out = (text or "").strip()
+    if not out:
+        return out
+
+    for bad, good in _MOJIBAKE_MAP.items():
+        out = out.replace(bad, good)
+
+    # Collapse accidental repeated whitespace first.
+    out = re.sub(r"\s+", " ", out)
+
+    # Remove spaces before punctuation and ensure one space after punctuation.
+    out = re.sub(r"\s+([,.;:!?])", r"\1", out)
+    out = re.sub(r"([,.;:!?])(?!\s|$)", r"\1 ", out)
+
+    # Keep equations readable: add spacing around core operators when used between terms.
+    out = re.sub(r"(?<=[0-9A-Za-z\)])\s*([=+×÷<>≤≥])\s*(?=[0-9A-Za-z(])", r" \1 ", out)
+    out = re.sub(r"(?<=[0-9A-Za-z\)])\s*-\s*(?=[0-9A-Za-z(])", " - ", out)
+
+    # Trim inner spaces around parentheses.
+    out = re.sub(r"\(\s+", "(", out)
+    out = re.sub(r"\s+\)", ")", out)
+
+    # Final whitespace normalization.
+    out = re.sub(r"\s+", " ", out).strip()
+    return out
 
 
 class OnboardingQuestion(BaseModel):
@@ -96,8 +136,8 @@ def _fetch_form5_questions(limit: int = 220) -> List[dict]:
             {
                 "id": str(row["id"]),
                 "topic": topic,
-                "text": str(row["question"]),
-                "options": [str(o) for o in options],
+                "text": _clean_math_text(str(row["question"])),
+                "options": [_clean_math_text(str(o)) for o in options],
                 "correct_index": int(row.get("correct_index", 0)),
             }
         )
