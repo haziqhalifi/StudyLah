@@ -7,25 +7,23 @@ import {
   createUser,
   startOnboarding,
   submitOnboarding,
+  submitAnswer as apiSubmitAnswer,
+  generateExplanation,
+  type Explanation,
   type OnboardingDiagnosticResponse,
   type OnboardingQuestion,
 } from "@/lib/api";
-import MathText from "@/components/MathText";
+import QuizSheet from "@/components/QuizSheet";
+import QuestionCard from "@/components/QuestionCard";
+import ExplanationBlock from "@/components/ExplanationBlock";
+import StudyBuddyPanel from "@/components/StudyBuddyPanel";
+import { playSubmitSound, playCorrectSound, playWrongSound } from "@/lib/sounds";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Step = "welcome" | "profile" | "quiz" | "analyzing" | "result";
 
-interface SlotState {
-  selected: number;
-  isCorrect: boolean;
-  revealed: boolean;
-}
-
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const LETTERS = ["A", "B", "C", "D"];
-const FEEDBACK_MS = 1500;
 
 const DIALOGUES: Record<string, string[]> = {
   welcome: [
@@ -34,19 +32,6 @@ const DIALOGUES: Record<string, string[]> = {
   profile: [
     "Fill in your details below so I can set up your perfect learning path. Let's get those A's!",
   ],
-  quiz_start: ["First question — let's go! 🚀"],
-  quiz_correct: [
-    "Amazing! You got it! 🎉",
-    "Correct! You're on fire! 🔥",
-    "Yes! Keep it up! ⭐",
-    "Brilliant work! 💪",
-  ],
-  quiz_wrong: [
-    "Oops! No worries, keep going! 💪",
-    "Not quite — but that's how we learn! 📚",
-    "Mistakes make us stronger! 🌱",
-  ],
-  quiz_mid: ["Halfway there! 🎯", "Almost done! Keep the momentum! ⚡"],
   analyzing: [
     "Let me look at your answers... 🔍",
     "Analysing with Google AI! 🧮",
@@ -146,15 +131,26 @@ export default function OnboardingPage() {
   const [sessionId, setSessionId] = useState("");
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([]);
   const [qIndex, setQIndex] = useState(0);
-  const [qKey, setQKey] = useState(0);
-  const [slotStates, setSlotStates] = useState<Record<number, SlotState>>({});
+  const [selected, setSelected] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [sessionStreak, setSessionStreak] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [explanation, setExplanation] = useState<Explanation | null>(null);
+  const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
+  const [showBuddy, setShowBuddy] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const answersRef = useRef<Record<string, number>>({});
 
   // Result
-  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(
-    null,
-  );
+  const [result, setResult] = useState<OnboardingDiagnosticResponse | null>(null);
+
+  useEffect(() => {
+    const uid = sessionStorage.getItem("userId");
+    setUserId(uid);
+    const storedXp = parseInt(sessionStorage.getItem("userXp") ?? "0", 10);
+    setXp(isNaN(storedXp) ? 0 : storedXp);
+  }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -182,77 +178,101 @@ export default function OnboardingPage() {
     setError("");
     setLoading(true);
     try {
-      const userId =
+      const uid =
         sessionStorage.getItem("userId") ||
         (typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
           : `user-${Date.now()}`);
-      sessionStorage.setItem("userId", userId);
+      sessionStorage.setItem("userId", uid);
       sessionStorage.setItem("onboardingName", name.trim());
       sessionStorage.setItem("onboardingSchool", school.trim());
       sessionStorage.setItem("onboardingForm", form);
 
-      await createUser(userId, name.trim());
-      const res = await startOnboarding(
-        name.trim(),
-        school.trim(),
-        Number(form),
-      );
+      await createUser(uid, name.trim());
+      const res = await startOnboarding(name.trim(), school.trim(), Number(form));
 
       setSessionId(res.session_id);
       setQuestions(res.questions);
       setQIndex(0);
-      setQKey((k) => k + 1);
-      setSlotStates({});
+      setSelected(null);
+      setSubmitted(false);
       setScore(0);
+      setSessionStreak(0);
       answersRef.current = {};
+      setUserId(uid);
       setStep("quiz");
-      showDialogue("quiz_start");
     } catch {
-      setError(
-        "Unable to start onboarding. Check your connection and try again.",
-      );
+      setError("Unable to start onboarding. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  // ── Option pick ────────────────────────────────────────────────────────────
+  // ── Submit answer ──────────────────────────────────────────────────────────
 
-  function handlePick(optionIdx: number) {
+  async function handleSubmit() {
+    if (selected === null) return;
     const q = questions[qIndex];
-    if (!q || slotStates[qIndex]?.revealed) return;
+    if (!q) return;
 
-    const isCorrect = optionIdx === q.correct_index;
-    answersRef.current[q.id] = optionIdx;
-    if (isCorrect) setScore((s) => s + 1);
+    playSubmitSound();
 
-    setSlotStates((prev) => ({
-      ...prev,
-      [qIndex]: { selected: optionIdx, isCorrect, revealed: true },
-    }));
-    showDialogue(isCorrect ? "quiz_correct" : "quiz_wrong");
+    const isCorrect = selected === q.correct_index;
+    answersRef.current[q.id] = selected;
 
-    setTimeout(() => {
-      const isLast = qIndex === questions.length - 1;
-      if (isLast) {
-        handleFinishQuiz();
-      } else {
-        const next = qIndex + 1;
-        setQIndex(next);
-        setQKey((k) => k + 1);
-        showDialogue(
-          next === Math.floor(questions.length / 2)
-            ? "quiz_mid"
-            : isCorrect
-              ? "quiz_correct"
-              : "quiz_wrong",
-        );
-      }
-    }, FEEDBACK_MS);
+    if (isCorrect) {
+      setScore((s) => s + 1);
+      setSessionStreak((s) => s + 1);
+      setTimeout(playCorrectSound, 100);
+    } else {
+      setSessionStreak(0);
+      setTimeout(playWrongSound, 100);
+    }
+
+    const xpGain = isCorrect ? 10 : 5;
+    setXp((prev) => {
+      const next = prev + xpGain;
+      sessionStorage.setItem("userXp", String(next));
+      return next;
+    });
+
+    if (userId) {
+      apiSubmitAnswer(userId, q.id, selected).catch(() => {});
+    }
+
+    setSubmitted(true);
   }
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
+  async function handleGenerateExplanation() {
+    const q = questions[qIndex];
+    if (!userId || selected === null || !q) return;
+    setIsGeneratingExplanation(true);
+    try {
+      const exp = await generateExplanation(userId, q.id, selected);
+      setExplanation(exp);
+    } catch {
+      // silently ignore
+    } finally {
+      setIsGeneratingExplanation(false);
+    }
+  }
+
+  // ── Next question / finish ─────────────────────────────────────────────────
+
+  function handleNext() {
+    const isLast = qIndex === questions.length - 1;
+    if (isLast) {
+      handleFinishQuiz();
+    } else {
+      setQIndex((i) => i + 1);
+      setSelected(null);
+      setSubmitted(false);
+      setExplanation(null);
+      setShowBuddy(false);
+    }
+  }
+
+  // ── Submit quiz ────────────────────────────────────────────────────────────
 
   async function handleFinishQuiz() {
     setStep("analyzing");
@@ -265,10 +285,7 @@ export default function OnboardingPage() {
     }));
 
     try {
-      const [res] = await Promise.all([
-        submitOnboarding(sessionId, payload),
-        minDelay,
-      ]);
+      const [res] = await Promise.all([submitOnboarding(sessionId, payload), minDelay]);
       localStorage.setItem("onboardingDiagnosticShown", "1");
       setResult(res);
       setStep("result");
@@ -282,14 +299,106 @@ export default function OnboardingPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const currentQ = questions[qIndex];
-  const currentSlot = slotStates[qIndex];
 
-  function optionClass(idx: number) {
-    if (!currentSlot?.revealed) return "ob-option";
-    if (idx === currentQ?.correct_index) return "ob-option ob-correct";
-    if (idx === currentSlot.selected && !currentSlot.isCorrect)
-      return "ob-option ob-wrong";
-    return "ob-option ob-dimmed";
+  // ── QUIZ step — identical UI to learn page quiz ───────────────────────────
+  if (step === "quiz" && currentQ) {
+    const quizQuestion = {
+      id: currentQ.id,
+      text: currentQ.text,
+      options: currentQ.options,
+      topic_id: currentQ.topic,
+      difficulty: "sederhana" as const,
+      tags: [] as string[],
+    };
+
+    const isCorrect = selected === currentQ.correct_index;
+    const isFinalQ = qIndex === questions.length - 1;
+    const done = qIndex + (submitted ? 1 : 0);
+
+    const bar = !submitted ? (
+      <button
+        type="button"
+        className="btn-primary"
+        disabled={selected === null}
+        onClick={handleSubmit}
+      >
+        Hantar Jawapan
+      </button>
+    ) : (
+      <div className={`qs-feedback-panel ${isCorrect ? "qs-feedback-correct" : "qs-feedback-wrong"}`}>
+        <div className="qs-feedback-top">
+          <span className="qs-feedback-icon">{isCorrect ? "✓" : "✗"}</span>
+          <div className="qs-feedback-text">
+            <p className="qs-feedback-title">{isCorrect ? "Betul!" : "Jawapan Salah"}</p>
+            {!isCorrect && (
+              <p className="qs-feedback-hint">Semak jawapan betul yang ditunjukkan di atas.</p>
+            )}
+          </div>
+        </div>
+        <button type="button" className="qs-feedback-btn" onClick={handleNext}>
+          {isFinalQ ? "TAMAT SESI" : "SETERUSNYA"} &rsaquo;
+        </button>
+      </div>
+    );
+
+    return (
+      <QuizSheet
+        open
+        onClose={() => {
+          setStep("welcome");
+          showDialogue("welcome");
+        }}
+        title="Diagnostic Quiz"
+        subtitle={`Soalan ${qIndex + 1} / ${questions.length}`}
+
+        progress={done}
+        total={questions.length}
+        streak={sessionStreak}
+        xp={xp}
+        bar={bar}
+      >
+        <QuestionCard
+          question={quizQuestion}
+          selectedOptionIndex={selected}
+          onSelectOption={submitted ? undefined : setSelected}
+          showResult={submitted}
+          isCorrect={isCorrect}
+          correctOptionIndex={currentQ.correct_index}
+        />
+
+        {submitted && (
+          <ExplanationBlock
+            explanation={explanation}
+            isCorrect={isCorrect}
+            onGenerateExplanation={handleGenerateExplanation}
+            isGenerating={isGeneratingExplanation}
+          />
+        )}
+
+        {submitted && showBuddy && userId && (
+          <StudyBuddyPanel
+            userId={userId}
+            questionContext={currentQ.text}
+            onClose={() => setShowBuddy(false)}
+          />
+        )}
+
+        {submitted && !showBuddy && (
+          <button
+            type="button"
+            className="sb-fab"
+            onClick={() => setShowBuddy(true)}
+            aria-label="Tanya Skorrel"
+          >
+            <img
+              src="/assets/mascot.webp"
+              alt="Skorrel"
+              className="sb-fab-img"
+            />
+          </button>
+        )}
+      </QuizSheet>
+    );
   }
 
   return (
@@ -321,13 +430,7 @@ export default function OnboardingPage() {
       {/* Mascot + dialogue — profile step only (side-by-side) */}
       {step === "profile" && (
         <div className="ob-mascot-row">
-          <span
-            style={{
-              display: "inline-block",
-              transform: "scaleX(-1)",
-              flexShrink: 0,
-            }}
-          >
+          <span className="ob-mascot-flip">
             <Image
               src="/assets/mascot.webp"
               alt="Skorrel"
@@ -352,11 +455,9 @@ export default function OnboardingPage() {
       {step === "welcome" && (
         <>
           <div className="ob-welcome-layout">
-            {/* Bubble: normal flow, grows downward */}
             <div className="ob-dialogue ob-dialogue--above" key={dialogueKey}>
               <TypewriterText text={dialogue} />
             </div>
-            {/* Mascot: absolutely anchored at bottom, never moves */}
             <div className="ob-mascot-wrapper">
               <Image
                 src="/assets/mascot.webp"
@@ -451,92 +552,6 @@ export default function OnboardingPage() {
         </>
       )}
 
-      {/* ── QUIZ ───────────────────────────────────────────────────────────── */}
-      {step === "quiz" && currentQ && (
-        <>
-          {/* Counter + score */}
-          <div className="ob-quiz-header">
-            <span className="ob-q-counter">
-              Question {qIndex + 1} / {questions.length}
-            </span>
-            <span className="ob-score-chip">⭐ {score} correct</span>
-          </div>
-
-          {/* Dot mini-progress */}
-          <div className="ob-dots-row">
-            {questions.map((_, i) => {
-              const slot = slotStates[i];
-              return (
-                <div
-                  key={i}
-                  className={[
-                    "ob-dot",
-                    i === qIndex ? "ob-dot-active" : "",
-                    slot
-                      ? slot.isCorrect
-                        ? "ob-dot-correct"
-                        : "ob-dot-wrong"
-                      : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                />
-              );
-            })}
-          </div>
-
-          {/* Question card — keyed so slide animation re-fires on advance */}
-          <div className="ob-question-enter" key={qKey}>
-            <div className="ob-topic-tag">
-              {topicEmoji(currentQ.topic)} {currentQ.topic}
-            </div>
-
-            <p className="ob-q-text">
-              <MathText>{currentQ.text}</MathText>
-            </p>
-
-            <div className="ob-options">
-              {currentQ.options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={optionClass(idx)}
-                  onClick={() => handlePick(idx)}
-                  disabled={!!currentSlot?.revealed}
-                >
-                  <span className="ob-option-letter">{LETTERS[idx]}</span>
-                  <span className="ob-option-text">
-                    <MathText inline>{opt}</MathText>
-                  </span>
-                  {currentSlot?.revealed && idx === currentQ.correct_index && (
-                    <span className="ob-option-check ob-option-check-correct">
-                      ✓
-                    </span>
-                  )}
-                  {currentSlot?.revealed &&
-                    idx === currentSlot.selected &&
-                    !currentSlot.isCorrect && (
-                      <span className="ob-option-check ob-option-check-wrong">
-                        ✗
-                      </span>
-                    )}
-                </button>
-              ))}
-            </div>
-
-            {currentSlot?.revealed && (
-              <p className="ob-next-hint">
-                {currentSlot.isCorrect
-                  ? "Correct! Next question loading…"
-                  : `The correct answer was ${LETTERS[currentQ.correct_index]}. Moving on…`}
-              </p>
-            )}
-          </div>
-
-          {error && <p className="ob-form-error">{error}</p>}
-        </>
-      )}
-
       {/* ── ANALYZING ──────────────────────────────────────────────────────── */}
       {step === "analyzing" && (
         <div className="ob-analyzing">
@@ -587,6 +602,53 @@ function ProgressFillDriver({ pct }: { pct: number }) {
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 
+// ─── TopicCard (uses ref to set dynamic CSS vars without inline styles) ───────
+
+function TopicCard({
+  topic,
+  correct,
+  total,
+  accuracy,
+  tier,
+  index,
+}: {
+  topic: string;
+  correct: number;
+  total: number;
+  accuracy: number;
+  tier: { label: string; cls: string };
+  index: number;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cardRef.current)
+      cardRef.current.style.animationDelay = `${0.6 + index * 0.12}s`;
+    if (barRef.current)
+      barRef.current.style.width = `${Math.round(accuracy * 100)}%`;
+  }, [index, accuracy]);
+
+  return (
+    <div ref={cardRef} className="ob-topic-card ob-result-fadein">
+      <div className="ob-topic-row">
+        <span className="ob-topic-name">
+          {topicEmoji(topic)} {topic}
+        </span>
+        <span className={`ob-topic-badge ${tier.cls}`}>{tier.label}</span>
+      </div>
+      <p className="ob-topic-score">
+        {correct}/{total} correct
+      </p>
+      <div className="ob-topic-bar-track">
+        <div ref={barRef} className={`ob-topic-bar-fill ${tier.cls}`} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const RING_R = 52;
 const CIRCUMFERENCE = 2 * Math.PI * RING_R;
 
@@ -604,6 +666,11 @@ function ResultScreen({
   const pct = Math.round((result.score / result.total) * 100);
   const [displayScore, setDisplayScore] = useState(0);
   const [displayPct, setDisplayPct] = useState(0);
+  const ringFillRef = useRef<SVGCircleElement>(null);
+  const ringCircleRef = useRef<HTMLDivElement>(null);
+
+  const ringColor =
+    pct >= 70 ? "var(--correct)" : pct >= 45 ? "#f59e0b" : "var(--wrong)";
 
   useEffect(() => {
     let raf: number;
@@ -612,17 +679,23 @@ function ResultScreen({
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1);
       const eased = 1 - (1 - t) ** 3;
-      setDisplayScore(Math.round(eased * result.score));
-      setDisplayPct(Math.round(eased * pct));
+      const score = Math.round(eased * result.score);
+      const pctNow = Math.round(eased * pct);
+      const offset = CIRCUMFERENCE - (CIRCUMFERENCE * pctNow) / 100;
+      setDisplayScore(score);
+      setDisplayPct(pctNow);
+      if (ringFillRef.current) {
+        ringFillRef.current.style.strokeDashoffset = String(offset);
+        ringFillRef.current.style.stroke = ringColor;
+      }
+      if (ringCircleRef.current) {
+        ringCircleRef.current.style.borderColor = ringColor;
+      }
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const ringColor =
-    pct >= 70 ? "var(--correct)" : pct >= 45 ? "#f59e0b" : "var(--wrong)";
-  const ringOffset = CIRCUMFERENCE - (CIRCUMFERENCE * displayPct) / 100;
 
   return (
     <>
@@ -636,14 +709,14 @@ function ResultScreen({
           >
             <circle className="ob-score-svg-track" cx="60" cy="60" r={RING_R} />
             <circle
+              ref={ringFillRef}
               className="ob-score-svg-fill"
               cx="60"
               cy="60"
               r={RING_R}
-              style={{ stroke: ringColor, strokeDashoffset: ringOffset }}
             />
           </svg>
-          <div className="ob-score-circle" style={{ borderColor: ringColor }}>
+          <div ref={ringCircleRef} className="ob-score-circle">
             <span className="ob-score-number">
               {displayScore}
               <span className="ob-score-denom-inline">/{result.total}</span>
@@ -670,29 +743,15 @@ function ResultScreen({
           {result.by_topic.map((t, i) => {
             const tier = topicTier(t.accuracy);
             return (
-              <div
+              <TopicCard
                 key={t.topic}
-                className="ob-topic-card ob-result-fadein"
-                style={{ animationDelay: `${0.6 + i * 0.12}s` }}
-              >
-                <div className="ob-topic-row">
-                  <span className="ob-topic-name">
-                    {topicEmoji(t.topic)} {t.topic}
-                  </span>
-                  <span className={`ob-topic-badge ${tier.cls}`}>
-                    {tier.label}
-                  </span>
-                </div>
-                <p className="ob-topic-score">
-                  {t.correct}/{t.total} correct
-                </p>
-                <div className="ob-topic-bar-track">
-                  <div
-                    className={`ob-topic-bar-fill ${tier.cls}`}
-                    style={{ width: `${Math.round(t.accuracy * 100)}%` }}
-                  />
-                </div>
-              </div>
+                topic={t.topic}
+                correct={t.correct}
+                total={t.total}
+                accuracy={t.accuracy}
+                tier={tier}
+                index={i}
+              />
             );
           })}
         </section>
