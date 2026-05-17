@@ -80,10 +80,32 @@ function focusHint(tier: Tier): string {
 // Skeleton
 // ---------------------------------------------------------------------------
 
+const LOADING_STEPS = [
+  "Menganalisis jawapan kamu…",
+  "Mengenal pasti corak kesilapan…",
+  "AI sedang mendiagnosis kelemahan…",
+  "Menyediakan pelan fokus peribadi…",
+];
+
 function ResultSkeleton() {
+  const [stepIndex, setStepIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      setStepIndex((i) => Math.min(i + 1, LOADING_STEPS.length - 1));
+    }, 1800);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div className="dr2-page page-enter">
       <div className="dr2-skeleton dr2-skel-header" />
+
+      <div className="dr2-loading-status">
+        <span className="dr2-loading-spinner" />
+        <span className="dr2-loading-step">{LOADING_STEPS[stepIndex]}</span>
+      </div>
+
       <div className="dr2-skeleton dr2-skel-row" />
       <div className="dr2-skeleton dr2-skel-row" />
       <div className="dr2-skeleton dr2-skel-tall" />
@@ -180,7 +202,7 @@ function InsightStrip({ strongestTopic, weakestTopic }: {
 // AI Diagnosis card  (mirrors fokus-card with icon box)
 // ---------------------------------------------------------------------------
 
-function AiDiagnosisCard({ copy }: { copy: string }) {
+function AiDiagnosisCard({ copy, misconceptions }: { copy: string; misconceptions: string[] }) {
   return (
     <div className="dr2-ai-card">
       <div className="dr2-ai-header">
@@ -191,6 +213,13 @@ function AiDiagnosisCard({ copy }: { copy: string }) {
         </div>
       </div>
       <p className="dr2-ai-copy">{copy}</p>
+      {misconceptions.length > 0 && (
+        <ul className="dr2-ai-misconceptions">
+          {misconceptions.map((m, i) => (
+            <li key={i} className="dr2-ai-misconception-item">⚠️ {m}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -397,7 +426,7 @@ export default function DiagnosticResultPage() {
 
       {/* 3 · AI Diagnosis */}
       {weakestTopic && (
-        <AiDiagnosisCard copy={buildAiDiagnosis(weakestTopic)} />
+        <AiDiagnosisCard copy={buildAiDiagnosis(weakestTopic)} misconceptions={weakestTopic.misconceptions ?? []} />
       )}
 
       {/* 4 · Personalized focus path */}

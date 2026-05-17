@@ -15,6 +15,23 @@ type Step = "pick" | "quiz";
 
 const SUBJECTS = ["Matematik"];
 
+function playTone(frequency: number, duration: number, type: OscillatorType = "sine", volume = 0.15) {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+    osc.onended = () => ctx.close();
+  } catch {}
+}
+
 export default function DiagnosticPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("pick");
@@ -47,6 +64,7 @@ export default function DiagnosticPage() {
   }
 
   function selectOption(questionId: string, idx: number) {
+    playTone(600, 0.08, "sine", 0.12);
     setAnswers((prev) => ({ ...prev, [questionId]: idx }));
   }
 
@@ -149,14 +167,14 @@ export default function DiagnosticPage() {
       <button
         type="button"
         className="btn-ghost diag-skip-btn"
-        onClick={() => setCurrent((c) => c + 1)}
+        onClick={() => { playTone(400, 0.1, "sine", 0.08); setCurrent((c) => c + 1); }}
       >
         Langkau
       </button>
       <button
         type="button"
         className="btn-primary"
-        onClick={() => setCurrent((c) => c + 1)}
+        onClick={() => { playTone(800, 0.12, "sine", 0.12); setCurrent((c) => c + 1); }}
         disabled={answers[q?.id] === undefined}
       >
         Seterusnya →
