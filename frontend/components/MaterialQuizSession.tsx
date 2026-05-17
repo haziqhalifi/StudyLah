@@ -188,7 +188,7 @@ export default function MaterialQuizSession({ chapter, step, subtopic, materialQ
 
   const chapterLabel = chapter === "ubahan" ? "Ubahan" : chapter === "matriks" ? "Matriks" : "Insurans";
   const stepTypeLabel = step.type === "Assessment" ? "Penilaian" : "Latihan";
-  const metaLabel = `${chapterLabel} · ${subtopic.title} · ${stepTypeLabel}`;
+  const metaLabel = `${chapterLabel} · ${stepTypeLabel}`;
 
   return (
     <QuizSheet
