@@ -11,17 +11,17 @@ const TOPICS = [
 ];
 
 const PAPERS = [
-  { id: "trial", label: "Kertas Percubaan", href: "/exams", emoji: "📄" },
+  { id: "trial", label: "Kertas Percubaan", href: "/examination", emoji: "📄" },
 ];
 
-const SHOW_ON = ["/exams"];
+const SHOW_ON: string[] = [];
 
 function TopNavInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   if (!SHOW_ON.some((p) => pathname.startsWith(p))) return null;
 
-  const isExams = pathname.startsWith("/exams");
+  const isExams = pathname.startsWith("/examination");
   const activeTopic = searchParams.get("topic");
 
   return (
