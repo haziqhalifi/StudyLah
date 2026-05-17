@@ -26,6 +26,10 @@ export default function QuestionCard({
   correctOptionIndex,
   isReview = false,
 }: Props) {
+  const category = question.tags
+    ?.find((tag) => tag.startsWith("kategori:"))
+    ?.replace("kategori:", "");
+
   function optionClass(idx: number): string {
     const base = "option-card";
     if (!showResult)
@@ -67,6 +71,12 @@ export default function QuestionCard({
           )}
         </span>
       </div>
+
+      {category && (
+        <div className="qcard-category-row">
+          <span className="qcard-category">Kategori: {category}</span>
+        </div>
+      )}
 
       <div className="font-display qcard-question">
         <MathText>{question.text}</MathText>

@@ -70,29 +70,24 @@ export default function MaterialsHubPage() {
   const hasStarted = doneNodes > 0;
 
   return (
-    <section className="home-dashboard-shell page-enter" aria-label="Materials hub">
+    <section className="home-dashboard-shell page-enter" aria-label="Hab bahan pembelajaran">
       <header className="student-header">
         <div className="student-header-copy">
-          <p className="student-time">Bahan Pembelajaran</p>
+          <p className="student-time">Bahan</p>
           <h1>Pilih Bab</h1>
           <div className="student-meta-row">
             <span>Matematik Tingkatan 5</span>
             <span aria-hidden="true">•</span>
             <span>{BAB_CARDS.length} bab</span>
+            <span>{BAB_CARDS.length} bab</span>
           </div>
         </div>
       </header>
 
-      {/* Hero card — Laluan Pembelajaran */}
-      <section className="level-card" aria-label="Laluan pembelajaran">
+      <section className="level-card" aria-label="Pilih satu bab">
         <div className="level-card-content">
           <p className="level-eyebrow">Laluan Pembelajaran</p>
-          <h2>
-            {hasStarted
-              ? `${doneNodes} daripada ${totalNodes} nod selesai`
-              : "Pilih bab untuk bermula, kemudian terokai peta subtopik."}
-          </h2>
-          {/* Always-visible progress track */}
+          <h2>Mulakan dengan satu bab dan teruskan ke peta subtopik.</h2>
           <div className="level-progress-row">
             <div className="w-full h-1.5 rounded-full bg-white/20" aria-hidden="true">
               <div
@@ -100,11 +95,7 @@ export default function MaterialsHubPage() {
                 style={{ width: `${overallPct}%` }}
               />
             </div>
-            {overallPct === 0 ? (
-              <span className="text-white/70 text-xs font-medium whitespace-nowrap">Mula sekarang →</span>
-            ) : (
-              <span className="text-white text-xs font-semibold whitespace-nowrap">{overallPct}%</span>
-            )}
+            <span>{BAB_CARDS.length} tersedia</span>
           </div>
         </div>
         {/* Labeled subtopik badge */}
