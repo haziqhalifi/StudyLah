@@ -102,7 +102,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   line-height: 1.2;
 
   /* â”€â”€ Responsive QuestionCard adjustments â”€â”€ */
@@ -11284,80 +11284,94 @@ button.map-node:hover {
   text-align: center;
   padding: 2.5rem 0 1rem;
   width: 100%;
+  gap: 0;
+}
+.ob-analyzing-bubble {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--brand-light, #d4e8ff);
+  border-radius: 18px;
+  padding: 0.85rem 1.25rem;
+  max-width: 260px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+.ob-analyzing-bubble[data-visible="false"] {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.ob-analyzing-bubble span {
+  font-size: 0.95rem;
+  color: var(--ink);
+  line-height: 1.4;
+  font-weight: 500;
+}
+/* tail pointing down toward mascot */
+.ob-analyzing-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 12px 10px 0 10px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+  filter: drop-shadow(0 2px 1px rgba(0,0,0,0.06));
+}
+.ob-analyzing-bubble::before {
+  content: "";
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 13px 11px 0 11px;
+  border-style: solid;
+  border-color: var(--brand-light, #d4e8ff) transparent transparent transparent;
+}
+.ob-bubble-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+}
+.ob-bubble-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand, #4a90d9);
+  animation: ob-bubble-bounce 1.1s ease-in-out infinite;
+  display: block;
+}
+.ob-bubble-dots span:nth-child(2) {
+  animation-delay: 0.17s;
+}
+.ob-bubble-dots span:nth-child(3) {
+  animation-delay: 0.34s;
+}
+@keyframes ob-bubble-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-5px); opacity: 1; }
 }
 .ob-analyzing-mascot {
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 1.75rem;
-  animation: ob-pulse 1.6s ease-in-out infinite;
+  margin-top: 0.5rem;
 }
-@keyframes ob-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.07);
-    filter: brightness(1.06);
-  }
+.ob-analyzing-mascot--talking {
+  animation: ob-talk 0.55s ease-in-out infinite alternate;
 }
-.ob-analyzing-title {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  color: var(--ink);
-  margin: 0 0 0.45rem;
-}
-.ob-analyzing-sub {
-  color: var(--muted);
-  font-size: 0.88rem;
-  margin: 0 0 1.5rem;
-  line-height: 1.55;
-}
-.ob-spinner {
-  width: 44px;
-  height: 44px;
-  border: 4px solid var(--brand-light);
-  border-top-color: var(--brand);
-  border-radius: 50%;
-  animation: ob-spin 0.75s linear infinite;
-  margin: 0 auto 1.25rem;
-}
-@keyframes ob-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.ob-bounce-dots {
-  display: flex;
-  gap: 7px;
-  justify-content: center;
-}
-.ob-bounce-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--brand-muted);
-  animation: ob-dot-bounce 1.2s ease-in-out infinite;
-}
-.ob-bounce-dot:nth-child(2) {
-  animation-delay: 0.18s;
-}
-.ob-bounce-dot:nth-child(3) {
-  animation-delay: 0.36s;
-}
-@keyframes ob-dot-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-    background: var(--brand-muted);
-  }
-  50% {
-    transform: translateY(-9px);
-    background: var(--brand);
-  }
+@keyframes ob-talk {
+  from { transform: rotate(-2deg) scale(1); }
+  to   { transform: rotate(2deg) scale(1.04); }
 }
 
 /* Result */

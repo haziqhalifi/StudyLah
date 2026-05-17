@@ -38,7 +38,10 @@ const DIALOGUES: Record<string, string[]> = {
   ],
   analyzing: [
     "Let me look at your answers... 🔍",
+    "Hmm, interesting results! 🤔",
     "Analysing with Google AI! 🧮",
+    "Almost there, building your path... 📚",
+    "This looks promising! 🌟",
   ],
   result: [
     "Your personalised path is ready! 🚀",
@@ -118,6 +121,48 @@ function getWeakestTopicName(diag: OnboardingDiagnosticResponse): string {
   return (
     [...diag.by_topic].sort((a, b) => a.accuracy - b.accuracy)[0]?.topic ??
     "Lessons"
+  );
+}
+
+const ANALYZING_MESSAGES = [
+  "Let me look at your answers... 🔍",
+  "Hmm, interesting results! 🤔",
+  "Analysing with Google AI! 🧮",
+  "Almost there, building your path... 📚",
+  "This looks promising! 🌟",
+];
+
+function AnalyzingScreen() {
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const cycle = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setMsgIndex((i) => (i + 1) % ANALYZING_MESSAGES.length);
+        setVisible(true);
+      }, 350);
+    }, 2800);
+    return () => clearInterval(cycle);
+  }, []);
+
+  return (
+    <div className="ob-analyzing">
+      <div className="ob-analyzing-bubble" data-visible={visible}>
+        <span>{ANALYZING_MESSAGES[msgIndex]}</span>
+        <div className="ob-bubble-dots">
+          <span /><span /><span />
+        </div>
+      </div>
+      <Image
+        src="/assets/mascot.webp"
+        alt="Skorrel analysing"
+        width={120}
+        height={120}
+        className="ob-analyzing-mascot ob-analyzing-mascot--talking"
+      />
+    </div>
   );
 }
 
@@ -578,27 +623,7 @@ export default function OnboardingPage() {
 
       {/* ── ANALYZING ──────────────────────────────────────────────────────── */}
       {step === "analyzing" && (
-        <div className="ob-analyzing">
-          <Image
-            src="/assets/mascot.webp"
-            alt="Lah analysing"
-            width={110}
-            height={110}
-            className="ob-analyzing-mascot"
-          />
-          <h2 className="ob-analyzing-title">Analysing your results…</h2>
-          <p className="ob-analyzing-sub">
-            Google AI is building your personalised
-            <br />
-            SPM learning path 🗺️
-          </p>
-          <div className="ob-spinner" />
-          <div className="ob-bounce-dots">
-            <div className="ob-bounce-dot" />
-            <div className="ob-bounce-dot" />
-            <div className="ob-bounce-dot" />
-          </div>
-        </div>
+        <AnalyzingScreen />
       )}
 
       {/* ── RESULT ─────────────────────────────────────────────────────────── */}

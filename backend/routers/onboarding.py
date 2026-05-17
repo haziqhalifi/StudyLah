@@ -116,6 +116,7 @@ def _fetch_form5_questions(limit: int = 220) -> List[dict]:
         supabase.table("questions")
         .select("id, question, options, correct_index, chapter_id")
         .in_("chapter_id", list(_TOPIC_BY_CHAPTER.keys()))
+        .eq("approval_status", "approved")
         .not_.is_("question", "null")
         .limit(limit)
         .execute()
