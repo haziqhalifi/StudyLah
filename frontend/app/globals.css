@@ -4040,6 +4040,13 @@ button.map-node:hover {
   flex: 1;
 }
 
+.qs-stat-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: 0.02em;
+}
+
 .qs-stat-icon-btn {
   background: none;
   border: none;
@@ -4373,6 +4380,11 @@ button.map-node:hover {
 }
 .qs-bar .learn-actions .btn-primary {
   flex: 2;
+  width: auto;
+}
+
+.qs-bar .learn-actions .btn-ghost {
+  width: auto;
 }
 
 /* ── Answer feedback panel (shown inside qs-bar after answering) ── */
@@ -10241,6 +10253,9 @@ button.map-node:hover {
 /* â”€â”€ Exam timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qs-header-timer {
   flex-shrink: 0;
+  width: 80px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .exam-timer {
@@ -13895,20 +13910,9 @@ button.map-node:hover {
   border: 1px solid var(--border);
   width: 80%;
 }
-.lp-finish-icon {
-  font-size: 2.5rem;
-}
-.lp-finish-text {
-  font-weight: 800;
-  font-size: 1rem;
-  color: var(--ink);
-  margin: 0;
-}
-.lp-finish-sub {
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin: 0;
-}
+.lp-finish-icon { font-size: 2.5rem; }
+.lp-finish-text { font-weight: 800; font-size: 1rem; color: var(--ink); margin: 0; }
+.lp-finish-sub  { font-size: 0.8rem; color: var(--muted); margin: 0; }
 
 /* Sign up redesign */
 .signup-showcase {
@@ -14112,4 +14116,408 @@ button.map-node:hover {
     animation: none;
     border-right: 0;
   }
+}
+
+/* ============================================================
+   Examination page — SPM Trial booklet grid
+   ============================================================ */
+
+/* Page shell */
+.exb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding-bottom: 2rem;
+}
+.exb-page--bannered {
+  padding-top: 145px;
+}
+
+/* Floating banner (reuses material-current-head) */
+.exb-banner-filters {
+  margin-top: 0.6rem;
+  width: 100%;
+}
+
+/* Filters */
+.exb-dropdowns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  width: 100%;
+}
+.exb-select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s;
+}
+.exb-select:focus {
+  border-color: var(--brand);
+}
+
+/* Status messages */
+.exb-error {
+  color: var(--wrong);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.exb-loading {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.exb-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* Booklet grid */
+.exb-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+@media (min-width: 600px) {
+  .exb-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Booklet card — mimics an exam booklet cover */
+.exb-booklet {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.07),
+    0 8px 24px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.exb-booklet:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.13),
+    0 2px 6px rgba(0, 0, 0, 0.06);
+}
+.exb-booklet:active {
+  transform: translateY(-1px);
+}
+.exb-booklet:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* Coloured state header */
+.exb-booklet-header {
+  position: relative;
+  padding: 0.85rem 0.75rem 0.7rem;
+  overflow: hidden;
+}
+.exb-booklet-stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  opacity: 0.6;
+}
+.exb-booklet-state {
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* Booklet body — centered typography */
+.exb-booklet-body {
+  flex: 1;
+  padding: 0.85rem 0.75rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+.exb-booklet-trial {
+  font-size: 0.52rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.3;
+}
+.exb-booklet-trial-sub {
+  font-size: 0.5rem;
+  color: var(--muted);
+  margin: 0;
+  font-style: italic;
+}
+.exb-booklet-divider {
+  width: 40px;
+  height: 2px;
+  border-radius: 1px;
+  margin: 0.45rem auto;
+}
+.exb-booklet-subject {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+.exb-booklet-kertas {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+/* Metadata chips */
+.exb-booklet-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px dashed #e0e0e0;
+}
+.exb-booklet-chip {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  white-space: nowrap;
+}
+
+/* SULIT footer */
+.exb-booklet-footer {
+  padding: 0.45rem 0.75rem;
+  border-top: 1px solid #f0f0f0;
+  text-align: center;
+  font-size: 0.5rem;
+  color: #aaa;
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+.exb-booklet-loading {
+  font-size: 0.6rem;
+  color: var(--brand);
+}
+
+/* ── Quiz shell ─────────────────────────────────────────────── */
+.exb-quiz-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--surface);
+}
+.exb-quiz-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+.exb-quiz-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.exb-quiz-meta {
+  flex: 1;
+  min-width: 0;
+}
+.exb-quiz-title {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.85;
+  font-weight: 700;
+}
+.exb-quiz-counter {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.exb-quiz-timer {
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+}
+.exb-quiz-timer--urgent {
+  background: rgba(220, 38, 38, 0.8);
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.exb-quiz-progress {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.08);
+}
+.exb-quiz-progress-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.exb-quiz-body {
+  flex: 1;
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+}
+
+.exb-quiz-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: white;
+  border-top: 1px solid var(--border);
+}
+.exb-nav-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  background: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.exb-nav-btn:hover {
+  background: var(--surface);
+}
+.exb-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.exb-nav-btn--next {
+  color: white;
+  border: none;
+}
+.exb-submit-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: var(--r-lg);
+  color: white;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.exb-submit-btn:hover {
+  opacity: 0.9;
+}
+
+/* ── Results ────────────────────────────────────────────────── */
+.exb-results {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.exb-results-header {
+  padding: 3rem 1.5rem 2rem;
+  text-align: center;
+  color: white;
+}
+.exb-results-grade {
+  font-family: var(--font-display);
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.exb-results-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  opacity: 0.9;
+}
+.exb-results-pct {
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0;
+}
+.exb-results-body {
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.exb-results-paper {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+.exb-results-timeout {
+  color: var(--wrong);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0;
+}
+.exb-results-bar-wrap {
+  height: 10px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.exb-results-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 1s ease;
+}
+.exb-results-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }

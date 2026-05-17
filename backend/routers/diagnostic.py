@@ -129,9 +129,19 @@ def get_diagnostic_result(userId: str = Query(..., description="User ID")) -> Di
     questions = db.get_questions_by_ids(question_ids)
     question_map = {q.id: q for q in questions}
 
-    # Recompute skill profile from all attempts
-    all_questions = db.get_all_questions()
-    ai_profile = ai_engine.analyze_diagnostic(all_questions, all_attempts)
+    # Only include attempts for diagnostic questions (those with known topic_ids)
+    diagnostic_question_ids = {q.id for q in questions if q.topic_id in _TOPIC_NAMES}
+    diagnostic_attempts = [a for a in all_attempts if a.question_id in diagnostic_question_ids]
+    diagnostic_questions = [q for q in questions if q.id in diagnostic_question_ids]
+
+    if not diagnostic_attempts:
+        raise HTTPException(
+            status_code=404,
+            detail="No diagnostic attempts found for this user. Complete the diagnostic first.",
+        )
+
+    # Recompute skill profile from diagnostic attempts only
+    ai_profile = ai_engine.analyze_diagnostic(diagnostic_questions, diagnostic_attempts)
 
     # Build per-topic diagnostics
     topic_diagnostics: List[TopicDiagnostic] = []
@@ -142,7 +152,7 @@ def get_diagnostic_result(userId: str = Query(..., description="User ID")) -> Di
 
         # Find the latest attempt timestamp for this topic
         topic_attempt_timestamps: List[datetime] = []
-        for attempt in all_attempts:
+        for attempt in diagnostic_attempts:
             q = question_map.get(attempt.question_id)
             if q and q.topic_id == topic_id:
                 ts = attempt.timestamp
@@ -168,26 +178,19 @@ def get_diagnostic_result(userId: str = Query(..., description="User ID")) -> Di
             )
         )
 
-    # Fallback: if we get no topic matches via topic_id, use all available
-    if not topic_diagnostics:
-        for tid, stats in ai_profile.items():
-            topic_diagnostics.append(
-                TopicDiagnostic(
-                    topicId=tid,
-                    topicName=_TOPIC_NAMES.get(tid, tid.title()),
-                    accuracy=stats.accuracy,
-                    attempts=stats.attempt_count,
-                    level=_engine_level_to_result(stats.estimated_level),
-                )
-            )
-
-    # Overall stats across all attempts
-    total_questions = len(all_attempts)
-    correct_questions = sum(1 for a in all_attempts if a.is_correct)
+    # Overall stats across diagnostic attempts only
+    total_questions = len(diagnostic_attempts)
+    correct_questions = sum(1 for a in diagnostic_attempts if a.is_correct)
     overall_accuracy = round(correct_questions / total_questions, 4) if total_questions else 0.0
 
     # Sort: weakest first (ascending accuracy)
     sorted_topics = sorted(topic_diagnostics, key=lambda t: t.accuracy)
+
+    if not sorted_topics:
+        raise HTTPException(
+            status_code=404,
+            detail="No diagnostic topic data found. Complete the diagnostic first.",
+        )
 
     # Pick main recommendation: weakest topic
     main_topic = sorted_topics[0]

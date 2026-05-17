@@ -246,7 +246,7 @@ function TopicResourceSheet({
           <button
             type="button"
             className="topic-sheet-btn topic-sheet-btn--exam"
-            onClick={() => go("/exams")}
+            onClick={() => go("/examination")}
           >
             <span className="topic-sheet-btn-icon">📝</span>
             <div>
