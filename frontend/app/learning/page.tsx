@@ -87,8 +87,8 @@ function NodeIcon({ type, state }: { type: string; state: "active" | "done" | "l
   }
   if (type === "Exercise") {
     return (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 4v16M18 4v16M6 12h12M3 6h3M18 6h3M3 18h3M18 18h3" />
+      <svg width="28" height="28" viewBox="0 0 24 24" fill={color} stroke="none">
+        <path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" />
       </svg>
     );
   }
