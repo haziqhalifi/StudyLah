@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -20,11 +20,11 @@ import {
   playWrongSound,
 } from "@/lib/sounds";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Step = "welcome" | "profile" | "quiz" | "analyzing" | "result";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DIALOGUES: Record<string, string[]> = {
   welcome: [
@@ -172,7 +172,7 @@ function AnalyzingScreen() {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -214,7 +214,7 @@ export default function OnboardingPage() {
     setXp(isNaN(storedXp) ? 0 : storedXp);
   }, []);
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function showDialogue(key: string) {
     setDialogue(pick(DIALOGUES[key] ?? DIALOGUES.welcome));
@@ -230,7 +230,7 @@ export default function OnboardingPage() {
     return 100;
   })();
 
-  // ── Profile submit ─────────────────────────────────────────────────────────
+  // â”€â”€ Profile submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function handleStartQuiz() {
     if (!name.trim() || !school.trim()) {
@@ -277,7 +277,7 @@ export default function OnboardingPage() {
     }
   }
 
-  // ── Submit answer ──────────────────────────────────────────────────────────
+  // â”€â”€ Submit answer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function handleSubmit() {
     if (selected === null) return;
@@ -312,7 +312,7 @@ export default function OnboardingPage() {
     setSubmitted(true);
   }
 
-  // ── Next question / finish ─────────────────────────────────────────────────
+  // â”€â”€ Next question / finish â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function handleNext() {
     const isLast = qIndex === questions.length - 1;
@@ -326,7 +326,7 @@ export default function OnboardingPage() {
     }
   }
 
-  // ── Submit quiz ────────────────────────────────────────────────────────────
+  // â”€â”€ Submit quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function handleFinishQuiz() {
     setStep("analyzing");
@@ -353,11 +353,11 @@ export default function OnboardingPage() {
     }
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const currentQ = questions[qIndex];
 
-  // ── QUIZ step — identical UI to learn page quiz ───────────────────────────
+  // â”€â”€ QUIZ step â€” identical UI to learn page quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (step === "quiz" && currentQ) {
     const quizQuestion = {
       id: currentQ.id,
@@ -461,7 +461,7 @@ export default function OnboardingPage() {
       </div>
       <ProgressFillDriver pct={progress} />
 
-      {/* Back button — above mascot on profile step */}
+      {/* Back button â€” above mascot on profile step */}
       {step === "profile" && (
         <button
           type="button"
@@ -476,7 +476,7 @@ export default function OnboardingPage() {
         </button>
       )}
 
-      {/* Mascot + dialogue — profile step only (side-by-side) */}
+      {/* Mascot + dialogue â€” profile step only (side-by-side) */}
       {step === "profile" && (
         <div className="ob-mascot-row">
           <span className="ob-mascot-flip">
@@ -500,7 +500,7 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {/* ── WELCOME ────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ WELCOME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {step === "welcome" && (
         <>
           <div className="ob-welcome-layout">
@@ -535,7 +535,7 @@ export default function OnboardingPage() {
         </>
       )}
 
-      {/* ── PROFILE ────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {step === "profile" && (
         <>
           <div className="ob-form">
@@ -601,10 +601,10 @@ export default function OnboardingPage() {
         </>
       )}
 
-      {/* ── ANALYZING ──────────────────────────────────────────────────────── */}
+      {/* â”€â”€ ANALYZING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {step === "analyzing" && <AnalyzingScreen />}
 
-      {/* ── RESULT ─────────────────────────────────────────────────────────── */}
+      {/* â”€â”€ RESULT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {step === "result" && result && (
         <ResultScreen
           result={result}
@@ -618,7 +618,7 @@ export default function OnboardingPage() {
   );
 }
 
-// ─── Progress fill driver (avoids inline style on the fill bar) ───────────────
+// â”€â”€â”€ Progress fill driver (avoids inline style on the fill bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ProgressFillDriver({ pct }: { pct: number }) {
   useEffect(() => {
@@ -628,44 +628,30 @@ function ProgressFillDriver({ pct }: { pct: number }) {
   return null;
 }
 
-// ─── Result Screen ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Result Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// ─── TopicCard — compact read-only card with animated fill bar ────────────────
+// â”€â”€â”€ TopicCard â€” compact read-only card with animated fill bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TopicCard({
   topic,
-  correct,
-  total,
-  accuracy,
   tier,
   index,
   isWeakest,
   onPractice,
 }: {
   topic: string;
-  correct: number;
-  total: number;
-  accuracy: number;
   tier: { label: string; cls: string };
   index: number;
   isWeakest: boolean;
   onPractice?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const pct = Math.round(accuracy * 100);
-  const cta = isWeakest
-    ? { text: "Latih sekarang →", time: "~10 min · +10 XP" }
-    : { text: "Ulang kaji →", time: "~5 min · +5 XP" };
+  const cta = isWeakest ? "Latih sekarang →" : "Ulang kaji →";
 
   useEffect(() => {
     if (cardRef.current)
       cardRef.current.style.animationDelay = `${0.4 + index * 0.15}s`;
-    const t = setTimeout(() => {
-      if (barRef.current) barRef.current.style.width = `${pct}%`;
-    }, 100);
-    return () => clearTimeout(t);
-  }, [index, pct]);
+  }, [index]);
 
   return (
     <div
@@ -681,36 +667,23 @@ function TopicCard({
               <span className="ob2-recommended-badge">FOKUS UTAMA KAMU</span>
             )}
           </div>
-          <span className="ob2-topic-score">
-            {correct}/{total} betul · {pct}%
-          </span>
         </div>
-        <span className={`ob2-tier-badge ob2-tier-badge--${tier.cls}`}>
-          {pct}%
-        </span>
-      </div>
-      <div className="ob2-bar-track">
-        <div
-          ref={barRef}
-          className={`ob2-bar-fill ob2-bar-fill--${tier.cls}`}
-        />
       </div>
       <div className="ob2-topic-footer">
-        <span className="ob2-tier-label">{tier.label}</span>
+        {!isWeakest && <span className="ob2-tier-label">{tier.label}</span>}
         <button
           type="button"
           className="ob2-topic-cta-btn"
           onClick={onPractice}
         >
-          {cta.text}
-          <span className="ob2-topic-cta-meta">{cta.time}</span>
+          {cta}
         </button>
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const RING_R = 52;
 const CIRCUMFERENCE = 2 * Math.PI * RING_R;
@@ -772,6 +745,10 @@ function ResultScreen({
   const sortedTopics = [...result.by_topic].sort(
     (a, b) => a.accuracy - b.accuracy,
   );
+  const visibleTopics = sortedTopics.filter((t) => {
+    const cls = topicTier(t.accuracy).cls;
+    return cls === "weak" || cls === "strong";
+  });
   const weakestTopic = sortedTopics[0];
   const weakestTopicName = weakestTopic?.topic ?? "";
 
@@ -783,12 +760,12 @@ function ResultScreen({
     return "/learning";
   }
 
-  // suppress unused-variable warning — kept to satisfy call-site signature
+  // suppress unused-variable warning â€” kept to satisfy call-site signature
   void getRouteForTopic;
 
   return (
     <div className="ob2-result-page">
-      {/* ── HERO ── */}
+      {/* â”€â”€ HERO â”€â”€ */}
       <div className={`ob2-hero ob2-hero--${grade.mod}`}>
         <div className="ob2-hero-noise" aria-hidden="true" />
 
@@ -846,42 +823,24 @@ function ResultScreen({
           Ini diagnosis awal tahap SPM kamu.
         </p>
 
-        {/* Primary CTA — weakest topic */}
-        {weakestTopicName && (
-          <button
-            type="button"
-            className="ob2-hero-cta ob-result-fadein"
-            onClick={() => onContinue()}
-          >
-            <span className="ob2-hero-cta-main">
-              Latih topik paling lemah sekarang →
-            </span>
-            <span className="ob2-hero-cta-sub">
-              5 soalan {weakestTopicName} · ~10 min · +10 XP
-            </span>
-          </button>
-        )}
       </div>
 
-      {/* ── BODY ── */}
+      {/* â”€â”€ BODY â”€â”€ */}
       <div className="ob2-body">
         {/* Topic perTingkatanance */}
-        {result.by_topic.length > 0 && (
+        {visibleTopics.length > 0 && (
           <section className="ob2-section">
             <h3 className="ob2-section-title">
               <span className="ob2-section-dot" />
               Prestasi Topik
             </h3>
             <div className="ob2-topics-grid">
-              {sortedTopics.map((t, i) => {
+              {visibleTopics.map((t, i) => {
                 const tier = topicTier(t.accuracy);
                 return (
                   <TopicCard
                     key={t.topic}
                     topic={t.topic}
-                    correct={t.correct}
-                    total={t.total}
-                    accuracy={t.accuracy}
                     tier={tier}
                     index={i}
                     isWeakest={t.topic === weakestTopicName}
@@ -893,63 +852,6 @@ function ResultScreen({
           </section>
         )}
 
-        {/* Diagnosa AI */}
-        <section className="ob2-section ob-result-fadein">
-          <h3 className="ob2-section-title">
-            <span className="ob2-section-dot ob2-section-dot--brand" />
-            Diagnosa AI
-          </h3>
-          <div className="ob2-ai-card">
-            <span className="ob2-ai-sparkle">✦</span>
-            <p className="ob2-ai-text">
-              {localizeResultText(result.recommendation)}
-            </p>
-          </div>
-        </section>
-
-        {/* Strengths + Next Step side-by-side */}
-        <div className="ob2-two-col">
-          {result.strengths.length > 0 && (
-            <div className="ob2-insight-card ob2-insight-card--green ob-result-fadein">
-              <div className="ob2-insight-header">
-                <span className="ob2-insight-icon">✅</span>
-                <span className="ob2-insight-label">Kekuatan</span>
-              </div>
-              <ul className="ob2-insight-list">
-                {result.strengths.map((s, i) => (
-                  <li key={i} className="ob2-insight-item">
-                    <span className="ob2-insight-bullet" />
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {result.next_step && (
-            <div className="ob2-insight-card ob2-insight-card--brand ob-result-fadein">
-              <div className="ob2-insight-header">
-                <span className="ob2-insight-icon">🎯</span>
-                <span className="ob2-insight-label">Langkah Seterusnya</span>
-              </div>
-              <p className="ob2-insight-next">
-                {localizeResultText(result.next_step)}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Secondary actions */}
-        <div className="ob2-secondary-actions ob-result-fadein">
-          <p className="ob2-secondary-label">Pilihan lain:</p>
-          <button
-            type="button"
-            className="ob2-secondary-btn ob2-secondary-btn--ghost"
-            onClick={() => window.location.reload()}
-          >
-            Ulang buat diagnostik nanti →
-          </button>
-        </div>
       </div>
 
       <button
@@ -957,7 +859,7 @@ function ResultScreen({
         className="ob2-secondary-btn ob2-floating-plan-btn"
         onClick={onContinue}
       >
-        Ikut pelan auto →
+        <span className="ob2-hero-cta-main">Belajar {weakestTopicName} sekarang</span>
       </button>
     </div>
   );
