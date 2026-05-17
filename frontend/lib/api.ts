@@ -593,6 +593,7 @@ export type TopicDiagnostic = {
   attempts: number;
   level: "weak" | "okay" | "strong";
   lastAttemptAt?: string;
+  misconceptions: string[];
 };
 
 export type DiagnosticRecommendation = {

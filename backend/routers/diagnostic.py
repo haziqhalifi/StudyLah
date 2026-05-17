@@ -48,6 +48,7 @@ class TopicDiagnostic(BaseModel):
     attempts: int
     level: Literal["weak", "okay", "strong"]
     lastAttemptAt: Optional[str] = None
+    misconceptions: List[str] = []
 
 
 class DiagnosticRecommendation(BaseModel):
@@ -171,10 +172,11 @@ def get_diagnostic_result(userId: str = Query(..., description="User ID")) -> Di
             TopicDiagnostic(
                 topicId=topic_id,
                 topicName=name,
-                accuracy=stats.accuracy,
+                accuracy=round(stats.correct_count / stats.attempt_count, 4) if stats.attempt_count else 0.0,
                 attempts=stats.attempt_count,
                 level=_engine_level_to_result(stats.estimated_level),
                 lastAttemptAt=last_at,
+                misconceptions=stats.misconceptions,
             )
         )
 
@@ -297,7 +299,7 @@ def get_diagnostic_report(userId: str = Query(..., description="User ID")) -> Di
         topic_reports.append(TopicReport(
             topicId=topic_id,
             topicName=name,
-            accuracy=stats.accuracy,
+            accuracy=round(topic_correct / topic_attempts, 4) if topic_attempts else 0.0,
             attempts=topic_attempts,
             correct=topic_correct,
             level=_engine_level_to_result(stats.estimated_level),
